@@ -65,6 +65,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @ExcludeProcessConfigurationProperty
     private static final Logger LOG = LoggerFactory.getLogger(CentralSecurityPolicyConfiguration.class);
 
+    public final static String LATEST_VERSION = "1";
+
     /**
      * Used to convert a CVSS score into a Severity Category (e.g. None, Low, Medium, High, Critical) for displaying in reports and dashboards.<br>
      * The syntax defines ranges using a format like <code>Label:color:min:max</code>.<p>

@@ -33,11 +33,16 @@ import java.util.stream.Collectors;
 @Slf4j
 @Data
 public class CspLoader {
-    private String inlineOverwriteJson;
     private File file;
     private List<File> files = new ArrayList<>();
+    private String inlineOverwriteJson;
+
     private List<String> activeIds = new ArrayList<>();
+
+    // validation
     private boolean failOnMissingPolicyFile = true;
+    private boolean failOnVersionIncompatibility = true;
+    private boolean failOnMissingVersion = false;
 
     public void addFile(File... files) {
         this.files.addAll(Arrays.asList(files));
@@ -52,7 +57,11 @@ public class CspLoader {
     public CentralSecurityPolicyConfiguration loadConfiguration() {
         try {
             return this.loadConfigurationInternal();
-        } catch (IOException e) {
+        } catch (Exception e) {
+            log.error("└── Failed to load Security Policy");
+            final String message = StringUtils.defaultString(e.getMessage(), e.getClass().getName());
+            Arrays.stream(message.split("\n")).forEach(msg -> log.error("    ├── {}", msg));
+            log.error("    └── file={}, files={}, inlineOverwriteJson={}, activeIds={}", file, files, inlineOverwriteJson, activeIds);
             throw new RuntimeException("Central security policy loader failed to create Central security policy instance from parameters.", e);
         }
     }
@@ -61,7 +70,6 @@ public class CspLoader {
         final List<File> policyFiles = this.getFiles();
 
         if (policyFiles.isEmpty() && StringUtils.isEmpty(inlineOverwriteJson)) {
-
             if (failOnMissingPolicyFile) {
                 throw new IllegalStateException("No valid security policy files were provided and property failOnMissingPolicyFile is set to true.");
             }
@@ -71,15 +79,16 @@ public class CspLoader {
         }
 
         if (activeIds.isEmpty()) {
-            log.info("No active Ids provided to build security policy from, either activeByDefault or inlineOverwriteJson must be set to obtain any properties");
+            log.info("Security Policy Loader initialized, no active Ids provided (using defaults/inline only)");
         } else {
-            log.info("Building configurations from Ids: {}", activeIds);
+            log.info("Security Policy Loader initialized for active Ids: {}", activeIds);
         }
 
         final List<CspLoaderEntry> allEntries = new ArrayList<>();
         for (File policyFile : policyFiles) {
-            final List<CspLoaderEntry> entries = CspLoaderEntry.fromFile(policyFile);
-            log.info("  ↳ Parsed [{}] configurations", entries.size());
+            log.info("├── Loading: file://{}", canonicalOrAbsolute(policyFile));
+            final List<CspLoaderEntry> entries = CspLoaderEntry.fromFile(this, policyFile);
+            log.info("│   └── File provides {} configuration{}: {}", entries.size(), entries.size() == 1 ? "" : "s", entries.stream().map(CspLoaderEntry::getId).collect(Collectors.toList()));
             allEntries.addAll(entries);
         }
 
@@ -88,10 +97,14 @@ public class CspLoader {
             idToEntryMap.put(entry.getId(), entry);
         }
 
+        log.info("└── Resolving active configurations");
         final List<CspLoaderEntry> activeEntries = new ArrayList<>();
 
         // the ones that are active by default must be loaded first
-        allEntries.stream().filter(CspLoaderEntry::isActiveByDefault).forEach(activeEntries::add);
+        allEntries.stream().filter(CspLoaderEntry::isActiveByDefault).forEach(entry -> {
+            log.info("    ├── [{}] (active by default)", entry.getId());
+            activeEntries.add(entry);
+        });
 
         // search the user-specified ids in the known events
         for (String activeId : activeIds) {
@@ -100,10 +113,10 @@ public class CspLoader {
                 throw new IllegalStateException("Configured Configuration Id [" + activeId + "] does not exist");
             }
             if (!activeEntries.contains(foundEntry)) {
+                log.info("    ├── [{}]", foundEntry.getId());
                 activeEntries.add(foundEntry);
             }
         }
-        log.info("Activating configuration(s): {}", activeEntries.stream().map(CspLoaderEntry::getId).collect(Collectors.toList()));
 
         final Set<CspLoaderEntry> checkedExtends = new HashSet<>();
         final Queue<CspLoaderEntry> checkExtends = new LinkedList<>(activeEntries);
@@ -117,30 +130,30 @@ public class CspLoader {
                     throw new IllegalStateException("Configuration [" + current.getId() + "] extends entry does not exist [" + extendedId + "]");
                 }
                 if (!activeEntries.contains(extendsEntry)) {
-                    log.info("- Activating configuration [{}] because it is extended by [{}]", extendsEntry.getId(), current.getId());
+                    log.info("    ├── [{}] (dependency of {})", extendsEntry.getId(), current.getId());
                     activeEntries.add(0, extendsEntry);
                     checkExtends.add(extendsEntry);
                 }
             }
         }
 
-        log.info("Filtered total configurations [{}] {} to selected configurations [{}] {}",
-                idToEntryMap.size(), allEntries.stream().map(CspLoaderEntry::getId).collect(Collectors.toList()),
-                activeEntries.size(), activeEntries.stream().map(CspLoaderEntry::getId).collect(Collectors.toList()));
-
-        log.info("Merging [{}] configurations into effective configuration", activeEntries.size());
         final JSONObject mergedConfig = new JSONObject();
         for (CspLoaderEntry entry : activeEntries) {
-            log.debug("[{}]: {}", entry.getId(), entry.getConfiguration());
+            log.debug("    Merging [{}]: {}", entry.getId(), entry.getConfiguration());
             mergeJson(mergedConfig, entry.getConfiguration());
         }
 
-        if (inlineOverwriteJson != null && !inlineOverwriteJson.trim().isEmpty()) {
-            log.debug("inline overwrite: {}", inlineOverwriteJson);
-            mergeJson(mergedConfig, new JSONObject(inlineOverwriteJson));
+        final boolean hasOverwrite = inlineOverwriteJson != null && !inlineOverwriteJson.trim().isEmpty();
+        if (hasOverwrite) {
+            final JSONObject json = new JSONObject(inlineOverwriteJson);
+            log.info("    ├── Inline overwrite JSON with {} keys", json.keySet().size());
+            mergeJson(mergedConfig, json);
         }
 
-        log.debug("  ↳ {}", mergedConfig);
+        log.debug("    ├── {}", mergedConfig);
+        final int mergedConfigurations = activeEntries.size() + (hasOverwrite ? 1 : 0);
+        log.info("    └── Merged {} configuration{}", mergedConfigurations, mergedConfigurations == 1 ? "" : "s");
+
         return CentralSecurityPolicyConfiguration.fromJson(mergedConfig, "Central security policy failed to parse effective security policy configuration");
     }
 
@@ -158,14 +171,14 @@ public class CspLoader {
         private final Set<String> extendsEntries = new HashSet<>();
         private JSONObject configuration;
 
-        private static final Set<String> ALLOWED_KEYS = new HashSet<>(Arrays.asList("id", "extends", "activeByDefault", "configuration"));
+        private static final Set<String> ALLOWED_WRAPPER_KEYS = new HashSet<>(Arrays.asList("id", "name", "description", "version", "configurations"));
+        private static final Set<String> ALLOWED_CONFIGURATION_KEYS = new HashSet<>(Arrays.asList("id", "extends", "activeByDefault", "configuration"));
 
-        public static List<CspLoaderEntry> fromFile(File file) throws IOException {
+        public static List<CspLoaderEntry> fromFile(CspLoader loader, File file) throws IOException {
             if (file == null || !file.exists() || !file.isFile()) {
                 throw new FileNotFoundException("CSP file must exist but was not found: file://" + canonicalOrAbsolute(file));
             }
 
-            log.info("Loading file://{}", canonicalOrAbsolute(file));
             final List<CspLoaderEntry> entries = new ArrayList<>();
             // in the past there was a case where there were multiple empty lines at the start of a file.
             // it was therefore completely ignored by the if-else later in this method.
@@ -173,83 +186,135 @@ public class CspLoader {
             final String content = StringUtils.strip(FileUtils.readFileToString(file, StandardCharsets.UTF_8));
 
             if (content.startsWith("[")) {
-                final JSONArray jsonArray = new JSONArray(content);
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    final JSONObject jsonEntry = jsonArray.optJSONObject(i);
-                    if (jsonEntry == null) {
-                        throw new IllegalStateException("Expected JSON Object in file://" + canonicalOrAbsolute(file) + " but got: " + jsonArray.get(i));
-                    }
-
-                    final Set<String> keys = jsonEntry.keySet();
-                    for (String key : keys) {
-                        if (!ALLOWED_KEYS.contains(key)) {
-                            throw new IllegalStateException("Unknown key in configuration entry [" + key + "] in file://" + canonicalOrAbsolute(file));
-                        }
-                    }
-
-                    if (!jsonEntry.has("id")) {
-                        throw new IllegalStateException("Missing required key 'id' in configuration entry in file://" + canonicalOrAbsolute(file));
-                    }
-                    if (!jsonEntry.has("configuration")) {
-                        throw new IllegalStateException("Missing required key 'configuration' in configuration entry [" + jsonEntry.get("id") + "] in file://" + canonicalOrAbsolute(file));
-                    }
-
-                    final CspLoaderEntry entry = new CspLoaderEntry(file);
-                    entry.id = jsonEntry.getString("id");
-
-                    if (jsonEntry.has("extends")) {
-                        final Object extendsObj = jsonEntry.get("extends");
-                        if (!(extendsObj instanceof JSONArray)) {
-                            throw new IllegalStateException("'extends' must be a JSON array in configuration entry [" + entry.id + "] in file://" + canonicalOrAbsolute(file));
-                        }
-                        final JSONArray extendsArray = (JSONArray) extendsObj;
-                        for (int j = 0; j < extendsArray.length(); j++) {
-                            final Object val = extendsArray.get(j);
-                            if (!(val instanceof String)) {
-                                throw new IllegalStateException("All elements of 'extends' must be strings in configuration entry [" + entry.id + "] in file://" + canonicalOrAbsolute(file));
-                            }
-                            entry.extendsEntries.add((String) val);
-                        }
-                    }
-
-                    if (jsonEntry.has("activeByDefault")) {
-                        final Object activeObj = jsonEntry.get("activeByDefault");
-                        if (!(activeObj instanceof Boolean)) {
-                            throw new IllegalStateException("'activeByDefault' must be a boolean in configuration entry [" + entry.id + "] in file://" + canonicalOrAbsolute(file));
-                        }
-                        entry.activeByDefault = (Boolean) activeObj;
-                    }
-
-                    final Object config = jsonEntry.get("configuration");
-                    if (config instanceof String) {
-                        final File nestedFile = new File(file.getParentFile(), (String) config);
-                        try {
-                            entry.configuration = new JSONObject(FileUtils.readFileToString(nestedFile, StandardCharsets.UTF_8));
-                        } catch (IOException e) {
-                            throw new IllegalStateException("Failed to load sub-configuration from://" + canonicalOrAbsolute(nestedFile), e);
-                        } catch (JSONException e) {
-                            throw new IllegalStateException("Invalid JSON in sub-configuration file://" + canonicalOrAbsolute(nestedFile), e);
-                        }
-                    } else if (config instanceof JSONObject) {
-                        entry.configuration = (JSONObject) config;
-                    } else {
-                        throw new IllegalStateException("'configuration' must be a string path or JSON object in configuration entry [" + entry.id + "] in file://" + canonicalOrAbsolute(file));
-                    }
-
-                    entries.add(entry);
-                }
+                entries.addAll(fromJsonArray(loader, file, new JSONArray(content)));
 
             } else if (content.startsWith("{")) {
-                final JSONObject json = new JSONObject(content);
-                final CspLoaderEntry entry = new CspLoaderEntry(file);
-                entry.id = file.getName() + UUID.randomUUID();
-                entry.configuration = json;
-                entry.activeByDefault = true;
-                entries.add(entry);
+                entries.addAll(fromJsonObject(loader, file, new JSONObject(content)));
 
             } else {
                 throw new IllegalArgumentException("CSP file content must be a JSON Object or JSON Array: file://" + file.getAbsoluteFile() +
                         "\nBut was: " + content);
+            }
+
+            return entries;
+        }
+
+        private static List<CspLoaderEntry> fromJsonObject(CspLoader loader, File file, JSONObject json) {
+            final List<CspLoaderEntry> entries = new ArrayList<>();
+
+            final String defaultEntryId = file.getName() + "-" + Integer.toHexString(file.getAbsolutePath().hashCode());
+            final boolean looksLikeWrapper = json.has("configurations") || json.has("version") || (json.has("id") && json.has("name"));
+
+            if (looksLikeWrapper) {
+                final String policyId = json.optString("id", defaultEntryId);
+                final String policyName = json.optString("name", null);
+                final String policyDescription = json.optString("description", null);
+
+                if (policyName != null) log.info("│   ├── {} ({})", policyName, policyId);
+                else log.info("│   ├── {}", policyId);
+                if (policyDescription != null) log.info("│   ├── {}", policyDescription);
+
+                for (String key : json.keySet()) {
+                    if (!ALLOWED_WRAPPER_KEYS.contains(key)) {
+                        throw new IllegalStateException("Unknown key in configuration wrapper '" + key + "' in file://" + canonicalOrAbsolute(file));
+                    }
+                }
+
+                // version validation
+                final String version = json.optString("version");
+                if (StringUtils.isEmpty(version) && loader.failOnMissingVersion) {
+                    throw new IllegalStateException("'failOnMissingVersion' is active and policy file did not contain a version field. Latest version is [" + CentralSecurityPolicyConfiguration.LATEST_VERSION + "] in file://" + canonicalOrAbsolute(file));
+                } else if (StringUtils.isNotEmpty(version) && !CentralSecurityPolicyConfiguration.LATEST_VERSION.equals(version) && loader.failOnVersionIncompatibility) {
+                    throw new IllegalStateException("'failOnVersionIncompatibility' is active and policy file version [" + version + "] does not match latest version [" + CentralSecurityPolicyConfiguration.LATEST_VERSION + "] in file://" + canonicalOrAbsolute(file));
+                }
+
+                if (!json.has("configurations")) {
+                    throw new IllegalStateException("Policy file detected as Wrapper (contains metadata/version) but missing 'configurations' array: " + canonicalOrAbsolute(file));
+                }
+
+                final JSONArray jsonArray = json.optJSONArray("configurations");
+                if (jsonArray == null) {
+                    throw new IllegalStateException("Key 'configurations' is in an invalid format, expected JSON Array in file://" + canonicalOrAbsolute(file));
+                }
+                entries.addAll(fromJsonArray(loader, file, jsonArray));
+
+            } else {
+                final CspLoaderEntry entry = new CspLoaderEntry(file);
+                entry.id = defaultEntryId;
+                entry.configuration = json;
+                entry.activeByDefault = true;
+                entries.add(entry);
+            }
+
+            return entries;
+        }
+
+        private static List<CspLoaderEntry> fromJsonArray(CspLoader loader, File file, JSONArray jsonArray) {
+            final List<CspLoaderEntry> entries = new ArrayList<>();
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                final JSONObject jsonEntry = jsonArray.optJSONObject(i);
+                if (jsonEntry == null) {
+                    throw new IllegalStateException("Expected JSON Object in file://" + canonicalOrAbsolute(file) + " but got: " + jsonArray.get(i));
+                }
+
+                final Set<String> keys = jsonEntry.keySet();
+                for (String key : keys) {
+                    if (!ALLOWED_CONFIGURATION_KEYS.contains(key)) {
+                        throw new IllegalStateException("Unknown key in configuration entry '" + key + "' in file://" + canonicalOrAbsolute(file));
+                    }
+                }
+
+                if (!jsonEntry.has("id")) {
+                    throw new IllegalStateException("Missing required key 'id' in configuration entry in file://" + canonicalOrAbsolute(file));
+                }
+                if (!jsonEntry.has("configuration")) {
+                    throw new IllegalStateException("Missing required key 'configuration' in configuration entry [" + jsonEntry.get("id") + "] in file://" + canonicalOrAbsolute(file));
+                }
+
+                final CspLoaderEntry entry = new CspLoaderEntry(file);
+                entry.id = jsonEntry.getString("id");
+
+                if (jsonEntry.has("extends")) {
+                    final Object extendsObj = jsonEntry.get("extends");
+                    if (!(extendsObj instanceof JSONArray)) {
+                        throw new IllegalStateException("'extends' must be a JSON array in configuration entry [" + entry.id + "] in file://" + canonicalOrAbsolute(file));
+                    }
+                    final JSONArray extendsArray = (JSONArray) extendsObj;
+                    for (int j = 0; j < extendsArray.length(); j++) {
+                        final Object val = extendsArray.get(j);
+                        if (!(val instanceof String)) {
+                            throw new IllegalStateException("All elements of 'extends' must be strings in configuration entry [" + entry.id + "] in file://" + canonicalOrAbsolute(file));
+                        }
+                        entry.extendsEntries.add((String) val);
+                    }
+                }
+
+                if (jsonEntry.has("activeByDefault")) {
+                    final Object activeObj = jsonEntry.get("activeByDefault");
+                    if (!(activeObj instanceof Boolean)) {
+                        throw new IllegalStateException("'activeByDefault' must be a boolean in configuration entry [" + entry.id + "] in file://" + canonicalOrAbsolute(file));
+                    }
+                    entry.activeByDefault = (Boolean) activeObj;
+                }
+
+                final Object config = jsonEntry.get("configuration");
+                if (config instanceof String) {
+                    final File nestedFile = new File(file.getParentFile(), (String) config);
+                    try {
+                        entry.configuration = new JSONObject(FileUtils.readFileToString(nestedFile, StandardCharsets.UTF_8));
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Failed to load sub-configuration from://" + canonicalOrAbsolute(nestedFile), e);
+                    } catch (JSONException e) {
+                        throw new IllegalStateException("Invalid JSON in sub-configuration file://" + canonicalOrAbsolute(nestedFile), e);
+                    }
+                } else if (config instanceof JSONObject) {
+                    entry.configuration = (JSONObject) config;
+                } else {
+                    throw new IllegalStateException("'configuration' must be a string path or JSON object in configuration entry [" + entry.id + "] in file://" + canonicalOrAbsolute(file));
+                }
+
+                entries.add(entry);
             }
 
             return entries;
@@ -261,32 +326,6 @@ public class CspLoader {
             return file.getCanonicalPath();
         } catch (IOException e) {
             return file.getAbsolutePath();
-        }
-    }
-
-    public static CentralSecurityPolicyConfiguration legacyParsing(
-            CentralSecurityPolicyConfiguration baseConfiguration,
-            File securityPolicyFile,
-            String securityPolicyOverwriteJson,
-            CspLoader cspLoader) {
-
-        if (baseConfiguration != null || securityPolicyOverwriteJson != null || securityPolicyFile != null) {
-            log.warn("Configuring the Central Security Policy using the securityPolicy, securityPolicyOverwriteJson or securityPolicyFile is deprecated and will be removed in the future.");
-            log.warn("Consider switching to the new cspLoader: https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/central-security-policy-loader.md");
-            try {
-                if (securityPolicyOverwriteJson != null) {
-                    log.info("Reading security policy from securityPolicyOverwriteJson: {}", securityPolicyOverwriteJson);
-                }
-                if (securityPolicyFile != null) {
-                    log.info("Reading security policy from securityPolicyFile: file://{}", securityPolicyFile.getCanonicalPath());
-                }
-                return CentralSecurityPolicyConfiguration.fromConfiguration(baseConfiguration, securityPolicyFile, securityPolicyOverwriteJson);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to process security policy configuration: " + e.getMessage(), e);
-            }
-
-        } else {
-            return cspLoader.loadConfiguration();
         }
     }
 }

@@ -18,19 +18,22 @@ package org.metaeffekt.core.inventory.processor.tracker;
 import lombok.AllArgsConstructor;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @AllArgsConstructor
 public enum ProcessType {
-    SPDX_IMPORTER("spdx-importer"),
-    CYCLONEDX_IMPORTER("cyclonedx-importer"),
-    SBOM_CREATION("sbom-creation"),
-    INVENTORY_ENRICHMENT("inventory-enrichment"),
-    ADVISOR_PERIODIC_ENRICHMENT("advisor-periodic-enrichment"),
-    INVENTORY_MERGER("inventory-merger"),
-    REPORT_GENERATION("report-generation"),
+    SPDX_IMPORTER("spdx-importer", Collections.emptyList()),
+    CYCLONEDX_IMPORTER("cyclonedx-importer", Collections.emptyList()),
+    SBOM_CREATION("sbom-creation", Arrays.asList("spdx-bom", "cyclonedx-bom")),
+    INVENTORY_ENRICHMENT("inventory-enrichment", Collections.emptyList()),
+    ADVISOR_PERIODIC_ENRICHMENT("advisor-periodic-enrichment", Collections.emptyList()),
+    INVENTORY_MERGER("inventory-merger", Collections.emptyList()),
+    REPORT_GENERATION("report-generation", Collections.emptyList()),
     ;
 
     final String id;
+    final List<String> deprecatedNames;
 
     public String get() {
         return id;
@@ -38,7 +41,7 @@ public enum ProcessType {
 
     public static ProcessType fromText(String text) {
         return Arrays.stream(ProcessType.values())
-                .filter(v -> v.id.equals(text))
+                .filter(v -> v.id.equals(text) || v.deprecatedNames.contains(text))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("unknown value: " + text));
     }
