@@ -1,0 +1,10 @@
+{
+  "configurations": [
+    {
+      "id": "config a",
+      "configuration": {
+        "includeAdvisoryTypes": ["notice"]
+      }
+    }
+  ]
+}

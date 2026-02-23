@@ -104,7 +104,11 @@ public class ProcessorTimeTracker {
 
             for (int i = 0; i < json.length(); i++) {
                 final JSONObject object = json.getJSONObject(i);
-                entries.add(ProcessTimeEntry.fromJson(object));
+                try {
+                    entries.add(ProcessTimeEntry.fromJson(object));
+                } catch (Exception e) {
+                    log.warn("Failed to parse process event entry: [{}], skipping...", object);
+                }
             }
         } catch (Exception e) {
             log.warn("Failed to parse process timestamps: {}", e.getMessage(), e);

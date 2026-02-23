@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.report.configuration;
 
+import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
@@ -27,6 +29,7 @@ import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import java.util.*;
 import java.util.function.Function;
 
+@Slf4j
 public class CentralSecurityPolicyConfigurationTest {
 
     @Test
@@ -187,8 +190,18 @@ public class CentralSecurityPolicyConfigurationTest {
     @Test
     public void dumpDefaultPolicy() {
         final CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
-
         securityPolicy.logConfiguration();
+    }
 
+    @Test
+    public void conversionTest() {
+        final CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
+
+        final JSONObject pc1Properties = new JSONObject(new JSONObject(securityPolicy.getProperties()).toString());
+        securityPolicy.setProperties(pc1Properties.toMap());
+        final JSONObject pc2Properties = new JSONObject(new JSONObject(securityPolicy.getProperties()).toString());
+
+        log.info("{}", pc1Properties);
+        log.info("{}", pc2Properties);
     }
 }

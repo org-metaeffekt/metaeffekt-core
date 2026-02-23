@@ -103,7 +103,7 @@ public class InventorySeparator {
 
             for (Relationship<?, ?> relationship : relationshipRegistry.getRelationshipsByObject(primaryAsset)) {
                 if (!relationship.getType().equals(RelationshipType.DESCRIBES)) {
-                    for (RelationshipEntity<?> relationshipEntity : relationship.getToEntities()) {
+                    for (RelationshipEntity<?> relationshipEntity : relationship.getRelatedEntities()) {
                         if (relationshipEntity.getEntity() instanceof Artifact) {
                             Artifact artifactCopy = new Artifact((Artifact) relationshipEntity.getEntity());
                             splitInventory.getArtifacts().add(artifactCopy);
@@ -113,6 +113,15 @@ public class InventorySeparator {
             }
 
             removeDanglingAssetEntries(splitInventory, primaryAsset, inventory.getAssetMetaData());
+
+            // when generating a splitInventory ensure that other relevant data is propagated (shallow)
+            splitInventory.setLicenseMetaData(inventory.getLicenseMetaData());
+            splitInventory.setLicenseData(inventory.getLicenseData());
+            splitInventory.setInventoryInfo(inventory.getInventoryInfo());
+            splitInventory.setAdvisoryMetaData(inventory.getAdvisoryMetaData());
+            splitInventory.setReportData(inventory.getReportData());
+            splitInventory.setVulnerabilityMetaData(inventory.getVulnerabilityMetaData());
+
             resultingInventories.add(splitInventory);
         }
         return resultingInventories;

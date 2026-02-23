@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -55,7 +56,7 @@ public class InventoryMergeUtils {
     public void mergeInventories(List<Inventory> sourceInventories, Inventory target) {
         // NOTE: we merge
         // - artifacts
-        // - assets (currently only by adding; not merging; not cleaning duplicates)
+        // - assets
         // - license data (resolving duplicates; merge on attribute level; input inventory should be consistent/up-to-date)
         // - license data (applying consecutive inherits)
 
@@ -175,7 +176,17 @@ public class InventoryMergeUtils {
     }
 
     private static void mergeAssetMetaData(Inventory sourceInv, Inventory targetInv) {
-        targetInv.getAssetMetaData().addAll(sourceInv.getAssetMetaData());
+        for (AssetMetaData assetMetaData : sourceInv.getAssetMetaData()) {
+            final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+
+            // Check if the asset already exists in the target inventory
+            AssetMetaData existingAsset = targetInv.findAssetMetaData(assetId, false);
+
+            if (existingAsset == null) {
+                // If it doesn't exist, add the asset metadata to the target
+                targetInv.getAssetMetaData().add(assetMetaData);
+            }
+        }
     }
 
     private void mergeLicenseData(Inventory sourceInv, Inventory targetInv) {

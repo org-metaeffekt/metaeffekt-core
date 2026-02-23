@@ -542,6 +542,10 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             }
         }
 
+        public static JSONArray toJsonArray(List<? extends AeaaContentIdentifier> identifiers) {
+            return identifiers.stream().map(AeaaContentIdentifier::toJson).collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
+        }
+
         public JSONObject toJson() {
             return new JSONObject()
                     .put("name", name)
