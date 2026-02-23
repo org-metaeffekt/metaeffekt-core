@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
-        <version>0.150-SNAPSHOT</version>
+        <version>0.150.5</version>
         <relativePath>../</relativePath>
     </parent>
 
