@@ -34,7 +34,7 @@ public class ProcessTimestamp{
         this.last = last;
     }
 
-    public ProcessTimestamp() {}
+    protected ProcessTimestamp() {}
 
     protected void addTimestamp(long timestamp) {
         if(timestamp >= last) {

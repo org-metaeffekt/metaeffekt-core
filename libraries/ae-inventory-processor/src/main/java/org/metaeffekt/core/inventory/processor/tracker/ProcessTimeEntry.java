@@ -61,7 +61,7 @@ public class ProcessTimeEntry {
                 .put("processId", processType.get())
                 .put("timestamp", timestamp.toJson());
 
-        if(processName != null) {
+        if (processName != null) {
             json.put("processName", processName);
         }
 

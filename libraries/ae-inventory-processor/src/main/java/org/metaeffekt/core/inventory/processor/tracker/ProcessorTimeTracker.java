@@ -192,7 +192,7 @@ public class ProcessorTimeTracker {
         } else {
             sj.add(String.format(".timestamp=%d - %d\n\n", first, last));
 
-            if(formattedFirstEn.equals(formattedLastEn)) {
+            if (formattedFirstEn.equals(formattedLastEn)) {
                 sj.add(String.format(".date.en=%s\n", formattedLastEn));
                 sj.add(String.format(".date.de=%s\n\n", formattedLastDe));
             } else {
