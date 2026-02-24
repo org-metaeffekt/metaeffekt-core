@@ -6,7 +6,9 @@
     <chapter>
         <topicref href="../$inventoryContext.getIdentifier()/tpc_asset-report.dita" />
         <topicref href="../$inventoryContext.getIdentifier()/tpc_asset-licenses.dita" />
-        <topicref href="../$inventoryContext.getIdentifier()/tpc_asset-no-license.dita" />
+        #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.assets.no.license-switch") == "true")
+            <topicref href="../$inventoryContext.getIdentifier()/tpc_asset-no-license.dita" />
+        #end
     </chapter>
 #end
 </bookmap>

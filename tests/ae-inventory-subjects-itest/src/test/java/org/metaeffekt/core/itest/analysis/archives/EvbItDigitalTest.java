@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
-@Ignore // Open Code currently unavailable
+@Ignore // openCode currently unavailable
 public class EvbItDigitalTest extends AbstractCompositionAnalysisTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());

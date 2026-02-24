@@ -348,7 +348,7 @@ public class Artifact extends AbstractModelBase {
     }
 
     private void mergePathInAsset(Artifact a) {
-        final Set<String> paths = getSet(Attribute.PATH_IN_ASSET);
+        final Set<String> paths = new HashSet<>(getSet(Attribute.PATH_IN_ASSET));
         paths.addAll(a.getSet(Attribute.PATH_IN_ASSET));
         setPathInAsset(paths.stream().sorted().collect(Collectors.joining(PATH_DELIMITER)));
     }

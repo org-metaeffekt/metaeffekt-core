@@ -22,6 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,17 +32,16 @@ import java.util.Map;
 @Slf4j
 public class ProcessTimeTrackerTest {
 
-    private Inventory inventory;
+    private final Inventory inventory = new Inventory();
 
     @Before
     public void setUp() {
-        inventory = new Inventory();
-        final ProcessorTimeTracker tracker = new ProcessorTimeTracker(inventory);
+        final ProcessorTimeTracker tracker = ProcessorTimeTracker.fromInventory(inventory);
 
-        tracker.addTimestamp(new ProcessTimeEntry(ProcessId.SBOM_CREATION, 1));
-        tracker.addTimestamp(new ProcessTimeEntry(ProcessId.SPDX_IMPORTER, 10));
+        tracker.addTimestamp(new ProcessTimeEntry(ProcessType.SBOM_CREATION, 1));
+        tracker.addTimestamp(new ProcessTimeEntry(ProcessType.SPDX_IMPORTER, 10));
 
-        final  ProcessTimeEntry processTimeEntry1 = new ProcessTimeEntry(ProcessId.INVENTORY_ENRICHMENT, 11);
+        final ProcessTimeEntry processTimeEntry1 = new ProcessTimeEntry(ProcessType.INVENTORY_ENRICHMENT, 11);
         processTimeEntry1.addIndexTimestamp("index1", 1);
         processTimeEntry1.addIndexTimestamp("index2", 3);
         processTimeEntry1.addIndexTimestamp("index1", 5);
@@ -48,7 +49,7 @@ public class ProcessTimeTrackerTest {
 
         tracker.addTimestamp(processTimeEntry1);
 
-        final ProcessTimeEntry processTimeEntry2 = new ProcessTimeEntry(ProcessId.INVENTORY_ENRICHMENT, 12);
+        final ProcessTimeEntry processTimeEntry2 = new ProcessTimeEntry(ProcessType.INVENTORY_ENRICHMENT, 12);
         processTimeEntry2.addIndexTimestamp("index2", 6);
 
         tracker.addTimestamp(processTimeEntry2);
@@ -56,22 +57,22 @@ public class ProcessTimeTrackerTest {
 
     @Test
     public void test001() {
-        final ProcessorTimeTracker tracker = new ProcessorTimeTracker(inventory);
+        final ProcessorTimeTracker tracker = ProcessorTimeTracker.fromInventory(inventory);
         log.info(String.valueOf(tracker.toJson()));
 
         Assert.assertEquals(3, tracker.getEntries().size());
 
-        ProcessTimeEntry sbomCreation = tracker.getTimestamp(ProcessId.SBOM_CREATION);
+        ProcessTimeEntry sbomCreation = tracker.getTimestamp(ProcessType.SBOM_CREATION);
         Assert.assertEquals(0, sbomCreation.getTimestamp().getFirst());
         Assert.assertEquals(1, sbomCreation.getTimestamp().getLast());
         Assert.assertEquals(0, sbomCreation.getIndexTimestamps().size());
 
-        ProcessTimeEntry spdxImporter = tracker.getTimestamp(ProcessId.SPDX_IMPORTER);
+        ProcessTimeEntry spdxImporter = tracker.getTimestamp(ProcessType.SPDX_IMPORTER);
         Assert.assertEquals(0, spdxImporter.getTimestamp().getFirst());
         Assert.assertEquals(10, spdxImporter.getTimestamp().getLast());
         Assert.assertEquals(0, spdxImporter.getIndexTimestamps().size());
 
-        ProcessTimeEntry enrichment = tracker.getTimestamp(ProcessId.INVENTORY_ENRICHMENT);
+        ProcessTimeEntry enrichment = tracker.getTimestamp(ProcessType.INVENTORY_ENRICHMENT);
         Assert.assertEquals(11, enrichment.getTimestamp().getFirst());
         Assert.assertEquals(12, enrichment.getTimestamp().getLast());
         Assert.assertEquals(2, enrichment.getIndexTimestamps().size());
@@ -93,7 +94,30 @@ public class ProcessTimeTrackerTest {
         Inventory inv = reader.readInventory(new File("src/test/resources/merged-inventories/outdated-tracker-format/example-0.1.0-merged.xls"));
 
         // check if attempting to read or add a timestamp fails
-        ProcessorTimeTracker tracker = new ProcessorTimeTracker(inv);
-        tracker.addTimestamp(new ProcessTimeEntry(ProcessId.SPDX_IMPORTER, 1));
+        ProcessorTimeTracker tracker = ProcessorTimeTracker.fromInventory(inv);
+        tracker.addTimestamp(new ProcessTimeEntry(ProcessType.SPDX_IMPORTER, 1));
+
+        Assert.assertEquals(5, tracker.getEntries().size());
+    }
+
+    @Test
+    public void test() throws IOException {
+        final File testOutputDir = new File("target/process-time-tracker");
+        FileUtils.forceMkdir(testOutputDir);
+        File f = new File(testOutputDir, "multipleIds.xls");
+        Inventory inv = new Inventory();
+
+        ProcessorTimeTracker tracker = ProcessorTimeTracker.fromInventory(inv);
+        tracker.getOrCreateTimestamp(ProcessType.INVENTORY_ENRICHMENT, "correlate", 1);
+
+        new InventoryWriter().writeInventory(inv, f);
+        inv = new InventoryReader().readInventory(f);
+
+        tracker = ProcessorTimeTracker.fromInventory(inv);
+        ProcessTimeEntry advise = tracker.getOrCreateTimestamp(ProcessType.INVENTORY_ENRICHMENT, "advise", 1);
+        advise.addIndexTimestamp("index", 10);
+
+        log.info(String.valueOf(tracker.toJson()));
+
     }
 }

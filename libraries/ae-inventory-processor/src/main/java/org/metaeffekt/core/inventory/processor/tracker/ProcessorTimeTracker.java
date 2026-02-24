@@ -22,9 +22,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
+import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 
@@ -41,16 +44,21 @@ public class ProcessorTimeTracker {
     @Getter
     private final List<ProcessTimeEntry> entries = new ArrayList<>();
 
-    public ProcessorTimeTracker(Inventory inventory) {
+    private ProcessorTimeTracker(Inventory inventory) {
         this.inventory = inventory;
         this.inventoryInfo = inventory.findOrCreateInventoryInfo(TIME_TRACKING_INVENTORY_INFO_ROW_KEY);
 
         this.parse();
     }
 
+    public static ProcessorTimeTracker fromInventory(Inventory inventory) {
+        return new ProcessorTimeTracker(inventory);
+    }
+
     public ProcessTimeEntry addTimestamp(ProcessTimeEntry newEntry) {
         for (ProcessTimeEntry entry : entries) {
-            if (entry.getProcessId().equals(newEntry.getProcessId())) {
+            if (Objects.equals(entry.getProcessType(), newEntry.getProcessType())
+                    && Objects.equals(entry.getProcessName(), newEntry.getProcessName())) {
                 entry.addAll(newEntry);
                 this.writeBack();
                 return entry;
@@ -61,12 +69,29 @@ public class ProcessorTimeTracker {
         return newEntry;
     }
 
-    public ProcessTimeEntry getTimestamp(ProcessId processId) {
-        return entries.stream().filter(entry -> entry.getProcessId().equals(processId.get())).findFirst().orElse(null);
+    public ProcessTimeEntry getTimestamp(ProcessType processType) {
+        return getTimestamp(processType, null);
     }
 
-    public ProcessTimeEntry getOrCreateTimestamp(ProcessId processId, long creationTimestamp) {
-        return entries.stream().filter(entry -> entry.getProcessId().equals(processId.get())).findFirst().orElseGet(() -> addTimestamp(new ProcessTimeEntry(processId, creationTimestamp)));
+    public ProcessTimeEntry getTimestamp(ProcessType processType, String processName) {
+        return entries.stream().filter(entry -> Objects.equals(entry.getProcessType(), processType) && Objects.equals(entry.getProcessName(), processName)).findFirst().orElse(null);
+    }
+
+    public ProcessTimeEntry getOrCreateTimestamp(ProcessType processType, long creationTimestamp) {
+        return entries.stream()
+                .filter(entry -> entry.getProcessType().equals(processType))
+                .findFirst()
+                .orElseGet(() -> addTimestamp(new ProcessTimeEntry(processType, creationTimestamp)));
+    }
+
+    public ProcessTimeEntry getOrCreateTimestamp(ProcessType processType, String processName, long creationTimestamp) {
+        if (processName == null) {
+            return getOrCreateTimestamp(processType, creationTimestamp);
+        }
+        return entries.stream()
+                .filter(entry -> entry.getProcessType().equals(processType) && Objects.equals(entry.getProcessName(), processName))
+                .findFirst()
+                .orElseGet(() -> addTimestamp(new ProcessTimeEntry(processType, processName, creationTimestamp)));
     }
 
     private boolean parse() {
@@ -79,7 +104,11 @@ public class ProcessorTimeTracker {
 
             for (int i = 0; i < json.length(); i++) {
                 final JSONObject object = json.getJSONObject(i);
-                entries.add(ProcessTimeEntry.fromJson(object));
+                try {
+                    entries.add(ProcessTimeEntry.fromJson(object));
+                } catch (Exception e) {
+                    log.warn("Failed to parse process event entry: [{}], skipping...", object);
+                }
             }
         } catch (Exception e) {
             log.warn("Failed to parse process timestamps: {}", e.getMessage(), e);
@@ -108,5 +137,73 @@ public class ProcessorTimeTracker {
         tracker2.getEntries().forEach(merged::addTimestamp);
 
         return merged;
+    }
+
+    public static String trackedProcessToPropertyName(String prefix, ProcessType processType, String processName, String indexName) {
+        final String s;
+        if (StringUtils.isBlank(processName)) {
+            s = String.format("%s.%s%s", prefix, processType.get(), indexName != null ? "." + indexName : "");
+        } else {
+            s = String.format("%s.%s.%s%s", prefix, processType.get(), processName, indexName != null ? "." + indexName : "");
+        }
+        return s.replaceAll("[- ]", ".").toLowerCase();
+    }
+
+
+    public static String generatePropertiesString(String propertyPrefix, long first, long last) {
+        if (first == Long.MAX_VALUE) first = 0;
+        if (last == Long.MAX_VALUE) last = first;
+        if (first == 0) first = last;
+
+        VulnerabilityReportAdapter.FormattedTime formattedTimeFirst = new VulnerabilityReportAdapter.FormattedTime(first);
+        final String formattedFirstEn = formattedTimeFirst.getEnDate();
+        final String formattedFirstDe = formattedTimeFirst.getDeDate();
+
+        final String formattedTimeFirstEn = formattedTimeFirst.getEnTimeAndDate();
+        final String formattedTimeFirstDe = formattedTimeFirst.getDeTimeAndDate();
+
+        VulnerabilityReportAdapter.FormattedTime formattedTimeLast = new VulnerabilityReportAdapter.FormattedTime(last);
+        final String formattedLastEn = formattedTimeLast.getEnDate();
+        final String formattedLastDe = formattedTimeLast.getDeDate();
+
+        final String formattedTimeLastEn = formattedTimeLast.getEnTimeAndDate();
+        final String formattedTimeLastDe = formattedTimeLast.getDeTimeAndDate();
+
+        final StringJoiner sj = new StringJoiner(propertyPrefix, propertyPrefix, "\n");
+
+        if (last == 0 && first == 0) {
+            sj.add(".timestamp=n.a\n\n");
+
+            sj.add(".date.en=n.a\n");
+            sj.add(".date.de=n.a\n\n");
+
+            sj.add(".datetime.en=n.a\n");
+            sj.add(".datetime.de=n.a\n");
+
+        } else if (last == first) {
+            sj.add(String.format(".timestamp=%d\n\n", last));
+
+            sj.add(String.format(".date.en=%s\n", formattedFirstEn));
+            sj.add(String.format(".date.de=%s\n\n", formattedFirstDe));
+
+            sj.add(String.format(".datetime.en=%s\n", formattedTimeFirstEn));
+            sj.add(String.format(".datetime.de=%s\n", formattedTimeFirstDe));
+
+        } else {
+            sj.add(String.format(".timestamp=%d - %d\n\n", first, last));
+
+            if (formattedFirstEn.equals(formattedLastEn)) {
+                sj.add(String.format(".date.en=%s\n", formattedLastEn));
+                sj.add(String.format(".date.de=%s\n\n", formattedLastDe));
+            } else {
+                sj.add(String.format(".date.en=%s - %s\n", formattedFirstEn, formattedLastEn));
+                sj.add(String.format(".date.de=%s - %s\n\n", formattedFirstDe, formattedLastDe));
+            }
+
+            sj.add(String.format(".datetime.en=%s - %s\n", formattedTimeFirstEn, formattedTimeLastEn));
+            sj.add(String.format(".datetime.de=%s - %s\n", formattedTimeFirstDe, formattedTimeLastDe));
+        }
+
+        return sj.toString();
     }
 }

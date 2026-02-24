@@ -68,7 +68,7 @@
                                 <colspec colname="COLSPEC2" colnum="3" colwidth="35*" align="left"/>
                                 <thead>
                                 <row>
-                                    <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.artifacts") / $utils.getText("general.short.packages")  / $utils.getText("general.short.web-modules") </entry>
+                                    <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.artifacts")</entry>
                                     <entry colname="COLSPEC1" valign="top">Version</entry>
                                     <entry colname="COLSPEC1" valign="top">$utils.getText("inventory-report-bom.short.effective-licenses")</entry>
                                 </row>

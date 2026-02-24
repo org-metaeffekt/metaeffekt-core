@@ -27,19 +27,24 @@ import java.util.Map;
 @Setter
 public class ProcessTimeEntry {
 
-    private String processId;
+    private final ProcessType processType;
+    private String processName;
 
     private ProcessTimestamp timestamp;
 
     private Map<String, ProcessTimestamp> indexTimestamps = new HashMap<>();
 
-    public ProcessTimeEntry(ProcessId processId, long timestamp) {
-        this.processId = processId.get();
-        this.timestamp = new ProcessTimestamp(timestamp);
+    public ProcessTimeEntry(ProcessType processType, String processName, long timestamp) {
+        this(processType, processName, new ProcessTimestamp(timestamp));
     }
 
-    private ProcessTimeEntry(ProcessId processId, ProcessTimestamp timestamp) {
-        this.processId = processId.get();
+    public ProcessTimeEntry(ProcessType processType, long timestamp) {
+        this(processType, null, new ProcessTimestamp(timestamp));
+    }
+
+    private ProcessTimeEntry(ProcessType processType, String processName, ProcessTimestamp timestamp) {
+        this.processType = processType;
+        this.processName = processName;
         this.timestamp = timestamp;
     }
 
@@ -53,8 +58,13 @@ public class ProcessTimeEntry {
 
     public JSONObject toJson() {
         final JSONObject json = new JSONObject()
-                .put("processId", processId)
+                .put("processId", processType.get())
                 .put("timestamp", timestamp.toJson());
+
+        if (processName != null) {
+            json.put("processName", processName);
+        }
+
         final JSONArray indexes = new JSONArray();
         for (Map.Entry<String, ProcessTimestamp> entry : indexTimestamps.entrySet()) {
             indexes.put(new JSONObject()
@@ -67,22 +77,33 @@ public class ProcessTimeEntry {
 
     public static ProcessTimeEntry fromJson(JSONObject json) {
         final String processIdString = json.getString("processId");
-        final ProcessId processId;
+        final ProcessType processType;
         try {
-            processId = ProcessId.fromText(processIdString);
+            processType = ProcessType.fromText(processIdString);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException(String.format("Process Id [%s] is not recognized", processIdString));
         }
 
-        final ProcessTimeEntry tracker = new ProcessTimeEntry(processId, ProcessTimestamp.fromJSON(json.getJSONObject("timestamp")));
-        if (json.getJSONArray("indexTimestamps") != null) {
-            final JSONArray indexTimestamps = json.getJSONArray("indexTimestamps");
+        final ProcessTimeEntry tracker = new ProcessTimeEntry(processType, json.optString("processName", null), ProcessTimestamp.fromJSON(json.getJSONObject("timestamp")));
+        Object indexTimestampJsonProperty = json.opt("indexTimestamps");
+
+        // legacy format
+        if (indexTimestampJsonProperty instanceof JSONObject) {
+            JSONObject indexTimestamps = (JSONObject) indexTimestampJsonProperty;
+            for (String index : indexTimestamps.keySet()) {
+                tracker.indexTimestamps.put(index, ProcessTimestamp.fromJSON(indexTimestamps.getJSONObject(index)));
+            }
+        } else if (indexTimestampJsonProperty instanceof JSONArray) {
+            final JSONArray indexTimestamps = (JSONArray) indexTimestampJsonProperty;
             for (int i = 0; i < indexTimestamps.length(); i++) {
                 JSONObject index = indexTimestamps.getJSONObject(i);
                 ProcessTimestamp timestamp = ProcessTimestamp.fromJSON(index.getJSONObject("timestamp"));
                 tracker.indexTimestamps.put(index.getString("indexId"), timestamp);
             }
+        } else {
+            throw new RuntimeException(String.format("Property: 'indexTimestamps' is not able to be parsed in [ {%s} ]", json));
         }
+
         return tracker;
     }
 

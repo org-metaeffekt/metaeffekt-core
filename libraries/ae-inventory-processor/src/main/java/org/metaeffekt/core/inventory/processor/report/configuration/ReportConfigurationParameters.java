@@ -23,7 +23,7 @@ import lombok.Getter;
 public class ReportConfigurationParameters {
 
     /**
-     * If true, Open CoDE Status for licenses is included in the license tables.
+     * If true, openCode Status for licenses is included in the license tables.
      */
     @Builder.Default
     private final boolean enableOpenCodeStatus = true;
