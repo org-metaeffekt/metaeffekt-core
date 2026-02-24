@@ -42,7 +42,7 @@ public class ProcessTimeTrackerTest {
         tracker.addTimestamp(new ProcessTimeEntry(ProcessType.SBOM_CREATION, 1));
         tracker.addTimestamp(new ProcessTimeEntry(ProcessType.SPDX_IMPORTER, 10));
 
-        final  ProcessTimeEntry processTimeEntry1 = new ProcessTimeEntry(ProcessType.INVENTORY_ENRICHMENT, 11);
+        final ProcessTimeEntry processTimeEntry1 = new ProcessTimeEntry(ProcessType.INVENTORY_ENRICHMENT, 11);
         processTimeEntry1.addIndexTimestamp("index1", 1);
         processTimeEntry1.addIndexTimestamp("index2", 3);
         processTimeEntry1.addIndexTimestamp("index1", 5);
@@ -97,6 +97,8 @@ public class ProcessTimeTrackerTest {
         // check if attempting to read or add a timestamp fails
         ProcessorTimeTracker tracker = ProcessorTimeTracker.fromInventory(inv);
         tracker.addTimestamp(new ProcessTimeEntry(ProcessType.SPDX_IMPORTER, 1));
+
+        Assert.assertEquals(5, tracker.getEntries().size());
     }
 
     @Test
