@@ -16,8 +16,8 @@
 package org.metaeffekt.core.model;
 
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
@@ -56,8 +56,8 @@ public class InventoryTest {
         candidate.setVersion("1.0.0");
         candidate.deriveArtifactId();
 
-        Assert.assertNotNull(inventory.findArtifact(candidate));
-        Assert.assertNotNull(inventory.findArtifactClassificationAgnostic(candidate));
+        Assertions.assertNotNull(inventory.findArtifact(candidate));
+        Assertions.assertNotNull(inventory.findArtifactClassificationAgnostic(candidate));
     }
 
     @Test
@@ -82,8 +82,8 @@ public class InventoryTest {
         candidate.setId("test-1.0.1.jar");
         candidate.deriveArtifactId();
 
-        Assert.assertNull(inventory.findArtifact(candidate));
-        Assert.assertNotNull(inventory.findArtifactClassificationAgnostic(candidate));
+        Assertions.assertNull(inventory.findArtifact(candidate));
+        Assertions.assertNotNull(inventory.findArtifactClassificationAgnostic(candidate));
     }
 
     @Test
@@ -100,11 +100,11 @@ public class InventoryTest {
         candidate.setId("test-1.0.0.jar");
         candidate.deriveArtifactId();
 
-        Assert.assertEquals("test", artifact.getArtifactId());
+        Assertions.assertEquals("test", artifact.getArtifactId());
 
         // while the artifacts are equivalent with respect to GAV details they remain different by id.
-        Assert.assertNull(inventory.findArtifact("test-1.0.0.jar"));
-        Assert.assertNotNull(inventory.findArtifact("test_1.0.0.jar"));
+        Assertions.assertNull(inventory.findArtifact("test-1.0.0.jar"));
+        Assertions.assertNotNull(inventory.findArtifact("test_1.0.0.jar"));
     }
 
     @Test
@@ -122,8 +122,8 @@ public class InventoryTest {
         candidate.deriveArtifactId();
 
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
-        Assert.assertTrue(matchedArtifact != null);
-        Assert.assertEquals(matchedArtifact.getVersion(), ASTERISK);
+        Assertions.assertNotNull(matchedArtifact);
+        Assertions.assertEquals(matchedArtifact.getVersion(), ASTERISK);
     }
 
 
@@ -150,8 +150,8 @@ public class InventoryTest {
         candidate.deriveArtifactId();
 
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
-        Assert.assertTrue(matchedArtifact != null);
-        Assert.assertEquals(matchedArtifact.getId(), "test-lib-" + ASTERISK + ".jar");
+        Assertions.assertNotNull(matchedArtifact);
+        Assertions.assertEquals(matchedArtifact.getId(), "test-lib-" + ASTERISK + ".jar");
     }
 
     @Test
@@ -169,8 +169,8 @@ public class InventoryTest {
         candidate.deriveArtifactId();
 
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
-        Assert.assertTrue(matchedArtifact != null);
-        Assert.assertEquals(matchedArtifact.getVersion(), "1.0.0");
+        Assertions.assertNotNull(matchedArtifact);
+        Assertions.assertEquals(matchedArtifact.getVersion(), "1.0.0");
     }
 
     @Test
@@ -187,8 +187,8 @@ public class InventoryTest {
         candidate.deriveArtifactId();
 
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
-        Assert.assertTrue(matchedArtifact != null);
-        Assert.assertEquals(matchedArtifact.getVersion(), "1.0.0");
+        Assertions.assertNotNull(matchedArtifact);
+        Assertions.assertEquals(matchedArtifact.getVersion(), "1.0.0");
     }
 
     @Test
@@ -208,7 +208,7 @@ public class InventoryTest {
         candidate.deriveArtifactId();
 
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
-        Assert.assertTrue(matchedArtifact == null);
+        Assertions.assertNull(matchedArtifact);
     }
 
     @Test
@@ -226,7 +226,7 @@ public class InventoryTest {
         candidate.deriveArtifactId();
 
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
-        Assert.assertTrue(matchedArtifact == null);
+        Assertions.assertNull(matchedArtifact);
     }
 
     @Test
@@ -244,7 +244,7 @@ public class InventoryTest {
         candidate.deriveArtifactId();
 
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
-        Assert.assertTrue(matchedArtifact == null);
+        Assertions.assertNull(matchedArtifact);
     }
 
     @Test
@@ -261,8 +261,8 @@ public class InventoryTest {
         candidate.deriveArtifactId();
 
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
-        Assert.assertTrue(matchedArtifact != null);
-        Assert.assertEquals(matchedArtifact.getVersion(), "${PROJECTVERSION}");
+        Assertions.assertNotNull(matchedArtifact);
+        Assertions.assertEquals(matchedArtifact.getVersion(), "${PROJECTVERSION}");
     }
 
     @Test
@@ -280,8 +280,8 @@ public class InventoryTest {
         candidate.deriveArtifactId();
 
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
-        Assert.assertTrue(matchedArtifact != null);
-        Assert.assertEquals(matchedArtifact.getVersion(), ASTERISK);
+        Assertions.assertNotNull(matchedArtifact);
+        Assertions.assertEquals(matchedArtifact.getVersion(), ASTERISK);
     }
 
     @Test
@@ -292,22 +292,22 @@ public class InventoryTest {
         vulnerabilityMetaData.set(VulnerabilityMetaData.Attribute.URL, " ");
         inventory.getVulnerabilityMetaData().add(vulnerabilityMetaData);
 
-        Assert.assertNotNull(inventory.getVulnerabilityMetaData());
-        Assert.assertEquals(inventory.getVulnerabilityMetaData().size(), 1);
-        Assert.assertEquals(inventory.getVulnerabilityMetaData().get(0), vulnerabilityMetaData);
+        Assertions.assertNotNull(inventory.getVulnerabilityMetaData());
+        Assertions.assertEquals(inventory.getVulnerabilityMetaData().size(), 1);
+        Assertions.assertEquals(inventory.getVulnerabilityMetaData().get(0), vulnerabilityMetaData);
 
         VulnerabilityMetaData vulnerabilityMetaDataTestContext = new VulnerabilityMetaData();
         vulnerabilityMetaDataTestContext.set(VulnerabilityMetaData.Attribute.NAME, "CVE-2018-1234");
         vulnerabilityMetaDataTestContext.set(VulnerabilityMetaData.Attribute.URL, " ");
         inventory.getVulnerabilityMetaData("test").add(vulnerabilityMetaDataTestContext);
 
-        Assert.assertNotNull(inventory.getVulnerabilityMetaData("test"));
-        Assert.assertEquals(1, inventory.getVulnerabilityMetaData("test").size());
-        Assert.assertEquals(vulnerabilityMetaDataTestContext, inventory.getVulnerabilityMetaData("test").get(0));
+        Assertions.assertNotNull(inventory.getVulnerabilityMetaData("test"));
+        Assertions.assertEquals(1, inventory.getVulnerabilityMetaData("test").size());
+        Assertions.assertEquals(vulnerabilityMetaDataTestContext, inventory.getVulnerabilityMetaData("test").get(0));
 
-        Assert.assertEquals(vulnerabilityMetaData, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).get(0));
+        Assertions.assertEquals(vulnerabilityMetaData, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).get(0));
 
-        Assert.assertEquals(0, inventory.getVulnerabilityMetaData("test2").size());
+        Assertions.assertEquals(0, inventory.getVulnerabilityMetaData("test2").size());
 
         final File xlsInventoryFile = new File("target/vulnerabilityMetaDataContextTest.xls");
         LOG.info("Writing " + xlsInventoryFile);
@@ -324,8 +324,8 @@ public class InventoryTest {
         // XLS
         inventory = new InventoryReader().readInventory(xlsInventoryFile);
 
-        Assert.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT));
-        Assert.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).size());
+        Assertions.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT));
+        Assertions.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).size());
 
         // methods that used to access the VMD via the getVulnerabilityMetaData() method, without a context
         inventory.getFilteredInventory();
@@ -335,8 +335,8 @@ public class InventoryTest {
         // XLXS
         inventory = new InventoryReader().readInventory(xlsxInventoryFile);
 
-        Assert.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT));
-        Assert.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).size());
+        Assertions.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT));
+        Assertions.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).size());
 
         // methods that used to access the VMD via the getVulnerabilityMetaData() method, without a context
         inventory.getFilteredInventory();
@@ -355,13 +355,13 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
 
         final Inventory readInventoryXls = new InventoryReader().readInventory(xlsInventoryFile);
-        Assert.assertEquals(1, readInventoryXls.getArtifacts().size());
+        Assertions.assertEquals(1, readInventoryXls.getArtifacts().size());
 
         final File xlsxInventoryFile = new File("target/writeAndReadInventoryWithArtifactsTest.xlsx");
         new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile);
 
         final Inventory readInventoryXlsx = new InventoryReader().readInventory(xlsxInventoryFile);
-        Assert.assertEquals(1, readInventoryXlsx.getArtifacts().size());
+        Assertions.assertEquals(1, readInventoryXlsx.getArtifacts().size());
 
 
         initialInventory.getVulnerabilityMetaData().add(dummyVulnerabilityMetaData());
@@ -370,15 +370,15 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile2);
 
         final Inventory readInventoryXls2 = new InventoryReader().readInventory(xlsInventoryFile2);
-        Assert.assertEquals(1, readInventoryXls2.getVulnerabilityMetaData().size());
-        Assert.assertEquals(1, readInventoryXls2.getArtifacts().size());
+        Assertions.assertEquals(1, readInventoryXls2.getVulnerabilityMetaData().size());
+        Assertions.assertEquals(1, readInventoryXls2.getArtifacts().size());
 
         final File xlsxInventoryFile2 = new File("target/writeAndReadInventoryWithArtifactsTest2.xlsx");
         new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile2);
 
         final Inventory readInventoryXlsx2 = new InventoryReader().readInventory(xlsxInventoryFile2);
-        Assert.assertEquals(1, readInventoryXlsx2.getVulnerabilityMetaData().size());
-        Assert.assertEquals(1, readInventoryXlsx2.getArtifacts().size());
+        Assertions.assertEquals(1, readInventoryXlsx2.getVulnerabilityMetaData().size());
+        Assertions.assertEquals(1, readInventoryXlsx2.getArtifacts().size());
 
         cleanUpFiles(xlsInventoryFile, xlsxInventoryFile, xlsInventoryFile2, xlsxInventoryFile2);
     }
@@ -391,15 +391,15 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
 
         final Inventory readInventoryXls = new InventoryReader().readInventory(xlsInventoryFile);
-        Assert.assertEquals(0, readInventoryXls.getArtifacts().size());
-        Assert.assertEquals(0, readInventoryXls.getVulnerabilityMetaData().size());
+        Assertions.assertEquals(0, readInventoryXls.getArtifacts().size());
+        Assertions.assertEquals(0, readInventoryXls.getVulnerabilityMetaData().size());
 
         final File xlsxInventoryFile = new File("target/writeAndReadInventoryWithoutArtifactsTest.xlsx");
         new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile);
 
         final Inventory readInventoryXlsx = new InventoryReader().readInventory(xlsxInventoryFile);
-        Assert.assertEquals(0, readInventoryXlsx.getArtifacts().size());
-        Assert.assertEquals(0, readInventoryXlsx.getVulnerabilityMetaData().size());
+        Assertions.assertEquals(0, readInventoryXlsx.getArtifacts().size());
+        Assertions.assertEquals(0, readInventoryXlsx.getVulnerabilityMetaData().size());
 
         initialInventory.getVulnerabilityMetaData().add(dummyVulnerabilityMetaData());
 
@@ -407,13 +407,13 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile2);
 
         final Inventory readInventoryXls2 = new InventoryReader().readInventory(xlsInventoryFile2);
-        Assert.assertEquals(1, readInventoryXls2.getVulnerabilityMetaData().size());
+        Assertions.assertEquals(1, readInventoryXls2.getVulnerabilityMetaData().size());
 
         final File xlsxInventoryFile2 = new File("target/writeAndReadInventoryWithoutArtifactsTest2.xlsx");
         new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile2);
 
         final Inventory readInventoryXlsx2 = new InventoryReader().readInventory(xlsxInventoryFile2);
-        Assert.assertEquals(1, readInventoryXlsx2.getVulnerabilityMetaData().size());
+        Assertions.assertEquals(1, readInventoryXlsx2.getVulnerabilityMetaData().size());
 
         cleanUpFiles(xlsInventoryFile, xlsxInventoryFile, xlsInventoryFile2, xlsxInventoryFile2);
     }
@@ -426,7 +426,7 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(initialInventory, serializedInventoryFile);
 
         final Inventory readInventory = new InventoryReader().readInventory(serializedInventoryFile);
-        Assert.assertEquals(0, readInventory.getArtifacts().size());
+        Assertions.assertEquals(0, readInventory.getArtifacts().size());
 
         cleanUpFiles(serializedInventoryFile);
     }
@@ -440,8 +440,8 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(initialInventory, serializedInventoryFile);
 
         final Inventory readInventory = new InventoryReader().readInventory(serializedInventoryFile);
-        Assert.assertEquals(1, readInventory.getArtifacts().size());
-        Assert.assertEquals("test.jar", readInventory.getArtifacts().get(0).getId());
+        Assertions.assertEquals(1, readInventory.getArtifacts().size());
+        Assertions.assertEquals("test.jar", readInventory.getArtifacts().get(0).getId());
 
         cleanUpFiles(serializedInventoryFile);
     }
@@ -455,8 +455,8 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(initialInventory, serializedInventoryFile);
 
         final Inventory readInventory = new InventoryReader().readInventory(serializedInventoryFile);
-        Assert.assertEquals(1, readInventory.getVulnerabilityMetaData("test-context").size());
-        Assert.assertEquals("CVE-2023-1234", readInventory.getVulnerabilityMetaData("test-context").get(0).get(VulnerabilityMetaData.Attribute.NAME));
+        Assertions.assertEquals(1, readInventory.getVulnerabilityMetaData("test-context").size());
+        Assertions.assertEquals("CVE-2023-1234", readInventory.getVulnerabilityMetaData("test-context").get(0).get(VulnerabilityMetaData.Attribute.NAME));
 
         cleanUpFiles(serializedInventoryFile);
     }
@@ -475,14 +475,14 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(initialInventory, serializedInventoryFile);
 
         final Inventory readInventory = new InventoryReader().readInventory(serializedInventoryFile);
-        Assert.assertEquals(2, readInventory.getVulnerabilityMetaData().size());
-        Assert.assertEquals("CVE-2023-1234", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.NAME));
-        Assert.assertEquals(2, readInventory.getArtifacts().size());
-        Assert.assertEquals("test.jar", readInventory.getArtifacts().get(0).getId());
-        Assert.assertEquals(1, readInventory.getInventoryInfo().size());
-        Assert.assertEquals("value", readInventory.getInventoryInfo().get(0).get("key"));
-        Assert.assertEquals(1, readInventory.getAdvisoryMetaData().size());
-        Assert.assertEquals("value", readInventory.getAdvisoryMetaData().get(0).get("key"));
+        Assertions.assertEquals(2, readInventory.getVulnerabilityMetaData().size());
+        Assertions.assertEquals("CVE-2023-1234", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.NAME));
+        Assertions.assertEquals(2, readInventory.getArtifacts().size());
+        Assertions.assertEquals("test.jar", readInventory.getArtifacts().get(0).getId());
+        Assertions.assertEquals(1, readInventory.getInventoryInfo().size());
+        Assertions.assertEquals("value", readInventory.getInventoryInfo().get(0).get("key"));
+        Assertions.assertEquals(1, readInventory.getAdvisoryMetaData().size());
+        Assertions.assertEquals("value", readInventory.getAdvisoryMetaData().get(0).get("key"));
 
 
         // serializationContext is transient and not serialized, check if access works correctly
@@ -490,7 +490,7 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(readInventory, xlsInventoryFile);
 
         final Inventory readInventoryXls = new InventoryReader().readInventory(xlsInventoryFile);
-        Assert.assertEquals(2, readInventoryXls.getVulnerabilityMetaData().size());
+        Assertions.assertEquals(2, readInventoryXls.getVulnerabilityMetaData().size());
 
         cleanUpFiles(serializedInventoryFile, xlsInventoryFile);
     }
@@ -509,17 +509,17 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
 
         final Inventory readInventory = new InventoryReader().readInventory(xlsInventoryFile);
-        Assert.assertEquals(1, readInventory.getArtifacts().size());
-        Assert.assertEquals("test.jar", readInventory.getArtifacts().get(0).getId());
-        Assert.assertEquals(longString.trim(), readInventory.getArtifacts().get(0).get("TEST"));
+        Assertions.assertEquals(1, readInventory.getArtifacts().size());
+        Assertions.assertEquals("test.jar", readInventory.getArtifacts().get(0).getId());
+        Assertions.assertEquals(longString.trim(), readInventory.getArtifacts().get(0).get("TEST"));
 
         final File xlsxInventoryFile = new File("target/writeVeryLongStringsIntoArtifactTest.xlsx");
         new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile);
 
         final Inventory readInventoryXlsx = new InventoryReader().readInventory(xlsxInventoryFile);
-        Assert.assertEquals(1, readInventoryXlsx.getArtifacts().size());
-        Assert.assertEquals("test.jar", readInventoryXlsx.getArtifacts().get(0).getId());
-        Assert.assertEquals(longString.trim(), readInventoryXlsx.getArtifacts().get(0).get("TEST"));
+        Assertions.assertEquals(1, readInventoryXlsx.getArtifacts().size());
+        Assertions.assertEquals("test.jar", readInventoryXlsx.getArtifacts().get(0).getId());
+        Assertions.assertEquals(longString.trim(), readInventoryXlsx.getArtifacts().get(0).get("TEST"));
 
         cleanUpFiles(xlsInventoryFile, xlsxInventoryFile);
     }
@@ -657,12 +657,12 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
 
         final Inventory readInventory = new InventoryReader().readInventory(xlsInventoryFile);
-        Assert.assertEquals(1, readInventory.getVulnerabilityMetaData().size());
-        Assert.assertEquals("9.8", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_IMPACT));
-        Assert.assertEquals("934348.3", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_CONTEXT_OVERALL));
-        Assert.assertEquals("934348.3", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_INITIAL_OVERALL));
-        Assert.assertEquals("345.632", readInventory.getVulnerabilityMetaData().get(0).get("Other number 1"));
-        Assert.assertEquals("344,344.632", readInventory.getVulnerabilityMetaData().get(0).get("Other number 2"));
+        Assertions.assertEquals(1, readInventory.getVulnerabilityMetaData().size());
+        Assertions.assertEquals("9.8", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_IMPACT));
+        Assertions.assertEquals("934348.3", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_CONTEXT_OVERALL));
+        Assertions.assertEquals("934348.3", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_INITIAL_OVERALL));
+        Assertions.assertEquals("345.632", readInventory.getVulnerabilityMetaData().get(0).get("Other number 1"));
+        Assertions.assertEquals("344,344.632", readInventory.getVulnerabilityMetaData().get(0).get("Other number 2"));
 
         cleanUpFiles(xlsInventoryFile);
     }
@@ -680,17 +680,17 @@ public class InventoryTest {
         new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
 
         final Inventory readXlsInventory = new InventoryReader().readInventory(xlsInventoryFile);
-        Assert.assertEquals(1, readXlsInventory.getAdvisoryMetaData().size());
-        Assert.assertEquals("CERT-SEI-343434", readXlsInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.NAME));
-        Assert.assertEquals("http://example.com", readXlsInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.URL));
+        Assertions.assertEquals(1, readXlsInventory.getAdvisoryMetaData().size());
+        Assertions.assertEquals("CERT-SEI-343434", readXlsInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.NAME));
+        Assertions.assertEquals("http://example.com", readXlsInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.URL));
 
         final File xlsxInventoryFile = new File("target/advisoriesSheetNameChangeTest.xlsx");
         new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile);
 
         final Inventory readXlsxInventory = new InventoryReader().readInventory(xlsxInventoryFile);
-        Assert.assertEquals(1, readXlsxInventory.getAdvisoryMetaData().size());
-        Assert.assertEquals("CERT-SEI-343434", readXlsxInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.NAME));
-        Assert.assertEquals("http://example.com", readXlsxInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.URL));
+        Assertions.assertEquals(1, readXlsxInventory.getAdvisoryMetaData().size());
+        Assertions.assertEquals("CERT-SEI-343434", readXlsxInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.NAME));
+        Assertions.assertEquals("http://example.com", readXlsxInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.URL));
 
         cleanUpFiles(xlsInventoryFile, xlsxInventoryFile);
     }

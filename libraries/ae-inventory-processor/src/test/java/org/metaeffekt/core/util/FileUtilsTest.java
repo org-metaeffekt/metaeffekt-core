@@ -15,14 +15,14 @@
  */
 package org.metaeffekt.core.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.metaeffekt.core.util.FileUtils.toAbsoluteOrReferencePath;
 
 public class FileUtilsTest {

@@ -16,10 +16,9 @@
 package org.metaeffekt.core.itest.analysis.archives;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -35,7 +34,7 @@ import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attribu
 
 public class QFieldArchiveTest extends AbstractCompositionAnalysisTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://github.com/opengisch/QField/archive/refs/tags/v3.4.7.zip")
@@ -43,16 +42,16 @@ public class QFieldArchiveTest extends AbstractCompositionAnalysisTest {
                 .setName(QFieldArchiveTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertThat(testSetup.clear()).isTrue();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertThat(testSetup.rebuildInventory()).isTrue();
     }
 
     @Test

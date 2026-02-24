@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.security.cvss.v3;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.slf4j.Logger;
@@ -162,16 +162,16 @@ public class Cvss3P0Test {
             LOG.info(String.format("CVSS3P0: %.2f  %.2f  %.2f", cvss3P0.getBaseScore(), cvss3P0.getTemporalScore(), cvss3P0.getEnvironmentalScore()));
             LOG.info(String.format("ACTUAL: %.2f  %.2f  %.2f", base, temporal, enviromental));
 
-            Assert.assertEquals(cvss3P0.getBaseScore(), base, 0.01);
-            Assert.assertEquals(cvss3P0.getTemporalScore(), temporal, 0.01);
-            Assert.assertEquals(cvss3P0.getEnvironmentalScore(), enviromental, 0.01);
+            Assertions.assertEquals(cvss3P0.getBaseScore(), base, 0.01);
+            Assertions.assertEquals(cvss3P0.getTemporalScore(), temporal, 0.01);
+            Assertions.assertEquals(cvss3P0.getEnvironmentalScore(), enviromental, 0.01);
 
             MultiScoreCvssVector reParsed = (MultiScoreCvssVector) CvssVector.parseVector(cvss3P0.toString());
-            Assert.assertEquals(reParsed.toString(), cvss3P0.toString());
-            Assert.assertTrue(reParsed + " " + cvss3P0, reParsed.toString().startsWith("CVSS:3.0/"));
-            Assert.assertEquals(reParsed.getBaseScore(), base, 0.01);
-            Assert.assertEquals(reParsed.getTemporalScore(), temporal, 0.01);
-            Assert.assertEquals(reParsed.getEnvironmentalScore(), enviromental, 0.01);
+            Assertions.assertEquals(reParsed.toString(), cvss3P0.toString());
+            Assertions.assertTrue(reParsed.toString().startsWith("CVSS:3.0/"), reParsed + " " + cvss3P0);
+            Assertions.assertEquals(reParsed.getBaseScore(), base, 0.01);
+            Assertions.assertEquals(reParsed.getTemporalScore(), temporal, 0.01);
+            Assertions.assertEquals(reParsed.getEnvironmentalScore(), enviromental, 0.01);
         }
     }
 }

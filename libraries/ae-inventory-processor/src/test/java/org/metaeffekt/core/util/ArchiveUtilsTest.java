@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.util;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 
 public class ArchiveUtilsTest {
 
-    @Ignore
+    @Disabled
     @Test
     public void testUnpackIfPossible() {
         final File inputBaseDir = new File("<path-to-scan-folder>");
@@ -52,7 +52,7 @@ public class ArchiveUtilsTest {
         }
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testMsiUnpack() throws IOException, InterruptedException {
         final File inputBaseDir = new File("<path-to-scan-folder>");

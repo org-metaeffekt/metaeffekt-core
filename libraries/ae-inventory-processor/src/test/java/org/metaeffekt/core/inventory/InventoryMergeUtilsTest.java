@@ -16,8 +16,8 @@
 package org.metaeffekt.core.inventory;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
@@ -29,7 +29,7 @@ import java.util.List;
 
 public class InventoryMergeUtilsTest {
 
-    @Ignore
+    @Disabled
     @Test
     public void testMerge() throws IOException {
         Inventory targetInventory = new Inventory();

@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -48,10 +48,10 @@ public class GenericAssetInventoryProcessorTest {
         processor.process();
 
         final Inventory targetInventory = new InventoryReader().readInventory(targetFile);
-        Assert.assertEquals(1, targetInventory.getAssetMetaData().size()); // should not create a new asset
-        Assert.assertEquals("ASSET-01", targetInventory.getAssetMetaData().get(0).get("Asset Id"));
-        Assert.assertEquals("namespace/corporation/level", targetInventory.getAssetMetaData().get(0).get("Asset Path"));
-        Assert.assertEquals("ASSESSMENT-01", targetInventory.getAssetMetaData().get(0).get("Assessment Id"));
+        Assertions.assertEquals(1, targetInventory.getAssetMetaData().size()); // should not create a new asset
+        Assertions.assertEquals("ASSET-01", targetInventory.getAssetMetaData().get(0).get("Asset Id"));
+        Assertions.assertEquals("namespace/corporation/level", targetInventory.getAssetMetaData().get(0).get("Asset Path"));
+        Assertions.assertEquals("ASSESSMENT-01", targetInventory.getAssetMetaData().get(0).get("Assessment Id"));
     }
 
     @Test
@@ -70,10 +70,10 @@ public class GenericAssetInventoryProcessorTest {
         processor.process();
 
         final Inventory targetInventory = new InventoryReader().readInventory(targetFile);
-        Assert.assertEquals(1, targetInventory.getAssetMetaData().size()); // should create a new asset
-        Assert.assertEquals("ASSET-01", targetInventory.getAssetMetaData().get(0).get("Asset Id"));
-        Assert.assertEquals("namespace/corporation/level", targetInventory.getAssetMetaData().get(0).get("Asset Path"));
-        Assert.assertEquals("ASSESSMENT-01", targetInventory.getAssetMetaData().get(0).get("Assessment Id"));
+        Assertions.assertEquals(1, targetInventory.getAssetMetaData().size()); // should create a new asset
+        Assertions.assertEquals("ASSET-01", targetInventory.getAssetMetaData().get(0).get("Asset Id"));
+        Assertions.assertEquals("namespace/corporation/level", targetInventory.getAssetMetaData().get(0).get("Asset Path"));
+        Assertions.assertEquals("ASSESSMENT-01", targetInventory.getAssetMetaData().get(0).get("Assessment Id"));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class GenericAssetInventoryProcessorTest {
                 .augmenting(new File(SOURCE_DIRECTORY, "GenericAssetInventoryProcessorTest/createNewFromNoExistingAssetTest.xls"))
                 .writing(targetFile);
 
-        Assert.assertThrows(IllegalStateException.class, processor::process);
+        Assertions.assertThrows(IllegalStateException.class, processor::process);
     }
 
     @Test
@@ -98,7 +98,7 @@ public class GenericAssetInventoryProcessorTest {
                 .augmenting(new File(SOURCE_DIRECTORY, "GenericAssetInventoryProcessorTest/createNewFromNoExistingAssetTest.xls"))
                 .writing(targetFile);
 
-        Assert.assertThrows(IllegalArgumentException.class, processor::process);
+        Assertions.assertThrows(IllegalArgumentException.class, processor::process);
     }
 
     @Test
@@ -117,10 +117,10 @@ public class GenericAssetInventoryProcessorTest {
         processor.process();
 
         final Inventory targetInventory = new InventoryReader().readInventory(targetFile);
-        Assert.assertEquals(1, targetInventory.getAssetMetaData().size()); // should not create a new asset
-        Assert.assertEquals("ASSET-01", targetInventory.getAssetMetaData().get(0).get("Asset Id"));
-        Assert.assertEquals("namespace/corporation/level", targetInventory.getAssetMetaData().get(0).get("Asset Path"));
-        Assert.assertEquals("ASSESSMENT-01", targetInventory.getAssetMetaData().get(0).get("Assessment Id"));
+        Assertions.assertEquals(1, targetInventory.getAssetMetaData().size()); // should not create a new asset
+        Assertions.assertEquals("ASSET-01", targetInventory.getAssetMetaData().get(0).get("Asset Id"));
+        Assertions.assertEquals("namespace/corporation/level", targetInventory.getAssetMetaData().get(0).get("Asset Path"));
+        Assertions.assertEquals("ASSESSMENT-01", targetInventory.getAssetMetaData().get(0).get("Assessment Id"));
     }
 
     @Test
@@ -145,9 +145,9 @@ public class GenericAssetInventoryProcessorTest {
         processor.process();
 
         final Inventory targetInventory = new InventoryReader().readInventory(sourceAndTargetFile);
-        Assert.assertEquals(1, targetInventory.getAssetMetaData().size()); // should not create a new asset
-        Assert.assertEquals("ASSET-01", targetInventory.getAssetMetaData().get(0).get("Asset Id"));
-        Assert.assertEquals("namespace/corporation/level", targetInventory.getAssetMetaData().get(0).get("Asset Path"));
-        Assert.assertEquals("ASSESSMENT-01", targetInventory.getAssetMetaData().get(0).get("Assessment Id"));
+        Assertions.assertEquals(1, targetInventory.getAssetMetaData().size()); // should not create a new asset
+        Assertions.assertEquals("ASSET-01", targetInventory.getAssetMetaData().get(0).get("Asset Id"));
+        Assertions.assertEquals("namespace/corporation/level", targetInventory.getAssetMetaData().get(0).get("Asset Path"));
+        Assertions.assertEquals("ASSESSMENT-01", targetInventory.getAssetMetaData().get(0).get("Assessment Id"));
     }
 }

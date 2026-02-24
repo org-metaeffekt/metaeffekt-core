@@ -18,9 +18,8 @@ package org.metaeffekt.core.inventory.scan;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -159,15 +158,15 @@ public class DirectoryInventoryScanTest {
             }
         }
 
-        Assert.assertTrue(found0000);
-        Assert.assertTrue(found0001);
-        Assert.assertTrue(found0002);
-        Assert.assertTrue(found0003);
-        Assert.assertTrue(found0004);
-        Assert.assertTrue(found0005);
+        Assertions.assertThat(found0000).isTrue();
+        Assertions.assertThat(found0001).isTrue();
+        Assertions.assertThat(found0002).isTrue();
+        Assertions.assertThat(found0003).isTrue();
+        Assertions.assertThat(found0004).isTrue();
+        Assertions.assertThat(found0005).isTrue();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testScanExtractedFiles_External() throws IOException {
         File inputDir = new File("<project.baseDir>/input");
@@ -219,7 +218,7 @@ public class DirectoryInventoryScanTest {
         Assertions.assertThat(inventory.getArtifacts().size()).isEqualTo(1543);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {
 
@@ -270,7 +269,7 @@ public class DirectoryInventoryScanTest {
         }
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testScanExtractedFiles_ExternalNG_Aggregate() throws IOException {
         // inputs
@@ -360,7 +359,7 @@ public class DirectoryInventoryScanTest {
         return scan.createScanInventory();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testScanContainersAndStuff() throws IOException {
         final File inputDir = new File("INPUT FILE GOES HERE");

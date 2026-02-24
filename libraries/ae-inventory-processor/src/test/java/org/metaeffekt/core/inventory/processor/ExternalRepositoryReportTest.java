@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.DitaTemplateLinkValidator;
@@ -33,7 +33,7 @@ import java.util.Properties;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.metaeffekt.core.inventory.processor.model.Constants.STRING_TRUE;
 
-@Ignore
+@Disabled
 public class ExternalRepositoryReportTest {
 
     private static final File INVENTORY_DIR = new File("<path-to-inventory-folder>");
@@ -54,7 +54,7 @@ public class ExternalRepositoryReportTest {
         validateInventoryProcessor.process(inventory);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testValidateInventoryProcessor_WorkbenchInput() throws IOException {
         boolean enableDeleteObsolete = false;
@@ -86,7 +86,7 @@ public class ExternalRepositoryReportTest {
         validateInventoryProcessor.process(inventory);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testFullReport() throws IOException {
         final File inventoryDir = new File("");

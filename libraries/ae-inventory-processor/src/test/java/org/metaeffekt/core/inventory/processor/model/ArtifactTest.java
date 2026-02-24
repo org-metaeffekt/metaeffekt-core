@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 import java.util.StringJoiner;
@@ -29,8 +29,8 @@ public class ArtifactTest {
         StringJoiner cveData = new StringJoiner(", ");
         for (int i = 0; i < 4000; i++) cveData.add("CVE-2022-21907 (9.8)");
         artifact.setVulnerability(cveData.toString());
-        Assert.assertEquals(cveData.length(), artifact.get("Vulnerability").length());
-        Assert.assertEquals(cveData.toString(), artifact.getVulnerability());
+        Assertions.assertEquals(cveData.length(), artifact.get("Vulnerability").length());
+        Assertions.assertEquals(cveData.toString(), artifact.getVulnerability());
     }
 
     @Test
@@ -39,18 +39,18 @@ public class ArtifactTest {
         StringJoiner cveData = new StringJoiner(", ");
         for (int i = 0; i < 4000; i++) cveData.add("CVE-2022-21907 (9.8)");
         artifact.setVulnerability(cveData.toString());
-        Assert.assertNotNull(artifact.get("Vulnerability"));
-        Assert.assertNull(artifact.get("Vulnerability (split-1)"));
+        Assertions.assertNotNull(artifact.get("Vulnerability"));
+        Assertions.assertNull(artifact.get("Vulnerability (split-1)"));
         artifact.setVulnerability(null);
-        Assert.assertNull(artifact.get("Vulnerability"));
-        Assert.assertNull(artifact.get("Vulnerability (split-1)"));
+        Assertions.assertNull(artifact.get("Vulnerability"));
+        Assertions.assertNull(artifact.get("Vulnerability (split-1)"));
     }
 
     @Test
     public void completeVulnerabilityNullTest() {
         Artifact artifact = new Artifact();
         artifact.setVulnerability(null);
-        Assert.assertNull(artifact.getVulnerability());
+        Assertions.assertNull(artifact.getVulnerability());
     }
 
     @Test
@@ -59,31 +59,31 @@ public class ArtifactTest {
             Artifact artifact = new Artifact();
             artifact.setId("guava-25.1-jre.jar");
             artifact.setVersion("25.1");
-            Assert.assertEquals("jre", artifact.getClassifier());
+            Assertions.assertEquals("jre", artifact.getClassifier());
         }
         {
             Artifact artifact = new Artifact();
             artifact.setId("guava-25.1-jre.jar");
             artifact.setVersion("25.1-jre");
-            Assert.assertNull(artifact.getClassifier());
+            Assertions.assertNull(artifact.getClassifier());
         }
         {
             Artifact artifact = new Artifact();
             artifact.setId("artifactId--classifier.txt");
             artifact.setVersion("");
-            Assert.assertNull(artifact.getClassifier());
+            Assertions.assertNull(artifact.getClassifier());
         }
         {
             Artifact artifact = new Artifact();
             artifact.setId("artifactId-null-classifier.txt");
             artifact.setVersion(null);
-            Assert.assertNull(artifact.getClassifier());
+            Assertions.assertNull(artifact.getClassifier());
         }
         {
             Artifact artifact = new Artifact();
             artifact.setId("artifactId-X-classifier.txt");
             artifact.setVersion("X");
-            Assert.assertEquals("classifier", artifact.getClassifier());
+            Assertions.assertEquals("classifier", artifact.getClassifier());
         }
     }
 
@@ -96,10 +96,10 @@ public class ArtifactTest {
         artifact.addRootPath("D");
 
         final Set<String> rootPaths = artifact.getRootPaths();
-        Assert.assertTrue(rootPaths.contains("A"));
-        Assert.assertTrue(rootPaths.contains("A,B"));
-        Assert.assertTrue(rootPaths.contains("A, B , C"));
-        Assert.assertTrue(rootPaths.contains("D"));
+        Assertions.assertTrue(rootPaths.contains("A"));
+        Assertions.assertTrue(rootPaths.contains("A,B"));
+        Assertions.assertTrue(rootPaths.contains("A, B , C"));
+        Assertions.assertTrue(rootPaths.contains("D"));
     }
 
     @Test
@@ -109,7 +109,7 @@ public class ArtifactTest {
 
         for (ArtifactType type : ArtifactType.ARTIFACT_TYPES) {
             artifact.set(Artifact.Attribute.TYPE, type.getCategory());
-            Assert.assertEquals(type.isHardware(), artifact.isHardware());
+            Assertions.assertEquals(type.isHardware(), artifact.isHardware());
         }
     }
 
@@ -119,13 +119,13 @@ public class ArtifactTest {
         artifact.set(Artifact.Attribute.ID, "some non hardware component");
 
         artifact.set(Artifact.Attribute.TYPE, "package");
-        Assert.assertFalse(artifact.isHardware());
+        Assertions.assertFalse(artifact.isHardware());
 
         artifact.set(Artifact.Attribute.TYPE, "library");
-        Assert.assertFalse(artifact.isHardware());
+        Assertions.assertFalse(artifact.isHardware());
 
         artifact.set(Artifact.Attribute.TYPE, "python-module");
-        Assert.assertFalse(artifact.isHardware());
+        Assertions.assertFalse(artifact.isHardware());
     }
 
     @Test
@@ -134,19 +134,19 @@ public class ArtifactTest {
         artifact.set(Artifact.Attribute.ID, "some non hardware component");
 
         artifact.set(Artifact.Attribute.TYPE, "library");
-        Assert.assertFalse(artifact.getArtifactType().isPresent());
+        Assertions.assertFalse(artifact.getArtifactType().isPresent());
 
         artifact.set(Artifact.Attribute.TYPE, "package");
-        Assert.assertEquals(ArtifactType.LINUX_PACKAGE, artifact.getArtifactType().get());
-        Assert.assertTrue(artifact.getArtifactType().get().isOrHasParent(ArtifactType.CATEGORY_SOFTWARE_LIBRARY));
+        Assertions.assertEquals(ArtifactType.LINUX_PACKAGE, artifact.getArtifactType().get());
+        Assertions.assertTrue(artifact.getArtifactType().get().isOrHasParent(ArtifactType.CATEGORY_SOFTWARE_LIBRARY));
 
         artifact.set(Artifact.Attribute.TYPE, "python-module");
-        Assert.assertEquals(ArtifactType.PYTHON_MODULE, artifact.getArtifactType().get());
-        Assert.assertTrue(artifact.getArtifactType().get().isOrHasParent(ArtifactType.CATEGORY_SOFTWARE_LIBRARY));
+        Assertions.assertEquals(ArtifactType.PYTHON_MODULE, artifact.getArtifactType().get());
+        Assertions.assertTrue(artifact.getArtifactType().get().isOrHasParent(ArtifactType.CATEGORY_SOFTWARE_LIBRARY));
 
         artifact.set(Artifact.Attribute.TYPE, "operating system");
-        Assert.assertEquals(ArtifactType.OPERATING_SYSTEM, artifact.getArtifactType().get());
-        Assert.assertFalse(artifact.getArtifactType().get().isOrHasParent(ArtifactType.CATEGORY_SOFTWARE_LIBRARY));
+        Assertions.assertEquals(ArtifactType.OPERATING_SYSTEM, artifact.getArtifactType().get());
+        Assertions.assertFalse(artifact.getArtifactType().get().isOrHasParent(ArtifactType.CATEGORY_SOFTWARE_LIBRARY));
     }
 
     @Test
@@ -156,7 +156,7 @@ public class ArtifactTest {
         a.setGroupId("a.b.c");
         a.setVersion("1.0.0");
         a.deriveArtifactId();
-        Assert.assertEquals("d", a.getArtifactId());
+        Assertions.assertEquals("d", a.getArtifactId());
     }
 
     @Test
@@ -166,8 +166,8 @@ public class ArtifactTest {
         a.setGroupId("a.b.c");
         a.setVersion("1.0.0");
         a.deriveArtifactId();
-        Assert.assertEquals("d", a.getArtifactId());
-        Assert.assertEquals("xyz", a.getClassifier());
+        Assertions.assertEquals("d", a.getArtifactId());
+        Assertions.assertEquals("xyz", a.getClassifier());
     }
 
     @Test
@@ -176,8 +176,8 @@ public class ArtifactTest {
         a.setId("commons-beanutil-1.8.3");
         a.setVersion("1.8.3");
         a.deriveArtifactId();
-        Assert.assertEquals("commons-beanutil", a.getArtifactId());
-        Assert.assertNull(a.getType());
+        Assertions.assertEquals("commons-beanutil", a.getArtifactId());
+        Assertions.assertNull(a.getType());
     }
 
     @Test
@@ -186,8 +186,8 @@ public class ArtifactTest {
         a.setId("commons-beanutil-1.8.3.jar");
         a.setVersion("1.8.3");
         a.deriveArtifactId();
-        Assert.assertEquals("commons-beanutil", a.getArtifactId());
-        Assert.assertEquals("jar", a.getType());
+        Assertions.assertEquals("commons-beanutil", a.getArtifactId());
+        Assertions.assertEquals("jar", a.getType());
     }
 
 }

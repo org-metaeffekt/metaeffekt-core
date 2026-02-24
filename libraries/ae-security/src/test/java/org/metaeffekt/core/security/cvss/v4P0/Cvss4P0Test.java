@@ -16,9 +16,9 @@
 package org.metaeffekt.core.security.cvss.v4P0;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ public class Cvss4P0Test {
     private final static File CVSS_RESOURCE_DIR = new File("src/test/resources/cvss");
 
     @Test
-    @Ignore
+    @Disabled
     public void customTest() {
         final String vectorString = "CVSS:4.0/AV:P/AC:H/AT:P/PR:L/UI:P/VC:L/VI:L/VA:L/SC:H/SI:L/SA:L/E:U/IR:M/AR:H/MAT:P/MPR:N/MUI:P/MVC:N/MVI:L/MVA:L/MSC:L/MSI:L/MSA:S/S:P/R:I/U:Red";
         final Cvss4P0 cvss4P0 = new Cvss4P0(vectorString);
@@ -52,11 +52,11 @@ public class Cvss4P0Test {
         final String vectorString = "CVSS:4.0/AV:N/AC:L/AT:N/PR:H/UI:N/VC:L/VI:L/VA:N/SC:N/SI:N/SA:N";
         final Cvss4P0 cvss4P0 = new Cvss4P0(vectorString);
 
-        Assert.assertEquals(vectorString, cvss4P0.toString());
-        Assert.assertEquals("102201", cvss4P0.getMacroVector().toString());
-        Assert.assertEquals("1", cvss4P0.getMacroVector().getEq1().getLevel());
-        Assert.assertEquals(0, cvss4P0.severityDistance(cvss4P0)); // distance to itself is 0
-        Assert.assertEquals(5.3, cvss4P0.getMacroVector().getLookupTableScore(), 0.01);
+        Assertions.assertEquals(vectorString, cvss4P0.toString());
+        Assertions.assertEquals("102201", cvss4P0.getMacroVector().toString());
+        Assertions.assertEquals("1", cvss4P0.getMacroVector().getEq1().getLevel());
+        Assertions.assertEquals(0, cvss4P0.severityDistance(cvss4P0)); // distance to itself is 0
+        Assertions.assertEquals(5.3, cvss4P0.getMacroVector().getLookupTableScore(), 0.01);
     }
 
     @Test
@@ -64,9 +64,9 @@ public class Cvss4P0Test {
         final String vectorString = "CVSS:4.0/AV:P/AC:H/AT:P/PR:L/UI:P/VC:L/VI:L/VA:L/SC:H/SI:L/SA:L/E:U/IR:M/AR:H/MAT:P/MPR:N/MUI:P/MVC:N/MVI:L/MVA:L/MSC:L/MSI:L/MSA:S/S:P/R:I/U:Red";
         final Cvss4P0 cvss4P0 = new Cvss4P0(vectorString);
 
-        Assert.assertEquals(vectorString, cvss4P0.toString());
-        Assert.assertEquals("212021", cvss4P0.getMacroVector().toString());
-        Assert.assertEquals(1.0, cvss4P0.getOverallScore(), 0.01);
+        Assertions.assertEquals(vectorString, cvss4P0.toString());
+        Assertions.assertEquals("212021", cvss4P0.getMacroVector().toString());
+        Assertions.assertEquals(1.0, cvss4P0.getOverallScore(), 0.01);
     }
 
     @Test
@@ -74,10 +74,10 @@ public class Cvss4P0Test {
         final String vectorString = "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:A/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N/MAV:N/MAT:P/MUI:N/MSC:N/E:U";
         final Cvss4P0 cvss4P0 = new Cvss4P0(vectorString);
 
-        Assert.assertEquals(1.7, cvss4P0.getOverallScore(), 0.01);
-        Assert.assertEquals(5.1, cvss4P0.getBaseScore(), 0.01);
-        Assert.assertEquals(6.3, cvss4P0.getEnvironmentalScore(), 0.01);
-        Assert.assertEquals(1.2, cvss4P0.getThreatScore(), 0.01);
+        Assertions.assertEquals(1.7, cvss4P0.getOverallScore(), 0.01);
+        Assertions.assertEquals(5.1, cvss4P0.getBaseScore(), 0.01);
+        Assertions.assertEquals(6.3, cvss4P0.getEnvironmentalScore(), 0.01);
+        Assertions.assertEquals(1.2, cvss4P0.getThreatScore(), 0.01);
     }
 
     @Test
@@ -147,10 +147,10 @@ public class Cvss4P0Test {
             }
         }
 
-        Assert.assertTrue(invalidVectors.isEmpty());
-        Assert.assertTrue(toStringNotEqualsVectors.isEmpty());
-        Assert.assertTrue(incorrectScores.isEmpty());
-        Assert.assertTrue(exceptionVectors.isEmpty());
+        Assertions.assertTrue(invalidVectors.isEmpty());
+        Assertions.assertTrue(toStringNotEqualsVectors.isEmpty());
+        Assertions.assertTrue(incorrectScores.isEmpty());
+        Assertions.assertTrue(exceptionVectors.isEmpty());
 
         LOG.info("Successfully validated [{}] vectors", lines.size());
     }

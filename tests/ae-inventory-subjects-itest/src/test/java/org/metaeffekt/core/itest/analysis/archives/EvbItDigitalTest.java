@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.itest.analysis.archives;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
@@ -29,12 +29,12 @@ import org.slf4j.LoggerFactory;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
-@Ignore // openCode currently unavailable
+@Disabled // openCode currently unavailable
 public class EvbItDigitalTest extends AbstractCompositionAnalysisTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://gitlab.opencode.de/OC000015621018/evb-it-digital/-/archive/357defbceb1ae895d5a460aee2cfc77375ef04da/evb-it-digital-357defbceb1ae895d5a460aee2cfc77375ef04da.zip")
@@ -42,16 +42,16 @@ public class EvbItDigitalTest extends AbstractCompositionAnalysisTest {
                 .setName(EvbItDigitalTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertTrue(testSetup.clear());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test

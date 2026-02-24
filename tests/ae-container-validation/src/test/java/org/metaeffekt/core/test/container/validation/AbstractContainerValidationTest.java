@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Set;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 public abstract class AbstractContainerValidationTest {
@@ -40,11 +40,11 @@ public abstract class AbstractContainerValidationTest {
      * @throws IOException
      */
     protected void assertInventory(File analysisDir, File inventoryFile) throws IOException {
-        assertTrue("Inventory file must exist.", inventoryFile.exists());
-        assertTrue("Analysis dir must exist.", analysisDir.exists());
+        assertTrue(inventoryFile.exists(), "Inventory file must exist.");
+        assertTrue(analysisDir.exists(), "Analysis dir must exist.");
 
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
-        assertTrue("Inventory must contain artifacts.", !inventory.getArtifacts().isEmpty());
+        assertTrue(!inventory.getArtifacts().isEmpty(), "Inventory must contain artifacts.");
 
         inventory.getArtifacts().stream().forEach(this::assertAttributes);
 
@@ -67,9 +67,10 @@ public abstract class AbstractContainerValidationTest {
         }
 
         if (!StringUtils.isEmpty(artifact.getVersion())) {
-            assertTrue(String.format("Version not included in artifact id: id: %s, v: %s",
-                    artifact.getId(), artifact.getVersion()),
-                    artifact.getId().contains(artifact.getVersion()));
+            assertTrue(artifact.getId().contains(artifact.getVersion()),
+                    String.format("Version not included in artifact id: id: %s, v: %s",
+                    artifact.getId(), artifact.getVersion())
+            );
         }
 
         assertArtifactAttributes(artifact);
@@ -83,8 +84,8 @@ public abstract class AbstractContainerValidationTest {
 
     protected void assertCommonFileAttributes(Artifact artifact) {
         Set<String> paths = artifact.getRootPaths();
-        assertTrue("No root path is set for file artifact " + artifact.getId(), paths != null && paths.size() == 1);
-        assertNotNull("Checksum is required for file artifact " + artifact.getId(), artifact.getChecksum());
+        assertTrue(paths != null && paths.size() == 1, "No root path is set for file artifact " + artifact.getId());
+        assertNotNull(artifact.getChecksum(), "Checksum is required for file artifact " + artifact.getId());
     }
 
     protected void assertCommonAttributes(Artifact artifact) {
@@ -113,10 +114,10 @@ public abstract class AbstractContainerValidationTest {
     }
 
     protected void notNullOrEmpty(String message, String value) {
-        assertTrue(message, !StringUtils.isEmpty(value));
+        assertTrue(!StringUtils.isEmpty(value), message);
     }
 
     protected void nullOrEmpty(String message, String value) {
-        assertTrue(message, StringUtils.isEmpty(value));
+        assertTrue(StringUtils.isEmpty(value), message);
     }
 }

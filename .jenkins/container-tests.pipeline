@@ -4,8 +4,8 @@ pipeline {
         label 'metaeffekt-astronaut'
     }
     tools {
-        maven 'maven-3.9.6'
-        jdk 'ZULU8_mac_mini'
+        maven 'maven-3.9.12'
+        jdk 'ZULU17_mac_mini'
     }
     stages {
         stage('check docker installation') {
@@ -17,7 +17,7 @@ pipeline {
         stage('Build') {
             steps {
                 // this also implicitly ensures 7zip is installed
-                withMaven(maven: 'maven-3.9.6') {
+                withMaven(maven: 'maven-3.9.12') {
                     sh 'mvn -B clean install -DskipTests'
                 }
             }
@@ -27,12 +27,11 @@ pipeline {
             steps {
                 // FIXME: use profile with test tags instead
                 dir('tests/ae-inventory-container-itest') {
-                    withMaven(maven: 'maven-3.9.6') {
+                    withMaven(maven: 'maven-3.9.12') {
                         sh 'mvn clean test'
                     }
                 }
             }
         }
-
     }
 }

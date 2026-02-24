@@ -17,7 +17,7 @@ package org.metaeffekt.core.inventory.processor.inspector;
 
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
@@ -25,8 +25,8 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OsgiJarVersionInspectorTest {
     private final File projectDir = new File("src/test/resources/test-osgi-jar-version-extractor");

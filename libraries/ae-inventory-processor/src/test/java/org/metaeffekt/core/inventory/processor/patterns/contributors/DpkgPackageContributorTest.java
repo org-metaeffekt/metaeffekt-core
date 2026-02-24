@@ -15,15 +15,15 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 
 import java.io.File;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DpkgPackageContributorTest {
     DpkgPackageContributor cpc = new DpkgPackageContributor();
@@ -72,7 +72,7 @@ public class DpkgPackageContributorTest {
     }
 
     @Test
-    @Ignore("Requires special resources and inspection.")
+    @Disabled("Requires special resources and inspection.")
     public void contributeTestOnFileSystemDump() {
         List<ComponentPatternData> list = cpc.contribute(
                 new File("/tmp/youthful_williamson"),
