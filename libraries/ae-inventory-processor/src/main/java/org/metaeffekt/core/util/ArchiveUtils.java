@@ -188,6 +188,7 @@ public class ArchiveUtils {
                 file = target;
             }
 
+            /*
             if (fileName.endsWith(".tgz")) {
                 GUnzip gunzip = new GUnzip();
                 gunzip.setProject(new Project());
@@ -200,6 +201,7 @@ public class ArchiveUtils {
                 gunzip.execute();
                 file = target;
             }
+            */
 
             if (fileName.endsWith(".xz")) {
                 String targetName = file.getName();
