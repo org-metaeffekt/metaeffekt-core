@@ -28,7 +28,6 @@ import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
-import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +78,7 @@ public class DocumentDescriptorReportGenerator {
         documentDescriptorReport.createImprint(documentDescriptor);
     }
 
-    private static void deriveAssets(DocumentDescriptor documentDescriptor) throws IOException {
+    private static void deriveAssets(DocumentDescriptor documentDescriptor) {
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             final List<InventoryContext> inventoryContexts = new ArrayList<>();
 
@@ -284,7 +283,7 @@ public class DocumentDescriptorReportGenerator {
         return mergedParams;
     }
 
-    private static String resolveAgainstBasePath(String filePath, String basePath) {
+    public static String resolveAgainstBasePath(String filePath, String basePath) {
         if (filePath == null) {
             return null;
         }
