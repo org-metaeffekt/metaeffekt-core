@@ -260,6 +260,9 @@ public class DocumentDescriptorReport {
                     case VULNERABILITY_SUMMARY_REPORT:
                         break;
 
+                    case APPENDIX:
+                        break;
+
                     default:
                         // enforce this list is completed for new part types
                         throw new IllegalStateException("Unknown document part type. Cannot map properties.");
