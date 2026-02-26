@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
@@ -117,6 +119,15 @@ public class Inventory implements Serializable {
 
     private List<AdvisoryMetaData> advisoryMetaData = new ArrayList<>();
 
+    @Getter @Setter
+    private List<ThreatMetaData> threatMetaData = new ArrayList<>();
+
+    @Getter @Setter
+    private List<WeaknessMetaData> weaknessMetaData = new ArrayList<>();
+
+    @Getter @Setter
+    private List<AttackPatternMetaData> attackPatternMetaData = new ArrayList<>();
+
     private List<InventoryInfo> inventoryInfo = new ArrayList<>();
 
     private List<ReportData> reportData = new ArrayList<>();
@@ -160,6 +171,9 @@ public class Inventory implements Serializable {
         this.componentPatternData = deepCopyList(other.componentPatternData, ComponentPatternData::new);
         this.licenseData = deepCopyList(other.licenseData, LicenseData::new);
         this.advisoryMetaData = deepCopyList(other.advisoryMetaData, AdvisoryMetaData::new);
+        this.threatMetaData = deepCopyList(other.threatMetaData, ThreatMetaData::new);
+        this.weaknessMetaData = deepCopyList(other.weaknessMetaData, WeaknessMetaData::new);
+        this.attackPatternMetaData = deepCopyList(other.attackPatternMetaData, AttackPatternMetaData::new);
         this.inventoryInfo = deepCopyList(other.inventoryInfo, InventoryInfo::new);
         this.reportData = deepCopyList(other.reportData, ReportData::new);
         this.assetMetaData = deepCopyList(other.assetMetaData, AssetMetaData::new);
@@ -209,6 +223,9 @@ public class Inventory implements Serializable {
         if (!componentPatternData.isEmpty()) return true;
         if (!licenseData.isEmpty()) return true;
         if (!advisoryMetaData.isEmpty()) return true;
+        if (!threatMetaData.isEmpty()) return true;
+        if (!weaknessMetaData.isEmpty()) return true;
+        if (!attackPatternMetaData.isEmpty()) return true;
         if (!inventoryInfo.isEmpty()) return true;
         if (!reportData.isEmpty()) return true;
         if (!assetMetaData.isEmpty()) return true;
@@ -1471,8 +1488,11 @@ public class Inventory implements Serializable {
             filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
         }
 
-        filteredInventory.setAdvisoryMetaData(getAdvisoryMetaData());
         filteredInventory.setAssetMetaData(getAssetMetaData());
+        filteredInventory.setAdvisoryMetaData(getAdvisoryMetaData());
+        filteredInventory.setThreatMetaData(getThreatMetaData());
+        filteredInventory.setWeaknessMetaData(getWeaknessMetaData());
+        filteredInventory.setAttackPatternMetaData(getAttackPatternMetaData());
         filteredInventory.setInventoryInfo(getInventoryInfo());
         filteredInventory.setReportData(getReportData());
         return filteredInventory;

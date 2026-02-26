@@ -56,6 +56,10 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         writeVulnerabilities(inventory, workbook, stylers);
         writeAdvisoryMetaData(inventory, workbook, stylers);
 
+        writeThreatMetaData(inventory, workbook, stylers);
+        writeWeaknessMetaData(inventory, workbook, stylers);
+        writeAttackPatternMetaData(inventory, workbook, stylers);
+
         writeInventoryInfo(inventory, workbook, stylers);
 
         final FileOutputStream out = new FileOutputStream(file);
@@ -235,6 +239,85 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, columnCount - 1));
     }
+
+    private void writeThreatMetaData(Inventory inventory, SXSSFWorkbook workbook, XlsxXSSFInventorySheetCellStylers stylers) {
+        if (isEmpty(inventory.getThreatMetaData())) return;
+
+        final SXSSFSheet sheet = createAMDSheet(workbook, AbstractInventoryReader.WORKSHEET_NAME_THREAT_DATA);
+
+        final SXSSFRow headerRow = sheet.createRow(0);
+
+        final List<String> orderedList = determineOrder(inventory, inventory::getThreatMetaData,
+                CONTEXT_KEY_THREAT_DATA, ThreatMetaData.MIN_ATTRIBUTES, ThreatMetaData.CORE_ATTRIBUTES);
+
+        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
+                stylers.headerStyleDefault,
+        };
+
+        final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[] {
+                stylers.contentStyleUrlValue,
+        };
+
+        final int columnCount = super.populateSheetWithModelData(
+                inventory.getThreatMetaData(), orderedList,
+                headerRow::createCell, sheet::createRow,
+                headerCellStylers, dataCellStylers);
+
+        sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, columnCount - 1));
+    }
+
+    private void writeWeaknessMetaData(Inventory inventory, SXSSFWorkbook workbook, XlsxXSSFInventorySheetCellStylers stylers) {
+        if (isEmpty(inventory.getWeaknessMetaData())) return;
+
+        final SXSSFSheet sheet = createAMDSheet(workbook, AbstractInventoryReader.WORKSHEET_NAME_WEAKNESS_DATA);
+
+        final SXSSFRow headerRow = sheet.createRow(0);
+
+        final List<String> orderedList = determineOrder(inventory, inventory::getWeaknessMetaData,
+                CONTEXT_KEY_WEAKNESS_DATA, WeaknessMetaData.MIN_ATTRIBUTES, WeaknessMetaData.CORE_ATTRIBUTES);
+
+        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
+                stylers.headerStyleDefault,
+        };
+
+        final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[] {
+                stylers.contentStyleUrlValue,
+        };
+
+        final int columnCount = super.populateSheetWithModelData(
+                inventory.getWeaknessMetaData(), orderedList,
+                headerRow::createCell, sheet::createRow,
+                headerCellStylers, dataCellStylers);
+
+        sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, columnCount - 1));
+    }
+
+    private void writeAttackPatternMetaData(Inventory inventory, SXSSFWorkbook workbook, XlsxXSSFInventorySheetCellStylers stylers) {
+        if (isEmpty(inventory.getAttackPatternMetaData())) return;
+
+        final SXSSFSheet sheet = createAMDSheet(workbook, AbstractInventoryReader.WORKSHEET_NAME_ATTACK_PATTERN_DATA);
+
+        final SXSSFRow headerRow = sheet.createRow(0);
+
+        final List<String> orderedList = determineOrder(inventory, inventory::getAttackPatternMetaData,
+                CONTEXT_KEY_ATTACK_PATTERN_DATA, AttackPatternMetaData.MIN_ATTRIBUTES, AttackPatternMetaData.CORE_ATTRIBUTES);
+
+        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
+                stylers.headerStyleDefault,
+        };
+
+        final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[] {
+                stylers.contentStyleUrlValue,
+        };
+
+        final int columnCount = super.populateSheetWithModelData(
+                inventory.getAttackPatternMetaData(), orderedList,
+                headerRow::createCell, sheet::createRow,
+                headerCellStylers, dataCellStylers);
+
+        sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, columnCount - 1));
+    }
+
 
     private void writeInventoryInfo(Inventory inventory, SXSSFWorkbook workbook, XlsxXSSFInventorySheetCellStylers stylers) {
         if (isEmpty(inventory.getInventoryInfo())) return;
