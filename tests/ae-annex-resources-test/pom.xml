@@ -29,9 +29,9 @@
                         <phase>process-resources</phase>
                         <configuration>
                             <inventoryFile>${project.basedir}/src/test/resources/reference-inventory/inventory/artifact-inventory-01.xls</inventoryFile>
-                            <referenceInventoryDir>${project.basedir}/src/test/resources/reference-inventory</referenceInventoryDir>
-                            <referenceComponentPath>components</referenceComponentPath>
-                            <referenceLicensePath>licenses</referenceLicensePath>
+                            <referenceInventoryDir>${project.basedir}/src/test/resources/reference-inventory/inventory</referenceInventoryDir>
+                            <referenceComponentPath>../components</referenceComponentPath>
+                            <referenceLicensePath>../licenses</referenceLicensePath>
                             <targetComponentDir>${project.build.directory}/components</targetComponentDir>
                             <targetLicenseDir>${project.build.directory}/licenses</targetLicenseDir>
                             <failOnMissingLicenseFile>false</failOnMissingLicenseFile>
