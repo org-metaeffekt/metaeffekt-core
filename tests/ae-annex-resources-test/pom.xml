@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>ae-annex-resources-test</artifactId>
+    <name>${project.artifactId}</name>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.metaeffekt.core</groupId>
+        <artifactId>ae-core-plugin-management-pom</artifactId>
+        <version>HEAD-SNAPSHOT</version>
+        <relativePath>../../poms/ae-core-plugin-management-pom</relativePath>
+    </parent>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-inventory-maven-plugin</artifactId>
+                <version>${ae.core.version}</version>
+                <executions>
+                    <execution>
+                        <id>aggregate-annex-folders</id>
+                        <goals>
+                            <goal>aggregate-annex-folders</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <inventoryFile>${project.basedir}/src/test/resources/reference-inventory/inventory/artifact-inventory-01.xls</inventoryFile>
+                            <referenceInventoryDir>${project.basedir}/src/test/resources/reference-inventory</referenceInventoryDir>
+                            <referenceComponentPath>components</referenceComponentPath>
+                            <referenceLicensePath>licenses</referenceLicensePath>
+                            <targetComponentDir>${project.build.directory}/components</targetComponentDir>
+                            <targetLicenseDir>${project.build.directory}/licenses</targetLicenseDir>
+                            <failOnMissingLicenseFile>false</failOnMissingLicenseFile>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-core</artifactId>
+                        <version>2.23.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
