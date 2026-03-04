@@ -16,8 +16,6 @@
 package org.metaeffekt.core.inventory.processor.reader;
 
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -27,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class InventoryReader extends AbstractInventoryReader {
@@ -36,6 +35,10 @@ public class InventoryReader extends AbstractInventoryReader {
         put(".xlsx", XlsxInventoryReader::new);
         put(".ser", SerializedInventoryReader::new);
     }};
+
+    public static Set<String> getSupportedFileExtensions() {
+        return EXTENSIONS_TO_READERS.keySet();
+    }
 
     @Override
     public Inventory readInventory(File file) throws IOException {
