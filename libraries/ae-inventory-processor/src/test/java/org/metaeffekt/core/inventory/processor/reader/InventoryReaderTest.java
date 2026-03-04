@@ -18,6 +18,15 @@ package org.metaeffekt.core.inventory.processor.reader;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.ThreatMetaData;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.util.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+
 
 @Slf4j
 public class InventoryReaderTest {
@@ -28,4 +37,18 @@ public class InventoryReaderTest {
         Assert.assertTrue(InventoryReader.getSupportedFileExtensions().contains(".xlsx"));
         Assert.assertTrue(InventoryReader.getSupportedFileExtensions().contains(".ser"));
     }
+
+    @Test
+    public void inventoryReaderTest() throws IOException {
+        Inventory inventory = new InventoryReader().readInventory(new File("src/test/resources/read-write-inventory/keycloak-reference-inventory_single.xls"));
+
+        ThreatMetaData tmd = new ThreatMetaData();
+        tmd.set(ThreatMetaData.Attribute.ID, "THR-STRIDE-S");
+        inventory.setThreatMetaData(Collections.singletonList(tmd));
+
+        File f = new File("target/read-write-inventory/keycloak-reference-inventory_single.xls");
+        FileUtils.forceMkdirParent(f);
+
+        new InventoryWriter().writeInventory(inventory, f);
+   }
 }
