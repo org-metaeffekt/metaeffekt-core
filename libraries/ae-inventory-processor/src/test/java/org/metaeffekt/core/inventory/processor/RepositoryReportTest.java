@@ -15,9 +15,9 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -39,8 +39,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RepositoryReportTest {
 
@@ -158,13 +158,13 @@ public class RepositoryReportTest {
 
         InventoryReport inventoryReport = new InventoryReport();
 
-        Assert.assertEquals("this&amp;that.&#8203;those-&#8203;these_&#8203;which",
+        Assertions.assertEquals("this&amp;that.&#8203;those-&#8203;these_&#8203;which",
                 inventoryReport.xmlEscapeArtifactId("this&that.those-these_which"));
 
-        Assert.assertEquals("this#&#8203;that",
+        Assertions.assertEquals("this#&#8203;that",
                 inventoryReport.xmlEscapeArtifactId("this#that"));
 
-        Assert.assertEquals("&nbsp;", inventoryReport.xmlEscapeArtifactId(null));
+        Assertions.assertEquals("&nbsp;", InventoryReport.xmlEscapeArtifactId(null));
     }
 
     @Test
@@ -172,11 +172,11 @@ public class RepositoryReportTest {
         File inventoryFile = new File(INVENTORY_DIR, "artifact-inventory-01.xls");
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 
-        Assert.assertNotNull(inventory.getComponentPatternData());
-        Assert.assertEquals(6, inventory.getComponentPatternData().size());
+        Assertions.assertNotNull(inventory.getComponentPatternData());
+        Assertions.assertEquals(6, inventory.getComponentPatternData().size());
 
-        Assert.assertEquals("org/metaeffekt/core/**/*-org/metaeffekt/core Classes-metaeffekt Core-0.21.0-org/metaeffekt.core/Inventory.class-ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).deriveQualifier());
-        Assert.assertEquals("org/metaeffekt/core/**/*::metaeffekt Core:org/metaeffekt/core Classes::0.21.0::org/metaeffekt.core/Inventory.class:ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).createCompareStringRepresentation());
+        Assertions.assertEquals("org/metaeffekt/core/**/*-org/metaeffekt/core Classes-metaeffekt Core-0.21.0-org/metaeffekt.core/Inventory.class-ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).deriveQualifier());
+        Assertions.assertEquals("org/metaeffekt/core/**/*::metaeffekt Core:org/metaeffekt/core Classes::0.21.0::org/metaeffekt.core/Inventory.class:ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).createCompareStringRepresentation());
 
         File targetFile = new File("target/test-inventory.xls");
         new InventoryWriter().writeInventory(inventory, targetFile);
@@ -186,7 +186,7 @@ public class RepositoryReportTest {
     public void testAntPatternMatcher() {
         String path = "/spring-boot-example/documentation/spring-boot-war/target/bomscan/spring-boot-sample-war-1.5.4.RELEASE-war/org/springframework/boot/loader/LaunchedURLClassLoader.class";
         AntPathMatcher matcher = new AntPathMatcher();
-        Assert.assertTrue(matcher.match("/**/org/springframework/boot/loader/**/*", path));
+        Assertions.assertTrue(matcher.match("/**/org/springframework/boot/loader/**/*", path));
     }
 
     @Test
@@ -207,15 +207,16 @@ public class RepositoryReportTest {
         String packageReportEffective = FileUtils.readFileToString(packageReportEffectiveFile, FileUtils.ENCODING_UTF_8);
 
         // check links from package report
-        Assert.assertTrue(
-                "Expecting references to license chapter.",
+        Assertions.assertTrue(
                 packageReportEffective.contains
-                        ("<xref href=\"tpc_inventory-license-usage.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
+                        ("<xref href=\"tpc_inventory-license-usage.dita#tpc_effective_license_gnu-general-public-license-3.0\""),
+                "Expecting references to license chapter."
+                );
 
         // read license overview
         File licenseOverviewFile = new File(reportDir, "report/tpc_inventory-licenses-effective.dita");
         String licenseOverview = FileUtils.readFileToString(licenseOverviewFile, FileUtils.ENCODING_UTF_8);
-        Assert.assertFalse("All artifacts counts must be greater than 0.", licenseOverview.contains("<codeph>0</codeph>"));
+        Assertions.assertFalse(licenseOverview.contains("<codeph>0</codeph>"), "All artifacts counts must be greater than 0.");
 
         // read/write inventory
         Inventory inventory = InventoryUtils.readInventory(inventoryDir, "*.xls");
@@ -225,7 +226,7 @@ public class RepositoryReportTest {
         Inventory rereadInventory = new InventoryReader().readInventory(new File(reportDir, "output_artifact-inventory.xls"));
 
         // check selected data in reread inventory
-        Assert.assertEquals("GPL-2.0", rereadInventory.
+        Assertions.assertEquals("GPL-2.0", rereadInventory.
                 findMatchingLicenseData("GNU General Public License 2.0").get(LicenseData.Attribute.ID));
     }
 
@@ -258,7 +259,7 @@ public class RepositoryReportTest {
         Inventory rereadInventory = new InventoryReader().readInventory(new File(reportDir, "output_artifact-inventory.xls"));
 
         // check selected data in reread inventory
-        Assert.assertEquals("GPL-2.0", rereadInventory.
+        Assertions.assertEquals("GPL-2.0", rereadInventory.
                 findMatchingLicenseData("GNU General Public License 2.0").get(LicenseData.Attribute.ID));
     }
 
@@ -449,7 +450,7 @@ public class RepositoryReportTest {
         report.setTargetInventoryPath("result.xls");
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testCreateTestReport_External() throws Exception {
         final File inventoryDir = new File("<source>");
@@ -471,7 +472,7 @@ public class RepositoryReportTest {
     @Test
     public void xmlEscapeDateStringTest() {
         final InventoryReport report = new InventoryReport();
-        Assert.assertEquals("2020-20-20", report.xmlEscapeDate("2020-20-20"));
+        Assertions.assertEquals("2020-20-20", InventoryReport.xmlEscapeDate("2020-20-20"));
     }
 
 }

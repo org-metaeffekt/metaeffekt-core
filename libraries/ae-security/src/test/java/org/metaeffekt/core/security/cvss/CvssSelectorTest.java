@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.security.cvss;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole;
 import org.metaeffekt.core.security.cvss.processor.CvssSelector;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
@@ -464,8 +464,8 @@ public class CvssSelectorTest {
         final Cvss3P1 vector1 = new Cvss3P1("CVSS:3.1/MAV:A/MC:N/MI:N", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, Cvss3P1.class));
         final Cvss3P1 vector2 = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
 
-        Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H", CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(vector1, vector2)).toString());
-        Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H/MAV:A/MC:N/MI:N", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(vector1, vector2)).toString());
+        Assertions.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H", CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(vector1, vector2)).toString());
+        Assertions.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H/MAV:A/MC:N/MI:N", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(vector1, vector2)).toString());
     }
 
     @Test
@@ -474,7 +474,7 @@ public class CvssSelectorTest {
         final Cvss4P0 modificationLower = new Cvss4P0("CVSS:4.0/MAV:A/MAC:L/MAT:P/MPR:L/MUI:N/MVC:N/MVI:L/MVA:N/MSC:N/MSI:X/MSA:S", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER_METRIC, Cvss4P0.class));
         final Cvss4P0 modificationHigher = new Cvss4P0("CVSS:4.0/MAV:A/MAC:L/MAT:P/MPR:L/MUI:N/MVC:N/MVI:L/MVA:N/MSC:N/MSI:X/MSA:S", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_HIGHER_METRIC, Cvss4P0.class));
 
-        Assert.assertEquals("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAT:P/MPR:L/MUI:N/MVC:N/MVI:L/MVA:N/MSC:N", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(input, modificationLower)).toString());
-        Assert.assertEquals("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAV:A/MAC:L/MUI:N/MVC:N/MVI:L/MSA:S", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(input, modificationHigher)).toString());
+        Assertions.assertEquals("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAT:P/MPR:L/MUI:N/MVC:N/MVI:L/MVA:N/MSC:N", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(input, modificationLower)).toString());
+        Assertions.assertEquals("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAV:A/MAC:L/MUI:N/MVC:N/MVI:L/MSA:S", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(input, modificationHigher)).toString());
     }
 }

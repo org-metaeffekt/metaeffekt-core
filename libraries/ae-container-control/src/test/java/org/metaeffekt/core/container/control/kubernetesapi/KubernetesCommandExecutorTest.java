@@ -15,15 +15,16 @@
  */
 package org.metaeffekt.core.container.control.kubernetesapi;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
-@Ignore("Requires a local Kubernetes (minikube or similar) instance.")
+
+@Disabled("Requires a local Kubernetes (minikube or similar) instance.")
 public class KubernetesCommandExecutorTest {
 
     @Test

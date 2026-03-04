@@ -54,7 +54,10 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         readLicenseData(workbook, inventory);
         readComponentPatternData(workbook, inventory);
         readVulnerabilityMetaData(workbook, inventory);
-        readCertMetaData(workbook, inventory);
+        readAdvisoryMetaData(workbook, inventory);
+        readThreatMetaData(workbook, inventory);
+        readWeaknessMetaData(workbook, inventory);
+        readAttackPatternMetaData(workbook, inventory);
         readInventoryInfo(workbook, inventory);
         readAssetMetaData(workbook, inventory);
         readReportData(workbook, inventory);
@@ -133,7 +136,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         parse(inventory, sheet, rowConsumer, InventorySerializationContext.CONTEXT_KEY_VULNERABILITY_DATA);
     }
 
-    protected void readCertMetaData(XSSFWorkbook workbook, Inventory inventory) {
+    protected void readAdvisoryMetaData(XSSFWorkbook workbook, Inventory inventory) {
         XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_ADVISORY_DATA);
 
         // for backward compatibility
@@ -153,6 +156,60 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         };
 
         parse(inventory, sheet, rowConsumer, InventorySerializationContext.CONTEXT_KEY_ADVISORY_DATA);
+    }
+
+    protected void readThreatMetaData(XSSFWorkbook workbook, Inventory inventory) {
+        final XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_THREAT_DATA);
+
+        if (sheet == null) return;
+
+        final List<ThreatMetaData> threatMetaData = new ArrayList<>();
+        inventory.setThreatMetaData(threatMetaData);
+
+        final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final ThreatMetaData amd = super.readRow(row, new ThreatMetaData(), pc);
+            if (amd.isValid()) {
+                threatMetaData.add(amd);
+            }
+        };
+
+        parse(inventory, sheet, rowConsumer, InventorySerializationContext.CONTEXT_KEY_THREAT_DATA);
+    }
+
+    protected void readWeaknessMetaData(XSSFWorkbook workbook, Inventory inventory) {
+        final XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_WEAKNESS_DATA);
+
+        if (sheet == null) return;
+
+        final List<WeaknessMetaData> weaknessMetaData = new ArrayList<>();
+        inventory.setWeaknessMetaData(weaknessMetaData);
+
+        final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final WeaknessMetaData amd = super.readRow(row, new WeaknessMetaData(), pc);
+            if (amd.isValid()) {
+                weaknessMetaData.add(amd);
+            }
+        };
+
+        parse(inventory, sheet, rowConsumer, InventorySerializationContext.CONTEXT_KEY_WEAKNESS_DATA);
+    }
+
+    protected void readAttackPatternMetaData(XSSFWorkbook workbook, Inventory inventory) {
+        final XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_ATTACK_PATTERN_DATA);
+
+        if (sheet == null) return;
+
+        final List<AttackPatternMetaData> attackPatternMetadata = new ArrayList<>();
+        inventory.setAttackPatternMetaData(attackPatternMetadata);
+
+        final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final AttackPatternMetaData amd = super.readRow(row, new AttackPatternMetaData(), pc);
+            if (amd.isValid()) {
+                attackPatternMetadata.add(amd);
+            }
+        };
+
+        parse(inventory, sheet, rowConsumer, InventorySerializationContext.CONTEXT_KEY_ATTACK_PATTERN_DATA);
     }
 
     protected void readInventoryInfo(XSSFWorkbook workbook, Inventory inventory) {

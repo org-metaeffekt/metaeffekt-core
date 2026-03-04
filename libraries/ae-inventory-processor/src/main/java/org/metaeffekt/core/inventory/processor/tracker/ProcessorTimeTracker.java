@@ -104,7 +104,11 @@ public class ProcessorTimeTracker {
 
             for (int i = 0; i < json.length(); i++) {
                 final JSONObject object = json.getJSONObject(i);
-                entries.add(ProcessTimeEntry.fromJson(object));
+                try {
+                    entries.add(ProcessTimeEntry.fromJson(object));
+                } catch (Exception e) {
+                    log.warn("Failed to parse process event entry: [{}], skipping...", object);
+                }
             }
         } catch (Exception e) {
             log.warn("Failed to parse process timestamps: {}", e.getMessage(), e);
@@ -188,7 +192,7 @@ public class ProcessorTimeTracker {
         } else {
             sj.add(String.format(".timestamp=%d - %d\n\n", first, last));
 
-            if(formattedFirstEn.equals(formattedLastEn)) {
+            if (formattedFirstEn.equals(formattedLastEn)) {
                 sj.add(String.format(".date.en=%s\n", formattedLastEn));
                 sj.add(String.format(".date.de=%s\n\n", formattedLastDe));
             } else {

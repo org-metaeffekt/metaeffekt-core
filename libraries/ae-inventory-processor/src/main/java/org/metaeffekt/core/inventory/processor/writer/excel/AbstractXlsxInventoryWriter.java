@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.inventory.processor.writer.excel;
 
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.CellBase;
 import org.apache.poi.xssf.streaming.SXSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.metaeffekt.core.inventory.processor.model.AbstractModelBase;
 import org.metaeffekt.core.inventory.processor.writer.AbstractInventoryWriter;
 import org.metaeffekt.core.inventory.processor.writer.excel.style.InventorySheetCellStyler;
@@ -46,7 +46,7 @@ public abstract class AbstractXlsxInventoryWriter extends AbstractInventoryWrite
         return super.populateSheetWithModelData(
                 MAX_CELL_LENGTH,
                 models, columnHeaders,
-                headerCellSupplier, contentRowSupplier, HSSFRichTextString::new,
+                headerCellSupplier, contentRowSupplier, XSSFRichTextString::new,
                 headerCellStyler, dataCellStyler);
     }
 

@@ -1,0 +1,11 @@
+{
+  "version": "2",
+  "configurations": [
+    {
+      "id": "config a",
+      "configuration": {
+        "includeAdvisoryTypes": ["notice"]
+      }
+    }
+  ]
+}

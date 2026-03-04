@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.resolver;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.io.File;
@@ -32,7 +32,7 @@ public class EclipseMirrorSourceArchiveResolverTest {
         Artifact artifact = new Artifact();
         artifact.setId("artifact_1.1.0.v201812140000.jar");
         List<String> sourceArtifactId = resolver.matchAndReplace(artifact);
-        Assert.assertEquals("artifact.source_1.1.0.v201812140000.jar", sourceArtifactId.get(0));
+        Assertions.assertEquals("artifact.source_1.1.0.v201812140000.jar", sourceArtifactId.get(0));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class EclipseMirrorSourceArchiveResolverTest {
         resolver.setMirrorBaseUrls(mirrorBaseUrls);
 
         File targetDir = new File("target/test-downloads");
-        Assert.assertNotNull(resolver.resolveArtifactSourceArchive(artifact, targetDir));
+        Assertions.assertNotNull(resolver.resolveArtifactSourceArchive(artifact, targetDir));
     }
 
     @Test
@@ -92,7 +92,7 @@ public class EclipseMirrorSourceArchiveResolverTest {
         resolver.setMirrorBaseUrls(mirrorBaseUrls);
 
         File targetDir = new File("target/test-downloads");
-        Assert.assertNotNull(resolver.resolveArtifactSourceArchive(artifact, targetDir));
+        Assertions.assertNotNull(resolver.resolveArtifactSourceArchive(artifact, targetDir));
     }
 
 

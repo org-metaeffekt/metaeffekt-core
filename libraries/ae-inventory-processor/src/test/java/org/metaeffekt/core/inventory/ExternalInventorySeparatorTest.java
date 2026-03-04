@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.InventorySeparator;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 
@@ -25,7 +25,7 @@ import java.io.IOException;
 
 public class ExternalInventorySeparatorTest {
 
-    @Ignore
+    @Disabled
     @Test
     public void testArtifactSheet() throws IOException {
         final File inventoryFile = new File("<inventory-path>");

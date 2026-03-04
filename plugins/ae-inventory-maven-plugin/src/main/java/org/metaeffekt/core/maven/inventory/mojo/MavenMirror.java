@@ -20,7 +20,6 @@ import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.logging.Log;
 
 import java.util.List;
-import java.util.Properties;
 
 public class MavenMirror extends AbstractMirror {
 
