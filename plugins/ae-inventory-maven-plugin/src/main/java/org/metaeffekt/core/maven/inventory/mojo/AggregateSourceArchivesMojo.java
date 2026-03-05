@@ -34,6 +34,8 @@ import org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository;
 import org.metaeffekt.core.inventory.resolver.SourceArchiveResolverResult;
 import org.metaeffekt.core.inventory.validation.ExecutionStatus;
 import org.metaeffekt.core.inventory.validation.ExecutionStatusEntry;
+import org.metaeffekt.core.maven.inventory.resolver.Mapping;
+import org.metaeffekt.core.maven.inventory.resolver.SourceRepository;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 

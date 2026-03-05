@@ -17,6 +17,7 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.metaeffekt.core.maven.inventory.resolver.Mapping;
 
 
 public class MappingTest {

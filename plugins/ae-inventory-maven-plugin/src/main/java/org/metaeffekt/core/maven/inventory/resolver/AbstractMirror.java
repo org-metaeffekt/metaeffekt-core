@@ -13,24 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.mojo;
+package org.metaeffekt.core.maven.inventory.resolver;
 
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.logging.Log;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-public class MavenMirror extends AbstractMirror {
+public abstract class AbstractMirror extends IdentifiableComponent {
+    private List<String> mirrorUrls = new ArrayList<>();
 
-    public MavenMirrorSourceArchiveResolver createResolver(
-           ArtifactResolver artifactResolver, ArtifactRepository localRepository, List<ArtifactRepository> remoteRepositories) {
-        return new MavenMirrorSourceArchiveResolver(artifactResolver, localRepository, remoteRepositories);
+    public List<String> getMirrorUrls() {
+        return mirrorUrls;
+    }
+
+    public void setMirrorUrls(List<String> mirrorUrls) {
+        this.mirrorUrls = mirrorUrls;
     }
 
     public void dumpConfig(Log log, String prefix) {
         super.dumpConfig(log, prefix);
+        log.debug(prefix + "  mirrorUrls: " + getMirrorUrls());
     }
 
 }

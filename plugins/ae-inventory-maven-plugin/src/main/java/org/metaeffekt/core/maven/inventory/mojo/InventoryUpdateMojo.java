@@ -20,6 +20,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.metaeffekt.core.inventory.processor.AbstractInventoryProcessor;
 import org.metaeffekt.core.inventory.processor.InventoryProcessor;
 import org.metaeffekt.core.inventory.processor.InventoryUpdate;
+import org.metaeffekt.core.maven.inventory.resolver.Mapping;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
