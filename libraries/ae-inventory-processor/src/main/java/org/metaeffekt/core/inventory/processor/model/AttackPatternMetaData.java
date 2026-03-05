@@ -32,7 +32,6 @@ public class AttackPatternMetaData extends AbstractModelBase {
         ID("Id"),
         CONTENT("Content"),
 
-
         REFERENCED_VULNERABILITIES("Referenced Vulnerabilities"),
         REFERENCED_SECURITY_ADVISORIES("Referenced Advisories"),
         REFERENCED_THREATS("Referenced Threats"),
@@ -56,13 +55,13 @@ public class AttackPatternMetaData extends AbstractModelBase {
         public String getKey() {
             return key;
         }
-
     }
 
     /**
      * Defines the minimum set of attributes for serialization. The order is not relevant.
      */
     public static ArrayList<String> MIN_ATTRIBUTES = new ArrayList<>();
+
     static {
         MIN_ATTRIBUTES.add(Attribute.ID.getKey());
     }
@@ -71,6 +70,7 @@ public class AttackPatternMetaData extends AbstractModelBase {
      * Defines the core attributes. Used for logging and ordering.
      */
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
+
     static {
         CORE_ATTRIBUTES.add(Attribute.ID.getKey());
     }
@@ -84,5 +84,4 @@ public class AttackPatternMetaData extends AbstractModelBase {
         if (StringUtils.isEmpty(get(Attribute.ID))) return false;
         return true;
     }
-
 }

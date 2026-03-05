@@ -19,13 +19,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 
-public class ThreatMetaData extends AbstractModelBase{
+public class ThreatMetaData extends AbstractModelBase {
 
     public ThreatMetaData(AbstractModelBase baseModelInstance) {
         super(baseModelInstance);
     }
 
-    public ThreatMetaData(){
+    public ThreatMetaData() {
     }
 
     public enum Attribute implements AbstractModelBase.Attribute {
@@ -70,6 +70,7 @@ public class ThreatMetaData extends AbstractModelBase{
      * Defines the minimum set of attributes for serialization. The order is not relevant.
      */
     public static ArrayList<String> MIN_ATTRIBUTES = new ArrayList<>();
+
     static {
         MIN_ATTRIBUTES.add(ThreatMetaData.Attribute.ID.getKey());
     }
@@ -78,6 +79,7 @@ public class ThreatMetaData extends AbstractModelBase{
      * Defines the core attributes. Used for logging and ordering.
      */
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
+
     static {
         CORE_ATTRIBUTES.add(ThreatMetaData.Attribute.ID.getKey());
         CORE_ATTRIBUTES.add(ThreatMetaData.Attribute.NAME.getKey());
