@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -178,6 +179,10 @@ public class DocumentDescriptorReportGenerator {
                 report.setReferenceComponentPath("components");
                 report.setReferenceLicensePath("licenses");
 
+                if (mergedParams.get("genPath") != null) {
+                    String partSvgPath = String.format("../%s/%s", mergedParams.get("genPath"), documentPart.getIdentifier());
+                    report.setReportPartSvgPath(partSvgPath);
+                }
                 if (mergedParams.get("referenceLicensePath") != null) {
                     report.setReferenceLicensePath(mergedParams.get("referenceLicensePath"));
                 }

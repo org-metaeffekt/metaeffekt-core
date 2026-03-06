@@ -260,7 +260,7 @@ public class DocumentDescriptorReport {
                     case VULNERABILITY_SUMMARY_REPORT:
                         break;
 
-                    case APPENDIX:
+                    case ATTACHMENTS:
                         break;
 
                     default:

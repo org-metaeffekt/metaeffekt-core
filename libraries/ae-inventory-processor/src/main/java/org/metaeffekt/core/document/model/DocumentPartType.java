@@ -25,6 +25,6 @@ package org.metaeffekt.core.document.model;
         VULNERABILITY_SUMMARY_PART,
         VULNERABILITY_SUMMARY_REPORT,
         VULNERABILITY_STATISTICS_REPORT,
-        APPENDIX
+        ATTACHMENTS
 
     }
