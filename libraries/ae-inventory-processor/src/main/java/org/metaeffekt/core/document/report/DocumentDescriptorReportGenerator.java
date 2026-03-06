@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +54,7 @@ import java.util.stream.Collectors;
 public class DocumentDescriptorReportGenerator {
 
     private static final Logger log = LoggerFactory.getLogger(DocumentDescriptorReportGenerator.class);
+    public static final String GEN_PATH = "genPath";
 
     /**
      * Generates the complete set of reports for the given {@link DocumentDescriptor}.
@@ -73,7 +73,7 @@ public class DocumentDescriptorReportGenerator {
 
         // generate bookmaps to integrate InventoryReport-generated results
         DocumentDescriptorReport documentDescriptorReport = new DocumentDescriptorReport();
-        documentDescriptorReport.setTargetReportDir(documentDescriptor.getTargetReportDir());
+        documentDescriptorReport.setTargetReportDir(documentDescriptor.getTargetDocumentDir());
         documentDescriptorReport.createPartBookMap(documentDescriptor);
         documentDescriptorReport.createDocumentBookMap(documentDescriptor);
         documentDescriptorReport.createImprint(documentDescriptor);
@@ -179,8 +179,10 @@ public class DocumentDescriptorReportGenerator {
                 report.setReferenceComponentPath("components");
                 report.setReferenceLicensePath("licenses");
 
-                if (mergedParams.get("genPath") != null) {
-                    String partSvgPath = String.format("../%s/%s", mergedParams.get("genPath"), documentPart.getIdentifier());
+                // the genPath specifies, where the SVGs are generated, it is relative to the targetDocumentDir of the document,
+                // the InventoryReport however requires this path to be relative to its local targetReportDir (e.g. <targetDocumentDir>/<inventoryContext>)
+                if (mergedParams.get(GEN_PATH) != null) {
+                    String partSvgPath = String.format("../%s/%s", mergedParams.get(GEN_PATH), documentPart.getIdentifier());
                     report.setReportPartSvgPath(partSvgPath);
                 }
                 if (mergedParams.get("referenceLicensePath") != null) {
@@ -206,7 +208,7 @@ public class DocumentDescriptorReportGenerator {
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getAssetName());
 
-                report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
+                report.setTargetReportDir(new File(documentDescriptor.getTargetDocumentDir(), inventoryContext.getIdentifier()));
                 report.getReportContext().setReportInventoryVersion(inventoryContext.getAssetVersion());
 
                 if (!report.createReport()) {
