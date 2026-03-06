@@ -115,6 +115,11 @@ public class AeaaDataSourceIndicator {
 
         final AeaaOtherTypeIdentifier otherTypeIdentifier = AeaaOtherTypeStore.get().fromNameAndImplementationWithoutCreation(source, implementation);
         if (otherTypeIdentifier != null) {
+            if (otherTypeIdentifier == AeaaOtherTypeStore.CWE) {
+                return AeaaThreatTypeStore.CWE;
+            } else if (otherTypeIdentifier == AeaaOtherTypeStore.CAPEC) {
+                return AeaaThreatTypeStore.CAPEC;
+            }
             return otherTypeIdentifier;
         }
 

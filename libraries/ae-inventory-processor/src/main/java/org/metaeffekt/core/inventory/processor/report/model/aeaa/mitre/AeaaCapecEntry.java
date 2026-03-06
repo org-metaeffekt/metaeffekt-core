@@ -23,17 +23,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.metaeffekt.core.inventory.processor.model.AttackPatternMetaData;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaThreatTypeIdentifier;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaThreatTypeStore;
 
 import java.util.*;
 
 @Getter
 @Setter
 @Slf4j
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class AeaaCapecEntry {
+public class AeaaCapecEntry extends AeaaAttackPattern {
 
-    private String id;
     private String name;
     private String abstraction;
     private AeaaMitre.Status status;
@@ -42,11 +44,12 @@ public class AeaaCapecEntry {
     private AeaaMitre.Severity likelihoodOfAttack;
     private AeaaMitre.Severity typicalSeverity;
     private final Map<AeaaMitre.Relation, List<String>> relatedAttackPatterns = new HashMap<>();
-    private final ArrayList<AeaaWeaknessConsequence> consequences = new ArrayList<>();
-    private final ArrayList<String> mitigations = new ArrayList<>();
-    private final ArrayList<String> relatedWeaknesses = new ArrayList<>();
+    private final List<AeaaWeaknessConsequence> consequences = new ArrayList<>();
+    private final List<String> mitigations = new ArrayList<>();
+
+    private final List<String> relatedWeaknesses = new ArrayList<>();
     private final List<String> prerequisites = new ArrayList<>();
-    private final Map<String, ArrayList<AeaaTaxonomyMapping>> taxonomyMappings = new HashMap<>();
+    private final Map<String, List<AeaaTaxonomyMapping>> taxonomyMappings = new HashMap<>();
     private final List<String> references = new ArrayList<>();
     private final Map<String, Map<String, String>> referencesData = new HashMap<>();
 
@@ -54,13 +57,22 @@ public class AeaaCapecEntry {
         setId(id);
     }
 
-    public void setId(String id) {
+    public AeaaCapecEntry setId(String id) {
         if (StringUtils.isEmpty(id)) {
             throw new IllegalArgumentException("CAPEC-Entry Id cannot be null or empty");
         } else {
             if (id.startsWith("CAPEC-")) this.id = id;
             else this.id = "CAPEC-" + id;
         }
+        return this;
+    }
+
+    public Set<String> getChildrenAttackPatternIds() {
+        return new HashSet<>(relatedAttackPatterns.getOrDefault(AeaaMitre.Relation.PARENT_OF, Collections.emptyList()));
+    }
+
+    public Set<String> getParentAttackPatternIds() {
+        return new HashSet<>(relatedAttackPatterns.getOrDefault(AeaaMitre.Relation.CHILD_OF, Collections.emptyList()));
     }
 
     public JSONObject toJson() {
@@ -109,8 +121,8 @@ public class AeaaCapecEntry {
         return json;
     }
 
-    public static List<AeaaCapecEntry> fromJson(JSONArray json) {
-        final List<AeaaCapecEntry> entries = new ArrayList<>();
+    public static List<AeaaAttackPattern> fromJson(JSONArray json) {
+        final List<AeaaAttackPattern> entries = new ArrayList<>();
         for (int i = 0; i < json.length(); i++) {
             entries.add(AeaaCapecEntry.fromJson(json.getJSONObject(i)));
         }
@@ -118,46 +130,50 @@ public class AeaaCapecEntry {
     }
 
     public static AeaaCapecEntry fromJson(JSONObject json) {
-        final AeaaCapecEntry capecEntry = new AeaaCapecEntry();
+        AeaaCapecEntry capecEntry = new AeaaCapecEntry();
+        capecEntry.appendFromJson(json);
+        return capecEntry;
+    }
 
-        capecEntry.setId(json.optString("id"));
-        capecEntry.setName(json.optString("name"));
-        capecEntry.setAbstraction(json.optString("abstraction"));
-        capecEntry.setStatus(AeaaMitre.Status.of(json.optString("status")));
-        capecEntry.setDescription(json.optString("description"));
+    private void appendFromJson(JSONObject json) {
+        this.setId(json.optString("id"));
+        this.setName(json.optString("name"));
+        this.setAbstraction(json.optString("abstraction"));
+        this.setStatus(AeaaMitre.Status.of(json.optString("status")));
+        this.setDescription(json.optString("description"));
 
         final JSONArray jsonArray = json.optJSONArray("prerequisites");
         for (int i = 0; i < jsonArray.length(); i++) {
-            capecEntry.getPrerequisites().add(jsonArray.optString(i));
+            this.getPrerequisites().add(jsonArray.optString(i));
         }
 
         final JSONObject alternateTerms = json.optJSONObject("alternateTerms");
         for (String key : alternateTerms.keySet()) {
-            capecEntry.getAlternateTerms().put(key, alternateTerms.optString(key));
+            this.getAlternateTerms().put(key, alternateTerms.optString(key));
         }
-        capecEntry.setLikelihoodOfAttack(AeaaMitre.Severity.of(json.optString("likelihoodOfAttack", "Unknown")));
-        capecEntry.setTypicalSeverity(AeaaMitre.Severity.of(json.optString("typicalSeverity", "Unknown")));
+        this.setLikelihoodOfAttack(AeaaMitre.Severity.of(json.optString("likelihoodOfAttack", "Unknown")));
+        this.setTypicalSeverity(AeaaMitre.Severity.of(json.optString("typicalSeverity", "Unknown")));
 
         final JSONObject relatedAttackPatterns = json.optJSONObject("relatedAttackPatterns");
         relatedAttackPatterns.keySet().forEach(key -> {
             AeaaMitre.Relation relation = AeaaMitre.Relation.of(key);
-            ArrayList<String> capecs = new ArrayList<>();
+            List<String> capecs = new ArrayList<>();
             relatedAttackPatterns.optJSONArray(key).forEach(capec -> capecs.add(capec.toString()));
-            capecEntry.getRelatedAttackPatterns().put(relation, capecs);
+            this.getRelatedAttackPatterns().put(relation, capecs);
         });
         final JSONArray consequences = json.optJSONArray("consequences");
         if (!consequences.isEmpty()) {
             for (int i = 0; i < consequences.length(); i++) {
-                capecEntry.getConsequences().add(AeaaWeaknessConsequence.fromJson(consequences.optJSONObject(i)));
+                this.getConsequences().add(AeaaWeaknessConsequence.fromJson(consequences.optJSONObject(i)));
             }
         }
         final JSONArray mitigations = json.optJSONArray("mitigations");
         for (int i = 0; i < mitigations.length(); i++) {
-            capecEntry.getMitigations().add(mitigations.optString(i));
+            this.getMitigations().add(mitigations.optString(i));
         }
         final JSONArray relatedWeaknesses = json.optJSONArray("relatedWeaknesses");
         for (int i = 0; i < relatedWeaknesses.length(); i++) {
-            capecEntry.getRelatedWeaknesses().add(relatedWeaknesses.optString(i));
+            this.getRelatedWeaknesses().add(relatedWeaknesses.optString(i));
         }
 
         final JSONObject taxonomyMappings = json.optJSONObject("taxonomyMappings");
@@ -165,7 +181,7 @@ public class AeaaCapecEntry {
             final JSONArray mappings = taxonomyMappings.optJSONArray(taxonomyKey);
 
             for (int i = 0; i < mappings.length(); i++) {
-                Map<String, ArrayList<AeaaTaxonomyMapping>> cweTaxonomyRef = capecEntry.getTaxonomyMappings();
+                Map<String, List<AeaaTaxonomyMapping>> cweTaxonomyRef = this.getTaxonomyMappings();
                 if (cweTaxonomyRef.containsKey(taxonomyKey)) {
                     cweTaxonomyRef.get(taxonomyKey).add(AeaaTaxonomyMapping.fromJson(mappings.optJSONObject(i)));
                 } else {
@@ -178,7 +194,7 @@ public class AeaaCapecEntry {
         final JSONArray references = json.optJSONArray("references");
         if (references != null && !references.isEmpty()) {
             for (Object entry : references) {
-                capecEntry.getReferences().add(String.valueOf(entry));
+                this.getReferences().add(String.valueOf(entry));
             }
         }
 
@@ -190,10 +206,31 @@ public class AeaaCapecEntry {
                 for (String innerKey : refObject.keySet()) {
                     reference.put(innerKey, refObject.optString(innerKey));
                 }
-                capecEntry.getReferencesData().put(key, reference);
+                this.getReferencesData().put(key, reference);
             }
         }
+    }
 
-        return capecEntry;
+    @Override
+    public AeaaThreatTypeIdentifier<AeaaCapecEntry> getSourceIdentifier() {
+        return AeaaThreatTypeStore.CAPEC;
+    }
+
+    public void appendFromBaseModel(AttackPatternMetaData atmd) {
+        super.appendFromBaseModel(atmd);
+
+        this.appendFromJson(new JSONObject(atmd.get(AttackPatternMetaData.Attribute.CONTENT)));
+    }
+
+    @Override
+    public void appendToBaseModel(AttackPatternMetaData atmd) {
+        super.appendToBaseModel(atmd);
+
+        atmd.set(AttackPatternMetaData.Attribute.CONTENT, String.valueOf(this.toJson()));
+    }
+
+    @Override
+    protected JSONObject toReferencedAttackPatterns() {
+        return getSourceIdentifier().toJson().put("id", this.id);
     }
 }
