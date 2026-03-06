@@ -28,7 +28,6 @@ import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
-import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +54,7 @@ import java.util.stream.Collectors;
 public class DocumentDescriptorReportGenerator {
 
     private static final Logger log = LoggerFactory.getLogger(DocumentDescriptorReportGenerator.class);
+    public static final String GEN_PATH = "genPath";
 
     /**
      * Generates the complete set of reports for the given {@link DocumentDescriptor}.
@@ -73,13 +73,13 @@ public class DocumentDescriptorReportGenerator {
 
         // generate bookmaps to integrate InventoryReport-generated results
         DocumentDescriptorReport documentDescriptorReport = new DocumentDescriptorReport();
-        documentDescriptorReport.setTargetReportDir(documentDescriptor.getTargetReportDir());
+        documentDescriptorReport.setTargetReportDir(documentDescriptor.getTargetDocumentDir());
         documentDescriptorReport.createPartBookMap(documentDescriptor);
         documentDescriptorReport.createDocumentBookMap(documentDescriptor);
         documentDescriptorReport.createImprint(documentDescriptor);
     }
 
-    private static void deriveAssets(DocumentDescriptor documentDescriptor) throws IOException {
+    private static void deriveAssets(DocumentDescriptor documentDescriptor) {
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             final List<InventoryContext> inventoryContexts = new ArrayList<>();
 
@@ -179,6 +179,12 @@ public class DocumentDescriptorReportGenerator {
                 report.setReferenceComponentPath("components");
                 report.setReferenceLicensePath("licenses");
 
+                // the genPath specifies, where the SVGs are generated, it is relative to the targetDocumentDir of the document,
+                // the InventoryReport however requires this path to be relative to its local targetReportDir (e.g. <targetDocumentDir>/<inventoryContext>)
+                if (mergedParams.get(GEN_PATH) != null) {
+                    String partSvgPath = String.format("../%s/%s", mergedParams.get(GEN_PATH), documentPart.getIdentifier());
+                    report.setReportPartSvgPath(partSvgPath);
+                }
                 if (mergedParams.get("referenceLicensePath") != null) {
                     report.setReferenceLicensePath(mergedParams.get("referenceLicensePath"));
                 }
@@ -202,7 +208,7 @@ public class DocumentDescriptorReportGenerator {
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getAssetName());
 
-                report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
+                report.setTargetReportDir(new File(documentDescriptor.getTargetDocumentDir(), inventoryContext.getIdentifier()));
                 report.getReportContext().setReportInventoryVersion(inventoryContext.getAssetVersion());
 
                 if (!report.createReport()) {
@@ -284,7 +290,7 @@ public class DocumentDescriptorReportGenerator {
         return mergedParams;
     }
 
-    private static String resolveAgainstBasePath(String filePath, String basePath) {
+    public static String resolveAgainstBasePath(String filePath, String basePath) {
         if (filePath == null) {
             return null;
         }

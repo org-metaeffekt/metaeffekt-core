@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.document.model;
 
-    // FIXME-RTU: consider renaming this class and review types of parts, do the same with DocumentType
+// FIXME-RTU: consider renaming this class and review types of parts, do the same with DocumentType
 public enum DocumentPartType {
 
     ANNEX,
@@ -25,4 +25,5 @@ public enum DocumentPartType {
     VULNERABILITY_SUMMARY_PART,
     VULNERABILITY_SUMMARY_REPORT,
     VULNERABILITY_STATISTICS_REPORT,
+
 }
