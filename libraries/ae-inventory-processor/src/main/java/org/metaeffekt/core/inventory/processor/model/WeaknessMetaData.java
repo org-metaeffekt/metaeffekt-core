@@ -62,15 +62,16 @@ public class WeaknessMetaData extends AbstractModelBase {
      * Defines the minimum set of attributes for serialization. The order is not relevant.
      */
     public static ArrayList<String> MIN_ATTRIBUTES = new ArrayList<>();
+
     static {
         MIN_ATTRIBUTES.add(WeaknessMetaData.Attribute.ID.getKey());
-        MIN_ATTRIBUTES.add(WeaknessMetaData.Attribute.CONTENT.getKey());
     }
 
     /**
      * Defines the core attributes. Used for logging and ordering.
      */
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
+
     static {
         CORE_ATTRIBUTES.add(WeaknessMetaData.Attribute.ID.getKey());
         CORE_ATTRIBUTES.add(WeaknessMetaData.Attribute.CONTENT.getKey());

@@ -111,9 +111,9 @@ public class CspLoaderTest {
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "versionComparisonTest/file-a.json"));
             loader.setActiveIds(Collections.singletonList("config a"));
-            Assert.assertEquals("includeAdvisoryTypes", "[notice]", loader.loadConfiguration().getIncludeAdvisoryTypes().toString());
+            Assertions.assertEquals("[notice]", loader.loadConfiguration().getIncludeAdvisoryTypes().toString(), "includeAdvisoryTypes");
         }
-        Assert.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(RuntimeException.class, () -> {
             // 'failOnVersionIncompatibility' is active and policy file version [2] does not match latest version [1]
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "versionComparisonTest/file-b.json"));
@@ -125,20 +125,20 @@ public class CspLoaderTest {
             loader.setInlineOverwriteJson("{}");
             loader.loadConfiguration();
         }
-        Assert.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(RuntimeException.class, () -> {
             // 'failOnMissingVersion' is active and policy file did not contain a version field
             final CspLoader loader = new CspLoader();
             loader.setFailOnMissingVersion(true);
             loader.addFile(new File(RESOURCE_DIR, "versionComparisonTest/file-c.json"));
             loader.loadConfiguration();
         });
-        Assert.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(RuntimeException.class, () -> {
             // Key 'configurations' is in an invalid format
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "versionComparisonTest/file-d.json"));
             loader.loadConfiguration();
         });
-        Assert.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(RuntimeException.class, () -> {
             // Unknown key in configuration wrapper 'author'
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "versionComparisonTest/file-e.json"));

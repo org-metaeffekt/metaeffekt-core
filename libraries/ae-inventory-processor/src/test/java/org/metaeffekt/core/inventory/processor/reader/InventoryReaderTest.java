@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.reader;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.ThreatMetaData;
@@ -31,6 +32,13 @@ import java.util.Collections;
 public class InventoryReaderTest {
 
     @Test
+    public void checkSupportedFileExtensionsTest() {
+        Assert.assertTrue(InventoryReader.getSupportedFileExtensions().contains(".xls"));
+        Assert.assertTrue(InventoryReader.getSupportedFileExtensions().contains(".xlsx"));
+        Assert.assertTrue(InventoryReader.getSupportedFileExtensions().contains(".ser"));
+    }
+
+    @Test
     public void inventoryReaderTest() throws IOException {
         Inventory inventory = new InventoryReader().readInventory(new File("src/test/resources/read-write-inventory/keycloak-reference-inventory_single.xls"));
 
@@ -42,8 +50,5 @@ public class InventoryReaderTest {
         FileUtils.forceMkdirParent(f);
 
         new InventoryWriter().writeInventory(inventory, f);
-
-
-
-    }
+   }
 }

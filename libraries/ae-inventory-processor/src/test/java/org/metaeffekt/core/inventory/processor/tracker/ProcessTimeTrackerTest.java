@@ -98,7 +98,7 @@ public class ProcessTimeTrackerTest {
         ProcessorTimeTracker tracker = ProcessorTimeTracker.fromInventory(inv);
         tracker.addTimestamp(new ProcessTimeEntry(ProcessType.SPDX_IMPORTER, 1));
 
-        Assert.assertEquals(5, tracker.getEntries().size());
+        assertEquals(5, tracker.getEntries().size());
     }
 
     @Test
