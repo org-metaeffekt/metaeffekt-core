@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.container.control.kubernetesapi;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Disabled("Requires a local Kubernetes (minikube or similar) instance.")
 public class KubernetesCommandExecutorTest {
@@ -37,12 +38,12 @@ public class KubernetesCommandExecutorTest {
 
                 int returnValue = commandProcess.waitFor();
                 if (returnValue != 0) {
-                    fail("Failure executing the command.");
+                    Assertions.fail("Failure executing the command.");
                 }
 
                 String output = new String(commandProcess.getAllStdOut(), StandardCharsets.UTF_8);
                 if (!output.contains("hello devil of cursed commands!")) {
-                    fail("output not correct");
+                    Assertions.fail("output not correct");
                 }
             }
         }
@@ -52,8 +53,8 @@ public class KubernetesCommandExecutorTest {
     public void testContainerCreationCursedCommands() throws Exception {
         try (KubernetesCommandExecutor exec = new KubernetesCommandExecutor("ae-container-control", "debian:latest")) {
             try (KubernetesContainerCommandProcess commandProcess = exec.executeCommand("cat", "/dev/urandom")) {
-                assertFalse("Timeout wasn't reached against expectation.",
-                        commandProcess.waitFor(2, TimeUnit.SECONDS)
+                Assertions.assertFalse(commandProcess.waitFor(2, TimeUnit.SECONDS),
+                        "Timeout wasn't reached against expectation."
                 );
             }
         }
@@ -65,8 +66,8 @@ public class KubernetesCommandExecutorTest {
             try (KubernetesContainerCommandProcess commandProcess =
                          exec.executeCommand("head", "-c", "536870912", "/dev/urandom")) {
                 // should finish on any reasonably fast machine
-                assertTrue("Timeout wasn't reached against expectation.",
-                        commandProcess.waitFor(30, TimeUnit.SECONDS)
+                assertTrue(commandProcess.waitFor(30, TimeUnit.SECONDS),
+                        "Timeout wasn't reached against expectation."
                 );
 
                 assertEquals(0, commandProcess.exitValue());
@@ -86,8 +87,7 @@ public class KubernetesCommandExecutorTest {
 
         // accept any exception as long as it's thrown in the correct place
         assertThrows(
-                "Should throw due to pod creation timing out.", Exception.class,
-                () -> {
+                Exception.class, () -> {
                     try (KubernetesCommandExecutor exec = new KubernetesCommandExecutor(
                             "test-" + getUuidChars(),
                             "IDoNotExist-" + getUuidChars() + ":" + getUuidChars()
@@ -95,7 +95,8 @@ public class KubernetesCommandExecutorTest {
                         System.err.println("Exec object " + exec + " should have failed construction");
                         fail("Should have thrown during creation of exec.");
                     }
-                }
+                },
+                "Should throw due to pod creation timing out."
         );
     }
 }

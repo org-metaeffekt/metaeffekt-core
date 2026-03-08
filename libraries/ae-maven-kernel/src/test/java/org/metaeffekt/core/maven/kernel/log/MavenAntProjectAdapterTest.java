@@ -16,7 +16,6 @@
 package org.metaeffekt.core.maven.kernel.log;
 
 import org.apache.maven.plugin.logging.SystemStreamLog;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +26,8 @@ import org.metaeffekt.core.common.kernel.ant.log.LoggingProjectAdapter;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class MavenAntProjectAdapterTest {
@@ -76,7 +77,7 @@ public class MavenAntProjectAdapterTest {
         final EscalationException escalationException = Assertions.assertThrows(EscalationException.class,
                 () -> adapter.log("Hello escalated Error [verbose]", LoggingProjectAdapter.MSG_VERBOSE)
         );
-        Assert.assertEquals("Hello escalated Error [verbose]", escalationException.getMessage());
+        assertEquals("Hello escalated Error [verbose]", escalationException.getMessage());
     }
 
     @Test

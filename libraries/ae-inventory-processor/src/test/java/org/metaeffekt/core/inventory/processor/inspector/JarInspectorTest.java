@@ -24,7 +24,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JarInspectorTest {
     private final File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");

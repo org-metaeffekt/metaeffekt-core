@@ -16,6 +16,7 @@
 package org.metaeffekt.core.common.kernel.annotation;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.common.kernel.annotation.mock.MyPublic;
@@ -23,8 +24,6 @@ import org.metaeffekt.core.common.kernel.annotation.mock.MyPublic;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class PublicAnnotationAnalyzerTest {
 
@@ -66,16 +65,16 @@ public class PublicAnnotationAnalyzerTest {
         PublicAnnotationAnalyser analyser = new PublicAnnotationAnalyser(null, MyPublic.class);
         analyser.collectPublicTypes(mockFolder, mockFolder, list);
 
-        assertEquals(expectedClasses.length, list.size());
+        Assertions.assertEquals(expectedClasses.length, list.size());
 
         for (String unexpected : unexpectedClasses) {
-            assertFalse("Didn't expect [" + unexpected + "] but received it!", list
-                    .contains(unexpected));
+            Assertions.assertFalse(list
+                    .contains(unexpected), "Didn't expect [" + unexpected + "] but received it!");
         }
 
         for (String expected : expectedClasses) {
-            assertTrue("Expected [" + expected + "] class but didn't receive it!", list
-                    .contains(expected));
+            Assertions.assertTrue(list
+                    .contains(expected), "Expected [" + expected + "] class but didn't receive it!");
         }
     }
 
