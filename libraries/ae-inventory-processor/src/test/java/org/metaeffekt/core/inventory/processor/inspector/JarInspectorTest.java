@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.processor.inspector;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
@@ -24,7 +24,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JarInspectorTest {
     private final File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");

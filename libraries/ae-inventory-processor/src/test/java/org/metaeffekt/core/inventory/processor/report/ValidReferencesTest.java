@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.util.FileUtils;
@@ -24,7 +24,7 @@ import org.metaeffekt.core.util.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,7 +33,7 @@ public class ValidReferencesTest {
 
     final static File reportDir = new File("target/report/valid-references/");
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final File inventoryDir = new File("src/test/resources/test-inventory-01/");
 
