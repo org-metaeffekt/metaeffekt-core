@@ -31,6 +31,7 @@ import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfig
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -219,9 +220,7 @@ public class DocumentDescriptorReportGenerator {
         }
     }
 
-    private static void setPolicy(Map<String, String> params,
-                                  InventoryReport report,
-                                  DocumentDescriptor documentDescriptor) throws IOException {
+    private static void setPolicy(Map<String, String> params, InventoryReport report, DocumentDescriptor documentDescriptor) throws IOException {
 
         if (params == null) {
             log.info("no securityPolicyFile or secondarySecurityPolicyFile provided");
@@ -302,10 +301,7 @@ public class DocumentDescriptorReportGenerator {
         return resolvedFilePath.getPath();
     }
 
-    private static ReportConfigurationParameters buildReportConfiguration(
-            DocumentPart documentPart,
-            DocumentDescriptor documentDescriptor,
-            Map<String, String> mergedParams
+    private static ReportConfigurationParameters buildReportConfiguration(DocumentPart documentPart, DocumentDescriptor documentDescriptor, Map<String, String> mergedParams
     ) {
         ReportConfigurationParameters.ReportConfigurationParametersBuilder builder = ReportConfigurationParameters.builder();
 
