@@ -47,11 +47,6 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".exe]/.rdata") || pathInContext.endsWith(".exe]/.idata");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File detectedFile = new File(baseDir, relativeAnchorPath);
 

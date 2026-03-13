@@ -42,11 +42,6 @@ public class HexComponentPatternContributor extends ComponentPatternContributor 
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("mix.exs");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File mixFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();

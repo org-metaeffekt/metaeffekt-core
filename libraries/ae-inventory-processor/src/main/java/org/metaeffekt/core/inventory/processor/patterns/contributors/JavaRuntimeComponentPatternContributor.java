@@ -42,11 +42,6 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("/release");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         try {
             final File anchorFile = new File(baseDir, relativeAnchorPath);

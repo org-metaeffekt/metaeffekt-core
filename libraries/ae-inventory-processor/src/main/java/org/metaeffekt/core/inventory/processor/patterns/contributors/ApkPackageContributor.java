@@ -42,12 +42,6 @@ public class ApkPackageContributor extends ComponentPatternContributor {
     private static final List<String> suffixes = Collections.singletonList("lib/apk/db/installed");
 
     @Override
-    public boolean applies(String pathInContext) {
-        // this contributor applies if it's the APK package database
-        return pathInContext.endsWith("lib/apk/db/installed");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File apkDbFile = new File(baseDir, relativeAnchorPath);
 

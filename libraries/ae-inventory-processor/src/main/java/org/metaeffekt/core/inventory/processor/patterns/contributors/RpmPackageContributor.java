@@ -56,11 +56,6 @@ public class RpmPackageContributor extends ComponentPatternContributor {
     }};
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("/Packages") || pathInContext.endsWith("/rpmdb.sqlite") || pathInContext.endsWith("/Packages.db");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File packagesFile = new File(baseDir, relativeAnchorPath);
 

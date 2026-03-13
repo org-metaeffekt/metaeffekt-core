@@ -37,11 +37,6 @@ public class NodeRuntimeComponentPatternContributor extends ComponentPatternCont
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("/node/node_version.h");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         try {
             final File anchorFile = new File(baseDir, relativeAnchorPath);

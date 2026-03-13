@@ -35,19 +35,11 @@ import java.util.Locale;
 public class PythonModuleComponentPatternContributor extends ComponentPatternContributor {
     private static final Logger LOG = LoggerFactory.getLogger(PythonModuleComponentPatternContributor.class);
 
-    // TODO: unify suffixes and other checks like in "applies"
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add(".dist-info/metadata");
         add(".dist-info/record");
         add(".dist-info/wheel");
     }});
-
-    @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".dist-info/METADATA") ||
-            pathInContext.endsWith(".dist-info/RECORD") ||
-            pathInContext.endsWith(".dist-info/WHEEL");
-    }
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum, EvaluationContext evaluationContext) {

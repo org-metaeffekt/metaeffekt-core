@@ -42,11 +42,6 @@ public class ConanComponentPatternContributor extends ComponentPatternContributo
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("conaninfo.txt") || pathInContext.endsWith("conanfile.py");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File conanFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();

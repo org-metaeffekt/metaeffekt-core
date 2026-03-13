@@ -37,11 +37,6 @@ public class ContainerComponentPatternContributor extends ComponentPatternContri
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return isContainerMetadata(pathInContext);
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);

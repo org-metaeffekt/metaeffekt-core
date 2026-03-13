@@ -45,11 +45,6 @@ public class CocoapodsComponentPatternContributor extends ComponentPatternContri
 
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".podspec");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File podspecFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();

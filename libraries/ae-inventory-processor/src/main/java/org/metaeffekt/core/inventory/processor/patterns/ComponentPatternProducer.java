@@ -44,15 +44,8 @@ public class ComponentPatternProducer {
     //FIXME: there needs to be a runtime sanity check for these: UPPERCASE won't do us well when checking against lower
     public static final String[] FILE_SUFFIX_LIST = new String[] {
 
-            // TODO: many of the anchor patterns ignore context. some of them don't but then their applies method does.
-            //  this redundancy makes for uglier code and doing the same work twice. can we find a better method?
-            // NOTE: the anchor patterns must allow for context. Always try to take the parent directory into
-            // context.
-
-            // FIXME: there is some unnecessary disarray between many file suffixes and the cpc's "applies" method.
-            //  one of these is the python modules contributor, that doesn't deal with __init__ at all, but registered
-            //  it in the default file suffix list anyway.
-            // python modules
+            // NOTE: the anchor patterns must allow for context. Always try to take the parent directory into context.
+            // python modules — these are legacy global defaults; ideally every contributor declares its own suffixes
             "/metadata",
             "/record",
             "/wheel",

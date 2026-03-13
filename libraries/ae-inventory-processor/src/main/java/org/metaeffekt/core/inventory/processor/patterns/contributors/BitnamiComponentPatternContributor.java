@@ -42,11 +42,6 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".spdx");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File spdxFile = new File(baseDir, relativeAnchorPath);
 

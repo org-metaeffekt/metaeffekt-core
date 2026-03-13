@@ -40,11 +40,6 @@ public class JenkinsPluginsComponentPatternContributor extends ComponentPatternC
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".jpi") || pathInContext.endsWith(".hpi");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File pluginFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();

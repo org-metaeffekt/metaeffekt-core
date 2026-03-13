@@ -44,11 +44,6 @@ public class XWikiExtensionComponentPatternContributor extends ComponentPatternC
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".xed");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);

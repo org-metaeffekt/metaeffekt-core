@@ -39,12 +39,6 @@ import java.util.stream.Collectors;
 public abstract class AbstractWebModuleComponentPatternContributor extends ComponentPatternContributor {
 
     @Override
-    public boolean applies(String pathInContext) {
-        // FIXME-KKL: replace suffixes by regexp patterns
-        return getSuffixes().stream().map(pathInContext::endsWith).findFirst().isPresent();
-    }
-
-    @Override
     public final List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File anchorParentDir = anchorFile.getParentFile();

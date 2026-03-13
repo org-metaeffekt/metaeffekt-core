@@ -28,8 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.PATH_LOCALE;
-
 public class JettyComponentPatternContributor extends ComponentPatternContributor {
 
     private static final Logger LOG = LoggerFactory.getLogger(JettyComponentPatternContributor.class);
@@ -37,11 +35,6 @@ public class JettyComponentPatternContributor extends ComponentPatternContributo
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/jetty/version.txt");
     }});
-
-    @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.toLowerCase(PATH_LOCALE).endsWith("/jetty/version.txt");
-    }
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {

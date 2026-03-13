@@ -39,12 +39,6 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
     private static final List<String> PATHS = Collections.singletonList("var/lib");
 
     @Override
-    public boolean applies(String pathInContext) {
-        // this contributor applies if it's the ALPM package database directory
-        return pathInContext.endsWith("/desc");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File packageDir = new File(baseDir, relativeAnchorPath).getParentFile();
 

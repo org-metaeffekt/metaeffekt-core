@@ -42,11 +42,6 @@ public class GoLangComponentPatternContributor extends ComponentPatternContribut
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("go.mod");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File goModFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();

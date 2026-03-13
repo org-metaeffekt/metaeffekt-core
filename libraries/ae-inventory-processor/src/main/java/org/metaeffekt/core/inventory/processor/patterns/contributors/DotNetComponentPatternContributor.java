@@ -44,11 +44,6 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".csproj") || pathInContext.endsWith(".fsproj") || pathInContext.endsWith("packages.config") || pathInContext.endsWith(".nuspec");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File projectFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();

@@ -41,11 +41,6 @@ public class GemMetadataContributor extends ComponentPatternContributor {
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("[metadata.gz]/metadata");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);

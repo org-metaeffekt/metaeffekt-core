@@ -33,11 +33,6 @@ public class ContainerAssetContributor extends ComponentPatternContributor {
     private static List<String> PATHS = Collections.singletonList("manifest.json");
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("/manifest.json");
-    }
-
-    @Override
     public List<String> getSuffixes() {
         return PATHS;
     }

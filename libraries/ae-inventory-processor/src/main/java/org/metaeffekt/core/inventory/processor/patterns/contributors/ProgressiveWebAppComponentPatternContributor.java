@@ -42,11 +42,6 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
     public static final String TYPE_VALUE_PWA = "pwa-module";
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("manifest.json");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File anchorFile = new File(baseDir, relativeAnchorPath);
 

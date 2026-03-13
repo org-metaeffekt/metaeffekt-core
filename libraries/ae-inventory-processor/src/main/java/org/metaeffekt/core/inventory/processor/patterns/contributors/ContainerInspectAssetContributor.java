@@ -30,11 +30,6 @@ public class ContainerInspectAssetContributor extends ComponentPatternContributo
     private static final List<String> SUFFIX_LIST = Collections.singletonList(".json");
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".json");
-    }
-
-    @Override
     public List<String> getSuffixes() {
         return SUFFIX_LIST;
     }

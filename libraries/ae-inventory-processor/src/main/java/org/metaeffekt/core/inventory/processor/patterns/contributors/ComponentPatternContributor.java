@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import lombok.Getter;
 import org.metaeffekt.core.inventory.processor.filepatterns.FileComponentPatternProcessor;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
@@ -33,11 +34,20 @@ public abstract class ComponentPatternContributor {
 
     /**
      * Checks whether the contributor can work with the given file.
-     * @param pathInContext a partial path for running the check on; might not be a real path
      *
+     * <p>The default implementation returns {@code true} when {@code pathInContext} ends with any
+     * of the suffixes returned by {@link #getSuffixes()}, using a case-insensitive comparison.
+     * Subclasses that require additional path constraints (e.g. a {@code contains} check or a
+     * negative exclusion) should override this method.
+     *
+     * @param pathInContext a partial path for running the check on; might not be a real path
      * @return returns whether this contributor can do something with the given file
      */
-    public abstract boolean applies(String pathInContext);
+    public boolean applies(String pathInContext) {
+        final String lc = pathInContext.toLowerCase(ComponentPatternProducer.LocaleConstants.PATH_LOCALE);
+        return getSuffixes().stream().anyMatch(
+                suffix -> lc.endsWith(suffix.toLowerCase(ComponentPatternProducer.LocaleConstants.PATH_LOCALE)));
+    }
 
     /**
      * Runs the contributor and tries to create component patterns from the given baseDir and anchor.

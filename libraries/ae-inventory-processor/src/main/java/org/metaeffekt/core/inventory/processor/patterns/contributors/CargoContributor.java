@@ -47,11 +47,6 @@ public class CargoContributor extends ComponentPatternContributor {
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return suffixes.stream().map(s -> pathInContext.endsWith(s)).findFirst().isPresent();
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File contextBaseDir = anchorFile.getParentFile();

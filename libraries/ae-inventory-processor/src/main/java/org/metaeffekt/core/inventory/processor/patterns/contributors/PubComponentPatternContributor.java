@@ -41,11 +41,6 @@ public class PubComponentPatternContributor extends ComponentPatternContributor 
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("pubspec.yaml") || pathInContext.endsWith("pubspec.lock");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File pubspecFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();

@@ -34,14 +34,6 @@ public class UnwrappedEclipseBundleContributor extends ComponentPatternContribut
 
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("about.html")
-                || pathInContext.endsWith("about.ini")
-                || pathInContext.endsWith("about.properties")
-                || pathInContext.endsWith("about.mappings");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);

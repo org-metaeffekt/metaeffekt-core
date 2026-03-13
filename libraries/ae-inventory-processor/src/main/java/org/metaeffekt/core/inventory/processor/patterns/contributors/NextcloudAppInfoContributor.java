@@ -43,11 +43,6 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
     public static final String TYPE_VALUE_NEXTCLOUD_APP = "nextcloud-app";
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("/appinfo/info.xml");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);

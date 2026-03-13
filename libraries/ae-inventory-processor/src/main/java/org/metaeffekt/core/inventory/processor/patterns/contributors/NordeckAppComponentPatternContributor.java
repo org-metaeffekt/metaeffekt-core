@@ -37,11 +37,6 @@ public class NordeckAppComponentPatternContributor extends ComponentPatternContr
     }});
 
     @Override
-    public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("app/lib/licenses.json");
-    }
-
-    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         try {
             final File anchorFile = new File(baseDir, relativeAnchorPath);
