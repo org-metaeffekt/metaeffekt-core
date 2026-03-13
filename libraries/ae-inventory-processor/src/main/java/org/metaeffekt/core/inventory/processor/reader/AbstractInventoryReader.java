@@ -52,6 +52,10 @@ public abstract class AbstractInventoryReader {
     public static final String WORKSHEET_NAME_ADVISORY_ALTERNATIVE_1_DATA = "Advisories";
     public static final String WORKSHEET_NAME_ADVISORY_ALTERNATIVE_2_DATA = "Cert";
 
+    public static final String WORKSHEET_NAME_THREAT_DATA = "Threats";
+    public static final String WORKSHEET_NAME_WEAKNESS_DATA = "Weaknesses";
+    public static final String WORKSHEET_NAME_ATTACK_PATTERN_DATA = "Attack Patterns";
+
     private final DataFormatter baseCellDataFormatter = new DataFormatter();
     private final DecimalFormat numericCellDataFormatter = new DecimalFormat();
 

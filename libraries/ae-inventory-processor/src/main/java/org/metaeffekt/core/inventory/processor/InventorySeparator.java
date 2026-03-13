@@ -119,6 +119,9 @@ public class InventorySeparator {
             splitInventory.setLicenseData(inventory.getLicenseData());
             splitInventory.setInventoryInfo(inventory.getInventoryInfo());
             splitInventory.setAdvisoryMetaData(inventory.getAdvisoryMetaData());
+            splitInventory.setThreatMetaData(inventory.getThreatMetaData());
+            splitInventory.setWeaknessMetaData(inventory.getWeaknessMetaData());
+            splitInventory.setAttackPatternMetaData(inventory.getAttackPatternMetaData());
             splitInventory.setReportData(inventory.getReportData());
             splitInventory.setVulnerabilityMetaData(inventory.getVulnerabilityMetaData());
 

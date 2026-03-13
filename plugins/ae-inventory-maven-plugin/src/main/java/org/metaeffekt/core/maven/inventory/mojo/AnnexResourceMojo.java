@@ -42,10 +42,10 @@ public class AnnexResourceMojo extends AbstractProjectAwareConfiguredMojo {
     @Parameter(defaultValue = "**/*.ser,**/*.xls,**/*.xlsx")
     private String referenceInventoryIncludes;
 
-    @Parameter(defaultValue = "components")
+    @Parameter(defaultValue = "../components")
     private String referenceComponentPath;
 
-    @Parameter(defaultValue = "licenses")
+    @Parameter(defaultValue = "../licenses")
     private String referenceLicensePath;
 
     @Parameter
@@ -54,8 +54,8 @@ public class AnnexResourceMojo extends AbstractProjectAwareConfiguredMojo {
     @Parameter
     private File targetLicenseDir;
 
-    @Parameter
-    private boolean failOnMissingLicenseFile = true;
+    @Parameter(defaultValue = "true")
+    private boolean failOnMissingLicenseFile;
 
     @Override
     public void execute() throws MojoExecutionException {

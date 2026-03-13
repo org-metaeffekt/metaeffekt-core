@@ -15,13 +15,14 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.store;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;
@@ -40,9 +41,9 @@ import java.util.stream.Collectors;
  *
  * @param <T> the type of ContentIdentifier stored in this ContentIdentifierStore
  */
+@Slf4j
 public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifierStore.AeaaContentIdentifier> {
     private final ReadWriteLock accessContentIdentifierLock = new ReentrantReadWriteLock();
-    private static final Logger LOG = LoggerFactory.getLogger(AeaaContentIdentifierStore.class);
 
     private final List<T> contentIdentifiers;
 
@@ -71,19 +72,19 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
         readLock.lock();
         try {
             if (contentIdentifier == null) {
-                LOG.warn("Skipping registration of content identifier [null] in {}: {}", this.getClass().getSimpleName(),
-                    contentIdentifiers.stream().map(AeaaContentIdentifier::getName).collect(Collectors.toList()));
+                log.warn("Skipping registration of content identifier [null] in {}: {}", this.getClass().getSimpleName(),
+                        contentIdentifiers.stream().map(AeaaContentIdentifier::getName).collect(Collectors.toList()));
                 return null;
 
             } else if (contentIdentifier.getName() == null) {
-                LOG.warn("Skipping registration of content identifier [null] in {}->{}: {}", this.getClass().getSimpleName(),
+                log.warn("Skipping registration of content identifier [null] in {}->{}: {}", this.getClass().getSimpleName(),
                         contentIdentifier.getClass().getSimpleName(),
                         contentIdentifiers.stream().map(AeaaContentIdentifier::getName).collect(Collectors.toList()));
                 return null;
 
             } else if (contentIdentifier.getWellFormedName() == null) {
                 contentIdentifier.setWellFormedName(AeaaContentIdentifier.deriveWellFormedName(contentIdentifier.getName()));
-                LOG.warn("Deriving missing well-formed name for content identifier [{}] in {}->{}: {}", contentIdentifier.getName(),
+                log.warn("Deriving missing well-formed name for content identifier [{}] in {}->{}: {}", contentIdentifier.getName(),
                         this.getClass().getSimpleName(), contentIdentifier.getClass().getSimpleName(),
                         contentIdentifiers.stream().map(AeaaContentIdentifier::getName).collect(Collectors.toList()));
             }
@@ -92,7 +93,7 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
                     .filter(ci -> ci.getName().equals(contentIdentifier.getName()) && ci.getImplementation().equals(contentIdentifier.getImplementation()))
                     .findFirst().orElse(null);
             if (existing != null) {
-                LOG.debug("Skipping registration of content identifier with name {}, already present in {}->{}: {}",
+                log.debug("Skipping registration of content identifier with name {}, already present in {}->{}: {}",
                         contentIdentifier.getName(),
                         this.getClass().getSimpleName(), contentIdentifier.getClass().getSimpleName(),
                         contentIdentifiers.stream().map(AeaaContentIdentifier::getName).collect(Collectors.toList()));
@@ -120,8 +121,8 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
     }
 
     public T fromNameAndImplementation(String name, String implementation) {
-        final boolean hasImplementation = !StringUtils.isEmpty(implementation);
         final boolean hasName = !StringUtils.isEmpty(name);
+        final boolean hasImplementation = !StringUtils.isEmpty(implementation);
 
         if (!hasName) {
             throw new IllegalArgumentException("Name must not be blank or null for content identifier in " + this.getClass().getSimpleName());
@@ -343,22 +344,10 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
         return jsonArray;
     }
 
+    @Data
     public static class AeaaSingleContentIdentifierParseResult<T extends AeaaContentIdentifier> {
         private final T identifier;
         private final String id;
-
-        public AeaaSingleContentIdentifierParseResult(T identifier, String id) {
-            this.identifier = identifier;
-            this.id = id;
-        }
-
-        public T getIdentifier() {
-            return identifier;
-        }
-
-        public String getId() {
-            return id;
-        }
     }
 
     public static Map<AeaaContentIdentifier, Set<String>> parseLegacyJsonReferencedIds(JSONObject referencedIds) {
@@ -368,7 +357,7 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             if (value instanceof Collection) {
                 mapFormatReferencedIds.put(key, new HashSet<>((Collection<String>) value));
             } else {
-                LOG.warn("Could not parse referenced ids of type [{}]: {}", key, value);
+                log.warn("Could not parse referenced ids of type [{}]: {}", key, value);
             }
         });
 
@@ -392,9 +381,13 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             } else if (vulnerabilityIdentifier != null) {
                 parsedReferencedIds.computeIfAbsent(vulnerabilityIdentifier, k -> new HashSet<>()).addAll(entry.getValue());
             } else if (otherIdentifier != null) {
-                parsedReferencedIds.computeIfAbsent(otherIdentifier, k -> new HashSet<>()).addAll(entry.getValue());
+                // CWE and CAPEC identifiers are already fully absorbed by the Threat Type Store.
+                // They should not be identified as 'other'-types
+                if (otherIdentifier != AeaaOtherTypeStore.CWE && otherIdentifier != AeaaOtherTypeStore.CAPEC) {
+                    parsedReferencedIds.computeIfAbsent(otherIdentifier, k -> new HashSet<>()).addAll(entry.getValue());
+                }
             } else {
-                LOG.warn("Could not find content identifier for referenced ids of type [{}]: {}", entry.getKey(), entry.getValue());
+                log.warn("Could not find content identifier for referenced ids of type [{}]: {}", entry.getKey(), entry.getValue());
             }
         }
 
@@ -411,6 +404,8 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
         return json;
     }
 
+    @Data
+    @NoArgsConstructor
     public abstract static class AeaaContentIdentifier {
         /**
          * Unique identifiable name of the content source.<br>
@@ -438,6 +433,8 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             this.name = name;
             this.wellFormedName = wellFormedName;
             this.setImplementation(implementation);
+            if (idPattern == null)
+                log.debug("Id-Pattern should likely not be null. This is likely the result of the identifier being generated automatically, meaning manual work is required to add it to the known identifiers: [{}] [{}] [{}]", this.getClass().getSimpleName(), name, implementation);
             this.idPattern = idPattern;
         }
 
@@ -447,26 +444,6 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
 
         public String name() {
             return this.name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getWellFormedName() {
-            return wellFormedName;
-        }
-
-        public void setWellFormedName(String wellFormedName) {
-            this.wellFormedName = wellFormedName;
-        }
-
-        public String getImplementation() {
-            return implementation;
-        }
-
-        public Pattern getIdPattern() {
-            return idPattern;
         }
 
         /**
@@ -512,6 +489,15 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             }
         }
 
+        public String serializeAsString() {
+            final StringBuilder builder = new StringBuilder();
+            builder.append(this.name.replace(":", "\\:"));
+            if (!this.name.equals(this.implementation)) {
+                builder.append(":").append(this.implementation.replace(":", "\\:"));
+            }
+            return builder.toString();
+        }
+
         /**
          * Prepare the name to only contain <code>[a-zA-Z0-9_]</code>.
          * Will replace all characters not matching this pattern with an underscore and remove multiple underscores.
@@ -542,14 +528,15 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             }
         }
 
-        public static JSONArray toJsonArray(List<? extends AeaaContentIdentifier> identifiers) {
-            return identifiers.stream().map(AeaaContentIdentifier::toJson).collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
-        }
-
         public JSONObject toJson() {
             return new JSONObject()
                     .put("name", name)
                     .put("implementation", implementation);
         }
+
+        public static JSONArray toJsonArray(List<? extends AeaaContentIdentifierStore.AeaaContentIdentifier> identifiers) {
+            return identifiers.stream().map(AeaaContentIdentifierStore.AeaaContentIdentifier::toJson).collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
+        }
+
     }
 }
