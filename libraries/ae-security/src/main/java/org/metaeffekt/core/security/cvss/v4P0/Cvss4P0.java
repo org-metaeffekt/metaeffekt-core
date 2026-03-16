@@ -28,6 +28,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1941,34 +1943,29 @@ public final class Cvss4P0 extends CvssVector {
         }
     }
 
-    private final static Map<Class<?>, Map<String, Object>> ATTRIBUTE_CACHE = new HashMap<>();
+    private final static ConcurrentMap<Class<?>, ConcurrentMap<String, Object>> ATTRIBUTE_CACHE = new ConcurrentHashMap<>();
 
     public interface Cvss4P0Attribute extends CvssVectorAttribute {
         Cvss4P0Attribute getWorseCase();
 
         static <T extends Cvss4P0Attribute> T fromString(String part, Class<T> clazz, T defaultValue) {
-            final Map<String, Object> cache;
-            if (ATTRIBUTE_CACHE.containsKey(clazz)) {
-                cache = ATTRIBUTE_CACHE.get(clazz);
-            } else {
-                cache = new HashMap<>();
-                ATTRIBUTE_CACHE.put(clazz, cache);
+            if (part == null) return defaultValue;
+
+            final ConcurrentMap<String, Object> cache = ATTRIBUTE_CACHE.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>());
+            final Object cachedValue = cache.get(part);
+            if (cachedValue != null) {
+                return (T) cachedValue;
             }
-            if (cache.containsKey(part)) {
-                return (T) cache.get(part);
-            } else {
-                for (T value : clazz.getEnumConstants()) {
-                    if (value.getShortIdentifier().equalsIgnoreCase(part)) {
-                        cache.put(part, value);
-                        return value;
-                    } else if (value.getIdentifier().equalsIgnoreCase(part)) {
-                        cache.put(part, value);
-                        return value;
-                    }
+
+            for (T value : clazz.getEnumConstants()) {
+                if (value.getShortIdentifier().equalsIgnoreCase(part) || value.getIdentifier().equalsIgnoreCase(part)) {
+                    cache.put(part, value);
+                    return value;
                 }
-                cache.put(part, defaultValue);
-                return defaultValue;
             }
+
+            cache.put(part, defaultValue);
+            return defaultValue;
         }
 
         default boolean isSet() {

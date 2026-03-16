@@ -23,6 +23,8 @@ import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Class for modeling a CVSS:3.1 Vector, allowing for manipulating the vector components and calculating scores.
@@ -1261,7 +1263,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
 
     public abstract <T extends Cvss3> Optional<T> optionalParse(String vector);
 
-    private final static Map<Class<?>, Map<String, Object>> ATTRIBUTE_CACHE = new HashMap<>();
+    private final static ConcurrentMap<Class<?>, ConcurrentMap<String, Object>> ATTRIBUTE_CACHE = new ConcurrentHashMap<>();
 
     public interface Cvss3Attribute extends CvssVectorAttribute {
         default boolean isSet() {
@@ -1269,28 +1271,23 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         }
 
         static <T extends Cvss3Attribute> T fromString(String part, Class<T> clazz, T defaultValue) {
-            final Map<String, Object> cache;
-            if (ATTRIBUTE_CACHE.containsKey(clazz)) {
-                cache = ATTRIBUTE_CACHE.get(clazz);
-            } else {
-                cache = new HashMap<>();
-                ATTRIBUTE_CACHE.put(clazz, cache);
+            if (part == null) return defaultValue;
+
+            final ConcurrentMap<String, Object> cache = ATTRIBUTE_CACHE.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>());
+            final Object cachedValue = cache.get(part);
+            if (cachedValue != null) {
+                return (T) cachedValue;
             }
-            if (cache.containsKey(part)) {
-                return (T) cache.get(part);
-            } else {
-                for (T value : clazz.getEnumConstants()) {
-                    if (value.getShortIdentifier().equalsIgnoreCase(part)) {
-                        cache.put(part, value);
-                        return value;
-                    } else if (value.getIdentifier().equalsIgnoreCase(part)) {
-                        cache.put(part, value);
-                        return value;
-                    }
+
+            for (T value : clazz.getEnumConstants()) {
+                if (value.getShortIdentifier().equalsIgnoreCase(part) || value.getIdentifier().equalsIgnoreCase(part)) {
+                    cache.put(part, value);
+                    return value;
                 }
-                cache.put(part, defaultValue);
-                return defaultValue;
             }
+
+            cache.put(part, defaultValue);
+            return defaultValue;
         }
     }
 
