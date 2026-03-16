@@ -580,10 +580,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         }
 
         JSONArray includeVulnerabilitiesWithAdvisoryProvidersJ = new JSONArray(includeVulnerabilitiesWithAdvisoryProviders);
-        for (int i = 0; i < includeVulnerabilitiesWithAdvisoryProvidersJ.length(); i++) {
-            final JSONObject provider = includeVulnerabilitiesWithAdvisoryProvidersJ.optJSONObject(i, null);
-            if (provider == null) {
-                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Advisory provider must not be null or is not a JSON object: " + includeVulnerabilitiesWithAdvisoryProviders));
+        if (includeVulnerabilitiesWithAdvisoryProvidersJ.isEmpty()) {
+            misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Must not be empty"));
+        } else {
+            for (int i = 0; i < includeVulnerabilitiesWithAdvisoryProvidersJ.length(); i++) {
+                final JSONObject provider = includeVulnerabilitiesWithAdvisoryProvidersJ.optJSONObject(i, null);
+                if (provider == null) {
+                    misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Advisory provider must not be null or is not a JSON object: " + includeVulnerabilitiesWithAdvisoryProviders));
+                }
             }
         }
 
