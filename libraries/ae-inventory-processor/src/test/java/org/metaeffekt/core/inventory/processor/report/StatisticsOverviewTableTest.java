@@ -89,6 +89,33 @@ public class StatisticsOverviewTableTest {
     }
 
     @Test
+    public void filterVulnerabilitiesForAdvisoryProvidersStringTest() {
+        final List<AeaaVulnerability> vulnerabilities = new ArrayList<>();
+
+        vulnerabilities.add(this.createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, Severity.CRITICAL.getV3(), AeaaAdvisoryTypeStore.CERT_FR));
+        vulnerabilities.add(this.createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, Severity.CRITICAL.getV3(), AeaaAdvisoryTypeStore.CERT_SEI));
+        vulnerabilities.add(this.createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, Severity.HIGH.getV3(), AeaaAdvisoryTypeStore.CERT_FR, AeaaAdvisoryTypeStore.CERT_SEI));
+        vulnerabilities.add(this.createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, Severity.LOW.getV3()));
+
+        this.precalculateCvss(vulnerabilities, this.unmodifiedMapperSecurityPolicy);
+
+        final StatisticsOverviewTable certFrTable = StatisticsOverviewTable.buildTableStrFilterAdvisor(this.unmodifiedMapperSecurityPolicy, vulnerabilities, "CERT-FR", false);
+        Assertions.assertEquals(this.constructList("Critical", 1, 0, 0, 0, 0, 1, "100,0 %"), certFrTable.getTableRowValues("critical"));
+        Assertions.assertEquals(this.constructList("High", 1, 0, 0, 0, 0, 1, "100,0 %"), certFrTable.getTableRowValues("high"));
+        Assertions.assertEquals(this.constructList("Low", 0, 0, 0, 0, 0, 0, "n/a"), certFrTable.getTableRowValues("low"));
+
+        final StatisticsOverviewTable certSeiTable = StatisticsOverviewTable.buildTableStrFilterAdvisor(this.unmodifiedMapperSecurityPolicy, vulnerabilities, "CERT-SEI", false);
+        Assertions.assertEquals(this.constructList("Critical", 1, 0, 0, 0, 0, 1, "100,0 %"), certSeiTable.getTableRowValues("critical"));
+        Assertions.assertEquals(this.constructList("High", 1, 0, 0, 0, 0, 1, "100,0 %"), certSeiTable.getTableRowValues("high"));
+        Assertions.assertEquals(this.constructList("Low", 0, 0, 0, 0, 0, 0, "n/a"), certSeiTable.getTableRowValues("low"));
+
+        final StatisticsOverviewTable noFilterTable = StatisticsOverviewTable.buildTableStrFilterAdvisor(this.unmodifiedMapperSecurityPolicy, vulnerabilities, null, false);
+        Assertions.assertEquals(this.constructList("Critical", 2, 0, 0, 0, 0, 2, "100,0 %"), noFilterTable.getTableRowValues("critical"));
+        Assertions.assertEquals(this.constructList("High", 1, 0, 0, 0, 0, 1, "100,0 %"), noFilterTable.getTableRowValues("high"));
+        Assertions.assertEquals(this.constructList("Low", 1, 0, 0, 0, 0, 1, "100,0 %"), noFilterTable.getTableRowValues("low"));
+    }
+
+    @Test
     public void createStatisticsOverviewTableTest() {
         final List<AeaaVulnerability> vulnerabilities = new ArrayList<>();
 
