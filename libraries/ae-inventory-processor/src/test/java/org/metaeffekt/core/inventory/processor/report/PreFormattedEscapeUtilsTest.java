@@ -87,14 +87,14 @@ public class PreFormattedEscapeUtilsTest {
 
         Assertions.assertEquals("&copy;", escapeUtils.xml("&copy;"));
         Assertions.assertEquals("Copyright &copy; 2021 metaeffekt", escapeUtils.xml("Copyright &copy; 2021 metaeffekt"));
-        Assertions.assertEquals("Copyright &#169; 2021 metaeffekt", escapeUtils.xml("Copyright © 2021 metaeffekt"));
+        Assertions.assertEquals("Copyright © 2021 metaeffekt", escapeUtils.xml("Copyright © 2021 metaeffekt"));
 
-        Assertions.assertEquals("<lq>Copyright &#169; 2021 metaeffekt</lq>", escapeUtils.xml("<lq>Copyright © 2021 metaeffekt</lq>"));
-        Assertions.assertEquals("<p>Copyright &#169; 2021 metaeffekt</p>", escapeUtils.xml("<p>Copyright © 2021 metaeffekt</p>"));
+        Assertions.assertEquals("<lq>Copyright © 2021 metaeffekt</lq>", escapeUtils.xml("<lq>Copyright © 2021 metaeffekt</lq>"));
+        Assertions.assertEquals("<p>Copyright © 2021 metaeffekt</p>", escapeUtils.xml("<p>Copyright © 2021 metaeffekt</p>"));
 
         // event if already escaped the result removed the escapes
 
-        Assertions.assertEquals("Copyright &#169; 2021 metaeffekt", escapeUtils.xml("Copyright &#169; 2021 metaeffekt"));
+        Assertions.assertEquals("Copyright © 2021 metaeffekt", escapeUtils.xml("Copyright &#169; 2021 metaeffekt"));
         Assertions.assertEquals("<codeph>Paragraph</codeph>", escapeUtils.xml("<codeph>Paragraph</codeph>"));
         Assertions.assertEquals("<p>Paragraph</p>", escapeUtils.xml("&lt;p&gt;Paragraph&lt;/p&gt;"));
 

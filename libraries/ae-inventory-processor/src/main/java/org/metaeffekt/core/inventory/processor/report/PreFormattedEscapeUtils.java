@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
