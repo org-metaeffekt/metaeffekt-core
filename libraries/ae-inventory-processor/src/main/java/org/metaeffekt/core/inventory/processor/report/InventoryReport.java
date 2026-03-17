@@ -17,7 +17,7 @@ package org.metaeffekt.core.inventory.processor.report;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;

@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.maven.jira.template;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -90,7 +89,7 @@ public class TemplateProcessor {
 
         context.put("templateProcessor", this);
 
-        context.put("StringEscapeUtils", StringEscapeUtils.class);
+        context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
 
         context.put("RegExUtils", RegExUtils.class);
 
