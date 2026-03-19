@@ -50,8 +50,6 @@ public class TemplateProcessor {
         properties.put(Velocity.FILE_RESOURCE_LOADER_PATH, templateResourcePath);
         properties.put(Velocity.FILE_RESOURCE_LOADER_CACHE, false);
         properties.put(Velocity.INPUT_ENCODING, ENCODING_UTF_8);
-        properties.put(Velocity.OUTPUT_ENCODING, ENCODING_UTF_8);
-        properties.put(Velocity.SET_NULL_ALLOWED, true);
 
         ve = new VelocityEngine(properties);
     }
@@ -88,8 +86,6 @@ public class TemplateProcessor {
         context.put("esc", new EscapeTool());
 
         context.put("templateProcessor", this);
-
-        context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
 
         context.put("RegExUtils", RegExUtils.class);
 

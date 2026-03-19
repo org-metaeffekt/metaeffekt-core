@@ -163,7 +163,6 @@ public class DependenciesDitaReport {
         properties.put(Velocity.RESOURCE_LOADER, "class, file");
         properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
         properties.put(Velocity.INPUT_ENCODING, ENCODING_UTF_8);
-        properties.put(Velocity.OUTPUT_ENCODING, ENCODING_UTF_8);
 
         VelocityEngine velocityEngine = new VelocityEngine(properties);
         Template template = velocityEngine.getTemplate(templateResourcePath);

@@ -705,8 +705,6 @@ public class InventoryReport {
         properties.put(Velocity.RESOURCE_LOADER, "class, file");
         properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
         properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.OUTPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.SET_NULL_ALLOWED, true);
         //https://velocity.apache.org/engine/1.7/developer-guide.html#velocimacro
         properties.put("velocimacro.arguments.strict", "true");
 
@@ -725,7 +723,6 @@ public class InventoryReport {
         context.put("assetAdapter", inventoryReportAdapters.getAssetReportAdapter());
         context.put("inventoryReportAdapter", inventoryReportAdapters.getInventoryReportAdapter());
         context.put("report", this);
-        context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
         context.put("utils", reportUtils);
 
