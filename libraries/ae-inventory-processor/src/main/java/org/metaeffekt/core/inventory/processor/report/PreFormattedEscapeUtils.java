@@ -15,8 +15,10 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.text.translate.CharSequenceTranslator;
+import org.apache.commons.text.translate.NumericEntityEscaper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,22 +58,24 @@ public class PreFormattedEscapeUtils {
     }
 
     private void putEscaped(Map<String, String> map, String value) {
-        map.put(value, StringEscapeUtils.escapeXml(value));
+        map.put(value, StringEscapeUtils.escapeXml10(value));
     }
 
     private void putBalancedEscaped(Map<Pair<String, String>, Pair<String, String>> map, String startTag, String endTag) {
-        map.put(Pair.of(StringEscapeUtils.escapeXml(startTag), StringEscapeUtils.escapeXml(endTag)), Pair.of(startTag, endTag));
+        map.put(Pair.of(StringEscapeUtils.escapeXml10(startTag), StringEscapeUtils.escapeXml10(endTag)), Pair.of(startTag, endTag));
     }
 
     private void putBalancedEscapedAndRedefine(Map<Pair<String, String>, Pair<String, String>> map, String replacementStartTag, String replacementEndTag, String startTag, String endTag) {
-        map.put(Pair.of(StringEscapeUtils.escapeXml(startTag), StringEscapeUtils.escapeXml(endTag)), Pair.of(replacementStartTag, replacementEndTag));
+        map.put(Pair.of(StringEscapeUtils.escapeXml10(startTag), StringEscapeUtils.escapeXml10(endTag)), Pair.of(replacementStartTag, replacementEndTag));
     }
 
     public String xml(String string) {
         if (string == null) return null;
 
         // escape all xml
-        String escaped = StringEscapeUtils.escapeXml(StringEscapeUtils.unescapeXml(string));
+        final CharSequenceTranslator customEscaper = StringEscapeUtils.ESCAPE_XML10.with(NumericEntityEscaper.above(0xa1));
+        final CharSequenceTranslator customUnescaper = StringEscapeUtils.UNESCAPE_XML;
+        String escaped = customEscaper.translate(customUnescaper.translate(string));
 
         // unescape in certain cases
 

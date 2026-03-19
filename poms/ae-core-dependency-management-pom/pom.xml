@@ -26,8 +26,9 @@
         <ant.version>1.10.13</ant.version>
         <asm.version>5.2</asm.version>
         <assertj.version>3.15.0</assertj.version>
-        <commons.lang3.version>3.12.0</commons.lang3.version>
+        <commons.lang3.version>3.18.0</commons.lang3.version>
         <commons.lang.version>2.6</commons.lang.version>
+        <commons.text.version>1.14.0</commons.text.version>
         <commons.io.version>2.14.0</commons.io.version>
         <commons.codec.version>1.15</commons.codec.version>
         <commons.collections4.version>4.4</commons.collections4.version>
@@ -504,6 +505,13 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons.lang3.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons.text.version}</version>
                 <scope>compile</scope>
             </dependency>
 

@@ -18,7 +18,6 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa.store;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -524,7 +523,7 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             if (name.startsWith("cert ")) {
                 return name.replaceFirst("cert ", "CERT-").toUpperCase();
             } else {
-                return WordUtils.capitalize(name);
+                return StringUtils.capitalize(name);
             }
         }
 

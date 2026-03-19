@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.eol;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaTimeUtils;
 
 import java.util.Date;

@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.relationship;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedHashMap;
 import java.util.List;
