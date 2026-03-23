@@ -8,6 +8,10 @@
     <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
+    <prerequisites>
+        <maven>3.9.0</maven>
+    </prerequisites>
+
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-poms</artifactId>

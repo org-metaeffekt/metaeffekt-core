@@ -67,7 +67,7 @@
         <tukaani.xz.version>1.9</tukaani.xz.version>
         <luben.zstd.version>1.5.5-11</luben.zstd.version>
 
-        <minimal.maven.version>3.0.5</minimal.maven.version>
+        <maven.version>3.9.14</maven.version>
         <maven.plugin.testing.harness.version>2.1</maven.plugin.testing.harness.version>
     </properties>
 
@@ -565,7 +565,7 @@
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-core</artifactId>
-                <version>${minimal.maven.version}</version>
+                <version>${maven.version}</version>
                 <scope>compile</scope>
                 <exclusions>
                     <exclusion>
@@ -586,28 +586,28 @@
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-artifact</artifactId>
-                <version>${minimal.maven.version}</version>
+                <version>${maven.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-compat</artifactId>
-                <version>${minimal.maven.version}</version>
+                <version>${maven.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-model</artifactId>
-                <version>${minimal.maven.version}</version>
+                <version>${maven.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-plugin-api</artifactId>
-                <version>${minimal.maven.version}</version>
+                <version>${maven.version}</version>
                 <scope>compile</scope>
             </dependency>
 
