@@ -160,8 +160,8 @@ public class DependenciesDitaReport {
             throws Exception {
         String ENCODING_UTF_8 = "UTF-8";
         Properties properties = new Properties();
-        properties.put(Velocity.RESOURCE_LOADER, "class, file");
-        properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
+        properties.put(Velocity.RESOURCE_LOADERS, "class, file");
+        properties.put("resource.loader.class.class", ClasspathResourceLoader.class.getName());
         properties.put(Velocity.INPUT_ENCODING, ENCODING_UTF_8);
 
         VelocityEngine velocityEngine = new VelocityEngine(properties);

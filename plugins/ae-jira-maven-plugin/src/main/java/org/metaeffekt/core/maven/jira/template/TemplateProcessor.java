@@ -46,7 +46,7 @@ public class TemplateProcessor {
      */
     public TemplateProcessor(String templateResourcePath) {
         Properties properties = new Properties();
-        properties.put(Velocity.RESOURCE_LOADER, RESOURCE_LOADING);
+        properties.put(Velocity.RESOURCE_LOADERS, RESOURCE_LOADING);
         properties.put(Velocity.FILE_RESOURCE_LOADER_PATH, templateResourcePath);
         properties.put(Velocity.FILE_RESOURCE_LOADER_CACHE, false);
         properties.put(Velocity.INPUT_ENCODING, ENCODING_UTF_8);
