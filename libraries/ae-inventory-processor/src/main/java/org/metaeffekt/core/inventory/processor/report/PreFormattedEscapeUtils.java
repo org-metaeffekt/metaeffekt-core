@@ -23,7 +23,14 @@ import org.apache.commons.text.translate.NumericEntityEscaper;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Escape xml with a custom translator. Uses {@code StringEscapeUtils.ESCAPE_XML10} but escapes every character
+ * above {@code 0xa1} as unicode.
+ */
 public class PreFormattedEscapeUtils {
+
+    private static final CharSequenceTranslator customEscaper = StringEscapeUtils.ESCAPE_XML10.with(NumericEntityEscaper.above(0xa1));
+    private static final CharSequenceTranslator customUnescaper = StringEscapeUtils.UNESCAPE_XML;
 
     private final Map<String, String> symbols = new HashMap<>();
     private final Map<String, String> characters = new HashMap<>();
@@ -73,8 +80,6 @@ public class PreFormattedEscapeUtils {
         if (string == null) return null;
 
         // escape all xml
-        final CharSequenceTranslator customEscaper = StringEscapeUtils.ESCAPE_XML10.with(NumericEntityEscaper.above(0xa1));
-        final CharSequenceTranslator customUnescaper = StringEscapeUtils.UNESCAPE_XML;
         String escaped = customEscaper.translate(customUnescaper.translate(string));
 
         // unescape in certain cases
