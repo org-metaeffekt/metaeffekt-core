@@ -22,7 +22,7 @@ import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 
 public abstract class AbstractProjectAwareConfiguredMojo extends AbstractProjectAwareMojo {
 
-    @Parameter(defaultValue = "${project}", required = true, readonly = true)
+    @Parameter(property = "project", required = true, readonly = true)
     private MavenProject project;
 
     @Override
@@ -37,9 +37,7 @@ public abstract class AbstractProjectAwareConfiguredMojo extends AbstractProject
             return (T) instanceClass.newInstance();
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("Cannot access class: " + className, e);
-        } catch (InstantiationException e) {
-            throw new IllegalStateException("Cannot instantiate class: " + className, e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException("Cannot instantiate class: " + className, e);
         } catch (ClassCastException e) {
             throw new IllegalStateException("Instantiated class not of expected type " + type + ", : " + className, e);
