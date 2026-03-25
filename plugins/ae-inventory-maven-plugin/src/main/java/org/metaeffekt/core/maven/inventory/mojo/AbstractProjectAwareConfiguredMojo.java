@@ -22,14 +22,6 @@ import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 
 public abstract class AbstractProjectAwareConfiguredMojo extends AbstractProjectAwareMojo {
 
-    // FIXME: using mixed annotations
-    /**
-     * The project to be checked: the current project (readonly)
-     *
-     * @parameter default-value="${project}"
-     * @required
-     * @readonly
-     */
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject project;
 

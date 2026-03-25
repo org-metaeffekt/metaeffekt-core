@@ -16,6 +16,8 @@
 package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
@@ -26,15 +28,11 @@ import java.io.IOException;
 
 /**
  * Creates a report based on an existing inventory.
- *
- * @goal create-inventory-report
  */
+@Mojo(name = "create-inventory-report")
 public class InventoryReportCreationMojo extends AbstractInventoryReportCreationMojo {
 
-    /**
-     * @parameter
-     * @required
-     */
+    @Parameter(required = true)
     private File inventory;
 
     @Override
