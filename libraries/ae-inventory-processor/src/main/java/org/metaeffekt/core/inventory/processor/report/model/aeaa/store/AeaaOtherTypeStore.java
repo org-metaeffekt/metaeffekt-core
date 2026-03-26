@@ -15,14 +15,17 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.store;
 
-import java.util.Arrays;
-import java.util.Collection;
+import org.json.JSONArray;
+
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class AeaaOtherTypeStore extends AeaaContentIdentifierStore<AeaaOtherTypeIdentifier> {
 
+    @Deprecated
     public final static AeaaOtherTypeIdentifier CWE = new AeaaOtherTypeIdentifier("CWE", "CWE", "",
             Pattern.compile("(CWE-\\d+)", Pattern.CASE_INSENSITIVE));
+    @Deprecated
     public final static AeaaOtherTypeIdentifier CAPEC = new AeaaOtherTypeIdentifier("CAPEC", "CAPEC", "",
             Pattern.compile("(CAPEC-\\d+)", Pattern.CASE_INSENSITIVE));
     public final static AeaaOtherTypeIdentifier CPE = new AeaaOtherTypeIdentifier("CPE", "CPE", "",
@@ -46,6 +49,45 @@ public class AeaaOtherTypeStore extends AeaaContentIdentifierStore<AeaaOtherType
 
     protected AeaaOtherTypeStore() {
         super(AeaaOtherTypeIdentifier.class);
+    }
+
+    // CHECK FOR CWE AND CAPEC
+    public Map<AeaaContentIdentifierStore.AeaaContentIdentifier, Set<String>> fromJsonMultipleReferencedIdsConvertDeprecated(JSONArray json) {
+        Map<AeaaOtherTypeIdentifier, Set<String>> otherTypeIdentifierSetMap = super.fromJsonMultipleReferencedIds(json);
+
+        return extractAndConvertDeprecated(otherTypeIdentifierSetMap);
+    }
+
+    public Map<AeaaContentIdentifierStore.AeaaContentIdentifier, Set<String>> fromListMultipleReferencedIdsConvertDeprecated(List<Map<String, Object>> map) {
+        final Map<AeaaOtherTypeIdentifier, Set<String>> referencedIds = new HashMap<>();
+
+        for (Map<String, Object> entry : map) {
+            final AeaaSingleContentIdentifierParseResult<AeaaOtherTypeIdentifier> pair = fromMap(entry);
+            final AeaaOtherTypeIdentifier identifier = pair.getIdentifier();
+            final String id = pair.getId();
+
+            referencedIds.computeIfAbsent(identifier, k -> new HashSet<>()).add(id);
+        }
+
+        return extractAndConvertDeprecated(referencedIds);
+    }
+
+    private Map<AeaaContentIdentifier, Set<String>> extractAndConvertDeprecated(Map<AeaaOtherTypeIdentifier, Set<String>> otherTypeIdentifierSetMap) {
+        Map<AeaaContentIdentifier, Set<String>> otherAndThreatTypeIdentifierSetMap = new HashMap<>(otherTypeIdentifierSetMap);
+
+        Set<String> referencedCwes = otherAndThreatTypeIdentifierSetMap.get(CWE);
+        if (referencedCwes != null) {
+            otherAndThreatTypeIdentifierSetMap.remove(CWE);
+            otherAndThreatTypeIdentifierSetMap.put(AeaaThreatTypeStore.CWE, referencedCwes);
+        }
+
+        Set<String> referencedCapecs = otherAndThreatTypeIdentifierSetMap.get(CAPEC);
+        if (referencedCapecs != null) {
+            otherAndThreatTypeIdentifierSetMap.remove(CAPEC);
+            otherAndThreatTypeIdentifierSetMap.put(AeaaThreatTypeStore.CAPEC, referencedCapecs);
+        }
+
+        return otherAndThreatTypeIdentifierSetMap;
     }
 
     @Override

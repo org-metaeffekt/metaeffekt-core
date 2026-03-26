@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -23,9 +24,11 @@ import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaAdvisoryEntry;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.mitre.AeaaAttackPattern;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.mitre.AeaaCapecEntry;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.mitre.AeaaCweEntry;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.mitre.AeaaWeakness;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.*;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.threat.AeaaThreatReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -33,6 +36,8 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Getter
+@EqualsAndHashCode(callSuper = true, exclude = {"affectedArtifacts", "weaknesses", "attackPatterns"})
 public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModelBase, DC extends AeaaMatchableDetailsAmbDataClass<AMB, DC>> extends AeaaAmbDataClass<AMB, DC> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AeaaMatchableDetailsAmbDataClass.class);
@@ -48,6 +53,7 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
         add(VulnerabilityMetaData.Attribute.REFERENCED_SECURITY_ADVISORIES.getKey());
         add(AdvisoryMetaData.Attribute.REFERENCED_VULNERABILITIES.getKey());
         add(VulnerabilityMetaData.Attribute.REFERENCED_VULNERABILITIES.getKey());
+        add(VulnerabilityMetaData.Attribute.REFERENCED_THREAT_MODEL_ELEMENTS.getKey());
         add(AdvisoryMetaData.Attribute.REFERENCED_OTHER.getKey());
         add(VulnerabilityMetaData.Attribute.WEAKNESS.getKey());
         add(VulnerabilityMetaData.Attribute.WEAKNESS_DATA.getKey());
@@ -62,7 +68,8 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
                 "source", "sourceImplementation",
                 "dataFillingSources", "matchingSources",
                 "referencedIds", // legacy property
-                "referencedSecurityAdvisories", "referencedVulnerabilities", "referencedOtherIds",
+                "referencedSecurityAdvisories", "referencedVulnerabilities",
+                "referencedWeaknesses", "referencedAttackPatterns", "referencedOtherIds",
                 "cwe", "cweData", "capecData",
                 "retainedVulnerableSoftwareConfigurations"
         ));
@@ -70,6 +77,7 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
 
     protected final Map<AeaaVulnerabilityTypeIdentifier<?>, Set<String>> referencedVulnerabilities = new HashMap<>();
     protected final Map<AeaaAdvisoryTypeIdentifier<?>, Set<String>> referencedSecurityAdvisories = new HashMap<>();
+    protected final Map<AeaaThreatTypeIdentifier<?>, Set<String>> referencedThreats = new HashMap<>();
     protected final Map<AeaaOtherTypeIdentifier, Set<String>> referencedOtherIds = new HashMap<>();
 
     protected final List<AeaaDataSourceIndicator> matchingSources = new ArrayList<>();
@@ -86,79 +94,22 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
     protected final Map<String, Set<Artifact>> affectedArtifacts = new HashMap<>();
 
     @Getter
-    protected final List<AeaaCweEntry> weaknesses = new ArrayList<>();
+    private final Set<AeaaWeakness> weaknesses = new HashSet<>();
+
     @Getter
-    protected final List<AeaaCapecEntry> attackPatterns = new ArrayList<>();
+    private final Set<AeaaAttackPattern> attackPatterns = new HashSet<>();
 
     public abstract AeaaContentIdentifierStore.AeaaContentIdentifier getSourceIdentifier();
 
-    public void addWeakness(String id) {
-        if (StringUtils.hasText(id)) this.addWeakness(new AeaaCweEntry(id));
-    }
-
-    public void addWeakness(Collection<String> ids) {
-        ids.forEach(this::addWeakness);
-    }
-
-    public Set<String> getWeaknessIds() {
-        return getWeaknesses().stream().map(AeaaCweEntry::getId).collect(Collectors.toSet());
-    }
-
-    public void addWeakness(AeaaCweEntry weakness) {
-        if (weakness == null) return;
-
-        final AeaaCweEntry knownWeakness = findWeakness(weakness.getId());
-        if (knownWeakness == null) {
-            weaknesses.add(weakness);
-        } else {
-            if (StringUtils.isEmpty(knownWeakness.getName())) {
-                weaknesses.remove(knownWeakness);
-                weaknesses.add(weakness);
-            }
-        }
-
-        this.addOtherReferencedId(AeaaOtherTypeStore.CWE, weakness.getId());
-    }
-
-    public AeaaCweEntry findWeakness(String id) {
-        return this.weaknesses.stream()
-                .filter(c -> c.getId().equals(id))
-                .findFirst().orElse(null);
-    }
-
-    public void addAttackPattern(String id) {
-        if (StringUtils.hasText(id)) this.addAttackPattern(new AeaaCapecEntry(id));
-    }
-
-    public void addAttackPattern(AeaaCapecEntry attackPattern) {
-        if (attackPattern == null) return;
-
-        final AeaaCapecEntry knownAttackPattern = findAttackPattern(attackPattern.getId());
-        if (knownAttackPattern == null) {
-            attackPatterns.add(attackPattern);
-        } else {
-            if (StringUtils.isEmpty(knownAttackPattern.getName())) {
-                attackPatterns.remove(knownAttackPattern);
-                attackPatterns.add(attackPattern);
-            }
-        }
-
-        this.addOtherReferencedId(AeaaOtherTypeStore.CAPEC, attackPattern.getId());
-    }
-
-    public Set<String> getAttackPatternIds() {
-        return getAttackPatterns().stream().map(AeaaCapecEntry::getId).collect(Collectors.toSet());
-    }
-
-    public AeaaCapecEntry findAttackPattern(String id) {
-        return this.attackPatterns.stream()
-                .filter(c -> c.getId().equals(id))
-                .findFirst().orElse(null);
-    }
-
     public DC addMatchingSource(AeaaDataSourceIndicator matchingSource) {
         try {
-            this.matchingSources.add(matchingSource);
+            if (matchingSource == null) {
+                LOG.warn("Attempted to add null matching source to {}", this.getClass().getSimpleName());
+                return (DC) this;
+            }
+            synchronized (this.matchingSources) {
+                this.matchingSources.add(matchingSource);
+            }
             if (matchingSource.getMatchReason() instanceof AeaaDataSourceIndicator.ArtifactReason) {
                 final AeaaDataSourceIndicator.ArtifactReason artifactReason = (AeaaDataSourceIndicator.ArtifactReason) matchingSource.getMatchReason();
                 if (artifactReason.hasArtifact()) {
@@ -172,55 +123,27 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
         }
     }
 
-    public List<AeaaDataSourceIndicator> getMatchingSources() {
-        return matchingSources;
-    }
-
     public DC addDataSource(AeaaContentIdentifierStore.AeaaContentIdentifier dataSource) {
         this.dataSources.add(dataSource);
         return (DC) this;
     }
 
-    public Set<AeaaContentIdentifierStore.AeaaContentIdentifier> getDataSources() {
-        return dataSources;
-    }
-
-    public Set<String> getWellFormedDataSources() {
-        final Set<AeaaContentIdentifierStore.AeaaContentIdentifier> sources = new HashSet<>(dataSources);
-        sources.add(getSourceIdentifier());
-        return sources.stream()
-                .map(AeaaContentIdentifierStore.AeaaContentIdentifier::getWellFormedName)
-                .collect(Collectors.toSet());
-    }
-
-    public Map<String, Set<Artifact>> getAffectedArtifacts() {
-        return affectedArtifacts;
-    }
-
     public Set<Artifact> getAffectedArtifactsByKey(String key) {
-        return affectedArtifacts.getOrDefault(key, Collections.emptySet());
+        synchronized (this.affectedArtifacts) {
+            return affectedArtifacts.getOrDefault(key, Collections.emptySet());
+        }
     }
 
     public Set<Artifact> getAffectedArtifactsByDefaultKey() {
         return getAffectedArtifactsByKey(Artifact.Attribute.VULNERABILITY.getKey());
     }
 
-    /**
-     * Manually append the id of this instance to the given artifact's attribute with the given key.
-     * <p>
-     * If the goal is to append the id to the attribute {@link Artifact.Attribute#VULNERABILITY}, use the
-     * {@link AeaaMatchableDetailsAmbDataClass#matchingSources} instead, which will automatically append the id to the
-     * {@link Artifact.Attribute#VULNERABILITY} attribute if the indicator reason is an
-     * {@link AeaaDataSourceIndicator.ArtifactReason} instance.
-     *
-     * @param key      The key of the attribute to append the id to.
-     * @param artifact The artifact to append the id to.
-     * @return This instance for chaining.
-     */
     public DC manuallyAffectsArtifact(String key, Artifact artifact) {
         if (artifact != null) {
-            this.affectedArtifacts.computeIfAbsent(key, k -> new HashSet<>())
-                    .add(artifact);
+            synchronized (this.affectedArtifacts) {
+                this.affectedArtifacts.computeIfAbsent(key, k -> new HashSet<>())
+                        .add(artifact);
+            }
 
             if (!Artifact.Attribute.VULNERABILITY.getKey().equals(key)) {
                 // some vulnerabilities are removed, such as the ones that are fixed by a KB (InventoryAttribute.VULNERABILITIES_FIXED_BY_KB),
@@ -234,26 +157,16 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
         return (DC) this;
     }
 
-    /**
-     * Manually append the id of this instance to the given artifact's attribute with the given key.
-     * <p>
-     * If the goal is to append the id to the attribute {@link Artifact.Attribute#VULNERABILITY}, use the
-     * {@link AeaaMatchableDetailsAmbDataClass#matchingSources} instead, which will automatically append the id to the
-     * {@link Artifact.Attribute#VULNERABILITY} attribute if the indicator reason is an
-     * {@link AeaaDataSourceIndicator.ArtifactReason} instance.
-     *
-     * @param key      The key of the attribute to append the id to.
-     * @param artifact The artifact to append the id to.
-     * @return This instance for chaining.
-     */
     public DC manuallyAffectsArtifact(AbstractModelBase.Attribute key, Artifact artifact) {
         return manuallyAffectsArtifact(key.getKey(), artifact);
     }
 
     public DC removeAffectsArtifact(String key, Artifact artifact) {
         if (artifact != null) {
-            this.affectedArtifacts.computeIfAbsent(key, k -> new HashSet<>())
-                    .remove(artifact);
+            synchronized (this.affectedArtifacts) {
+                this.affectedArtifacts.computeIfAbsent(key, k -> new HashSet<>())
+                        .remove(artifact);
+            }
 
             final String presentVulnerabilities = artifact.get(key);
             final Set<String> vulnerabilities = StringUtils.hasText(presentVulnerabilities) ? Arrays.stream(presentVulnerabilities.split(", ")).collect(Collectors.toSet()) : new HashSet<>();
@@ -263,6 +176,16 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
         return (DC) this;
     }
 
+    public void addWeaknessUnmanaged(AeaaWeakness weakness) {
+        this.weaknesses.add(weakness);
+        this.addReferencedWeaknessId(weakness);
+    }
+
+    public void addAttackPatternUnmanaged(AeaaAttackPattern attackPattern) {
+        this.attackPatterns.add(attackPattern);
+        this.addReferencedAttackPatternId(attackPattern);
+    }
+
     // START: MANAGE REFERENCED SECURITY ADVISORIES
 
     public void addReferencedSecurityAdvisory(AeaaAdvisoryTypeIdentifier<?> source, String id) {
@@ -270,12 +193,22 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
             LOG.warn("Cannot add referenced security advisory with null source or id on advisory [{}]", this.id);
             return;
         }
-        this.referencedSecurityAdvisories.computeIfAbsent(source, k -> new LinkedHashSet<>()).add(id);
+        synchronized (this.referencedSecurityAdvisories) {
+            this.referencedSecurityAdvisories.computeIfAbsent(source, k -> new LinkedHashSet<>()).add(id);
+        }
     }
 
     public void addReferencedSecurityAdvisories(Map<AeaaAdvisoryTypeIdentifier<?>, Set<String>> referencedSecurityAdvisories) {
-        for (Map.Entry<AeaaAdvisoryTypeIdentifier<?>, Set<String>> entry : referencedSecurityAdvisories.entrySet()) {
-            this.referencedSecurityAdvisories.computeIfAbsent(entry.getKey(), k -> new LinkedHashSet<>()).addAll(entry.getValue());
+        synchronized (this.referencedSecurityAdvisories) {
+            for (Map.Entry<AeaaAdvisoryTypeIdentifier<?>, Set<String>> entry : referencedSecurityAdvisories.entrySet()) {
+                this.referencedSecurityAdvisories.computeIfAbsent(entry.getKey(), k -> new LinkedHashSet<>()).addAll(entry.getValue());
+            }
+        }
+    }
+
+    public void addReferencedSecurityAdvisories(AeaaAdvisoryTypeIdentifier<?> source, Set<String> referencedSecurityAdvisories) {
+        synchronized (this.referencedSecurityAdvisories) {
+            this.referencedSecurityAdvisories.computeIfAbsent(source, k -> new LinkedHashSet<>()).addAll(referencedSecurityAdvisories);
         }
     }
 
@@ -292,13 +225,15 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
     }
 
     public void removeReferencedSecurityAdvisory(AeaaAdvisoryTypeIdentifier<?> source, String id) {
-        this.referencedSecurityAdvisories.computeIfPresent(source, (k, v) -> {
-            v.remove(id);
-            return v;
-        });
+        synchronized (this.referencedSecurityAdvisories) {
+            this.referencedSecurityAdvisories.computeIfPresent(source, (k, v) -> {
+                v.remove(id);
+                return v;
+            });
 
-        if (this.referencedSecurityAdvisories.get(source) == null || this.referencedSecurityAdvisories.get(source).isEmpty()) {
-            this.referencedSecurityAdvisories.remove(source);
+            if (this.referencedSecurityAdvisories.get(source) == null || this.referencedSecurityAdvisories.get(source).isEmpty()) {
+                this.referencedSecurityAdvisories.remove(source);
+            }
         }
     }
 
@@ -330,6 +265,10 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
         for (Map.Entry<AeaaVulnerabilityTypeIdentifier<?>, Set<String>> entry : referencedVulnerabilities.entrySet()) {
             this.referencedVulnerabilities.computeIfAbsent(entry.getKey(), k -> new LinkedHashSet<>()).addAll(entry.getValue());
         }
+    }
+
+    public void addReferencedVulnerabilities(AeaaVulnerabilityTypeIdentifier<?> source, Collection<String> referencedVulnerabilities) {
+        this.referencedVulnerabilities.computeIfAbsent(source, k -> new LinkedHashSet<>()).addAll(referencedVulnerabilities);
     }
 
     public void addReferencedVulnerability(AeaaVulnerability vulnerability) {
@@ -369,7 +308,52 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
 
     // END: MANAGE REFERENCED VULNERABILITIES
 
-    // START: MANAGE OTHER REFERENCED IDS
+    // START: MANAGE REFERENCED THREATS
+
+    public void addReferencedThreatId(AeaaThreatTypeIdentifier<? extends AeaaThreatReference> source, String id) {
+        if (source == null || id == null) {
+            LOG.warn("Cannot add referenced threat id with null source or id [{}]", this.id);
+            return;
+        }
+        this.referencedThreats.computeIfAbsent(source, k -> new LinkedHashSet<>()).add(id);
+    }
+
+    public void addReferencedThreatIds(Map<AeaaThreatTypeIdentifier<? extends AeaaThreatReference>, Set<String>> referencedThreatIds) {
+        for (Map.Entry<AeaaThreatTypeIdentifier<? extends AeaaThreatReference>, Set<String>> entry : referencedThreatIds.entrySet()) {
+            this.referencedThreats.computeIfAbsent(entry.getKey(), k -> new LinkedHashSet<>()).addAll(entry.getValue());
+        }
+    }
+
+    public void addReferencedThreatIds(AeaaThreatTypeIdentifier<? extends AeaaThreatReference> source, Collection<String> referencedOtherIds) {
+        this.referencedThreats.computeIfAbsent(source, k -> new LinkedHashSet<>()).addAll(referencedOtherIds);
+    }
+
+    public void addReferencedWeaknessId(AeaaWeakness weakness) {
+        this.referencedThreats.computeIfAbsent((AeaaThreatTypeIdentifier<? extends AeaaThreatReference>) weakness.getSourceIdentifier(), k -> new LinkedHashSet<>()).add(weakness.getId());
+    }
+
+    public void addReferencedAttackPatternId(AeaaAttackPattern attackPattern) {
+        this.referencedThreats.computeIfAbsent((AeaaThreatTypeIdentifier<? extends AeaaThreatReference>) attackPattern.getSourceIdentifier(), k -> new LinkedHashSet<>()).add(attackPattern.getId());
+    }
+
+    public void removeReferencedThreatId(AeaaThreatTypeIdentifier<? extends AeaaThreatReference> source, String id) {
+        synchronized (this.referencedThreats) {
+            this.referencedThreats.computeIfPresent(source, (k, v) -> {
+                v.remove(id);
+                return v;
+            });
+
+            if (this.referencedThreats.get(source) == null || this.referencedThreats.get(source).isEmpty()) {
+                this.referencedThreats.remove(source);
+            }
+        }
+    }
+
+    public void removeAllReferencedWeaknesses() {
+        synchronized (this.referencedThreats) {
+            this.referencedThreats.keySet().stream().filter(AeaaThreatTypeIdentifier::isWeakness).forEach(referencedThreats::remove);
+        }
+    }
 
     public void addOtherReferencedId(AeaaOtherTypeIdentifier source, String id) {
         if (source == null || id == null) {
@@ -402,18 +386,6 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
 
     // END: MANAGE OTHER REFERENCED
 
-    public Map<AeaaVulnerabilityTypeIdentifier<?>, Set<String>> getReferencedVulnerabilities() {
-        return referencedVulnerabilities;
-    }
-
-    public Map<AeaaAdvisoryTypeIdentifier<?>, Set<String>> getReferencedSecurityAdvisories() {
-        return referencedSecurityAdvisories;
-    }
-
-    public Map<AeaaOtherTypeIdentifier, Set<String>> getReferencedOtherIds() {
-        return referencedOtherIds;
-    }
-
     public Set<String> getReferencedSecurityAdvisories(AeaaAdvisoryTypeIdentifier<?> source) {
         synchronized (this.referencedSecurityAdvisories) {
             return this.referencedSecurityAdvisories.getOrDefault(source, Collections.emptySet());
@@ -425,6 +397,49 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
             return this.referencedVulnerabilities.getOrDefault(source, Collections.emptySet());
         }
     }
+
+    public Map<AeaaThreatTypeIdentifier<? extends AeaaWeakness>, Set<String>> getAllReferencedWeaknessIds() {
+        synchronized (this.referencedThreats) {
+            return this.referencedThreats.entrySet().stream()
+                    .filter(entry -> entry.getKey().isWeakness())
+                    .collect(Collectors.toMap(entry -> ((AeaaThreatTypeIdentifier<? extends AeaaWeakness>) entry.getKey()),
+                            Map.Entry::getValue));
+        }
+    }
+
+    public Map<AeaaThreatTypeIdentifier<? extends AeaaAttackPattern>, Set<String>> getAllReferencedAttackPatternIds() {
+        synchronized (this.referencedThreats) {
+            return this.referencedThreats.entrySet().stream()
+                    .filter(entry -> entry.getKey().isAttackPattern())
+                    .collect(Collectors.toMap(entry -> ((AeaaThreatTypeIdentifier<? extends AeaaAttackPattern>) entry.getKey()),
+                            Map.Entry::getValue));
+        }
+    }
+
+    public Map<AeaaThreatTypeIdentifier<? extends AeaaThreatReference>, Set<String>> getAllReferencedThreatModelIds() {
+        synchronized (this.referencedThreats) {
+            return new HashMap<>(this.referencedThreats);
+        }
+    }
+
+    public Set<String> getReferencedWeaknessIds(AeaaThreatTypeIdentifier<? extends AeaaWeakness> source) {
+        synchronized (this.referencedThreats) {
+            return this.referencedThreats.getOrDefault(source, Collections.emptySet());
+        }
+    }
+
+    public Set<String> getAllWeaknessIds() {
+        synchronized (this.referencedThreats) {
+            return referencedThreats.keySet().stream().filter(AeaaThreatTypeIdentifier::isWeakness).flatMap(key -> (referencedThreats.getOrDefault(key, Collections.emptySet()).stream())).collect(Collectors.toSet());
+        }
+    }
+
+    public Set<String> getReferencedAttackPatternIds(AeaaThreatTypeIdentifier<? extends AeaaAttackPattern> source) {
+        synchronized (this.referencedThreats) {
+            return this.referencedThreats.getOrDefault(source, Collections.emptySet());
+        }
+    }
+
 
     public Set<String> getReferencedOtherIds(AeaaOtherTypeIdentifier source) {
         synchronized (this.referencedOtherIds) {
@@ -452,22 +467,27 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
             foundNewReferenceFormat = true;
         }
 
+        final String referencedThreats = amb.get(VulnerabilityMetaData.Attribute.REFERENCED_THREAT_MODEL_ELEMENTS);
+        if (referencedThreats != null) {
+            this.addReferencedThreatIds(AeaaThreatTypeStore.get().fromJsonMultipleReferencedIds(new JSONArray(referencedThreats)));
+        }
+
         final String referencedOtherIds = amb.get(AdvisoryMetaData.Attribute.REFERENCED_OTHER);
         if (referencedOtherIds != null) {
-            this.addOtherReferencedIds(AeaaOtherTypeStore.get().fromJsonMultipleReferencedIds(new JSONArray(referencedOtherIds)));
+            extractOtherIdsAndPotentialThreatIds(referencedOtherIds);
         }
 
         if (!foundNewReferenceFormat) {
             {
                 final String legacyReferencedIds = amb.get(AdvisoryMetaData.Attribute.REFERENCED_IDS);
                 if (legacyReferencedIds != null) {
-                    appendLegacyReferencedIds(AeaaVulnerabilityTypeStore.parseLegacyJsonReferencedIds(new JSONObject(legacyReferencedIds)));
+                    appendLegacyReferencedIds(AeaaContentIdentifierStore.parseLegacyJsonReferencedIds(new JSONObject(legacyReferencedIds)));
                 }
             }
             {
                 final String legacyReferencedIds = amb.get(AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS);
                 if (legacyReferencedIds != null) {
-                    appendLegacyReferencedIds(AeaaVulnerabilityTypeStore.parseLegacyJsonReferencedIds(new JSONObject(legacyReferencedIds)));
+                    appendLegacyReferencedIds(AeaaContentIdentifierStore.parseLegacyJsonReferencedIds(new JSONObject(legacyReferencedIds)));
                 }
             }
         }
@@ -487,23 +507,20 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
         }
 
         if (StringUtils.hasText(amb.get(VulnerabilityMetaData.Attribute.WEAKNESS_DATA))) {
-            for (AeaaCweEntry entry : AeaaCweEntry.fromJson(new JSONArray(amb.get(VulnerabilityMetaData.Attribute.WEAKNESS_DATA)))) {
-                this.addWeakness(entry);
+            for (AeaaWeakness entry : AeaaWeakness.fromJson(new JSONArray(amb.get(VulnerabilityMetaData.Attribute.WEAKNESS_DATA)))) {
+                this.addReferencedWeaknessId(entry);
             }
         } else if (StringUtils.hasText(amb.get(VulnerabilityMetaData.Attribute.WEAKNESS))) {
-            this.addWeakness(Arrays.asList(amb.get(VulnerabilityMetaData.Attribute.WEAKNESS).split(", ?")));
-        }
-        for (String id : this.getReferencedOtherIds(AeaaOtherTypeStore.CWE)) {
-            this.addWeakness(id);
+            for (String id : Arrays.asList(amb.get(VulnerabilityMetaData.Attribute.WEAKNESS).split(", ?"))) {
+                Optional<AeaaThreatTypeIdentifier<?>> threatTypeIdentifier = AeaaThreatTypeStore.get().fromId(id);
+                threatTypeIdentifier.ifPresent(type -> this.addReferencedThreatId(type, id));
+            }
         }
 
         if (StringUtils.hasText(amb.get(VulnerabilityMetaData.Attribute.CAPEC_DATA))) {
-            for (AeaaCapecEntry entry : AeaaCapecEntry.fromJson(new JSONArray(amb.get(VulnerabilityMetaData.Attribute.CAPEC_DATA)))) {
-                this.addAttackPattern(entry);
+            for (AeaaAttackPattern entry : AeaaCapecEntry.fromJson(new JSONArray(amb.get(VulnerabilityMetaData.Attribute.CAPEC_DATA)))) {
+                this.addReferencedThreatId(AeaaThreatTypeStore.CAPEC, entry.getId());
             }
-        }
-        for (String id : this.getReferencedOtherIds(AeaaOtherTypeStore.CAPEC)) {
-            this.addAttackPattern(id);
         }
     }
 
@@ -511,39 +528,38 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
     public void appendToBaseModel(AMB modelBase) {
         super.appendToBaseModel(modelBase);
 
-        if (!this.referencedVulnerabilities.isEmpty()) {
-            modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_VULNERABILITIES.getKey(), AeaaContentIdentifierStore.toJson(this.referencedVulnerabilities).toString());
-        } else {
-            modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_VULNERABILITIES.getKey(), null);
+        synchronized (this.referencedVulnerabilities) {
+            if (!this.referencedVulnerabilities.isEmpty()) {
+                modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_VULNERABILITIES.getKey(), AeaaContentIdentifierStore.toJson(this.referencedVulnerabilities).toString());
+            } else {
+                modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_VULNERABILITIES.getKey(), null);
+            }
         }
 
-        if (!this.referencedSecurityAdvisories.isEmpty()) {
-            modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_SECURITY_ADVISORIES.getKey(), AeaaContentIdentifierStore.toJson(this.referencedSecurityAdvisories).toString());
-        } else {
-            modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_SECURITY_ADVISORIES.getKey(), null);
+        synchronized (this.referencedSecurityAdvisories) {
+            if (!this.referencedSecurityAdvisories.isEmpty()) {
+                modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_SECURITY_ADVISORIES.getKey(), AeaaContentIdentifierStore.toJson(this.referencedSecurityAdvisories).toString());
+            } else {
+                modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_SECURITY_ADVISORIES.getKey(), null);
+            }
         }
 
-        if (!this.weaknesses.isEmpty()) {
-            modelBase.set(VulnerabilityMetaData.Attribute.WEAKNESS, String.join(", ", this.getWeaknessIds()));
+        if (!this.referencedThreats.isEmpty()) {
+            modelBase.set(VulnerabilityMetaData.Attribute.REFERENCED_THREAT_MODEL_ELEMENTS.getKey(), AeaaContentIdentifierStore.toJson(this.referencedThreats).toString());
         } else {
-            modelBase.set(VulnerabilityMetaData.Attribute.WEAKNESS, null);
-        }
-        if (!this.weaknesses.isEmpty()) {
-            modelBase.set(VulnerabilityMetaData.Attribute.WEAKNESS_DATA, new JSONArray(this.weaknesses.stream().map(AeaaCweEntry::toJson).collect(Collectors.toList())).toString());
-        } else {
-            modelBase.set(VulnerabilityMetaData.Attribute.WEAKNESS_DATA, null);
-        }
-
-        if (!this.attackPatterns.isEmpty()) {
-            modelBase.set(VulnerabilityMetaData.Attribute.CAPEC_DATA, new JSONArray(this.attackPatterns.stream().map(AeaaCapecEntry::toJson).collect(Collectors.toList())).toString());
-        } else {
-            modelBase.set(VulnerabilityMetaData.Attribute.CAPEC_DATA, null);
+            modelBase.set(VulnerabilityMetaData.Attribute.REFERENCED_THREAT_MODEL_ELEMENTS.getKey(), null);
         }
 
         if (!this.referencedOtherIds.isEmpty()) {
             modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_OTHER.getKey(), AeaaContentIdentifierStore.toJson(this.referencedOtherIds).toString());
         } else {
             modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_OTHER.getKey(), null);
+        }
+
+        if (!this.getReferencedWeaknessIds(AeaaThreatTypeStore.CWE).isEmpty()) {
+            modelBase.set(VulnerabilityMetaData.Attribute.WEAKNESS, String.join(", ", this.getReferencedWeaknessIds(AeaaThreatTypeStore.CWE)));
+        } else {
+            modelBase.set(VulnerabilityMetaData.Attribute.WEAKNESS, null);
         }
 
         final AeaaContentIdentifierStore.AeaaContentIdentifier sourceIdentifier = this.getSourceIdentifier();
@@ -553,36 +569,44 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
             modelBase.set(sourceKey, sourceIdentifier.getName());
             modelBase.set(sourceImplementationKey, sourceIdentifier.getImplementation());
         } else {
-            LOG.warn("[{}] does not have source to write into [{}] when converting to abstract model base", this.getId(), sourceKey);
+            LOG.warn("[{}] does not have source to write into [{}] when converting to [{}]", this.getId(), sourceKey, modelBase.getClass().getSimpleName());
             modelBase.set(sourceKey, null);
             modelBase.set(sourceImplementationKey, null);
         }
 
         final JSONObject legacyReferencedIds = AeaaContentIdentifierStore.mergeIntoLegacyJson(Arrays.asList(this.referencedVulnerabilities, this.referencedSecurityAdvisories, this.referencedOtherIds));
         if (!legacyReferencedIds.isEmpty()) {
+            modelBase.set(AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS.getKey(), legacyReferencedIds.toString());
             modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_IDS.getKey(), legacyReferencedIds.toString());
         } else {
+            modelBase.set(AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS.getKey(), null);
             modelBase.set(AdvisoryMetaData.Attribute.REFERENCED_IDS.getKey(), null);
         }
 
-        if (!this.matchingSources.isEmpty()) {
-            modelBase.set(AdvisoryMetaData.Attribute.MATCHING_SOURCE.getKey(), AeaaDataSourceIndicator.toJson(this.matchingSources).toString());
+        synchronized (this.matchingSources) {
+            if (!this.matchingSources.isEmpty()) {
+                modelBase.set(AdvisoryMetaData.Attribute.MATCHING_SOURCE.getKey(), AeaaDataSourceIndicator.toJson(this.matchingSources).toString());
 
-            // extract all CPE from the CPE sources into VulnerabilityMetaData.Attribute.PRODUCT_URIS
-            final Set<String> productUris = this.matchingSources.stream()
-                    .filter(Objects::nonNull)
-                    .map(AeaaDataSourceIndicator::getMatchReason)
-                    .filter(s -> s instanceof AeaaDataSourceIndicator.ArtifactCpeReason)
-                    .map(s -> ((AeaaDataSourceIndicator.ArtifactCpeReason) s).getCpe())
-                    .collect(Collectors.toSet());
-            if (!productUris.isEmpty()) {
-                modelBase.set(VulnerabilityMetaData.Attribute.PRODUCT_URIS.getKey(), String.join(", ", productUris));
+                // extract all CPE from the CPE sources into VulnerabilityMetaData.Attribute.PRODUCT_URIS
+                try {
+                    final Set<String> productUris = this.matchingSources.stream()
+                            .filter(Objects::nonNull)
+                            .map(AeaaDataSourceIndicator::getMatchReason)
+                            .filter(s -> s instanceof AeaaDataSourceIndicator.ArtifactCpeReason)
+                            .map(s -> ((AeaaDataSourceIndicator.ArtifactCpeReason) s).getCpe())
+                            .collect(Collectors.toSet());
+                    if (!productUris.isEmpty()) {
+                        modelBase.set(VulnerabilityMetaData.Attribute.PRODUCT_URIS.getKey(), String.join(", ", productUris));
+                    } else {
+                        modelBase.set(VulnerabilityMetaData.Attribute.PRODUCT_URIS.getKey(), null);
+                    }
+                } catch (Exception e) {
+                    LOG.error("Error while converting to [{}] while extracting product URIs from CPE sources for [{}]: {}", modelBase.getClass().getSimpleName(), this.getId(), this.matchingSources, e);
+                }
+
             } else {
-                modelBase.set(VulnerabilityMetaData.Attribute.PRODUCT_URIS.getKey(), null);
+                modelBase.set(AdvisoryMetaData.Attribute.MATCHING_SOURCE.getKey(), null);
             }
-
-        } else {
-            modelBase.set(AdvisoryMetaData.Attribute.MATCHING_SOURCE.getKey(), null);
         }
 
         if (!this.dataSources.isEmpty()) {
@@ -598,8 +622,8 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
 
         this.addReferencedVulnerabilities(dataClass.getReferencedVulnerabilities());
         this.addReferencedSecurityAdvisories(dataClass.getReferencedSecurityAdvisories());
-        dataClass.getWeaknesses().forEach(this::addWeakness);
-        dataClass.getAttackPatterns().forEach(this::addAttackPattern);
+        this.addReferencedThreatIds(dataClass.getReferencedThreats());
+
         this.addOtherReferencedIds(dataClass.getReferencedOtherIds());
 
         this.matchingSources.addAll(dataClass.getMatchingSources());
@@ -610,36 +634,43 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
     public void appendFromMap(Map<String, Object> input) {
         super.appendFromMap(input);
 
+        boolean hadReferencedIds = false;
         if (input.containsKey("referencedVulnerabilities") && input.get("referencedVulnerabilities") instanceof List) {
             this.addReferencedVulnerabilities(AeaaVulnerabilityTypeStore.get().fromListMultipleReferencedIds((List<Map<String, Object>>) input.get("referencedVulnerabilities")));
+            hadReferencedIds = true;
         }
 
         if (input.containsKey("referencedSecurityAdvisories") && input.get("referencedSecurityAdvisories") instanceof List) {
             this.addReferencedSecurityAdvisories(AeaaAdvisoryTypeStore.get().fromListMultipleReferencedIds((List<Map<String, Object>>) input.get("referencedSecurityAdvisories")));
+            hadReferencedIds = true;
         }
 
-        for (String weakness : (Collection<String>) input.getOrDefault("cwe", Collections.EMPTY_SET)) {
-            this.addWeakness(weakness);
+        if (input.containsKey("referencedWeaknesses") && input.get("referencedWeaknesses") instanceof List) {
+            this.addReferencedThreatIds(AeaaThreatTypeStore.get().fromListMultipleReferencedIds((List<Map<String, Object>>) input.get("referencedWeaknesses")));
         }
 
-        if (input.containsKey("cweData") && input.get("cweData") instanceof List) {
-            for (AeaaCweEntry entry : AeaaCweEntry.fromJson(new JSONArray((List) input.get("cweData")))) {
-                this.addWeakness(entry);
-            }
+        if (input.containsKey("referencedAttackPatterns") && input.get("referencedAttackPatterns") instanceof List) {
+            this.addReferencedThreatIds(AeaaThreatTypeStore.get().fromListMultipleReferencedIds((List<Map<String, Object>>) input.get("referencedAttackPatterns")));
         }
 
-        if (input.get("capecData") != null && input.get("capecData") instanceof List) {
-            for (AeaaCapecEntry entry : AeaaCapecEntry.fromJson(new JSONArray((List) input.get("capecData")))) {
-                this.addAttackPattern(entry);
-            }
+        if (input.containsKey("referencedThreats") && input.get("referencedThreats") instanceof List) {
+            this.addReferencedThreatIds(AeaaThreatTypeStore.get().fromListMultipleReferencedIds((List<Map<String, Object>>) input.get("referencedThreats")));
         }
 
         if (input.containsKey("referencedOtherIds") && input.get("referencedOtherIds") instanceof List) {
-            this.addOtherReferencedIds(AeaaOtherTypeStore.get().fromListMultipleReferencedIds((List<Map<String, Object>>) input.get("referencedOtherIds")));
+            Map<AeaaContentIdentifierStore.AeaaContentIdentifier, Set<String>> referencedOtherIdsAndThreatIds = AeaaOtherTypeStore.get().fromListMultipleReferencedIdsConvertDeprecated((List<Map<String, Object>>) input.get("referencedOtherIds"));
+            for (AeaaContentIdentifierStore.AeaaContentIdentifier contentIdentifier : referencedOtherIdsAndThreatIds.keySet()) {
+                if (contentIdentifier instanceof AeaaThreatTypeIdentifier) {
+                    this.addReferencedThreatIds((AeaaThreatTypeIdentifier<? extends AeaaThreatReference>) contentIdentifier, referencedOtherIdsAndThreatIds.get(contentIdentifier));
+                } else if (contentIdentifier instanceof AeaaOtherTypeIdentifier) {
+                    this.addOtherReferencedIds((AeaaOtherTypeIdentifier) contentIdentifier, referencedOtherIdsAndThreatIds.get(contentIdentifier));
+                }
+            }
+            hadReferencedIds = true;
         }
 
-        if (input.containsKey("referencedIds") && input.get("referencedIds") instanceof Map) {
-            appendLegacyReferencedIds(AeaaVulnerabilityTypeStore.parseLegacyJsonReferencedIds((Map<String, Collection<String>>) input.get("referencedIds")));
+        if (!hadReferencedIds && input.containsKey("referencedIds") && input.get("referencedIds") instanceof Map) {
+            appendLegacyReferencedIds(AeaaContentIdentifierStore.parseLegacyJsonReferencedIds((Map<String, Collection<String>>) input.get("referencedIds")));
         }
 
         if (input.containsKey("dataSources")) {
@@ -674,14 +705,20 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
             json.put("referencedSecurityAdvisories", AeaaContentIdentifierStore.toJson(this.referencedSecurityAdvisories));
         }
 
-        json.put("cweData", new JSONArray(this.weaknesses.stream().map(AeaaCweEntry::toJson).collect(Collectors.toList())));
-        json.put("capecData", new JSONArray(this.attackPatterns.stream().map(AeaaCapecEntry::toJson).collect(Collectors.toList())));
+        final Map<AeaaThreatTypeIdentifier<? extends AeaaWeakness>, Set<String>> weaknessIds = getAllReferencedWeaknessIds();
+        final Map<AeaaThreatTypeIdentifier<? extends AeaaAttackPattern>, Set<String>> attackPatternIds = getAllReferencedAttackPatternIds();
 
+        if (!weaknessIds.isEmpty()) {
+            json.put("referencedWeaknesses", AeaaContentIdentifierStore.toJson(weaknessIds));
+        }
+        if (!attackPatternIds.isEmpty()) {
+            json.put("referencedAttackPatterns", AeaaContentIdentifierStore.toJson(attackPatternIds));
+        }
         if (!this.referencedOtherIds.isEmpty()) {
             json.put("referencedOtherIds", AeaaContentIdentifierStore.toJson(this.referencedOtherIds));
         }
 
-        final JSONObject legacyReferencedIds = AeaaContentIdentifierStore.mergeIntoLegacyJson(Arrays.asList(this.referencedVulnerabilities, this.referencedSecurityAdvisories, this.referencedOtherIds));
+        final JSONObject legacyReferencedIds = AeaaContentIdentifierStore.mergeIntoLegacyJson(Arrays.asList(this.referencedVulnerabilities, this.referencedSecurityAdvisories));
         if (!legacyReferencedIds.isEmpty()) {
             json.put("referencedIds", legacyReferencedIds);
         }
@@ -710,6 +747,17 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
                 LOG.warn("Could not find source identifier for [{}] on [{}]", source, this.getId());
             }
             return null;
+        }
+    }
+
+    private void extractOtherIdsAndPotentialThreatIds(String referencedOtherIds) {
+        Map<AeaaContentIdentifierStore.AeaaContentIdentifier, Set<String>> referencedOtherIdsAndThreatIds = AeaaOtherTypeStore.get().fromJsonMultipleReferencedIdsConvertDeprecated(new JSONArray(referencedOtherIds));
+        for (AeaaContentIdentifierStore.AeaaContentIdentifier contentIdentifier : referencedOtherIdsAndThreatIds.keySet()) {
+            if (contentIdentifier instanceof AeaaThreatTypeIdentifier) {
+                this.addReferencedThreatIds((AeaaThreatTypeIdentifier<? extends AeaaThreatReference>) contentIdentifier, referencedOtherIdsAndThreatIds.get(contentIdentifier));
+            } else if (contentIdentifier instanceof AeaaOtherTypeIdentifier) {
+                this.addOtherReferencedIds((AeaaOtherTypeIdentifier) contentIdentifier, referencedOtherIdsAndThreatIds.get(contentIdentifier));
+            }
         }
     }
 

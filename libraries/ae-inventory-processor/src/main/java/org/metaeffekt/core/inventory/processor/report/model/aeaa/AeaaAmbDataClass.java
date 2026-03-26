@@ -15,21 +15,19 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 
+import lombok.EqualsAndHashCode;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.processor.model.AbstractModelBase;
-import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.inventory.processor.model.*;
 
 import java.util.*;
 import java.util.function.Consumer;
 
 /**
- * Mirrors structure of <code>com.metaeffekt.mirror.contents.base.AmbDataClass</code> 
+ * Mirrors structure of <code>com.metaeffekt.mirror.contents.base.AmbDataClass</code>
  * until separation of inventory report generation from ae core inventory processor.
  */
-public abstract class AeaaAmbDataClass<AMB extends AbstractModelBase, DC extends AeaaAmbDataClass<AMB, DC>>
-        implements Comparable<AeaaAmbDataClass<AMB, DC>> {
+@EqualsAndHashCode
+public abstract class AeaaAmbDataClass<AMB extends AbstractModelBase, DC extends AeaaAmbDataClass<AMB, DC>> implements Comparable<AeaaAmbDataClass<AMB, DC>> {
 
     protected final static Set<String> CONVERSION_KEYS_AMB = new HashSet<>(Arrays.asList(
             Artifact.Attribute.ID.getKey(),
@@ -125,6 +123,12 @@ public abstract class AeaaAmbDataClass<AMB extends AbstractModelBase, DC extends
             this.setId(baseModel.get(AdvisoryMetaData.Attribute.NAME));
         } else if (baseModel instanceof Artifact) {
             this.setId(baseModel.get(Artifact.Attribute.ID));
+        } else if (baseModel instanceof ThreatMetaData) {
+            this.setId(baseModel.get(ThreatMetaData.Attribute.ID));
+        } else if (baseModel instanceof WeaknessMetaData) {
+            this.setId(baseModel.get(WeaknessMetaData.Attribute.ID));
+        } else if (baseModel instanceof AttackPatternMetaData) {
+            this.setId(baseModel.get(AttackPatternMetaData.Attribute.ID));
         } else {
             this.setId(baseModel.get("Id"));
         }
