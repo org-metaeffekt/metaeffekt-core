@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.security.cvss.v2;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,12 +115,12 @@ public class Cvss2Test {
         LOG.info("                  Link: {}", vector.getWebEditorLink());
         LOG.info("\n");
 
-        Assert.assertEquals(base, vector.getBaseScore(), 0.01);
-        Assert.assertEquals(impact, vector.getImpactScore(), 0.01);
-        Assert.assertEquals(exploitability, vector.getExploitabilityScore(), 0.01);
-        Assert.assertEquals(temporal, vector.getTemporalScore(), 0.01);
-        Assert.assertEquals(environmental, vector.getEnvironmentalScore(), 0.01);
-        Assert.assertEquals(adjImpact, vector.getAdjustedImpactScore(), 0.01);
-        Assert.assertEquals(overall, vector.getOverallScore(), 0.01);
+        Assertions.assertEquals(base, vector.getBaseScore(), 0.01);
+        Assertions.assertEquals(impact, vector.getImpactScore(), 0.01);
+        Assertions.assertEquals(exploitability, vector.getExploitabilityScore(), 0.01);
+        Assertions.assertEquals(temporal, vector.getTemporalScore(), 0.01);
+        Assertions.assertEquals(environmental, vector.getEnvironmentalScore(), 0.01);
+        Assertions.assertEquals(adjImpact, vector.getAdjustedImpactScore(), 0.01);
+        Assertions.assertEquals(overall, vector.getOverallScore(), 0.01);
     }
 }

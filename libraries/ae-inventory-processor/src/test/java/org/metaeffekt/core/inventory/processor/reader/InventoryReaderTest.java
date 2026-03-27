@@ -16,8 +16,7 @@
 package org.metaeffekt.core.inventory.processor.reader;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.ThreatMetaData;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
@@ -27,15 +26,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 @Slf4j
 public class InventoryReaderTest {
 
     @Test
     public void checkSupportedFileExtensionsTest() {
-        Assert.assertTrue(InventoryReader.getSupportedFileExtensions().contains(".xls"));
-        Assert.assertTrue(InventoryReader.getSupportedFileExtensions().contains(".xlsx"));
-        Assert.assertTrue(InventoryReader.getSupportedFileExtensions().contains(".ser"));
+        assertTrue(InventoryReader.getSupportedFileExtensions().contains(".xls"));
+        assertTrue(InventoryReader.getSupportedFileExtensions().contains(".xlsx"));
+        assertTrue(InventoryReader.getSupportedFileExtensions().contains(".ser"));
     }
 
     @Test

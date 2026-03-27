@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.adapter.npm.PackageLockParser1;
 import org.metaeffekt.core.inventory.processor.model.Artifact;

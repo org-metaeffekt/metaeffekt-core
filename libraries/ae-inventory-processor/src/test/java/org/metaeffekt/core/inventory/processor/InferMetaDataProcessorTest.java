@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
@@ -27,7 +27,7 @@ import java.util.Properties;
 
 public class InferMetaDataProcessorTest {
 
-    @Ignore
+    @Disabled
     @Test
     public void testInfer() throws IOException {
 

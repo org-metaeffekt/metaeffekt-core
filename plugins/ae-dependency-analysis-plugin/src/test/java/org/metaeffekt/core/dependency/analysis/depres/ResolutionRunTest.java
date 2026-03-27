@@ -15,14 +15,14 @@
  */
 package org.metaeffekt.core.dependency.analysis.depres;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ResolutionRunTest {
 
@@ -44,7 +44,7 @@ public class ResolutionRunTest {
     }
 
     @Test
-    @Ignore("Used for manual testing")
+    @Disabled("Used for manual testing")
     public void testManuallyWithRealExtract() {
         File extractionDir = new File("<path>");
 
