@@ -219,19 +219,32 @@ public class DirectoryInventoryScanTest {
         Assertions.assertThat(inventory.getArtifacts().size()).isEqualTo(1543);
     }
 
+    /**
+     * Test to scan an external folder.
+     *
+     * @throws IOException
+     */
     @Ignore
     @Test
-    public void testScanExtractedFiles_ExternalNG() throws IOException {
+    public void testScanExternalFolder() throws IOException {
+
+        // enables control of different stages
+        boolean executeExtractionScan = true;
+        boolean executeRuntimeFiltering = true;
+        boolean executeAggregation = true;
+
+        // input
+        final File projectBaseDir = new File("/Users/kklein/workspace/metaeffekt-core/.examples");
 
         String caseString;
-        caseString = "case-002";
+
+        caseString = "case-001";
+        // caseString = "case-002";
         // caseString = "case-003";
         // caseString = "case-004";
         // caseString = "case-005";
         // caseString = "case-006";
 
-        // inputs
-        final File projectBaseDir = new File("<path>");
         final File scanInputDir = new File(projectBaseDir, caseString);
         final File scanDir = new File(projectBaseDir, caseString + "-scan");
 
@@ -249,13 +262,13 @@ public class DirectoryInventoryScanTest {
         FileUtils.forceMkdir(targetAggregationDir);
 
         // scan
-        if (true) {
+        if (executeExtractionScan) {
             final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
             new InventoryWriter().writeInventory(inventory, targetScanInventoryFile);
         }
 
         // filter
-        if (true) {
+        if (executeRuntimeFiltering) {
             Inventory inventory = new InventoryReader().readInventory(targetScanInventoryFile);
             InventoryUtils.filterInventoryForRuntimeArtifacts(inventory,
                     inventory.getAssetMetaData().stream()
@@ -265,7 +278,7 @@ public class DirectoryInventoryScanTest {
         }
 
         // aggregate (based on filtered)
-        if (true) {
+        if (executeAggregation) {
             aggregateArchives(scanDir, filteredTargetScanInventoryFile, referenceInventoryDir, targetAggregationInventoryFile, targetAggregationDir);
         }
     }

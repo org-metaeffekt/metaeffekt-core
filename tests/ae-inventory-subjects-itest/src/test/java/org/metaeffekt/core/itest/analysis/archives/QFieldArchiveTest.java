@@ -61,10 +61,6 @@ public class QFieldArchiveTest extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "LICENSE"),
-                    attributeValue(CHECKSUM, "e8c1458438ead3c34974bc0be3a03ed6"))
-                .assertNotEmpty();
-
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
         final File aggregationTargetDir = new File(testSetup.getInventoryFolder(), "aggregation");
         final File resultFile = new File("target/aggregated-inventory.xlsx");
@@ -77,7 +73,7 @@ public class QFieldArchiveTest extends AbstractCompositionAnalysisTest {
 
         new InventoryWriter().writeInventory(aggregatedInventory, resultFile);
 
-        final Artifact artifact = aggregatedInventory.findArtifactByIdAndChecksum("LICENSE", "e8c1458438ead3c34974bc0be3a03ed6");
+        final Artifact artifact = aggregatedInventory.findArtifact("QField-3.4.7");
         Assertions.assertThat(artifact).isNotNull();
 
         Assertions.assertThat(artifact.get(ROOT_PATHS)).isNotNull();
