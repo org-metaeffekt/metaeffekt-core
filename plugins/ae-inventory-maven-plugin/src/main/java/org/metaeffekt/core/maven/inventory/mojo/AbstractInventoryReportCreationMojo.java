@@ -17,6 +17,7 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.common.kernel.util.ParameterConversionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
@@ -37,192 +38,122 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
     /**
      * The root inventory dir.
-     *
-     * @parameter
      */
+    @Parameter
     private File sourceInventoryDir;
 
     /**
      * Includes of the source inventory; relative to the sourceInventoryDir.
-     *
-     * @parameter default-value="*.xls*"
      */
+    @Parameter(defaultValue = "*.xls*")
     private String sourceInventoryIncludes;
 
     /**
      * Location of components relative to the sourceInventoryDir.
-     *
-     * @parameter default-value="components"
-     * @required
      */
+    @Parameter(required = true, defaultValue = "components")
     private String sourceComponentPath;
 
     /**
      * Location of licenses relative to the sourceInventoryDir.
-     *
-     * @parameter default-value="licenses"
-     * @required
      */
+    @Parameter(required = true, defaultValue = "licenses")
     private String sourceLicensePath;
 
-    /**
-     * @parameter expression="${project.build.directory}/inventory"
-     */
+    @Parameter(defaultValue = "${project.build.directory}/inventory")
     private File targetInventoryDir;
 
-    /**
-     * @parameter expression="${project.artifactId}-${project.version}-inventory.xls"
-     */
+    @Parameter(defaultValue = "${project.artifactId}-${project.version}-inventory.xls")
     private String targetInventoryPath;
 
-    /**
-     * @parameter expression="${project.name}"
-     */
+    @Parameter(property = "project.name")
     private String projectName;
 
-    /**
-     * @parameter default-value="true"
-     */
+    @Parameter(defaultValue = "true")
     private boolean failOnError;
 
-    /**
-     * @parameter default-value="true"
-     */
+    @Parameter(defaultValue = "true")
     private boolean failOnBanned;
 
-    /**
-     * @parameter default-value="true"
-     */
+    @Parameter(defaultValue = "true")
     private boolean failOnDowngrade;
 
-    /**
-     * @parameter default-value="true"
-     */
+    @Parameter(defaultValue = "true")
     private boolean failOnUnknown;
 
-    /**
-     * @parameter default-value="true"
-     */
+    @Parameter(defaultValue = "true")
     private boolean failOnUnknownVersion;
 
-    /**
-     * @parameter default-value="true"
-     */
+    @Parameter(defaultValue = "true")
     private boolean failOnDevelopment;
 
-    /**
-     * @parameter default-value="true"
-     */
+    @Parameter(defaultValue = "true")
     private boolean failOnInternal;
 
-    /**
-     * @parameter default-value="true"
-     */
+    @Parameter(defaultValue = "true")
     private boolean failOnUpgrade;
 
-    /**
-     * @parameter default-value="true"
-     */
+    @Parameter(defaultValue = "true")
     private boolean failOnMissingLicense;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean failOnMissingLicenseFile;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean failOnMissingNotice;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean failOnMissingComponentFiles;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private String artifactExcludes;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private String artifactIncludes;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private File diffInventoryFile;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean enableAssetReport;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean enableAssessmentReport;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean enableBomReport;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean enablePomReport;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean enableDiffReport;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean enableVulnerabilityReport;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean enableVulnerabilityReportSummary;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean enableVulnerabilityStatisticsReport;
 
-    /**
-     * @parameter expression="${basedir}/src/main/dita/${project.artifactId}/gen"
-     */
+    @Parameter(defaultValue = "${basedir}/src/main/dita/${project.artifactId}/gen")
     private File targetReportDir;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private File targetLicenseDir;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private File targetComponentDir;
 
-    /**
-     * @parameter default-value="licenses"
-     */
+    @Parameter(defaultValue = "licenses")
     private String relativeLicensePath;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private List<Artifact> addOnArtifacts;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean skip;
 
     // vulnerability report parameters
@@ -230,50 +161,34 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     /**
      * The CspLoader instance that will provide the {@link CentralSecurityPolicyConfiguration} instance to use for report generation.
      *
-     * @parameter
      */
+    @Parameter
     private CspLoader securityPolicy = new CspLoader();
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean filterVulnerabilitiesNotCoveredByArtifacts;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean filterAdvisorySummary;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean hidePriorityScoreInformation = false;
 
     // other template parameters
 
-    /**
-     * @parameter default-value="en"
-     */
+    @Parameter(defaultValue = "en")
     private String templateLanguageSelector;
 
-    /**
-     * @parameter default-value="default"
-     */
+    @Parameter(defaultValue = "default")
     private String reportContextId;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private String reportContextTitle;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private String reportContextGroup;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean includeInofficialOsiStatus;
 
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {

@@ -37,7 +37,11 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
-
+        <!--  Requires ArtifactResolver -->
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-compat</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
