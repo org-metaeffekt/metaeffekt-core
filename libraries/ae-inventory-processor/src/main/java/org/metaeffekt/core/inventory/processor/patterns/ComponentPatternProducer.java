@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
@@ -37,6 +38,7 @@ import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanCon
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ROOT_PATHS;
 import static org.metaeffekt.core.util.FileUtils.*;
 
+@Slf4j
 public class ComponentPatternProducer {
 
     public static final String DOUBLE_ASTERISK = Constants.ASTERISK + Constants.ASTERISK;
@@ -70,66 +72,8 @@ public class ComponentPatternProducer {
         public static final Locale OTHER_LOCALE = Locale.ENGLISH;
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternProducer.class);
-
-    /**
-     * Processes given contributors and collects their suffixes in lowercase form.
-     * @param contributors the list of contributors to be added
-     * @return collection of lowercase suffixes
-     */
-    protected Set<String> getRelevantSuffixes(List<ComponentPatternContributor> contributors) {
-        // TODO: should defaults disappear once we spec every contributor to state its suffixes?
-        Set<String> relevantSuffixes = new HashSet<>(Arrays.asList(FILE_SUFFIX_LIST));
-
-        // for checking whether i did everything correctly and don't need defaults any more
-        Set<String> uncoveredDefaults = new LinkedHashSet<>(Arrays.asList(FILE_SUFFIX_LIST));
-
-        for (ComponentPatternContributor cpc : contributors) {
-            Collection<String> suffixes = cpc.getSuffixes();
-
-            if (suffixes == null) {
-                LOG.error(
-                        "Component pattern contributor [{}] has null suffix list.",
-                        cpc.getClass().getName()
-                );
-                continue;
-            }
-
-            if (suffixes.isEmpty()) {
-                LOG.warn(
-                        "Component pattern contributor [{}] doesn't register any suffixes.",
-                        cpc.getClass().getName()
-                );
-                continue;
-            }
-
-            for (String suffix : cpc.getSuffixes()) {
-                // use path locale since we will be using suffixes to compare paths
-                String lowercasedSuffix = suffix.toLowerCase(LocaleConstants.PATH_LOCALE);
-                if (!suffix.equals(lowercasedSuffix)) {
-                    LOG.debug(
-                            "Suffix [{}] of [{}] was not lowercase, then lowercased automagically.",
-                            suffix,
-                            cpc.getClass().getName()
-                    );
-                }
-                relevantSuffixes.add(lowercasedSuffix);
-
-                uncoveredDefaults.remove(suffix.toLowerCase(LocaleConstants.PATH_LOCALE));
-            }
-        }
-
-        // we want to remove defaults eventually to make the system modular. output may need discussion
-        if (!uncoveredDefaults.isEmpty()) {
-            LOG.info("Some defaults have not been covered by component pattern contributors: [{}] ",
-                    uncoveredDefaults);
-        }
-
-        return relevantSuffixes;
-    }
-
     public void extractComponentPatterns(FileSystemScanContext fileSystemScanContext, Inventory targetInventory) {
-        LOG.debug("Identifying component patterns...");
+        log.debug("Identifying component patterns...");
 
         // this is always the absolute root of the scan process
         final File baseDir = fileSystemScanContext.getBaseDir().getFile();
@@ -168,8 +112,8 @@ public class ComponentPatternProducer {
 
                 if (!componentPatternDataList.isEmpty()) {
                     for (ComponentPatternData cpd : componentPatternDataList) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Identified component pattern: [{}] [{}]",
+                        if (log.isDebugEnabled()) {
+                            log.debug("Identified component pattern: [{}] [{}]",
                                     cpd.createToStringRepresentation(), cpd.get(Constants.KEY_COMPONENT_SOURCE_TYPE));
                         }
 
@@ -190,11 +134,11 @@ public class ComponentPatternProducer {
                     }
                 }
             } catch (Exception e) {
-                LOG.warn(e.getMessage(), e);
+                log.warn(e.getMessage(), e);
             }
         }
 
-        LOG.debug("Identifying component patterns completed.");
+        log.debug("Identifying component patterns completed.");
     }
 
     public void detectAndApplyComponentPatterns(Inventory implicitReferenceInventory, FileSystemScanContext fileSystemScanContext) {
@@ -203,6 +147,7 @@ public class ComponentPatternProducer {
         //  component (otherwise the component pattern would not be precise).
         //  Here, we also have unwrapped the full subtree (except things already covered) and can now derive default
         //  component patterns applying the ComponentPatternProducer.
+        // NOTE: the component data is written into the inventory
         extractComponentPatterns(fileSystemScanContext, implicitReferenceInventory);
 
         matchAndApplyComponentPatterns(implicitReferenceInventory, fileSystemScanContext, false);
@@ -211,13 +156,13 @@ public class ComponentPatternProducer {
     public void matchAndApplyComponentPatterns(final Inventory componentPatternSourceInventory,
                                                FileSystemScanContext fileSystemScanContext, boolean applyDeferred) {
 
-        LOG.debug("Matching and applying component patterns...");
+        log.debug("Matching and applying component patterns...");
 
         final List<MatchResult> matchedComponentPatterns = matchComponentPatterns(
                 fileSystemScanContext.getInventory(), componentPatternSourceInventory, fileSystemScanContext, applyDeferred);
 
         if (!matchedComponentPatterns.isEmpty()) {
-            LOG.info("Matching component patterns resulted in [{}] anchor matches.", matchedComponentPatterns.size());
+            log.info("Matching component patterns resulted in [{}] anchor matches.", matchedComponentPatterns.size());
         }
 
         final ArrayList<MatchResult> matchResultsWithoutFileMatches = new ArrayList<>();
@@ -247,7 +192,7 @@ public class ComponentPatternProducer {
         }
         fileSystemScanContext.removeAll(toBeDeleted);
 
-        LOG.debug("Matching and applying component patterns completed.");
+        log.debug("Matching and applying component patterns completed.");
     }
 
     private void deriveAddonArtifactsFromMatchResult(List<MatchResult> componentPatterns, FileSystemScanContext fileSystemScanContext) {
@@ -321,7 +266,7 @@ public class ComponentPatternProducer {
 
         synchronized (inventory) {
 
-            LOG.info("Evaluating [{}] match results against [{}] artifacts...",
+            log.info("Evaluating [{}] match results against [{}] artifacts...",
                     matchedComponentDataOnAnchor.size(), inventory.getArtifacts().size());
 
             // remove the matched files covered by the matched component patterns
@@ -393,8 +338,8 @@ public class ComponentPatternProducer {
 
                 if (!matchedComponentPattern) {
                     // at this point none of the artifacts were matched
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
+                    if (log.isDebugEnabled()) {
+                        log.debug("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
                     }
                     if (cpd.get(Constants.KEY_NO_FILE_MATCH_REQUIRED) == null || !cpd.get(Constants.KEY_NO_FILE_MATCH_REQUIRED).equals(Constants.MARKER_CROSS)) {
                         matchResultsWithoutFileMatches.add(matchResult);
@@ -402,7 +347,7 @@ public class ComponentPatternProducer {
                 }
             }
 
-            LOG.info("Evaluating [{}] match results against [{}] artifacts completed.",
+            log.info("Evaluating [{}] match results against [{}] artifacts completed.",
                     matchedComponentDataOnAnchor.size(), inventory.getArtifacts().size());
 
         }
@@ -416,8 +361,8 @@ public class ComponentPatternProducer {
         //  matchResult writes the assetIdChain here
         artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
 
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("Component anchor [{}] (checksum: {}): removed artifact covered by pattern: [{}]",
+        if (log.isTraceEnabled()) {
+            log.trace("Component anchor [{}] (checksum: {}): removed artifact covered by pattern: [{}]",
                     cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
                     cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
                     relativePathFromBaseDir);
@@ -496,14 +441,14 @@ public class ComponentPatternProducer {
 
         final String path = fileSystemScanContext.getBaseDir().getPath();
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Matching {} component patterns against {} artifacts...",
+        if (log.isDebugEnabled()) {
+            log.debug("Matching {} component patterns against {} artifacts...",
                     componentPatternSourceInventory.getComponentPatternData().size(), inputInventory.getArtifacts().size());
         }
 
         for (final ComponentPatternData cpd : componentPatternSourceInventory.getComponentPatternData()) {
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("Checking component pattern: {}", cpd.createCompareStringRepresentation());
+            if (log.isTraceEnabled()) {
+                log.trace("Checking component pattern: {}", cpd.createCompareStringRepresentation());
             }
 
             // evaluate component pattern mode and skip if mode doesn't match
@@ -578,9 +523,9 @@ public class ComponentPatternProducer {
                         final String fileChecksumOrAsterisk = isVersionAnchorChecksumSpecific ? artifact.getChecksum() : Constants.ASTERISK;
 
                         if (!anchorChecksum.equals(fileChecksumOrAsterisk)) {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("Anchor fileChecksumOrAsterisk mismatch: {}", normalizedPath);
-                                LOG.debug("Expected fileChecksumOrAsterisk :{}; actual file fileChecksumOrAsterisk: {}", anchorChecksum, fileChecksumOrAsterisk);
+                            if (log.isDebugEnabled()) {
+                                log.debug("Anchor fileChecksumOrAsterisk mismatch: {}", normalizedPath);
+                                log.debug("Expected fileChecksumOrAsterisk :{}; actual file fileChecksumOrAsterisk: {}", anchorChecksum, fileChecksumOrAsterisk);
                             }
                         } else {
                             final ComponentPatternData copyCpd = new ComponentPatternData(cpd);
@@ -597,8 +542,8 @@ public class ComponentPatternProducer {
             }
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Matching {} component patterns against {} artifacts completed.",
+        if (log.isDebugEnabled()) {
+            log.debug("Matching {} component patterns against {} artifacts completed.",
                     componentPatternSourceInventory.getComponentPatternData().size(), inputInventory.getArtifacts().size());
         }
 
@@ -672,6 +617,10 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new MavenProjectSourcesComponentPatternContributor());
         contributorRunnerBuilder.add(new LinuxDistributionAssetContributor());
         contributorRunnerBuilder.add(new CargoContributor());
+
+        contributorRunnerBuilder.add(new VersionFileComponentPatternContributor());
+        contributorRunnerBuilder.add(new VersionedFolderComponentPatternContributor());
+        contributorRunnerBuilder.add(new VersionFolderComponentPatternContributor());
 
         return contributorRunnerBuilder.build();
     }
