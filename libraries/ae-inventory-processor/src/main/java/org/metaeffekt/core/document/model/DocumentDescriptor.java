@@ -71,7 +71,7 @@ public class DocumentDescriptor {
     /**
      * The target directory for the report.
      */
-    private File targetReportDir;
+    private File targetDocumentDir;
 
     /**
      * The basepath specified in the asset-descriptor for resolving paths of inventories and other files.
@@ -97,12 +97,12 @@ public class DocumentDescriptor {
             throw new IllegalStateException("The document type must be specified.");
         }
         // check if the targetReportDir is set
-        if (targetReportDir == null) {
+        if (targetDocumentDir == null) {
             throw new IllegalStateException("The target report directory must be specified.");
         }
         // check if the targetReportDir is actually a directory, the targetReportDir may not exist when initialising the
         // Descriptor, if it does not exist, then the dita generation process for the document creates the directory
-        if (targetReportDir.exists() && !targetReportDir.isDirectory()) {
+        if (targetDocumentDir.exists() && !targetDocumentDir.isDirectory()) {
             throw new IllegalStateException("The target report directory must be a directory.");
         }
 
