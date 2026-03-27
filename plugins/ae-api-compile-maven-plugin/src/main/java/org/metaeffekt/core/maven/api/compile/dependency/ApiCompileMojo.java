@@ -16,20 +16,24 @@
 package org.metaeffekt.core.maven.api.compile.dependency;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.compiler.CompilerMojo;
-import org.apache.maven.plugins.annotations.*;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.metaeffekt.core.maven.kernel.MavenProjectUtil;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,8 +51,11 @@ public class ApiCompileMojo extends CompilerMojo {
     /**
      * The ArtifactResolver to be used.
      */
-    @Component
-    private org.apache.maven.artifact.resolver.ArtifactResolver resolver;
+    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
+    private RepositorySystemSession repoSession;
+
+    @Inject
+    private RepositorySystem repositorySystem;
 
     /**
      * The local Maven repository where artifacts are cached during the build process.
@@ -111,7 +118,7 @@ public class ApiCompileMojo extends CompilerMojo {
             // only check on non api artifacts for api existence
             if (!isConfiguredViolation(a)) {
                 if ("runtime".equalsIgnoreCase(a.getClassifier())) {
-                    Artifact apiArtifact = getClassifiedArtifact(a, "api");
+                    org.eclipse.aether.artifact.Artifact apiArtifact = getClassifiedArtifact(a, "api");
                     if (apiArtifact != null) {
                         apiArtifacts.put(a.getFile().getPath(), apiArtifact);
                     }
@@ -136,7 +143,7 @@ public class ApiCompileMojo extends CompilerMojo {
     /**
      * @return The classified artifact version corresponding to the provided classifier, null when it does not exist.
      */
-    private Artifact getClassifiedArtifact(Artifact original, String classifier) {
+    private org.eclipse.aether.artifact.Artifact getClassifiedArtifact(Artifact original, String classifier) {
         VersionRange versionRange = null;
         try {
             versionRange = VersionRange.createFromVersionSpec(original.getVersion());
@@ -146,25 +153,24 @@ public class ApiCompileMojo extends CompilerMojo {
                     + original.getVersion() + "' has a non-resolvable version: " + ivse.getMessage());
             return null;
         }
-        ArtifactHandler handler = new DefaultArtifactHandler(original.getType());
-        Artifact classifiedArtifact = new DefaultArtifact(
+        org.eclipse.aether.artifact.Artifact classifiedArtifact = new DefaultArtifact(
                 original.getGroupId(),
                 original.getArtifactId(),
-                versionRange,
-                original.getScope(),
-                original.getType(),
                 classifier,
-                handler);
+                original.getType(),
+                original.getVersion());
         try {
-            resolver.resolve(classifiedArtifact, remoteRepositories, localRepository);
+            final ArtifactResult artifactResult = repositorySystem.resolveArtifact(repoSession, new ArtifactRequest(classifiedArtifact, remoteRepositories, null));
             getLog().debug("FOUND an API classified artifact for: "
                     + original.getArtifactId() + "-" + original.getVersion());
-            return classifiedArtifact;
-        } catch (ArtifactResolutionException are) {
+            if (artifactResult.isMissing()) {
+                getLog().debug("Can not FIND a API classified artifact for: "
+                        + original.getArtifactId() + "-" + original.getVersion());
+            } else if (artifactResult.isResolved()) {
+                return artifactResult.getArtifact();
+            }
+        } catch (org.eclipse.aether.resolution.ArtifactResolutionException e) {
             getLog().debug("Can not RESOLVE an API classified artifact for: "
-                    + original.getArtifactId() + "-" + original.getVersion());
-        } catch (ArtifactNotFoundException anfe) {
-            getLog().debug("Can not FIND a API classified artifact for: "
                     + original.getArtifactId() + "-" + original.getVersion());
         }
         return null;
