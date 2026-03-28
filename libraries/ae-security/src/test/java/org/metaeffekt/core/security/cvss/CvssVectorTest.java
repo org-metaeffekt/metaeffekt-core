@@ -223,6 +223,18 @@ public class CvssVectorTest {
         );
     }
 
+    @Test
+    public void applyPartsBaseVsModifiedTest() {
+        assertPartsLowerHigherApplied("CVSS:4.0/AV:N/MAV:L", "MAV:A",
+                "CVSS:4.0/AV:N/MAV:L",
+                "CVSS:4.0/AV:N/MAV:A"
+        );
+        assertPartsLowerHigherApplied("CVSS:4.0/AV:N", "MAV:A",
+                "CVSS:4.0/AV:N/MAV:A",
+                "CVSS:4.0/AV:N"
+        );
+    }
+
     private void assertPartsLowerHigherApplied(String originalVector, String applyMetrics, String expectedLower, String expectedHigher) {
         final CvssVector lower = CvssVector.parseVector(originalVector);
         lower.applyVectorPartsIfMetricsLower(applyMetrics);
@@ -242,7 +254,7 @@ public class CvssVectorTest {
     private static UniversalCvssCalculatorLinkGenerator createLinkForHigherLowerMetrics(String input, String mod, CvssVector result) {
         final UniversalCvssCalculatorLinkGenerator gen = new UniversalCvssCalculatorLinkGenerator();
         gen.addOpenSection("base").addOpenSection("temporal").addOpenSection("environmental");
-        gen.setBaseUrl("http://localhost:63342/metaeffekt-cvss-web-calculator/site/index.html");
+        gen.setBaseUrl("https://metaeffekt.com/security/cvss/calculator");
         gen.addVector(CvssVector.parseVector(input), "input", true);
         gen.addVector(CvssVector.parseVector(mod), "mod", true);
         gen.addVector(result, "result", true);
