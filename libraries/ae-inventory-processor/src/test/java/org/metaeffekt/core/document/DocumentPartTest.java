@@ -63,7 +63,7 @@ public class DocumentPartTest {
         documentDescriptor.setDocumentParts(parts);
         documentDescriptor.setLanguage("en");
         documentDescriptor.setDocumentType(DocumentType.ANNEX);
-        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
         documentDescriptor.setParams(documentParams);
         documentDescriptor.setIdentifier("annex");
 
