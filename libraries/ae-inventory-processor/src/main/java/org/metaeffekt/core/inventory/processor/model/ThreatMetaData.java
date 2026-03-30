@@ -39,6 +39,7 @@ public class ThreatMetaData extends AbstractModelBase {
         BASED_ON_THREAT_REFERENCES("Based On"),
         RELATED_TO_THREAT_REFERENCES("Related To"),
         INFORMAL_THREAT_REFERENCES("Informal References"),
+        EXCLUDED_THREAT_REFERENCES("Excluded References"),
 
         IMPACT_ASSESSMENTS("Impact Assessments"),
 
@@ -91,6 +92,7 @@ public class ThreatMetaData extends AbstractModelBase {
         CORE_ATTRIBUTES.add(ThreatMetaData.Attribute.BASED_ON_THREAT_REFERENCES.getKey());
         CORE_ATTRIBUTES.add(ThreatMetaData.Attribute.RELATED_TO_THREAT_REFERENCES.getKey());
         CORE_ATTRIBUTES.add(ThreatMetaData.Attribute.INFORMAL_THREAT_REFERENCES.getKey());
+        CORE_ATTRIBUTES.add(ThreatMetaData.Attribute.EXCLUDED_THREAT_REFERENCES.getKey());
 
         CORE_ATTRIBUTES.add(ThreatMetaData.Attribute.IMPACT_ASSESSMENTS.getKey());
 
