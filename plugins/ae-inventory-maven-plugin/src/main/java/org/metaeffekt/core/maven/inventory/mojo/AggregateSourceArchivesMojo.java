@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -51,12 +50,6 @@ import static java.lang.String.format;
  */
 @Mojo(name = "aggregate-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
-
-    /**
-     * The ArtifactResolver to be used.
-     */
-    @Component
-    private org.apache.maven.artifact.resolver.ArtifactResolver artifactResolver;
 
     /**
      * The local Maven repository where artifacts are cached during the build process.
@@ -152,8 +145,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
             final List<ArtifactSourceRepository> delegateArtifactSourceRepositories = new ArrayList<>();
             for (SourceRepository sourceRepository : sourceRepositories) {
                 sourceRepository.dumpConfig(getLog(), "");
-                delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate(
-                        artifactResolver, localRepository, remoteRepositories));
+                delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate());
             }
 
             final ExecutionStatus executionStatus = new ExecutionStatus();

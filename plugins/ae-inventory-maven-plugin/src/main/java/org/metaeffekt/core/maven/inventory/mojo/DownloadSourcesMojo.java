@@ -17,28 +17,32 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Mojo dedicated to automated downloading sources. For each artifact in the provided inventory the license meta data
@@ -48,23 +52,23 @@ import java.io.IOException;
 @Mojo(name = "download-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
 
+    @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true)
+    private List<RemoteRepository> remoteProjectRepositories;
+
+    @Inject
+    private RepositorySystem repositorySystem;
+
     /**
-     * The ArtifactResolver to be used.
+     * A list of remote Maven repositories to be used for the compile run.
      */
-    @Component
-    private org.apache.maven.artifact.resolver.ArtifactResolver resolver;
+    @Parameter(defaultValue="${repositorySystemSession}", readonly = true)
+    private RepositorySystemSession repositorySystemSession;
 
     /**
      * The local Maven repository where artifacts are cached during the build process.
      */
     @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
     private ArtifactRepository localRepository;
-
-    /**
-     * A list of remote Maven repositories to be used for the compile run.
-     */
-    @Parameter(defaultValue = "${project.remoteArtifactRepositories}")
-    private java.util.List remoteRepositories;
 
     /**
      * The Maven project.
@@ -166,7 +170,7 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
     }
 
     private void downloadArtifact(org.metaeffekt.core.inventory.processor.model.Artifact artifact, File targetPath) throws IOException, MojoFailureException {
-        org.apache.maven.artifact.Artifact sourceArtifact = resolveSourceArtifact(artifact);
+        Artifact sourceArtifact = resolveSourceArtifact(artifact);
         if (sourceArtifact != null) {
             FileUtils.copyFile(sourceArtifact.getFile(), new File(targetPath, sourceArtifact.getFile().getName()));
         }
@@ -180,7 +184,7 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
         }
     }
 
-    private org.apache.maven.artifact.Artifact resolveSourceArtifact(org.metaeffekt.core.inventory.processor.model.Artifact artifact) throws MojoFailureException {
+    private Artifact resolveSourceArtifact(org.metaeffekt.core.inventory.processor.model.Artifact artifact) throws MojoFailureException {
         try {
             artifact.deriveArtifactId();
 
@@ -229,29 +233,22 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
             appendPart(sourceCoordinates, classifier);
             appendPart(sourceCoordinates, type);
 
-            final DefaultArtifactHandler handler = new DefaultArtifactHandler(type);
-            final DefaultArtifact sourceArtifact = new DefaultArtifact(groupId, artifactId,
-                    VersionRange.createFromVersionSpec(version), "runtime", type, classifier, handler);
+            final DefaultArtifact sourceArtifact = new DefaultArtifact(groupId, artifactId, classifier, type, version);
 
             getLog().info("Resolving " + sourceArtifact);
 
-            final ArtifactResolutionRequest request = new ArtifactResolutionRequest();
-            request.setArtifact(sourceArtifact);
-            request.setLocalRepository(localRepository);
-            request.setRemoteRepositories(remoteRepositories);
+            final ArtifactResult result = repositorySystem.resolveArtifact(repositorySystemSession, new ArtifactRequest(sourceArtifact, remoteProjectRepositories, null));
 
-            final ArtifactResolutionResult result = resolver.resolve(request);
-
-            if (result != null && result.isSuccess()) {
-                return result.getArtifacts().iterator().next();
+            if (result.isResolved()) {
+                return result.getArtifact();
             } else {
                 logOrFailOn(String.format("Cannot resolve sources for [%s] with source parameters [%s].",
                         artifact.createStringRepresentation(), sourceCoordinates.toString()));
                 return null;
 
             }
-        } catch (InvalidVersionSpecificationException e) {
-            throw new MojoFailureException(e.getMessage(), e);
+        } catch (ArtifactResolutionException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -15,12 +15,14 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.resolver.SourceArchiveResolver;
 import org.metaeffekt.core.inventory.resolver.SourceArchiveResolverResult;
@@ -35,14 +37,14 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
  */
 public class MavenMirrorSourceArchiveResolver implements SourceArchiveResolver {
 
-    private final ArtifactResolver artifactResolver;
-    private final ArtifactRepository localRepository;
-    private final List<ArtifactRepository> remoteRepositories;
+    private final RepositorySystem repositorySystem;
+    private final RepositorySystemSession repositorySystemSession;
+    private final List<RemoteRepository> remoteProjectRepositories;
 
-    public MavenMirrorSourceArchiveResolver(ArtifactResolver artifactResolver, ArtifactRepository localRepository, List<ArtifactRepository> remoteRepositories) {
-        this.artifactResolver = artifactResolver;
-        this.localRepository = localRepository;
-        this.remoteRepositories = remoteRepositories;
+    public MavenMirrorSourceArchiveResolver(RepositorySystem repositorySystem, RepositorySystemSession repositorySystemSession, List<RemoteRepository> remoteProjectRepositories) {
+        this.repositorySystem = repositorySystem;
+        this.repositorySystemSession = repositorySystemSession;
+        this.remoteProjectRepositories = remoteProjectRepositories;
     }
 
     @Override
@@ -69,20 +71,18 @@ public class MavenMirrorSourceArchiveResolver implements SourceArchiveResolver {
 
     private void attemptResolveMavenRepo(Artifact artifact, String classifier, SourceArchiveResolverResult result) {
         final DefaultArtifact toSearchFor = new DefaultArtifact(
-                artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
-                null, "jar", classifier, artifactHandler
-        );
+                artifact.getGroupId(), artifact.getArtifactId(), classifier,
+                "jar", artifact.getVersion());
 
         // had some weird issue with ArtifactResolutionRequest so using this signature for now
+        ArtifactResult artifactResult = null;
         try {
-            artifactResolver.resolve(toSearchFor, remoteRepositories, localRepository);
-            if (toSearchFor.getFile() != null && toSearchFor.getFile().exists()) {
-                result.addFile(toSearchFor.getFile(), toSearchFor.getDownloadUrl());
+            artifactResult = repositorySystem.resolveArtifact(repositorySystemSession, new ArtifactRequest(toSearchFor, remoteProjectRepositories, null));
+            if (artifactResult.isResolved() && !artifactResult.isMissing()) {
+                result.addFile(artifactResult.getArtifact().getFile(), ((RemoteRepository) artifactResult.getRepository()).getUrl());
             }
-        } catch (ArtifactResolutionException | ArtifactNotFoundException e) {
-            if (toSearchFor.getDownloadUrl() != null) {
-                result.addAttemptedResourceLocation(toSearchFor.getDownloadUrl());
-            }
+        } catch (ArtifactResolutionException e) {
+                result.addAttemptedResourceLocation(((RemoteRepository) artifactResult.getRepository()).getUrl());
         }
 
     }
