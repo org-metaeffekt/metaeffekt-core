@@ -94,13 +94,39 @@ public class KubernetesCommandExecutor implements AutoCloseable {
             String imageIdentifier,
             List<EnvVar> envVars
     ) throws CommandExecutionFailed {
+        this(
+                kubeconfig,
+                namespaceName,
+                imageIdentifier,
+                envVars,
+                null
+        );
+    }
+
+    /**
+     * Creates a new object.
+     *
+     * @param kubeconfig      kubeconfig for client creation, null for default config
+     * @param namespaceName   namespace to use for creation of resources
+     * @param imageIdentifier identifier of the container image to use in creation
+     * @param envVars         environment for command execution
+     * @param command         command for image / pod setup (container config)
+     * @throws CommandExecutionFailed on failure to create the pod
+     */
+    public KubernetesCommandExecutor(
+            Config kubeconfig,
+            String namespaceName,
+            String imageIdentifier,
+            List<EnvVar> envVars,
+            List<String> command
+    ) throws CommandExecutionFailed {
         KubernetesClient client = null;
         try {
             // TODO: constructor overloads that allow configuration of the client (such as endpoint address, port)
             client = new KubernetesClientBuilder().withConfig(kubeconfig).build();
 
             this.client = client;
-            this.reservedPod = getPod(client, namespaceName, imageIdentifier, UUID.randomUUID(), envVars);
+            this.reservedPod = getPod(client, namespaceName, imageIdentifier, UUID.randomUUID(), envVars, command);
         } catch (Exception e) {
             LOG.debug(
                     "Constructor of [{}] failed for image identifier [{}].",
@@ -127,6 +153,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
      * @param imageIdentifier the image identifier to use for this pod
      * @param runnerId        a runner id, a UUID unique to this pod
      * @param envVars         environment for command execution
+     * @param command         (launch) command for image / pod setup (container config) (e.g. /bin/bash)
      * @return returns the created pod object as returned by the api's {@link PodResource#create()}
      * @throws KubernetesClientTimeoutException if pod creation fails with timeout
      * @throws CommandExecutionFailed           on failure to create the pod
@@ -136,7 +163,8 @@ public class KubernetesCommandExecutor implements AutoCloseable {
             String namespaceName,
             String imageIdentifier,
             UUID runnerId,
-            List<EnvVar> envVars
+            List<EnvVar> envVars,
+            List<String> command
     ) throws KubernetesClientTimeoutException, CommandExecutionFailed {
 
         // prepare our own namespace for easier management and deletion of leftovers in case of any issues
@@ -172,8 +200,8 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                 .withEnv(envVars)
                 .withImage(imageIdentifier)
                 .withStdin()
+                .withCommand(command)
                 .endContainer()
-
                 .endSpec()
                 .build();
 
