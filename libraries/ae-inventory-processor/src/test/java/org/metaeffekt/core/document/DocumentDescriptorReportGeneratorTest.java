@@ -76,7 +76,7 @@ public class DocumentDescriptorReportGeneratorTest {
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
-        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
         documentDescriptor.setDocumentType(DocumentType.ANNEX);
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
@@ -98,7 +98,7 @@ public class DocumentDescriptorReportGeneratorTest {
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
-        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
         documentDescriptor.setDocumentType(DocumentType.INITIAL_LICENSE_DOCUMENTATION);
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
@@ -120,7 +120,7 @@ public class DocumentDescriptorReportGeneratorTest {
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
-        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
         documentDescriptor.setDocumentType(DocumentType.LICENSE_DOCUMENTATION);
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
@@ -142,7 +142,7 @@ public class DocumentDescriptorReportGeneratorTest {
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
-        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
         documentDescriptor.setDocumentType(DocumentType.VULNERABILITY_REPORT);
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
@@ -164,7 +164,7 @@ public class DocumentDescriptorReportGeneratorTest {
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
-        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
         documentDescriptor.setDocumentType(DocumentType.VULNERABILITY_STATISTICS_REPORT);
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
@@ -186,7 +186,7 @@ public class DocumentDescriptorReportGeneratorTest {
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
-        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
         documentDescriptor.setDocumentType(DocumentType.VULNERABILITY_REPORT);
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
@@ -208,7 +208,7 @@ public class DocumentDescriptorReportGeneratorTest {
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
-        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
         documentDescriptor.setDocumentType(DocumentType.VULNERABILITY_SUMMARY_REPORT);
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
