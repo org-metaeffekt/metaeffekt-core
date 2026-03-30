@@ -107,6 +107,7 @@ public class DocumentDescriptorReportGenerator {
                     InventoryContext derivedContext = new InventoryContext(inventory, assetName, inventoryContext.getReportContext(), inventoryContext.getLicensesPath(), inventoryContext.getComponentsPath());
                     derivedContext.setAssetName(assetName);
                     derivedContext.setAssetVersion(assetVersion);
+                    derivedContext.setAssetIdentifier(assetName, assetVersion);
                     inventoryContexts.add(derivedContext);
                 }
                 documentPart.setInventoryContexts(inventoryContexts);
@@ -193,7 +194,7 @@ public class DocumentDescriptorReportGenerator {
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getAssetName());
 
-                report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
+                report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getAssetIdentifier()));
                 report.getReportContext().setReportInventoryVersion(inventoryContext.getAssetVersion());
 
                 if (!report.createReport()) {
