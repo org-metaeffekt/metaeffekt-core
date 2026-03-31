@@ -65,12 +65,6 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
     private RepositorySystemSession repositorySystemSession;
 
     /**
-     * The local Maven repository where artifacts are cached during the build process.
-     */
-    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
-    private ArtifactRepository localRepository;
-
-    /**
      * The Maven project.
      */
     @Parameter(defaultValue = "${project}", required = true, readonly = true)

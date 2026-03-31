@@ -58,12 +58,6 @@ public class ApiCompileMojo extends CompilerMojo {
     private RepositorySystem repositorySystem;
 
     /**
-     * The local Maven repository where artifacts are cached during the build process.
-     */
-    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
-    private ArtifactRepository localRepository;
-
-    /**
      * A list of remote Maven repositories to be used for the compile run.
      */
     @Parameter(defaultValue = "${project.remoteArtifactRepositories}")

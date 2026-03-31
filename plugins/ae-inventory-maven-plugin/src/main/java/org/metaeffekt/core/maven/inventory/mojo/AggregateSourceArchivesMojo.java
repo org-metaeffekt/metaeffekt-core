@@ -52,12 +52,6 @@ import static java.lang.String.format;
 public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
 
     /**
-     * The local Maven repository where artifacts are cached during the build process.
-     */
-    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
-    private ArtifactRepository localRepository;
-
-    /**
      * A list of remote Maven repositories to be used for the compile run.
      */
     @Parameter(defaultValue = "${project.remoteArtifactRepositories}")
