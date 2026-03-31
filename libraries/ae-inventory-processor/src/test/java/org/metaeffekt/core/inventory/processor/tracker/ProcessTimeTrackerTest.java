@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.tracker;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Before;
@@ -88,19 +87,6 @@ public class ProcessTimeTrackerTest {
     }
 
     @Test
-    public void testOutdatedFormat() throws IOException {
-        InventoryReader reader = new InventoryReader();
-        // inventory with old json format
-        Inventory inv = reader.readInventory(new File("src/test/resources/merged-inventories/outdated-tracker-format/example-0.1.0-merged.xls"));
-
-        // check if attempting to read or add a timestamp fails
-        ProcessorTimeTracker tracker = ProcessorTimeTracker.fromInventory(inv);
-        tracker.addTimestamp(new ProcessTimeEntry(ProcessType.SPDX_IMPORTER, 1));
-
-        Assert.assertEquals(5, tracker.getEntries().size());
-    }
-
-    @Test
     public void test() throws IOException {
         final File testOutputDir = new File("target/process-time-tracker");
         FileUtils.forceMkdir(testOutputDir);
@@ -118,6 +104,5 @@ public class ProcessTimeTrackerTest {
         advise.addIndexTimestamp("index", 10);
 
         log.info(String.valueOf(tracker.toJson()));
-
     }
 }

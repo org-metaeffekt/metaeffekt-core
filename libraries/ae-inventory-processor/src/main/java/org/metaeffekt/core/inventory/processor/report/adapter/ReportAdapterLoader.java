@@ -17,8 +17,7 @@ package org.metaeffekt.core.inventory.processor.report.adapter;
 
 import java.util.*;
 
-public abstract class ReportAdapterRegistry {
-
+public abstract class ReportAdapterLoader {
     public static <T extends ReportAdapter> List<T> getAdapters(Class<T> type) {
         final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         final ServiceLoader<T> serviceLoader = ServiceLoader.load(type, contextClassLoader);
@@ -28,13 +27,17 @@ public abstract class ReportAdapterRegistry {
         return adapters;
     }
 
-    public static  <T extends ReportAdapter> Optional<T> getAdapter(Class<T> type) {
+    public static <T extends ReportAdapter> Optional<T> getAdapter(Class<T> type) {
         return getAdapters(type).stream().findFirst();
     }
 
-    public static  <T extends ReportAdapter> T getAdapterOrThrow(Class<T> type) {
-        return getAdapters(type).stream().findFirst().orElseThrow(() ->
-                new AdapterNotFoundException("No implementations for report adapter [" + type.getSimpleName() + "] found. Ensure the classpath contains an implementation that is registered as a service for loading via a ServiceLoader."));
+    public static <T extends ReportAdapter> T getAdapterOrThrow(Class<T> type) {
+        return getAdapters(type).stream().findFirst().orElseThrow(() -> {
+            final int totalAdapters = getAllAdapters().size();
+            return new AdapterNotFoundException("No implementations for report adapter [" + type.getSimpleName() + "] found (" + (totalAdapters > 0 ? totalAdapters + " other adapters available" : "in fact, not a single adapter was loaded") + "). " +
+                    "Ensure the classpath contains an implementation that is registered as a service for loading via a ServiceLoader. " +
+                    "The implementation you are most likely to be using is located at [com.metaeffekt.artifact.analysis:ae-artifact-analysis] and can be configured in your Maven POM <pluginManagement> to be applied to all reports.");
+        });
     }
 
     public static List<ReportAdapter> getAllAdapters() {

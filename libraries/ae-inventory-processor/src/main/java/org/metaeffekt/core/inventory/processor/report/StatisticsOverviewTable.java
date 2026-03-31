@@ -71,6 +71,19 @@ public class StatisticsOverviewTable {
                 .orElse(null);
     }
 
+    public void incrementCount(CentralSecurityPolicyConfiguration securityPolicy, String severity, String status) {
+        if (severity == null || status == null) {
+            LOG.warn("Severity [{}] or status [{}] is null. Skipping incrementCount.", severity, status);
+            return;
+        }
+
+        final String normalizedSeverity = normalize(severity);
+        final String normalizedStatus = normalize(status);
+
+        final SeverityToStatusRow row = findOrCreateRowBySeverity(securityPolicy, normalizedSeverity);
+        row.incrementCount(normalizedStatus);
+    }
+
     public List<String> getHeaders() {
         final List<String> headers = new ArrayList<>();
         headers.add("severity");

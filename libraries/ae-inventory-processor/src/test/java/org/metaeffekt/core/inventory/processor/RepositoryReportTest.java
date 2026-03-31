@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
@@ -28,7 +27,6 @@ import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.springframework.util.AntPathMatcher;
@@ -36,14 +34,10 @@ import org.springframework.util.AntPathMatcher;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class RepositoryReportTest {
-
 
     private static final File INVENTORY_DIR = new File("src/test/resources/test-inventory-01");
     private static final String INVENTORY_INCLUDES = "*.xls";
@@ -51,107 +45,6 @@ public class RepositoryReportTest {
     private static final String COMPONENTS_PATH = "components";
 
     public static final String UTF_8 = "UTF-8";
-
-    @Test
-    public void testCreateTestReport001() throws Exception {
-
-        File inventoryDir = INVENTORY_DIR;
-        String inventoryIncludes = INVENTORY_INCLUDES;
-
-        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
-                .failOnUnknown(false)
-                .failOnUnknownVersion(false)
-                .inventoryBomReportEnabled(true)
-                .build());
-
-        report.getSecurityPolicy().setGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.toJson(Arrays.asList(AeaaAdvisoryTypeStore.CERT_FR, AeaaAdvisoryTypeStore.GHSA, AeaaAdvisoryTypeStore.CERT_SEI, AeaaAdvisoryTypeStore.MSRC)));
-
-        report.setReportContext(new ReportContext("test", "Test", "Test Context"));
-
-        report.setReferenceInventoryDir(inventoryDir);
-        report.setReferenceInventoryIncludes(inventoryIncludes);
-        report.setReferenceLicensePath(LICENSES_PATH);
-        report.setReferenceComponentPath(COMPONENTS_PATH);
-
-        report.setInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
-
-        PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
-        artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
-        report.setArtifactFilter(artifactFilter);
-
-        File target = new File("target/test-inventory-01");
-        target.mkdirs();
-
-        File targetReportPath = new File(target, "report");
-        targetReportPath.mkdirs();
-
-        File licenseReport = new File(targetReportPath, "tpc_inventory-licenses.dita");
-        File componentReport = new File(targetReportPath, "tpc_inventory-component-report.dita");
-        File noticeReport = new File(targetReportPath, "tpc_inventory-component-license-details.dita");
-        File artifactReport = new File(targetReportPath, "tpc_inventory-artifact-report.dita");
-
-        final File targetLicensesDir = new File(target, "licenses");
-        final File targetComponentDir = new File(target, "components");
-        report.setTargetLicenseDir(targetLicensesDir);
-        report.setTargetComponentDir(targetComponentDir);
-        report.setTargetReportDir(targetReportPath);
-
-        final boolean valid = report.createReport();
-
-        assertTrue(valid);
-        assertTrue(targetLicensesDir.exists());
-
-        // check first-level license folders are created as expected
-        assertTrue(new File(targetLicensesDir, "A-License").exists());
-        assertTrue(new File(targetLicensesDir, "B-License").exists());
-        assertTrue(new File(targetLicensesDir, "D-License").exists());
-        assertFalse(new File(targetLicensesDir, "T-License").exists());
-
-        // check multiple licensed artifacts are multiplied to the different license folders
-        assertTrue(new File(targetLicensesDir, "A-License/AlphaBeta-Component-1.0.0").exists());
-        assertTrue(new File(targetComponentDir, "AlphaBeta-Component-1.0.0").exists());
-
-        // check license information is multiplied for sub-components
-        assertTrue(new File(targetLicensesDir, "A-License/Gamma-Component-1.0.0").exists());
-        assertTrue(new File(targetLicensesDir, "B-License/Gamma-Component-1.0.0").exists());
-        assertTrue(new File(targetComponentDir, "Gamma-Component-1.0.0").exists());
-
-        // check license information is multiplied for sub-components
-        assertTrue(new File(targetLicensesDir, "A-License/Omega-Component").exists());
-        assertTrue(new File(targetLicensesDir, "B-License/Omega-Component").exists());
-        assertTrue(new File(targetComponentDir, "Omega-Component").exists());
-
-        assertTrue(new File(targetComponentDir, "Sigma-Component-1.0.0").exists());
-
-        // check generated DITA files contain the appropriate details
-        String notices = FileUtils.readFileToString(noticeReport, UTF_8);
-        assertTrue(notices.contains("Notice for Alpha component licensed under A License."));
-        assertTrue(notices.contains("Notice for Beta component licensed under B License."));
-        assertTrue(notices.contains("Notice for AlphaBeta component licensed under either A License or B License. A License is selected for this distribution."));
-        assertTrue(notices.contains("Notice for Gamma component, which contains sub-components licensed under A License and B License."));
-
-        List<ArtifactLicenseData> artifactLicenseData = report.getLastProjectInventory().evaluateNotices("A License");
-        assertTrue(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Alpha Component")));
-        assertTrue(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Gamma Component")));
-        assertFalse(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Beta Component")));
-
-        artifactLicenseData = report.getLastProjectInventory().evaluateNotices("B License");
-        assertTrue(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Beta Component")));
-        assertTrue(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Gamma Component")));
-        assertFalse(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Alpha Component")));
-
-        artifactLicenseData = report.getLastProjectInventory().evaluateNotices("D License");
-        assertTrue(artifactLicenseData.isEmpty());
-
-        artifactLicenseData = report.getLastProjectInventory().evaluateNotices("G License (with sub-components)");
-        assertTrue(artifactLicenseData.isEmpty());
-
-        // copy bookmap
-        FileUtils.copyFileToDirectory(new File("src/test/resources/test-inventory-01/bm_test.ditamap"), target);
-
-        // generate PDF using 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISBALED -Ddita.source.dir=target/test-inventory-01' from terminal
-
-    }
 
     @Test
     public void testStringEscaping() {
@@ -260,34 +153,6 @@ public class RepositoryReportTest {
         // check selected data in reread inventory
         Assert.assertEquals("GPL-2.0", rereadInventory.
                 findMatchingLicenseData("GNU General Public License 2.0").get(LicenseData.Attribute.ID));
-    }
-
-    @Test
-    public void testCreateTestReport003() throws Exception {
-        final File inventoryDir = new File("src/test/resources/test-inventory-03");
-        final File reportDir = new File("target/test-inventory-03");
-
-        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
-                .failOnMissingLicense(false)
-                .failOnMissingLicenseFile(false)
-                .assessmentReportEnabled(false)
-                .inventoryBomReportEnabled(false)
-                .inventoryDiffReportEnabled(false)
-                .inventoryVulnerabilityReportEnabled(false)
-                .build());
-
-
-        report.getSecurityPolicy()
-                // .setIncludeVulnerabilitiesWithAdvisoryProviders(Collections.singletonList("GHSA"))
-                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
-                .setGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.toJson(Collections.singletonList(AeaaAdvisoryTypeStore.ANY_ADVISORY_FILTER_WILDCARD)));
-
-        configureAndCreateReport(inventoryDir, "*.xls",
-                inventoryDir, "*.xls",
-                reportDir, report);
-
-        // put asserts here
-
     }
 
     @Test
@@ -435,8 +300,7 @@ public class RepositoryReportTest {
                 .setInsignificantThreshold(7)
                 .setIncludeScoreThreshold(0)
                 .setIncludeAdvisoryTypes(Arrays.asList("alert", "notice"))
-                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
-                .setGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.toJson(Arrays.asList(AeaaAdvisoryTypeStore.CERT_FR, AeaaAdvisoryTypeStore.GHSA, AeaaAdvisoryTypeStore.CERT_SEI, AeaaAdvisoryTypeStore.MSRC)));
+                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED);
 
         reportTarget.mkdirs();
 

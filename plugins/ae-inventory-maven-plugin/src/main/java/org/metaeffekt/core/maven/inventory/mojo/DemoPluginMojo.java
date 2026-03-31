@@ -18,7 +18,7 @@ package org.metaeffekt.core.maven.inventory.mojo;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.metaeffekt.core.inventory.processor.report.adapter.ReportAdapterRegistry;
+import org.metaeffekt.core.inventory.processor.report.adapter.ReportAdapterLoader;
 import org.metaeffekt.core.inventory.processor.report.adapter.IAssessmentReportAdapter;
 
 import java.util.Optional;
@@ -32,9 +32,9 @@ public class DemoPluginMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        getLog().info("Adapter Registry found [" + ReportAdapterRegistry.getAllAdapters().size() + "] adapter(s)");
+        getLog().info("Adapter Registry found [" + ReportAdapterLoader.getAllAdapters().size() + "] adapter(s)");
 
-        final Optional<IAssessmentReportAdapter> instance = ReportAdapterRegistry.getAdapter(IAssessmentReportAdapter.class);
+        final Optional<IAssessmentReportAdapter> instance = ReportAdapterLoader.getAdapter(IAssessmentReportAdapter.class);
         if (instance.isPresent()) {
             getLog().info("- Adapter: " + instance);
         } else {

@@ -13,8 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.report.model.aeaa.threat;
+package org.metaeffekt.core.inventory.processor.report.model.types;
 
-public interface AeaaThreatReference {
+import java.util.function.Function;
 
+public interface ThrowingFunction<T, R> extends Function<T, R> {
+
+    @Override
+    default R apply(T t) {
+        try {
+            return applyThrows(t);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    R applyThrows(T t) throws Exception;
 }

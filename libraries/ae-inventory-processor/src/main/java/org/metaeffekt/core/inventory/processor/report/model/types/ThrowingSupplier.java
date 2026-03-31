@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.report.model.aeaa.store;
+package org.metaeffekt.core.inventory.processor.report.model.types;
 
-import lombok.AllArgsConstructor;
+import java.util.function.Supplier;
 
-@AllArgsConstructor
-public enum ThreatCategory {
-    WEAKNESS_IMPLEMENTATION("WEAKNESS"),
-    THREAT_IMPLEMENTATION("THREAT"),
-    ATTACK_PATTERN_IMPLEMENTATION("ATTACK_PATTERN");
+public interface ThrowingSupplier<T> extends Supplier<T> {
 
-    public final String threatCategory;
-
-    public String getKey() {
-        return this.threatCategory;
+    @Override
+    default T get() {
+        try {
+            return getThrows();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
+
+    T getThrows() throws Exception;
 }

@@ -540,12 +540,18 @@ public class InventoryReport {
         // FIXME: we need to unify this; filtering is more or less obsolete
         final Inventory filteredInventory = projectInventory.getFilteredInventory();
 
+        final boolean isVulnerabilityReport = configParams.isInventoryVulnerabilityReportEnabled() ||
+                configParams.isInventoryVulnerabilityReportSummaryEnabled() ||
+                configParams.isInventoryVulnerabilityStatisticsReportEnabled() ||
+                configParams.isAssessmentReportEnabled();
+
         // build adapters
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
                 new AssetReportAdapter(filteredInventory),
-                ReportAdapterRegistry.getAdapterOrThrow(IVulnerabilityReportAdapter.class).setup(projectInventory, securityPolicy),
-                ReportAdapterRegistry.getAdapterOrThrow(IAssessmentReportAdapter.class).setup(projectInventory, securityPolicy),
+                isVulnerabilityReport ? ReportAdapterLoader.getAdapterOrThrow(IVulnerabilityReportAdapter.class).setup(projectInventory, securityPolicy) : null,
+                isVulnerabilityReport ? ReportAdapterLoader.getAdapterOrThrow(IAssessmentReportAdapter.class).setup(projectInventory, securityPolicy) : null,
                 new InventoryReportAdapter(filteredInventory));
+
 
         // write reports
         if (configParams.isInventoryBomReportEnabled()) {
@@ -956,8 +962,8 @@ public class InventoryReport {
 
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
                 new AssetReportAdapter(baseFilteredInventory),
-                ReportAdapterRegistry.getAdapterOrThrow(IVulnerabilityReportAdapter.class).setup(baseFilteredInventory, securityPolicy),
-                ReportAdapterRegistry.getAdapterOrThrow(IAssessmentReportAdapter.class).setup(baseFilteredInventory, securityPolicy),
+                null,
+                null,
                 new InventoryReportAdapter(baseFilteredInventory));
 
         writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);

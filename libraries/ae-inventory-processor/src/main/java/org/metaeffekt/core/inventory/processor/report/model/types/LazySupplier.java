@@ -13,18 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.report.model.aeaa.store;
+package org.metaeffekt.core.inventory.processor.report.model.types;
 
-import java.util.regex.Pattern;
+public class LazySupplier<T> implements ThrowingSupplier<T> {
 
-public class AeaaOtherTypeIdentifier extends AeaaContentIdentifierStore.AeaaContentIdentifier {
+    private final ThrowingSupplier<T> supplier;
+    private T value;
+    private volatile boolean initialized = false;
 
-    public AeaaOtherTypeIdentifier(String name, String wellFormedName, String implementation, Pattern idPattern) {
-        super(name, wellFormedName, implementation, idPattern);
+    public LazySupplier(ThrowingSupplier<T> supplier) {
+        this.supplier = supplier;
     }
 
     @Override
-    public String toString() {
-        return super.toString();
+    public T getThrows() throws Exception {
+        if (!initialized) {
+            synchronized (this) {
+                if (!initialized) {
+                    value = supplier.getThrows();
+                    initialized = true;
+                }
+            }
+        }
+        return value;
     }
 }
