@@ -285,7 +285,7 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
             "details"
     };
 
-    public String getNonEmptyDescription() {
+    public String getFirstNonEmptyDescription() {
         if (StringUtils.hasText(this.summary)) {
             return this.summary;
         }

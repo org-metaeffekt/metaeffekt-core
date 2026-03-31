@@ -18,8 +18,10 @@ package org.metaeffekt.core.maven.inventory.mojo;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.metaeffekt.core.inventory.processor.report.adapter.AdapterRegistry;
-import org.metaeffekt.core.inventory.processor.report.adapter.IDemoReportAdapter;
+import org.metaeffekt.core.inventory.processor.report.adapter.ReportAdapterRegistry;
+import org.metaeffekt.core.inventory.processor.report.adapter.IAssessmentReportAdapter;
+
+import java.util.Optional;
 
 /**
  * Tests the Artifact Analysis Report Adapter Infrastructure
@@ -30,16 +32,13 @@ public class DemoPluginMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        final AdapterRegistry registry = new AdapterRegistry();
+        getLog().info("Adapter Registry found [" + ReportAdapterRegistry.getAllAdapters().size() + "] adapter(s)");
 
-        getLog().info("Adapter Registry found [" + registry.getAdapters().size() + "] adapter(s)");
-
-        final IDemoReportAdapter demoAdapter = registry.getAdapter(IDemoReportAdapter.class);
-        if (demoAdapter != null) {
-            demoAdapter.setValue("demo-value");
-            getLog().info("- Demo Adapter: " + demoAdapter.getValue());
+        final Optional<IAssessmentReportAdapter> instance = ReportAdapterRegistry.getAdapter(IAssessmentReportAdapter.class);
+        if (instance.isPresent()) {
+            getLog().info("- Adapter: " + instance);
         } else {
-            getLog().warn("- Demo Adapter could not be found");
+            getLog().warn("- Adapter could not be found");
         }
     }
 }
