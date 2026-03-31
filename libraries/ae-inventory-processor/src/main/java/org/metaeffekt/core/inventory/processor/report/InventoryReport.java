@@ -152,6 +152,8 @@ public class InventoryReport {
 
     private List<Artifact> addOnArtifacts;
 
+    private String reportPartSvgPath;
+
     // FIXME: do we want to further support this? This is for aggregating information in a reactor project.
     private transient Inventory lastProjectInventory;
 
@@ -729,8 +731,6 @@ public class InventoryReport {
         context.put("Double", Double.class);
         context.put("Float", Float.class);
         context.put("String", String.class);
-
-        context.put("targetReportDir", this.targetReportDir);
 
         context.put("reportContext", reportContext);
         context.put("configParams", this.configParams);
