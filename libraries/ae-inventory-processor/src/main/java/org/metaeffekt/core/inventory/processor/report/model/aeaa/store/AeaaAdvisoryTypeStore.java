@@ -450,7 +450,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     /**
      * Advisory Ids from the <b>ECHO</b>.
      * Official security advisories for echo containers.
-     * <a href=https://www.echo.ai/">echo ai</a>.
+     * <a href="https://www.echo.ai/">echo ai</a>.
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_ECHO =
             createOsvIdentifier("ECHO", "ECHO",
