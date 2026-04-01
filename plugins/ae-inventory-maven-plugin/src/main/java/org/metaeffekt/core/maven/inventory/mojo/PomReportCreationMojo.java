@@ -23,7 +23,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 /**
  * Creates a report for the dependencies listed in the pom.
@@ -73,28 +72,22 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        // adapt maven logging to underlying logging facade
-        MavenLogAdapter.initialize(getLog());
+        if (skipExecution()) {
+            return;
+        }
+
+        InventoryReport report = initializeInventoryReport();
+        Inventory inventory = createInventoryFromPom();
+        report.setInventory(inventory);
+
+        boolean success = false;
         try {
-            if (skipExecution()) {
-                return;
-            }
-
-            InventoryReport report = initializeInventoryReport();
-            Inventory inventory = createInventoryFromPom();
-            report.setInventory(inventory);
-
-            boolean success = false;
-            try {
-                success = report.createReport();
-            } catch (Exception e) {
-                throw new MojoExecutionException(e.getMessage(), e);
-            }
-            if (!success) {
-                throw new MojoFailureException("Failing build due to findings in report.");
-            }
-        } finally {
-            MavenLogAdapter.release();
+            success = report.createReport();
+        } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        }
+        if (!success) {
+            throw new MojoFailureException("Failing build due to findings in report.");
         }
     }
 
