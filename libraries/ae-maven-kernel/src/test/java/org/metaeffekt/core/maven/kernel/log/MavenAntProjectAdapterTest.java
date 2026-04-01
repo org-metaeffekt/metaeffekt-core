@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.maven.kernel.log;
 
-import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +39,6 @@ public class MavenAntProjectAdapterTest {
 
     @BeforeEach
     public void setupStreams() {
-        MavenLogAdapter.initialize(new SystemStreamLog());
 
         err = new ByteArrayOutputStream();
         out = new ByteArrayOutputStream();
@@ -52,7 +50,6 @@ public class MavenAntProjectAdapterTest {
     public void resetStreams() {
         System.setErr(originalErr);
         System.setOut(originalOut);
-        MavenLogAdapter.release();
     }
 
     @Test
