@@ -7,6 +7,10 @@
 **/.DS_Store
 **/._*
 
+# log files
+**/*.log
+**/*.log.gz
+
 # integration tests produce module-level test folders that must be version controlled
 **/.test
 
