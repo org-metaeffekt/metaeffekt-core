@@ -65,24 +65,18 @@ public class MavenMirrorSourceArchiveResolver implements SourceArchiveResolver {
         return result;
     }
 
-    private final static DefaultArtifactHandler artifactHandler = new DefaultArtifactHandler() {
-        @Override public String getExtension() { return "jar"; }
-    };
-
     private void attemptResolveMavenRepo(Artifact artifact, String classifier, SourceArchiveResolverResult result) {
         final DefaultArtifact toSearchFor = new DefaultArtifact(
                 artifact.getGroupId(), artifact.getArtifactId(), classifier,
                 "jar", artifact.getVersion());
 
-        // had some weird issue with ArtifactResolutionRequest so using this signature for now
-        ArtifactResult artifactResult = null;
         try {
-            artifactResult = repositorySystem.resolveArtifact(repositorySystemSession, new ArtifactRequest(toSearchFor, remoteProjectRepositories, null));
+            ArtifactResult artifactResult = repositorySystem.resolveArtifact(repositorySystemSession, new ArtifactRequest(toSearchFor, remoteProjectRepositories, null));
             if (artifactResult.isResolved() && !artifactResult.isMissing()) {
                 result.addFile(artifactResult.getArtifact().getFile(), ((RemoteRepository) artifactResult.getRepository()).getUrl());
             }
         } catch (ArtifactResolutionException e) {
-                result.addAttemptedResourceLocation(((RemoteRepository) artifactResult.getRepository()).getUrl());
+                result.addAttemptedResourceLocation(e.getResult().getRequest().toString());
         }
 
     }

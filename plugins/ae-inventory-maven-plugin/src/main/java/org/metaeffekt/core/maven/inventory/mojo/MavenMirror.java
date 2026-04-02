@@ -16,26 +16,16 @@
 package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
-import javax.inject.Inject;
 import java.util.List;
+
 
 public class MavenMirror extends AbstractMirror {
 
-    @Parameter(defaultValue="${repositorySystemSession}", readonly = true)
-    private RepositorySystemSession repositorySystemSession;
-
-    @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true)
-    private List<RemoteRepository> remoteProjectRepositories;
-
-    @Inject
-    private RepositorySystem repositorySystem;
-
-    public MavenMirrorSourceArchiveResolver createResolver() {
+    public MavenMirrorSourceArchiveResolver createResolver(final RepositorySystem repositorySystem, final RepositorySystemSession repositorySystemSession, final List<RemoteRepository> remoteProjectRepositories) {
 
         return new MavenMirrorSourceArchiveResolver(repositorySystem, repositorySystemSession, remoteProjectRepositories);
     }
@@ -43,5 +33,4 @@ public class MavenMirror extends AbstractMirror {
     public void dumpConfig(Log log, String prefix) {
         super.dumpConfig(log, prefix);
     }
-
 }
