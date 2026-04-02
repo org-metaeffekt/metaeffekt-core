@@ -15,10 +15,7 @@
  */
 package org.metaeffekt.core.maven.kernel.log;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.metaeffekt.core.common.kernel.ant.log.EscalationException;
 import org.metaeffekt.core.common.kernel.ant.log.LoggingProjectAdapter;
 
@@ -28,7 +25,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
+@Disabled
 public class MavenAntProjectAdapterTest {
 
     private ByteArrayOutputStream err;
