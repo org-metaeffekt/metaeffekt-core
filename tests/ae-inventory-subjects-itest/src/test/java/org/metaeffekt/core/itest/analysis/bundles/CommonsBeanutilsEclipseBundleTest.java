@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.itest.analysis.bundles;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
@@ -35,7 +35,7 @@ public class CommonsBeanutilsEclipseBundleTest extends AbstractCompositionAnalys
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://download.eclipse.org/virgo/release/updatesite/3.6.2.RELEASE/plugins/org.apache.commons.collections_3.2.0.v201005080500.jar")
@@ -43,16 +43,16 @@ public class CommonsBeanutilsEclipseBundleTest extends AbstractCompositionAnalys
                 .setName(CommonsBeanutilsEclipseBundleTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception{
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertTrue(testSetup.clear());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventorize() throws Exception{
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertTrue(testSetup.rebuildInventory());
     }
 
 

@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.itest.analysis.libraries;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -28,7 +28,7 @@ import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attribu
 
 public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/springframework/spring-core/6.1.1/spring-core-6.1.1.jar")
@@ -37,16 +37,16 @@ public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
     }
 
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertTrue(testSetup.clear());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test

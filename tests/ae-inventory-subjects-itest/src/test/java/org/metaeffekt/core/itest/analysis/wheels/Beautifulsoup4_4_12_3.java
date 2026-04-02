@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.itest.analysis.wheels;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
@@ -29,7 +29,7 @@ import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attribu
 
 public class Beautifulsoup4_4_12_3 extends AbstractCompositionAnalysisTest{
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://files.pythonhosted.org/packages/b1/fe/e8c672695b37eecc5cbf43e1d0638d88d66ba3a44c4d321c796f4e59167f/beautifulsoup4-4.12.3-py3-none-any.whl")
@@ -38,16 +38,16 @@ public class Beautifulsoup4_4_12_3 extends AbstractCompositionAnalysisTest{
     }
 
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertTrue(testSetup.clear());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test

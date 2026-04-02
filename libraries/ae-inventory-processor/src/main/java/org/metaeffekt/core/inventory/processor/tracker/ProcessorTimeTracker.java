@@ -17,7 +17,7 @@ package org.metaeffekt.core.inventory.processor.tracker;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Inventory;

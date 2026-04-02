@@ -15,18 +15,29 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 
+import javax.inject.Inject;
 import java.util.List;
-import java.util.Properties;
 
 public class MavenMirror extends AbstractMirror {
 
-    public MavenMirrorSourceArchiveResolver createResolver(
-           ArtifactResolver artifactResolver, ArtifactRepository localRepository, List<ArtifactRepository> remoteRepositories) {
-        return new MavenMirrorSourceArchiveResolver(artifactResolver, localRepository, remoteRepositories);
+    @Parameter(defaultValue="${repositorySystemSession}", readonly = true)
+    private RepositorySystemSession repositorySystemSession;
+
+    @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true)
+    private List<RemoteRepository> remoteProjectRepositories;
+
+    @Inject
+    private RepositorySystem repositorySystem;
+
+    public MavenMirrorSourceArchiveResolver createResolver() {
+
+        return new MavenMirrorSourceArchiveResolver(repositorySystem, repositorySystemSession, remoteProjectRepositories);
     }
 
     public void dumpConfig(Log log, String prefix) {

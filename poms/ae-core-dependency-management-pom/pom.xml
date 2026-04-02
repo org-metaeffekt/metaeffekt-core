@@ -26,8 +26,9 @@
         <ant.version>1.10.13</ant.version>
         <asm.version>5.2</asm.version>
         <assertj.version>3.15.0</assertj.version>
-        <commons.lang3.version>3.12.0</commons.lang3.version>
+        <commons.lang3.version>3.18.0</commons.lang3.version>
         <commons.lang.version>2.6</commons.lang.version>
+        <commons.text.version>1.14.0</commons.text.version>
         <commons.io.version>2.14.0</commons.io.version>
         <commons.codec.version>1.15</commons.codec.version>
         <commons.collections4.version>4.4</commons.collections4.version>
@@ -60,13 +61,13 @@
         <slf4j.version>1.7.36</slf4j.version> <!--2.0.6-->
         <spring.framework.version>5.3.37</spring.framework.version>
         <!-- update to version 2 and test -->
-        <velocity.version>1.7</velocity.version>
+        <velocity.version>2.4</velocity.version>
         <xalan.version>2.7.2</xalan.version>
         <javassist.version>3.21.0-GA</javassist.version>
         <tukaani.xz.version>1.9</tukaani.xz.version>
         <luben.zstd.version>1.5.5-11</luben.zstd.version>
 
-        <minimal.maven.version>3.0.5</minimal.maven.version>
+        <maven.version>3.9.14</maven.version>
         <maven.plugin.testing.harness.version>2.1</maven.plugin.testing.harness.version>
     </properties>
 
@@ -363,6 +364,14 @@
             </dependency>
 
             <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>6.1.0-M1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>jsr305</artifactId>
                 <version>${findbugs.version}</version>
@@ -500,6 +509,13 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons.text.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>${httpclient.version}</version>
@@ -527,18 +543,8 @@
 
             <dependency>
                 <groupId>org.apache.velocity</groupId>
-                <artifactId>velocity</artifactId>
+                <artifactId>velocity-engine-core</artifactId>
                 <version>${velocity.version}</version>
-                <scope>compile</scope>
-            </dependency>
-
-            <dependency>
-                <!-- velocity 1.7 has a transitive dependency to on older version of
-                     commons-lang 2.4. The dependency is listed here to switch to the newer version
-                -->
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
-                <version>${commons.lang.version}</version>
                 <scope>compile</scope>
             </dependency>
 
@@ -559,7 +565,7 @@
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-core</artifactId>
-                <version>${minimal.maven.version}</version>
+                <version>${maven.version}</version>
                 <scope>compile</scope>
                 <exclusions>
                     <exclusion>
@@ -580,28 +586,21 @@
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-artifact</artifactId>
-                <version>${minimal.maven.version}</version>
-                <scope>compile</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-compat</artifactId>
-                <version>${minimal.maven.version}</version>
+                <version>${maven.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-model</artifactId>
-                <version>${minimal.maven.version}</version>
+                <version>${maven.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-plugin-api</artifactId>
-                <version>${minimal.maven.version}</version>
+                <version>${maven.version}</version>
                 <scope>compile</scope>
             </dependency>
 

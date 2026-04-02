@@ -16,10 +16,10 @@
 
 package org.metaeffekt.core.itest.container;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
@@ -56,7 +56,7 @@ public class PhpMyAdminTest extends AbstractCompositionAnalysisTest {
         }
     };
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
         final File baseDir = saveContainerFromRegistryByRepositoryAndTag(null, PhpMyAdminTest.class.getSimpleName().toLowerCase(), "5.2.1", "sha256:3483eea0cdfe5a4a67cd1030f8e5f1cce291fcade2a8eb18fbec7f91c54d6bf1", PhpMyAdminTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(baseDir);
@@ -66,17 +66,17 @@ public class PhpMyAdminTest extends AbstractCompositionAnalysisTest {
                 .setName(PhpMyAdminTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
 
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void analyse() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class PhpMyAdminTest extends AbstractCompositionAnalysisTest {
         // FIXME: os-release is a duplicate in the container
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
         // FIXME: we have to write a function, which ignores sym links or we have to process them before
-        Assert.assertEquals(74, duplicateList.getRemainingDuplicates().size());
-        Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
+        Assertions.assertEquals(74, duplicateList.getRemainingDuplicates().size());
+        Assertions.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

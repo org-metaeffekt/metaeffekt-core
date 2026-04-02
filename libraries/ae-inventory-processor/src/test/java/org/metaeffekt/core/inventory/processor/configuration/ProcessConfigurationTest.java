@@ -16,8 +16,8 @@
 package org.metaeffekt.core.inventory.processor.configuration;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +31,8 @@ public class ProcessConfigurationTest {
         final DemoConfiguration demoConfiguration = new DemoConfiguration();
         Map<String, Object> properties = demoConfiguration.getProperties();
 
-        Assert.assertTrue(properties.size() >= 4);
-        Assert.assertFalse(properties.containsKey("ignoreProperty"));
+        Assertions.assertTrue(properties.size() >= 4);
+        Assertions.assertFalse(properties.containsKey("ignoreProperty"));
 
         demoConfiguration.setProperties(properties);
 
@@ -44,7 +44,7 @@ public class ProcessConfigurationTest {
         advisoryTypes.add(DemoConfiguration.CSAF_GENERIC_IDENTIFIER);
         demoConfiguration.setAdvisoryTypes(advisoryTypes);
 
-        Assert.assertEquals(2, demoConfiguration.getAdvisoryTypes().size());
+        Assertions.assertEquals(2, demoConfiguration.getAdvisoryTypes().size());
 
         properties = demoConfiguration.getProperties();
         properties.remove("advisoryTypes");
@@ -53,6 +53,6 @@ public class ProcessConfigurationTest {
         demoConfiguration.setProperties(properties);
 
         advisoryTypes = demoConfiguration.getAdvisoryTypes();
-        Assert.assertEquals(0, advisoryTypes.size());
+        Assertions.assertEquals(0, advisoryTypes.size());
     }
 }
