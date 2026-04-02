@@ -233,22 +233,16 @@ public class DirectoryInventoryScanTest {
         boolean executeAggregation = true;
 
         // input
-        final File projectBaseDir = new File("/Users/kklein/workspace/metaeffekt-core/.examples");
+        final File projectBaseDir = new File(".examples");
 
-        String caseString;
-
-        caseString = "case-001";
-        // caseString = "case-002";
-        // caseString = "case-003";
-        // caseString = "case-004";
-        // caseString = "case-005";
-        // caseString = "case-006";
+        // select case
+        String caseString = "case-001";
 
         final File scanInputDir = new File(projectBaseDir, caseString);
         final File scanDir = new File(projectBaseDir, caseString + "-scan");
 
         // other sources
-        final File referenceInventoryDir = new File("src/test/resources/reference-inventory-01");
+        final File referenceInventoryDir = new File(".examples/reference/inventory");
 
         // outputs
         final File resultsDir = new File(projectBaseDir, caseString + "-results");

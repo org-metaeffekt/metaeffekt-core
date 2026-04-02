@@ -28,12 +28,12 @@ import java.util.regex.Pattern;
 @Slf4j
 public class VersionFolderComponentPatternContributor extends ComponentPatternContributor {
 
-    public static final Pattern FOLDER_VERSION_PATTERN =
-            Pattern.compile(".*/([0-9]+\\.[0-9]+\\.[0-9]+)/.*");
+    public static final Pattern FOLDER_VERSION_PATTERN = Pattern.compile(".*/([0-9]+\\.[0-9]+\\.[0-9]+)/.*");
 
     private static final Set<String> ALLOWED_PARENT_PATH = new HashSet<String>() {{
         add("/lib/");
         add("/lib/x86_64-linux-gnu/");
+        add("/share/");
     }};
 
     @Override
