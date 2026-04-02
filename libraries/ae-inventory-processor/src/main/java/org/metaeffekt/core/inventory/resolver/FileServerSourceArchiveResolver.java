@@ -50,9 +50,9 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
     public SourceArchiveResolverResult resolveArtifactSourceArchive(Artifact artifact, File targetDir) {
         final SourceArchiveResolverResult result = new SourceArchiveResolverResult();
 
-        String url = artifact.get(AeaaInventoryAttribute.SOURCE_ARCHIVE_URL.getKey());
+        String url = artifact.get(AeaaInventoryAttribute.SOURCE_ARTIFACT_URL.getKey());
         if (url == null) {
-            url = artifact.get(AeaaInventoryAttribute.SOURCE_ARTIFACT_URL.getKey());
+            url = artifact.get(AeaaInventoryAttribute.SOURCE_ARCHIVE_URL.getKey());
         }
 
         if (url != null) {
