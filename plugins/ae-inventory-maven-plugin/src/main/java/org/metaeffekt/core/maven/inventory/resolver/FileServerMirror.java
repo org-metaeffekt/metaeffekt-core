@@ -15,5 +15,22 @@
  */
 package org.metaeffekt.core.maven.inventory.resolver;
 
-public class FileServerMirror {
+import org.metaeffekt.core.inventory.resolver.FileServerSourceArchiveResolver;
+import org.metaeffekt.core.inventory.resolver.RemoteUriResolver;
+
+import java.util.Properties;
+
+public class FileServerMirror extends AbstractMirror {
+
+    public FileServerSourceArchiveResolver createResolver(Properties properties) {
+        final FileServerSourceArchiveResolver resolver = new FileServerSourceArchiveResolver();
+
+        // Pass the plugin configuration properties for placeholder replacement
+        resolver.setProperties(properties);
+
+        // Initialize the URI resolver with properties (supports proxy/auth)
+        resolver.setUriResolver(new RemoteUriResolver(properties));
+
+        return resolver;
+    }
 }

@@ -63,6 +63,7 @@ public class SourceRepository extends IdentifiableComponent {
         mirrorCount += eclipseMirror == null ? 0 : 1;
         mirrorCount += componentMirror == null ? 0 : 1;
         mirrorCount += mavenMirror == null ? 0 : 1;
+        mirrorCount += fileServerMirror == null ? 0 : 1;
 
         if (mirrorCount > 1) {
             throw new IllegalStateException(String.format(
@@ -86,6 +87,10 @@ public class SourceRepository extends IdentifiableComponent {
             artifactSourceRepository.setSourceArchiveResolver(mavenMirror.createResolver(artifactResolver, localRepository, remoteRepositories));
         }
 
+        if (fileServerMirror != null) {
+            artifactSourceRepository.setSourceArchiveResolver(fileServerMirror.createResolver(p));
+        }
+
         return artifactSourceRepository;
     }
 
@@ -105,6 +110,7 @@ public class SourceRepository extends IdentifiableComponent {
         if (eclipseMirror != null) eclipseMirror.dumpConfig(log, prefix + "  ");
         if (componentMirror != null) componentMirror.dumpConfig(log, prefix + "  ");
         if (mavenMirror != null) mavenMirror.dumpConfig(log, prefix + "  ");
+        if (fileServerMirror != null) fileServerMirror.dumpConfig(log, prefix + "  ");
     }
 
 }

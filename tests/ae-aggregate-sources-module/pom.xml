@@ -56,6 +56,22 @@
                                 </sourceRepository>
 
                                 <sourceRepository>
+                                    <id>Public-File-Server-Test</id>
+                                    <targetFolder>Test-OSS</targetFolder>
+
+                                    <patterns>
+                                        <pattern>^test-artifact-.*\.zip</pattern>
+                                    </patterns>
+
+                                    <properties>
+                                        <repo.name>commons-io</repo.name>
+                                        <test.version>2.11.0</test.version>
+                                    </properties>
+
+                                    <fileServerMirror />
+                                </sourceRepository>
+
+                                <sourceRepository>
                                     <id>Internal / External Eclipse Mirrors</id>
                                     <targetFolder>Original OSS</targetFolder>
                                     <patterns>
