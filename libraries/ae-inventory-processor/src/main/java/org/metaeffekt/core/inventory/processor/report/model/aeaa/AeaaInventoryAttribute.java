@@ -118,7 +118,12 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
      *     <li> Stores the {@link AeaaInventoryAttribute#MS_PRODUCT_ID}s of referenced artifacts as a JSON Array using the {@link AeaaCvssConditionAttributes#MATCHES_ON_MS_PRODUCT_ID} key.</li>
      * </ul>
      */
-    CVSS_APPLICABILITY_CONDITION_ATTRIBUTES("CVSS Applicability Condition Attributes");
+    CVSS_APPLICABILITY_CONDITION_ATTRIBUTES("CVSS Applicability Condition Attributes"),
+    /**
+     * The URLs of the source artifact(archive) used for FileServerMirror.
+     */
+    SOURCE_ARTIFACT_URL("Source Artifact - URL"),
+    SOURCE_ARCHIVE_URL("Source Archive - URL");
 
     private final String key;
 

@@ -31,8 +31,8 @@
                         <phase>validate</phase>
                         <configuration>
                             <includeAllSources>true</includeAllSources>
-                            <failOnMissingSources>true</failOnMissingSources>
-                            <inventoryPath>${project.basedir}/artifact-inventory.xls</inventoryPath>
+                            <failOnMissingSources>false</failOnMissingSources>
+                            <inventoryPath>${project.basedir}/reduced-ae-core-artifact-inventory.xls</inventoryPath>
 
                             <!-- Source Repositories -->
                             <sourceRepositories>

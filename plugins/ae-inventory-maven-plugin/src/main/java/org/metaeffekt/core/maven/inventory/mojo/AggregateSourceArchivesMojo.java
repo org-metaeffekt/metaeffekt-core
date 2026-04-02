@@ -48,7 +48,7 @@ import static java.lang.String.format;
 
 /**
  * Mojo dedicated to automated aggregation of sources. For each artifact in the provided inventory the license metadata
- * is evaluated. Using the source category of the license meta data it is determined whether and whereto download the
+ * is evaluated. Using the source category of the license metadata it is determined whether and where to download the
  * source artifacts.
  */
 @Mojo(name = "aggregate-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES)

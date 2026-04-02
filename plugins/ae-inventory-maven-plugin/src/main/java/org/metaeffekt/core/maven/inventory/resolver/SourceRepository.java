@@ -37,6 +37,8 @@ public class SourceRepository extends IdentifiableComponent {
 
     private MavenMirror mavenMirror;
 
+    private FileServerMirror fileServerMirror;
+
     private List<String> patterns;
 
     private boolean ignoreMatches;
