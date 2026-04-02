@@ -37,8 +37,8 @@ public class ProcessConfigurationTest {
         demoConfiguration.setProperties(properties);
 
         final List<DemoConfiguration.CustomAdvisoryTypeIdentifier> advisoryTypeIdentifiers = demoConfiguration.getAdvisoryTypes();
-        Assert.assertEquals(DemoConfiguration.OSV_GENERIC_IDENTIFIER, advisoryTypeIdentifiers.get(0));
-        Assert.assertThrows(UnsupportedOperationException.class, () -> advisoryTypeIdentifiers.add(DemoConfiguration.OSV_GENERIC_IDENTIFIER));
+        Assertions.assertEquals(DemoConfiguration.OSV_GENERIC_IDENTIFIER, advisoryTypeIdentifiers.get(0));
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> advisoryTypeIdentifiers.add(DemoConfiguration.OSV_GENERIC_IDENTIFIER));
 
         List<DemoConfiguration.CustomAdvisoryTypeIdentifier> advisoryTypes = new ArrayList<>(advisoryTypeIdentifiers);
         advisoryTypes.add(DemoConfiguration.CSAF_GENERIC_IDENTIFIER);
