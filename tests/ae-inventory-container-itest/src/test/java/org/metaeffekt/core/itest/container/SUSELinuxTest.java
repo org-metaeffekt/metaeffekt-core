@@ -16,10 +16,10 @@
 
 package org.metaeffekt.core.itest.container;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
@@ -57,7 +57,7 @@ public class SUSELinuxTest extends AbstractCompositionAnalysisTest {
         }
     };
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
         final File baseDir = saveContainerFromRegistryByRepositoryAndTag("registry.suse.com", "bci/bci-base", "15.5", SUSELinuxTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(baseDir);
@@ -67,17 +67,17 @@ public class SUSELinuxTest extends AbstractCompositionAnalysisTest {
                 .setName(SUSELinuxTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
 
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void analyse() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
     }
 
     @Test
@@ -88,8 +88,8 @@ public class SUSELinuxTest extends AbstractCompositionAnalysisTest {
         List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.evaluateComponentPatterns(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
-        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
-        Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
+        Assertions.assertEquals(0, duplicateList.getRemainingDuplicates().size());
+        Assertions.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 
     @Test

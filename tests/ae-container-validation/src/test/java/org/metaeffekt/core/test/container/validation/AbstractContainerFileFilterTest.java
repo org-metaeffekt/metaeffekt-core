@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.test.container.validation;
 
-import org.junit.Assert;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.maven.inventory.extractor.InventoryExtractorUtil;
 import org.slf4j.Logger;
@@ -27,7 +26,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AbstractContainerFileFilterTest {
 
@@ -35,12 +35,12 @@ public class AbstractContainerFileFilterTest {
 
     protected void assertFilesFiltered(File analysisDir, List<String> excludePatterns, int expectedRemainingFileArtifacts) throws IOException {
         Collection<String> fileList = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
-        Assert.assertEquals("Check filters in POM to exclude artifacts or adapt expectation.", expectedRemainingFileArtifacts, fileList.size());
+        assertEquals(expectedRemainingFileArtifacts, fileList.size(), "Check filters in POM to exclude artifacts or adapt expectation.");
     }
 
     protected void assertCommonFileAttributes(Artifact artifact) {
         Set<String> paths = artifact.getRootPaths();
-        assertTrue("No artifact root path is set for file artifact " + artifact.getId(), paths != null && paths.size() == 1);
+        assertTrue(paths != null && paths.size() == 1, "No artifact root path is set for file artifact " + artifact.getId());
     }
 
 }

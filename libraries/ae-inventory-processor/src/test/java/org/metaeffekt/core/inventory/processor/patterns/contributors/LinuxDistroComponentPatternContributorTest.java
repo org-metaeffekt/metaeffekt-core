@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.util.FileUtils;
 

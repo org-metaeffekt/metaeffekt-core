@@ -16,10 +16,10 @@
 
 package org.metaeffekt.core.itest.container;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -43,7 +43,7 @@ import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContain
 
 
 // FIXME: this test will be ignored for now, since it is extremely slow
-@Ignore
+@Disabled
 public class NextcloudTest extends AbstractCompositionAnalysisTest {
 
     public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
@@ -58,7 +58,7 @@ public class NextcloudTest extends AbstractCompositionAnalysisTest {
         }
     };
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
         final File baseDir = saveContainerFromRegistryByRepositoryAndTag(
                 null,
@@ -71,19 +71,19 @@ public class NextcloudTest extends AbstractCompositionAnalysisTest {
                 .setName(NextcloudTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
 
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void analyse() throws Exception {
 
         // FIXME: runs extremely slow; needs to be optimized
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
     }
 
     @Test
@@ -115,7 +115,7 @@ public class NextcloudTest extends AbstractCompositionAnalysisTest {
         duplicateList.identifyRemainingDuplicatesWithoutArtifact("nextcloud-nextcloud-1.0.0-1.0.0", "nextcloud-nextcloud/3rdparty-dev-master-dev-master", "External storage support-files_external-1.22.0");
 
         // FIXME: os-release is a duplicate in the container
-        Assert.assertEquals(1, duplicateList.getRemainingDuplicates().size());
-        Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
+        Assertions.assertEquals(1, duplicateList.getRemainingDuplicates().size());
+        Assertions.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

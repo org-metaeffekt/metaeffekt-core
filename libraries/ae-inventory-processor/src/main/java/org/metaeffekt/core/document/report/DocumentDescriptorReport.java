@@ -339,11 +339,9 @@ public class DocumentDescriptorReport {
 
         log.info("Producing Dita for template [{}]", templateResourcePath);
         final Properties properties = new Properties();
-        properties.put(Velocity.RESOURCE_LOADER, "class, file");
-        properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
+        properties.put(Velocity.RESOURCE_LOADERS, "class, file");
+        properties.put("resource.loader.class.class", ClasspathResourceLoader.class.getName());
         properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.OUTPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.SET_NULL_ALLOWED, true);
 
         final VelocityEngine velocityEngine = new VelocityEngine(properties);
         final Template template = velocityEngine.getTemplate(templateResourcePath);
@@ -355,7 +353,6 @@ public class DocumentDescriptorReport {
 
         // Add common context entries.
         context.put("targetReportDir", this.targetReportDir);
-        context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
         context.put("utils", reportUtils);
         context.put("Double", Double.class);
