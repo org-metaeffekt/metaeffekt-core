@@ -92,6 +92,9 @@ public class InventoryContext {
 
     /**
      * Sanitizes and sets the assetIdentifier using the provided name and version.
+     *
+     * @param assetName the name of the asset to set the identifier with.
+     * @param assetVersion the version of the asset to set the identifier with.
      */
     public void setAssetIdentifier(String assetName, String assetVersion) {
         // Handle Nulls/Empty and combine
@@ -121,6 +124,9 @@ public class InventoryContext {
         this.assetIdentifier = sanitized.isEmpty() ? "asset_dir" : sanitized;
     }
 
+    /**
+     * Validates a given inventoryContext.
+     */
     public void validate() {
         // check if the referenced inventory is set
         if (inventory == null) {
