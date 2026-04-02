@@ -104,8 +104,8 @@ public class DocumentDescriptorReportGenerator {
                             .map(a -> a.get(AssetMetaData.Attribute.VERSION))
                             .orElseThrow(() -> new IllegalStateException("Missing asset version in primary asset for inventory [" + inventoryContext.getIdentifier() + "]. Please make sure that every primary asset has a specified version."));
 
-                    //final String encodedAssetName = Base64.getEncoder().encodeToString(assetName.getBytes());
-                    InventoryContext derivedContext = new InventoryContext(inventory, assetName, inventoryContext.getReportContext(), inventoryContext.getLicensesPath(), inventoryContext.getComponentsPath());
+                    final String encodedAssetName = Base64.getEncoder().encodeToString(assetName.getBytes());
+                    InventoryContext derivedContext = new InventoryContext(inventory, encodedAssetName, inventoryContext.getReportContext(), inventoryContext.getLicensesPath(), inventoryContext.getComponentsPath());
                     derivedContext.setAssetName(assetName);
                     derivedContext.setAssetVersion(assetVersion);
                     derivedContext.setAssetIdentifier(assetName, assetVersion);
