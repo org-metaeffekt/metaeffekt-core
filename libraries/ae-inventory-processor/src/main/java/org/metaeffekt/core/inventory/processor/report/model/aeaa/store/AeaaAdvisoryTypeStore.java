@@ -477,7 +477,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
 
     /**
      * Advisory Ids from the <b>root.io Advisories</b>.
-     * <a href="https://osv.dev/list?q=&ecosystem=Root">root.io Advisories</a>.
+     * <a href="https://osv.dev/list?q=&amp;ecosystem=Root">root.io Advisories</a>.
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_ROOT_IO =
             createOsvIdentifier("root.io", "root.io",
@@ -495,7 +495,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     /**
      * Advisory Ids from the <b>Julia Security Working Group</b>.
      * Official security advisories for the Julia package ecosystem.
-     * <a href="https://osv.dev/list?q=&ecosystem=Julia">JLSEC Advisories on osv.dev</a>.
+     * <a href="https://osv.dev/list?q=&amp;ecosystem=Julia">JLSEC Advisories on osv.dev</a>.
      * <a href="https://github.com/JuliaLang/SecurityAdvisories.jl">JLSEC Advisories on GitHub</a>.
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_JLSEC =
