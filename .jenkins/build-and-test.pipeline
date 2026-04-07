@@ -1,16 +1,19 @@
 #!/usr/bin/env groovy
 pipeline {
+
     agent {
         label 'metaeffekt-astronaut'
     }
+
     tools {
         jdk 'ZULU17'
         maven 'MAVEN3912'
     }
+
     stages {
         stage('Build and Test') {
             steps {
-                withMaven() {
+                withMaven(maven: 'MAVEN3912') {
                     sh 'mvn -B clean install'
                 }
             }
