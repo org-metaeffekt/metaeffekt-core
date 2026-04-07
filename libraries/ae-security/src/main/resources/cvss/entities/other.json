@@ -199,9 +199,65 @@
     "description": "CVE Security Advisories from Alpine Linux",
     "url": "https://secdb.alpinelinux.org/"
   },
-  "ECHO": {
+  "OSV_ECHO":{
     "name": "ECHO",
     "description": "CVE Security advisories for echoHQ images",
     "url": "https://www.echohq.com/"
+  },
+  "OSV_DRUPAL": {
+    "name": "DRUPAL",
+    "description": "Official security advisories for Drupal PHP modules",
+    "url": "https://www.drupal.org/security/",
+    "country": "USA",
+    "email": "security@drupal.org"
+  },
+  "OSV_OSEC": {
+    "name": "OSEC",
+    "description": "Official security advisories for the OCaml ecosystem",
+    "url": "https://github.com/ocaml/security-advisories",
+    "country": "FR",
+    "email": "security@ocaml.org"
+  },
+  "OSV_ROOT_IO": {
+    "name": "root.io",
+    "description": "Advisory Ids from the root.io Advisories",
+    "url": "https://osv.dev/list?q=&ecosystem=Root",
+    "country": "USA",
+    "email": "security@root.io"
+  },
+  "OSV_EEF_CVE": {
+    "name": "EEF-CVE",
+    "description": "Official security advisories for Erlang and Elixir packages",
+    "url": "https://cna.erlef.org/",
+    "country": "USA",
+    "email": "eef@erlef.org"
+  },
+  "OSV_JLSEC": {
+    "name": "JLSEC",
+    "description": "Official security advisories for the Julia package ecosystem",
+    "url": "https://github.com/JuliaLang/SecurityAdvisories.jl",
+    "country": "USA",
+    "email": "security@julialang.org"
+  },
+  "OSV_CLEANSTART": {
+    "name": "CLEANSTART",
+    "description": "Official security advisories for CleanStart OS packages",
+    "url": "https://github.com/cleanstart-dev/cleanstart-security-advisories",
+    "country": "USA",
+    "email": "security@cleanstart.dev"
+  },
+  "OSV_PHSA": {
+    "name": "VMware Photon Security Advisory",
+    "description": "Official security advisories for VMware Photon Security Advisory",
+    "url": "https://github.com/captn3m0/photon-os-advisories/tree/main/advisories",
+    "country": "USA",
+    "email": "security@vmware.com"
+  },
+  "OSV_V_EIGHT": {
+    "name": "V8 Chromium",
+    "description": "Official security advisories for V8 Vulnfeed",
+    "url": "https://github.com/captn3m0/photon-os-advisories/tree/main/advisories",
+    "country": "USA",
+    "email": "security@chromium.org"
   }
 }
