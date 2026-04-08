@@ -24,10 +24,24 @@ import org.slf4j.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Utility function for running commands in an executor.
+ */
 @SuppressWarnings("unused")
 public class ExecutorUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ExecutorUtils.class);
 
+    /**
+     * Runs a command demanding success.
+     * <p>
+     *     Throws with a generic failure message and logs some failure information on failure.
+     * </p>
+     * @param executor the executor to run in
+     * @param command the command to run (and arguments)
+     * @param time time to wait for execution to complete
+     * @param timeUnit unit of time to wait for completion
+     * @throws CommandExecutionFailed if the execution failed / is incomplete (such as non-null process exit value)
+     */
     public static void demandSuccess(KubernetesCommandExecutor executor,
                                      String[] command,
                                      long time,

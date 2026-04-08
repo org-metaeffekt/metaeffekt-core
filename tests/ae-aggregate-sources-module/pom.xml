@@ -32,7 +32,7 @@
                         <configuration>
                             <includeAllSources>true</includeAllSources>
                             <failOnMissingSources>true</failOnMissingSources>
-                            <inventoryPath>${project.basedir}/artifact-inventory.xls</inventoryPath>
+                            <inventoryPath>${project.basedir}/inventory/test-artifact-inventory.xls</inventoryPath>
 
                             <!-- Source Repositories -->
                             <sourceRepositories>

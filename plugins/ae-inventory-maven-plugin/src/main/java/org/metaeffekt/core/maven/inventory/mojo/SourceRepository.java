@@ -16,6 +16,9 @@
 package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugin.logging.Log;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.metaeffekt.core.inventory.resolver.ArtifactPattern;
 import org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository;
 
@@ -39,7 +42,7 @@ public class SourceRepository extends IdentifiableComponent {
 
     private boolean ignoreMatches;
 
-    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate() {
+    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate(final RepositorySystem repositorySystem, final RepositorySystemSession repositorySystemSession, final List<RemoteRepository> remoteProjectRepositories) {
 
         ArtifactSourceRepository artifactSourceRepository = new ArtifactSourceRepository();
         artifactSourceRepository.setId(getId());
@@ -78,7 +81,7 @@ public class SourceRepository extends IdentifiableComponent {
         }
 
         if (mavenMirror != null) {
-            artifactSourceRepository.setSourceArchiveResolver(mavenMirror.createResolver());
+            artifactSourceRepository.setSourceArchiveResolver(mavenMirror.createResolver(repositorySystem, repositorySystemSession, remoteProjectRepositories));
         }
 
         return artifactSourceRepository;

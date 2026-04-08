@@ -44,15 +44,33 @@ public class KubernetesCommandExecutor implements AutoCloseable {
      * A default namespace for use with this tool. This may (should) not be the "default" namespace of kubernetes.
      */
     @SuppressWarnings("unused")
-    public static final String defaultNamespace = "ae-container-control";
-    public static final long waitSecondsForPodCreation = 60;
+    public static final String DEFAULT_NAMESPACE = "ae-container-control";
+
+    /**
+     * Seconds to wait for creation of a pod before giving up / throwing.
+     */
+    public static final long WAIT_SECONDS_FOR_POD_CREATION = 60;
+
     /**
      * How long to wait for before warning the user (via log warn message) when pod is pending for a while.
      */
-    public static final long secondsToWarnOnPodPending = 30;
+    public static final long SECONDS_UNTIL_WARN_ON_POD_PENDING = 30;
+
     private static final Logger LOG = LoggerFactory.getLogger(KubernetesCommandExecutor.class);
+
+    /**
+     * The kubernetes client used for later api interactions. Encapsulates the endpoint.
+     */
     private final KubernetesClient client;
+
+    /**
+     * The pod reserved for this executor. Should stay alive for the length of the life of this class.
+     */
     private final Pod reservedPod;
+
+    /**
+     * Whether this class (and hopefully the underlying pod in unison with it) were closed already.
+     */
     private boolean closed = false;
 
     /**
@@ -94,13 +112,39 @@ public class KubernetesCommandExecutor implements AutoCloseable {
             String imageIdentifier,
             List<EnvVar> envVars
     ) throws CommandExecutionFailed {
+        this(
+                kubeconfig,
+                namespaceName,
+                imageIdentifier,
+                envVars,
+                null
+        );
+    }
+
+    /**
+     * Creates a new object.
+     *
+     * @param kubeconfig      kubeconfig for client creation, null for default config
+     * @param namespaceName   namespace to use for creation of resources
+     * @param imageIdentifier identifier of the container image to use in creation
+     * @param envVars         environment for command execution
+     * @param command         command for image / pod setup (container config)
+     * @throws CommandExecutionFailed on failure to create the pod
+     */
+    public KubernetesCommandExecutor(
+            Config kubeconfig,
+            String namespaceName,
+            String imageIdentifier,
+            List<EnvVar> envVars,
+            List<String> command
+    ) throws CommandExecutionFailed {
         KubernetesClient client = null;
         try {
             // TODO: constructor overloads that allow configuration of the client (such as endpoint address, port)
             client = new KubernetesClientBuilder().withConfig(kubeconfig).build();
 
             this.client = client;
-            this.reservedPod = getPod(client, namespaceName, imageIdentifier, UUID.randomUUID(), envVars);
+            this.reservedPod = getPod(client, namespaceName, imageIdentifier, UUID.randomUUID(), envVars, command);
         } catch (Exception e) {
             LOG.debug(
                     "Constructor of [{}] failed for image identifier [{}].",
@@ -127,6 +171,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
      * @param imageIdentifier the image identifier to use for this pod
      * @param runnerId        a runner id, a UUID unique to this pod
      * @param envVars         environment for command execution
+     * @param command         (launch) command for image / pod setup (container config) (e.g. /bin/bash)
      * @return returns the created pod object as returned by the api's {@link PodResource#create()}
      * @throws KubernetesClientTimeoutException if pod creation fails with timeout
      * @throws CommandExecutionFailed           on failure to create the pod
@@ -136,7 +181,8 @@ public class KubernetesCommandExecutor implements AutoCloseable {
             String namespaceName,
             String imageIdentifier,
             UUID runnerId,
-            List<EnvVar> envVars
+            List<EnvVar> envVars,
+            List<String> command
     ) throws KubernetesClientTimeoutException, CommandExecutionFailed {
 
         // prepare our own namespace for easier management and deletion of leftovers in case of any issues
@@ -172,8 +218,8 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                 .withEnv(envVars)
                 .withImage(imageIdentifier)
                 .withStdin()
+                .withCommand(command)
                 .endContainer()
-
                 .endSpec()
                 .build();
 
@@ -195,7 +241,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                     if (shouldLog.get()) {
                         final long current = System.currentTimeMillis();
 
-                        long secondsToWarnFloored = Math.min(secondsToWarnOnPodPending, waitSecondsForPodCreation - 2);
+                        long secondsToWarnFloored = Math.min(SECONDS_UNTIL_WARN_ON_POD_PENDING, WAIT_SECONDS_FOR_POD_CREATION - 2);
                         if (((current - startTime) / 1000) > secondsToWarnFloored &&
                                 shouldLog.getAndSet(false)) {
                             // inform user that a pod is taking a long time to start
@@ -204,7 +250,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                                             " Could indicate slow download or" +
                                             " unreachable image id (in which case we're stuck forever).",
                                     imageIdentifier,
-                                    secondsToWarnOnPodPending
+                                    SECONDS_UNTIL_WARN_ON_POD_PENDING
                             );
                         }
                     }
@@ -219,7 +265,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                 this is a balance of application responseiveness (cancelling invalid image names or non-matching ISA)
                 and being tolerant of slow machines / internet connections (pulls for larger images may take longer).
                  */
-                waitSecondsForPodCreation, TimeUnit.SECONDS
+                WAIT_SECONDS_FOR_POD_CREATION, TimeUnit.SECONDS
         );
 
         if (!"Running".equals(lastSeenPhase.get())) {
@@ -280,18 +326,36 @@ public class KubernetesCommandExecutor implements AutoCloseable {
         return client.pods().resource(reservedPod).file(pathInContainer).copy(destination);
     }
 
+    /**
+     * Reads the file from the container to a stream.
+     * @param pathInContainer the path to read
+     * @return a stream of the file contents of the given file
+     */
     public InputStream readFile(String pathInContainer) {
         return client.pods().resource(reservedPod).file(pathInContainer).read();
     }
 
+    /**
+     * Upload the given stream to the container as a file.
+     * @param input the stream that will push content
+     * @param pathInContainer path in the container that the content should be piped into
+     * @return returns whether the operation was a success
+     */
     public boolean uploadFile(InputStream input, String pathInContainer) {
         return client.pods().resource(reservedPod).file(pathInContainer).upload(input);
     }
 
+    /**
+     * Check whether this class has already been closed
+     * @return whether this class / container have been closed.
+     */
     public boolean isClosed() {
         return closed;
     }
 
+    /**
+     * Close this class and stop the underlying pod / container.
+     */
     @Override
     public void close() {
         if (!closed) {
