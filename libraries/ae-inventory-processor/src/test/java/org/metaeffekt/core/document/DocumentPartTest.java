@@ -16,7 +16,7 @@
 package org.metaeffekt.core.document;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
 import org.metaeffekt.core.document.model.DocumentPartType;
@@ -63,7 +63,7 @@ public class DocumentPartTest {
         documentDescriptor.setDocumentParts(parts);
         documentDescriptor.setLanguage("en");
         documentDescriptor.setDocumentType(DocumentType.ANNEX);
-        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
         documentDescriptor.setParams(documentParams);
         documentDescriptor.setIdentifier("annex");
 

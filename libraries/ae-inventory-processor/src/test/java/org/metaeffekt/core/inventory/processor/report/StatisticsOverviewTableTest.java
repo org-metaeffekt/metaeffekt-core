@@ -16,9 +16,9 @@
 package org.metaeffekt.core.inventory.processor.report;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -51,7 +51,7 @@ public class StatisticsOverviewTableTest {
             .setInsignificantThreshold(0.0);
 
     @Test
-    @Ignore
+    @Disabled
     public void runOnInventoryTest() throws IOException {
         final Inventory inventory = new InventoryReader().readInventory(new File(""));
         final AeaaVulnerabilityContextInventory vInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory);
@@ -84,7 +84,7 @@ public class StatisticsOverviewTableTest {
     @Test
     public void assertSeverityEnumResultsInCorrectSeverityCategoriesTest() {
         for (Severity severityLevel : Severity.values()) {
-            Assert.assertEquals(severityLevel.name().toLowerCase(), CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(severityLevel.getV3().getOverallScore()).getName().toLowerCase());
+            Assertions.assertEquals(severityLevel.name().toLowerCase(), CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(severityLevel.getV3().getOverallScore()).getName().toLowerCase());
         }
     }
 
@@ -100,19 +100,19 @@ public class StatisticsOverviewTableTest {
         this.precalculateCvss(vulnerabilities, this.unmodifiedMapperSecurityPolicy);
 
         final StatisticsOverviewTable certFrTable = StatisticsOverviewTable.buildTableStrFilterAdvisor(this.unmodifiedMapperSecurityPolicy, vulnerabilities, "CERT-FR", false);
-        Assert.assertEquals(this.constructList("Critical", 1, 0, 0, 0, 0, 1, "100,0 %"), certFrTable.getTableRowValues("critical"));
-        Assert.assertEquals(this.constructList("High", 1, 0, 0, 0, 0, 1, "100,0 %"), certFrTable.getTableRowValues("high"));
-        Assert.assertEquals(this.constructList("Low", 0, 0, 0, 0, 0, 0, "n/a"), certFrTable.getTableRowValues("low"));
+        Assertions.assertEquals(this.constructList("Critical", 1, 0, 0, 0, 0, 1, "100,0 %"), certFrTable.getTableRowValues("critical"));
+        Assertions.assertEquals(this.constructList("High", 1, 0, 0, 0, 0, 1, "100,0 %"), certFrTable.getTableRowValues("high"));
+        Assertions.assertEquals(this.constructList("Low", 0, 0, 0, 0, 0, 0, "n/a"), certFrTable.getTableRowValues("low"));
 
         final StatisticsOverviewTable certSeiTable = StatisticsOverviewTable.buildTableStrFilterAdvisor(this.unmodifiedMapperSecurityPolicy, vulnerabilities, "CERT-SEI", false);
-        Assert.assertEquals(this.constructList("Critical", 1, 0, 0, 0, 0, 1, "100,0 %"), certSeiTable.getTableRowValues("critical"));
-        Assert.assertEquals(this.constructList("High", 1, 0, 0, 0, 0, 1, "100,0 %"), certSeiTable.getTableRowValues("high"));
-        Assert.assertEquals(this.constructList("Low", 0, 0, 0, 0, 0, 0, "n/a"), certSeiTable.getTableRowValues("low"));
+        Assertions.assertEquals(this.constructList("Critical", 1, 0, 0, 0, 0, 1, "100,0 %"), certSeiTable.getTableRowValues("critical"));
+        Assertions.assertEquals(this.constructList("High", 1, 0, 0, 0, 0, 1, "100,0 %"), certSeiTable.getTableRowValues("high"));
+        Assertions.assertEquals(this.constructList("Low", 0, 0, 0, 0, 0, 0, "n/a"), certSeiTable.getTableRowValues("low"));
 
         final StatisticsOverviewTable noFilterTable = StatisticsOverviewTable.buildTableStrFilterAdvisor(this.unmodifiedMapperSecurityPolicy, vulnerabilities, null, false);
-        Assert.assertEquals(this.constructList("Critical", 2, 0, 0, 0, 0, 2, "100,0 %"), noFilterTable.getTableRowValues("critical"));
-        Assert.assertEquals(this.constructList("High", 1, 0, 0, 0, 0, 1, "100,0 %"), noFilterTable.getTableRowValues("high"));
-        Assert.assertEquals(this.constructList("Low", 1, 0, 0, 0, 0, 1, "100,0 %"), noFilterTable.getTableRowValues("low"));
+        Assertions.assertEquals(this.constructList("Critical", 2, 0, 0, 0, 0, 2, "100,0 %"), noFilterTable.getTableRowValues("critical"));
+        Assertions.assertEquals(this.constructList("High", 1, 0, 0, 0, 0, 1, "100,0 %"), noFilterTable.getTableRowValues("high"));
+        Assertions.assertEquals(this.constructList("Low", 1, 0, 0, 0, 0, 1, "100,0 %"), noFilterTable.getTableRowValues("low"));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class StatisticsOverviewTableTest {
         // start with an empty inventory
         {
             final StatisticsOverviewTable emptyStatistics = StatisticsOverviewTable.buildTableStrFilterAdvisor(unmodifiedMapperSecurityPolicy, vulnerabilities, null, false);
-            Assert.assertTrue(emptyStatistics.isEmpty());
+            Assertions.assertTrue(emptyStatistics.isEmpty());
         }
 
         // add two VMDs (one CERT-FR, one CERT-FR + CERT-SEI; both applicable)
@@ -132,15 +132,15 @@ public class StatisticsOverviewTableTest {
 
         {
             final StatisticsOverviewTable nonEmptyStatistics = StatisticsOverviewTable.buildTableStrFilterAdvisor(unmodifiedMapperSecurityPolicy, vulnerabilities, null, false);
-            Assert.assertFalse(nonEmptyStatistics.isEmpty());
+            Assertions.assertFalse(nonEmptyStatistics.isEmpty());
         }
 
         {
             final StatisticsOverviewTable frStatisitics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaAdvisoryTypeStore.CERT_FR, false);
-            Assert.assertFalse(frStatisitics.isEmpty());
-            Assert.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), frStatisitics.getHeaders());
-            Assert.assertEquals(constructList("Critical", "High", "Medium", "Low"), frStatisitics.getSeverityCategories());
-            Assert.assertEquals(constructList("Critical", 2, 0, 0, 0, 0, 2, "100,0 %"), frStatisitics.getTableRowValues("critical"));
+            Assertions.assertFalse(frStatisitics.isEmpty());
+            Assertions.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), frStatisitics.getHeaders());
+            Assertions.assertEquals(constructList("Critical", "High", "Medium", "Low"), frStatisitics.getSeverityCategories());
+            Assertions.assertEquals(constructList("Critical", 2, 0, 0, 0, 0, 2, "100,0 %"), frStatisitics.getTableRowValues("critical"));
         }
 
         vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(null, Severity.CRITICAL.getV3()));
@@ -149,25 +149,25 @@ public class StatisticsOverviewTableTest {
 
         {
             final StatisticsOverviewTable statistics = StatisticsOverviewTable.buildTableStrFilterAdvisor(unmodifiedMapperSecurityPolicy, vulnerabilities, null, false);
-            Assert.assertFalse(statistics.isEmpty());
-            Assert.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), statistics.getHeaders());
-            Assert.assertEquals(constructList("Critical", "High", "Medium", "Low"), statistics.getSeverityCategories());
-            Assert.assertEquals(constructList("Critical", 2, 1, 0, 0, 0, 3, "66,7 %"), statistics.getTableRowValues("critical"));
+            Assertions.assertFalse(statistics.isEmpty());
+            Assertions.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), statistics.getHeaders());
+            Assertions.assertEquals(constructList("Critical", "High", "Medium", "Low"), statistics.getSeverityCategories());
+            Assertions.assertEquals(constructList("Critical", 2, 1, 0, 0, 0, 3, "66,7 %"), statistics.getTableRowValues("critical"));
         }
 
         {
             final StatisticsOverviewTable seiStatistics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaAdvisoryTypeStore.CERT_SEI, false);
-            Assert.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), seiStatistics.getHeaders());
-            Assert.assertEquals(constructList("Critical", "High", "Medium", "Low"), seiStatistics.getSeverityCategories());
-            Assert.assertEquals(constructList("Critical", 1, 0, 0, 0, 0, 1, "100,0 %"), seiStatistics.getTableRowValues("critical"));
+            Assertions.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), seiStatistics.getHeaders());
+            Assertions.assertEquals(constructList("Critical", "High", "Medium", "Low"), seiStatistics.getSeverityCategories());
+            Assertions.assertEquals(constructList("Critical", 1, 0, 0, 0, 0, 1, "100,0 %"), seiStatistics.getTableRowValues("critical"));
         }
 
         {
             final StatisticsOverviewTable statistics = StatisticsOverviewTable.buildTableStrFilterAdvisor(unmodifiedMapperSecurityPolicy, vulnerabilities, null, false);
-            Assert.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), statistics.getHeaders());
-            Assert.assertEquals(constructList("Critical", "High", "Medium", "Low"), statistics.getSeverityCategories());
-            Assert.assertEquals(constructList("Critical", 2, 1, 0, 0, 0, 3, "66,7 %"), statistics.getTableRowValues("critical"));
-            Assert.assertEquals(constructList("High", 0, 1, 0, 0, 0, 1, "0,0 %"), statistics.getTableRowValues("high"));
+            Assertions.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), statistics.getHeaders());
+            Assertions.assertEquals(constructList("Critical", "High", "Medium", "Low"), statistics.getSeverityCategories());
+            Assertions.assertEquals(constructList("Critical", 2, 1, 0, 0, 0, 3, "66,7 %"), statistics.getTableRowValues("critical"));
+            Assertions.assertEquals(constructList("High", 0, 1, 0, 0, 0, 1, "0,0 %"), statistics.getTableRowValues("high"));
         }
 
         vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_VOID, null, AeaaAdvisoryTypeStore.MSRC));
@@ -175,10 +175,10 @@ public class StatisticsOverviewTableTest {
 
         {
             final StatisticsOverviewTable msrcStatistics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaAdvisoryTypeStore.MSRC, false);
-            Assert.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), msrcStatistics.getHeaders());
-            Assert.assertEquals(constructList("Critical", "High", "Medium", "Low", "None"), msrcStatistics.getSeverityCategories());
-            Assert.assertEquals(constructList("High", 0, 0, 0, 0, 0, 0, "n/a"), msrcStatistics.getTableRowValues("high"));
-            Assert.assertEquals(constructList("None", 0, 0, 0, 0, 1, 1, "100,0 %"), msrcStatistics.getTableRowValues("none"));
+            Assertions.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), msrcStatistics.getHeaders());
+            Assertions.assertEquals(constructList("Critical", "High", "Medium", "Low", "None"), msrcStatistics.getSeverityCategories());
+            Assertions.assertEquals(constructList("High", 0, 0, 0, 0, 0, 0, "n/a"), msrcStatistics.getTableRowValues("high"));
+            Assertions.assertEquals(constructList("None", 0, 0, 0, 0, 1, 1, "100,0 %"), msrcStatistics.getTableRowValues("none"));
         }
 
         vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, Severity.MEDIUM.getV3(), AeaaAdvisoryTypeStore.MSRC));
@@ -186,11 +186,11 @@ public class StatisticsOverviewTableTest {
 
         {
             final StatisticsOverviewTable msrcStatistics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaAdvisoryTypeStore.MSRC, false);
-            Assert.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), msrcStatistics.getHeaders());
-            Assert.assertEquals(constructList("Critical", "High", "Medium", "Low", "None"), msrcStatistics.getSeverityCategories());
-            Assert.assertEquals(constructList("High", 0, 0, 0, 0, 0, 0, "n/a"), msrcStatistics.getTableRowValues("high"));
-            Assert.assertEquals(constructList("None", 0, 0, 0, 0, 1, 1, "100,0 %"), msrcStatistics.getTableRowValues("none"));
-            Assert.assertEquals(constructList("Medium", 0, 0, 0, 1, 0, 1, "0,0 %"), msrcStatistics.getTableRowValues("medium"));
+            Assertions.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), msrcStatistics.getHeaders());
+            Assertions.assertEquals(constructList("Critical", "High", "Medium", "Low", "None"), msrcStatistics.getSeverityCategories());
+            Assertions.assertEquals(constructList("High", 0, 0, 0, 0, 0, 0, "n/a"), msrcStatistics.getTableRowValues("high"));
+            Assertions.assertEquals(constructList("None", 0, 0, 0, 0, 1, 1, "100,0 %"), msrcStatistics.getTableRowValues("none"));
+            Assertions.assertEquals(constructList("Medium", 0, 0, 0, 1, 0, 1, "0,0 %"), msrcStatistics.getTableRowValues("medium"));
         }
     }
 
@@ -206,7 +206,7 @@ public class StatisticsOverviewTableTest {
         precalculateCvss(vulnerabilities, unmodifiedMapperSecurityPolicy);
 
         final StatisticsOverviewTable table = StatisticsOverviewTable.buildTableStrFilterAdvisor(unmodifiedMapperSecurityPolicy, vulnerabilities, null, false);
-        Assert.assertEquals("\n" + table, constructList("None", 0, 0, 0, 0, 1, 1, "100,0 %"), table.getTableRowValues("None"));
+        Assertions.assertEquals(constructList("None", 0, 0, 0, 0, 1, 1, "100,0 %"), table.getTableRowValues("None"), "\n" + table);
     }
 
     @Test
@@ -226,13 +226,13 @@ public class StatisticsOverviewTableTest {
         precalculateCvss(vulnerabilities, unmodifiedMapperSecurityPolicy);
 
         final StatisticsOverviewTable table = StatisticsOverviewTable.buildTableStrFilterAdvisor(unmodifiedMapperSecurityPolicy, vulnerabilities, null, true);
-        Assert.assertEquals(constructList("Critical", "High", "Medium", "Low", "None"), table.getSeverityCategories());
-        Assert.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), table.getHeaders());
-        Assert.assertEquals(constructList("Critical", 2, 1, 0, 1, 0, 4, "50,0 %"), table.getTableRowValues("critical"));
-        Assert.assertEquals(constructList("High", 1, 1, 0, 0, 0, 2, "50,0 %"), table.getTableRowValues("high"));
-        Assert.assertEquals(constructList("Medium", 0, 2, 0, 0, 0, 2, "0,0 %"), table.getTableRowValues("medium"));
-        Assert.assertEquals(constructList("Low", 0, 0, 0, 0, 0, 0, "n/a"), table.getTableRowValues("low"));
-        Assert.assertEquals(constructList("None", 0, 0, 1, 0, 1, 2, "100,0 %"), table.getTableRowValues("none"));
+        Assertions.assertEquals(constructList("Critical", "High", "Medium", "Low", "None"), table.getSeverityCategories());
+        Assertions.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), table.getHeaders());
+        Assertions.assertEquals(constructList("Critical", 2, 1, 0, 1, 0, 4, "50,0 %"), table.getTableRowValues("critical"));
+        Assertions.assertEquals(constructList("High", 1, 1, 0, 0, 0, 2, "50,0 %"), table.getTableRowValues("high"));
+        Assertions.assertEquals(constructList("Medium", 0, 2, 0, 0, 0, 2, "0,0 %"), table.getTableRowValues("medium"));
+        Assertions.assertEquals(constructList("Low", 0, 0, 0, 0, 0, 0, "n/a"), table.getTableRowValues("low"));
+        Assertions.assertEquals(constructList("None", 0, 0, 1, 0, 1, 2, "100,0 %"), table.getTableRowValues("none"));
     }
 
     @Test
@@ -258,12 +258,12 @@ public class StatisticsOverviewTableTest {
 
         final StatisticsOverviewTable table = StatisticsOverviewTable.buildTableStrFilterAdvisor(abstractedMapperSecurityPolicy, vulnerabilities, null, false);
 
-        Assert.assertEquals(constructList("Severity", "Affected", "Potentially Affected", "Not Affected", "Total", "Assessed"), table.getHeaders());
-        Assert.assertEquals(constructList("Critical", "High", "Medium", "Low"), table.getSeverityCategories());
-        Assert.assertEquals(constructList("Critical", 1, 2, 2, 5, "60,0 %"), table.getTableRowValues("critical"));
-        Assert.assertEquals(constructList("High", 2, 0, 0, 2, "100,0 %"), table.getTableRowValues("high"));
-        Assert.assertEquals(constructList("Medium", 0, 3, 0, 3, "0,0 %"), table.getTableRowValues("medium"));
-        Assert.assertEquals(constructList("Low", 2, 2, 0, 4, "50,0 %"), table.getTableRowValues("low"));
+        Assertions.assertEquals(constructList("Severity", "Affected", "Potentially Affected", "Not Affected", "Total", "Assessed"), table.getHeaders());
+        Assertions.assertEquals(constructList("Critical", "High", "Medium", "Low"), table.getSeverityCategories());
+        Assertions.assertEquals(constructList("Critical", 1, 2, 2, 5, "60,0 %"), table.getTableRowValues("critical"));
+        Assertions.assertEquals(constructList("High", 2, 0, 0, 2, "100,0 %"), table.getTableRowValues("high"));
+        Assertions.assertEquals(constructList("Medium", 0, 3, 0, 3, "0,0 %"), table.getTableRowValues("medium"));
+        Assertions.assertEquals(constructList("Low", 2, 2, 0, 4, "50,0 %"), table.getTableRowValues("low"));
     }
 
     @Test
@@ -276,24 +276,24 @@ public class StatisticsOverviewTableTest {
 
         {
             final StatisticsOverviewTable table = StatisticsOverviewTable.buildTableStrFilterAdvisor(abstractedMapperSecurityPolicy, vulnerabilities, null, false);
-            Assert.assertEquals(constructList("Severity", "Affected", "Potentially Affected", "Not Affected", "Total", "Assessed"), table.getHeaders());
-            Assert.assertEquals(constructList("Critical", "High", "Medium", "Low"), table.getSeverityCategories());
-            Assert.assertEquals(constructList("Critical", 0, 0, 1, 1, "100,0 %"), table.getTableRowValues("critical"));
-            Assert.assertEquals(constructList("High", 1, 0, 0, 1, "100,0 %"), table.getTableRowValues("high"));
-            Assert.assertEquals(constructList("Medium", 0, 0, 0, 0, "n/a"), table.getTableRowValues("medium"));
-            Assert.assertEquals(constructList("Low", 0, 0, 0, 0, "n/a"), table.getTableRowValues("low"));
-            Assert.assertEquals(0, table.getTableRowValues("none").size());
+            Assertions.assertEquals(constructList("Severity", "Affected", "Potentially Affected", "Not Affected", "Total", "Assessed"), table.getHeaders());
+            Assertions.assertEquals(constructList("Critical", "High", "Medium", "Low"), table.getSeverityCategories());
+            Assertions.assertEquals(constructList("Critical", 0, 0, 1, 1, "100,0 %"), table.getTableRowValues("critical"));
+            Assertions.assertEquals(constructList("High", 1, 0, 0, 1, "100,0 %"), table.getTableRowValues("high"));
+            Assertions.assertEquals(constructList("Medium", 0, 0, 0, 0, "n/a"), table.getTableRowValues("medium"));
+            Assertions.assertEquals(constructList("Low", 0, 0, 0, 0, "n/a"), table.getTableRowValues("low"));
+            Assertions.assertEquals(0, table.getTableRowValues("none").size());
         }
 
         {
             final StatisticsOverviewTable table = StatisticsOverviewTable.buildTableStrFilterAdvisor(abstractedMapperSecurityPolicy, vulnerabilities, null, true);
-            Assert.assertEquals(constructList("Severity", "Affected", "Potentially Affected", "Not Affected", "Total", "Assessed"), table.getHeaders());
-            Assert.assertEquals(constructList("Critical", "High", "Medium", "Low", "None"), table.getSeverityCategories());
-            Assert.assertEquals(constructList("Critical", 0, 0, 0, 0, "n/a"), table.getTableRowValues("critical"));
-            Assert.assertEquals(constructList("High", 1, 0, 0, 1, "100,0 %"), table.getTableRowValues("high"));
-            Assert.assertEquals(constructList("Medium", 0, 0, 0, 0, "n/a"), table.getTableRowValues("medium"));
-            Assert.assertEquals(constructList("Low", 0, 0, 0, 0, "n/a"), table.getTableRowValues("low"));
-            Assert.assertEquals(constructList("None", 0, 0, 1, 1, "100,0 %"), table.getTableRowValues("none"));
+            Assertions.assertEquals(constructList("Severity", "Affected", "Potentially Affected", "Not Affected", "Total", "Assessed"), table.getHeaders());
+            Assertions.assertEquals(constructList("Critical", "High", "Medium", "Low", "None"), table.getSeverityCategories());
+            Assertions.assertEquals(constructList("Critical", 0, 0, 0, 0, "n/a"), table.getTableRowValues("critical"));
+            Assertions.assertEquals(constructList("High", 1, 0, 0, 1, "100,0 %"), table.getTableRowValues("high"));
+            Assertions.assertEquals(constructList("Medium", 0, 0, 0, 0, "n/a"), table.getTableRowValues("medium"));
+            Assertions.assertEquals(constructList("Low", 0, 0, 0, 0, "n/a"), table.getTableRowValues("low"));
+            Assertions.assertEquals(constructList("None", 0, 0, 1, 1, "100,0 %"), table.getTableRowValues("none"));
         }
     }
 

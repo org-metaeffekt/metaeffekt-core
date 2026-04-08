@@ -17,6 +17,9 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.metaeffekt.core.inventory.processor.AbstractInventoryProcessor;
 import org.metaeffekt.core.inventory.processor.InventoryProcessor;
 import org.metaeffekt.core.inventory.processor.InventoryUpdate;
@@ -30,42 +33,26 @@ import java.util.Properties;
 
 /**
  * Mojo dedicated to automated inventory updates and consolidation.
- *
- * @goal update-inventory
- * @requiresDependencyResolution runtime
  */
+@Mojo(name = "update-inventory", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class InventoryUpdateMojo extends AbstractProjectAwareConfiguredMojo {
 
-    /**
-     * @parameter
-     * @required
-     */
+    @Parameter(required = true)
     private File sourceInventoryPath;
 
-    /**
-     * @parameter
-     * @required
-     */
+    @Parameter(required = true)
     private File targetInventoryPath;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private List<Processor> processors;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private Map<String, String> properties;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private Mapping componentNameMapping;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private Mapping licenseNameMapping;
 
     @Override

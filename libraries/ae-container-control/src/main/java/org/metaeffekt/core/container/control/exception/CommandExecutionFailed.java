@@ -15,11 +15,23 @@
  */
 package org.metaeffekt.core.container.control.exception;
 
+/**
+ * Exception for use when a kubernetes command fails in some way.
+ */
 public class CommandExecutionFailed extends Exception {
+    /**
+     * Construct new Exception with detail message and cause
+     * @param message detail message
+     * @param e underlying exception (cause)
+     */
     public CommandExecutionFailed(String message, Exception e) {
         super(message, e);
     }
 
+    /**
+     * Construct new exception with a message.
+     * @param message detail message
+     */
     public CommandExecutionFailed(String message) {
         super(message);
     }

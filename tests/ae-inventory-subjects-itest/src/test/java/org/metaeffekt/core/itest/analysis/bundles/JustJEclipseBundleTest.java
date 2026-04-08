@@ -16,10 +16,9 @@
 package org.metaeffekt.core.itest.analysis.bundles;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
@@ -37,7 +36,7 @@ import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attribu
 
 public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://download.eclipse.org/justj/jres/17/updates/release/17.0.2/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")
@@ -45,16 +44,16 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
                 .setName(JustJEclipseBundleTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception{
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertThat(testSetup.clear()).isTrue();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventorize() throws Exception{
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertThat(testSetup.rebuildInventory()).isTrue();
         assertContent();
     }
 

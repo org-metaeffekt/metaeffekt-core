@@ -1,21 +1,14 @@
-*.iml
+# intellij-related files
 .idea
-**/target/**/*
+**/*.iml
+**/target
+
+# mac-specifics
 **/.DS_Store
-**/.classpath
+**/._*
 
-.project
-
-.settings/org.eclipse.core.resources.prefs
-
-.settings/org.eclipse.m2e.core.prefs
-
-inventory/.classpath
-
-*.prefs
-
-**/.database
-.local-README.md
-
+# integration tests produce module-level test folders that must be version controlled
 **/.test
-/.examples/
+
+# the top-level examples folder is local only and not version controlled
+.examples

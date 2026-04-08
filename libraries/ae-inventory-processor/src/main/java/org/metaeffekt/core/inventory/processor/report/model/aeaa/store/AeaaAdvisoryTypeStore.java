@@ -73,7 +73,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("UNKNOWN", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Android Security Bulletins</b>.
+     * Advisory Ids from the <b>Android Security Bulletins</b>.
      * Find details about Android security vulnerabilities and patches.
      * <a href="https://source.android.com/docs/security/bulletin">Android Security Bulletins</a>.
      */
@@ -81,7 +81,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             createOsvIdentifier("ASB-A", "Android Security Bulletin",
                     Pattern.compile("ASB-A-\\d+", Pattern.CASE_INSENSITIVE));
     /**
-     * Advisory IDs from the <b>Android Security Bulletins</b>.
+     * Advisory Ids from the <b>Android Security Bulletins</b>.
      * Find details about Android security vulnerabilities and patches.
      * <a href="https://source.android.com/docs/security/bulletin">Android Security Bulletins</a>.
      */
@@ -90,7 +90,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("PUB-A-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>AlmaLinux Security Advisories</b>.
+     * Advisory Ids from the <b>AlmaLinux Security Advisories</b>.
      * Provides information on security updates and vulnerabilities for AlmaLinux.
      * <a href="https://errata.almalinux.org/">AlmaLinux Vulnerability Advisory Database Homepage</a>.
      */
@@ -98,7 +98,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             createOsvIdentifier("ALSA", "AlmaLinux Security Advisory",
                     Pattern.compile("ALSA-\\d{4}:[A0123456789]{4,5}", Pattern.CASE_INSENSITIVE));
     /**
-     * Advisory IDs from the <b>AlmaLinux Bug Advisories</b>.
+     * Advisory Ids from the <b>AlmaLinux Bug Advisories</b>.
      * Details on bug fixes and updates for AlmaLinux.
      * <a href="https://errata.almalinux.org/">AlmaLinux Bug Advisory Database</a>.
      */
@@ -106,7 +106,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             createOsvIdentifier("ALBA", "AlmaLinux Bug Advisory",
                     Pattern.compile("ALBA-\\d{4}:\\d{4}", Pattern.CASE_INSENSITIVE));
     /**
-     * Advisory IDs from the <b>AlmaLinux Enhancement Advisories</b>.
+     * Advisory Ids from the <b>AlmaLinux Enhancement Advisories</b>.
      * Information on enhancements and feature updates for AlmaLinux.
      * <a href="https://errata.almalinux.org/">AlmaLinux Enhancement Advisory Database</a>.
      */
@@ -115,7 +115,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("ALEA-\\d{4}:\\d{4}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Bitnami Vulnerability Database</b>.
+     * Advisory Ids from the <b>Bitnami Vulnerability Database</b>.
      * Contains security advisories for Bitnami packages.
      * <a href="https://github.com/bitnami/vulndb">Bitnami Vulnerability Database on GitHub</a>.
      */
@@ -124,7 +124,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("BIT-[a-zA-Z0-9\\-_]+-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>National Vulnerability Database (NVD)</b>.
+     * Advisory Ids from the <b>National Vulnerability Database (NVD)</b>.
      * Official U.S. government repository of standards-based vulnerability management data.
      * <a href="https://nvd.nist.gov/">National Vulnerability Database (NVD)</a>.
      */
@@ -133,7 +133,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("(OSV-)?CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from <b>Debian Security</b>.
+     * Advisory Ids from <b>Debian Security</b>.
      * Provides information on CVE specific security vulnerabilities in Debian packages.
      * Debian Security not only creates security advisories, but also mirrors in part
      * CVE-specific information from the NVD and displays the vulnerable and fixed states of
@@ -145,7 +145,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("DEBIAN-CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Debian Security Advisories</b>.
+     * Advisory Ids from the <b>Debian Security Advisories</b>.
      * Provides information on security vulnerabilities in Debian packages.
      * <a href="https://www.debian.org/security/">Debian Security Advisories</a>.
      */
@@ -153,7 +153,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             createOsvIdentifier("DSA", "Debian Security Advisory",
                     Pattern.compile("DSA-\\d+(-\\d)?", Pattern.CASE_INSENSITIVE));
     /**
-     * Advisory IDs from the <b>Debian Long Term Support Advisories</b>.
+     * Advisory Ids from the <b>Debian Long Term Support Advisories</b>.
      * Security updates and advisories for Debian LTS.
      * <a href="https://www.debian.org/lts/security/">Debian LTS Security Advisories</a>.
      */
@@ -161,7 +161,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             createOsvIdentifier("DLA", "Debian LTS Advisory",
                     Pattern.compile("DLA-\\d+-\\d", Pattern.CASE_INSENSITIVE));
     /**
-     * Advisory IDs from the <b>Debian Temporary Security Advisories</b>.
+     * Advisory Ids from the <b>Debian Temporary Security Advisories</b>.
      * Temporary security advisories for Debian.
      * <a href="https://www.debian.org/security/">Debian Security Advisories</a>.
      */
@@ -170,7 +170,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("DTSA-\\d+-\\d", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>GitHub Advisory Database</b>.
+     * Advisory Ids from the <b>GitHub Advisory Database</b>.
      * Security advisories curated by GitHub.
      * <a href="https://github.com/github/advisory-database">GitHub Advisory Database</a>.
      */
@@ -179,7 +179,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("GHSA(-[23456789cfghjmpqrvwx]{4}){3}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Go Vulnerability Database</b>.
+     * Advisory Ids from the <b>Go Vulnerability Database</b>.
      * Official database of vulnerabilities for Go packages.
      * <a href="https://pkg.go.dev/vuln/">Go Vulnerability Database</a>.
      */
@@ -188,7 +188,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("GO-\\d{4}-\\d{4}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Global Security Database (GSD)</b>.
+     * Advisory Ids from the <b>Global Security Database (GSD)</b>.
      * Community-driven security database.
      * <a href="https://github.com/cloudsecurityalliance/gsd-database">Global Security Database (GSD)</a>.
      */
@@ -197,7 +197,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("GSD-\\d{4}-\\d{7}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Haskell Security Advisory Database</b>.
+     * Advisory Ids from the <b>Haskell Security Advisory Database</b>.
      * Security advisories for Haskell packages.
      * <a href="https://github.com/haskell/security-advisories">Haskell Security Advisory Database</a>.
      */
@@ -206,7 +206,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("HSEC-\\d{4}-\\d{4}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Malicious Packages Repository</b>.
+     * Advisory Ids from the <b>Malicious Packages Repository</b>.
      * Database of known malicious packages.
      * <a href="https://github.com/ossf/malicious-packages/tree/main/osv/">Malicious Packages Repository</a>.
      */
@@ -215,7 +215,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("MAL-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Open Source Vulnerabilities (OSV) List</b>.
+     * Advisory Ids from the <b>Open Source Vulnerabilities (OSV) List</b>.
      * Database of open-source vulnerabilities collected by OSV.
      * <a href="https://osv.dev/list">Open Source Vulnerabilities (OSV) List</a>.
      */
@@ -224,7 +224,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("OSV-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Python Software Foundation Advisory Database</b>.
+     * Advisory Ids from the <b>Python Software Foundation Advisory Database</b>.
      * Security advisories for Python packages maintained by the PSF.
      * <a href="https://github.com/psf/advisory-database">Python Software Foundation Advisory Database</a>.
      */
@@ -233,7 +233,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("PSF-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Python Software Foundation CVE Database</b>.
+     * Advisory Ids from the <b>Python Software Foundation CVE Database</b>.
      * CVE entries assigned by the PSF.
      * <a href="https://github.com/psf/advisory-database">Python Software Foundation CVE Database</a>.
      */
@@ -242,7 +242,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("PSF-CVE-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>PyPI Vulnerability Database</b>.
+     * Advisory Ids from the <b>PyPI Vulnerability Database</b>.
      * Security advisories for packages on the Python Package Index.
      * <a href="https://github.com/pypa/advisory-db">PyPI Vulnerability Database</a>.
      */
@@ -251,7 +251,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("PYSEC-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>R Consortium Advisory Database</b>.
+     * Advisory Ids from the <b>R Consortium Advisory Database</b>.
      * Security advisories for R packages.
      * <a href="https://github.com/RConsortium/r-advisory-database">R Consortium Advisory Database</a>.
      */
@@ -260,7 +260,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("RSEC-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Rocky Linux Security Advisories</b>.
+     * Advisory Ids from the <b>Rocky Linux Security Advisories</b>.
      * Security updates and vulnerabilities for Rocky Linux.
      * <a href="https://errata.rockylinux.org/">Rocky Linux Security Advisory Database Homepage</a>.
      */
@@ -268,7 +268,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             createOsvIdentifier("RLSA", "Rocky Linux Security Advisory",
                     Pattern.compile("RLSA-\\d{4}:\\d{4,5}", Pattern.CASE_INSENSITIVE));
     /**
-     * Advisory IDs from the <b>Rocky Linux Extra Security Advisories</b>.
+     * Advisory Ids from the <b>Rocky Linux Extra Security Advisories</b>.
      * Additional security advisories for Rocky Linux.
      * <a href="https://errata.rockylinux.org/">Rocky Linux Security Advisory Database Homepage</a>.
      */
@@ -277,7 +277,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("RXSA-\\d{4}:\\d{4}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>RustSec Advisory Database</b>.
+     * Advisory Ids from the <b>RustSec Advisory Database</b>.
      * Security advisories for Rust packages and crates.
      * <a href="https://github.com/rustsec/advisory-db">RustSec Advisory Database</a>.
      */
@@ -286,7 +286,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("RUSTSEC-\\d{4}-\\d{4}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Ubuntu Security Notices</b>.
+     * Advisory Ids from the <b>Ubuntu Security Notices</b>.
      * Official security notices for Ubuntu packages.
      * <a href="https://ubuntu.com/security/notices">Ubuntu Security Notices</a>.
      */
@@ -295,7 +295,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("((LSN)|(USN)|(UBUNTU-CVE))-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Chainguard Security Notices</b>.
+     * Advisory Ids from the <b>Chainguard Security Notices</b>.
      * Security advisories for Chainguard packages.
      * <a href="https://packages.cgr.dev/chainguard/osv/all.json">Chainguard Security Notices</a>.
      */
@@ -304,7 +304,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("CGA(-[a-zA-Z0-9]{4}){3}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>curl Security Advisories</b>.
+     * Advisory Ids from the <b>curl Security Advisories</b>.
      * Official security advisories for curl.
      * <a href="https://curl.se/docs/security.html">curl Security Advisories</a>.
      */
@@ -313,21 +313,21 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("CURL-CVE-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Unified Vulnerability Identifier Database</b>.
+     * Advisory Ids from the <b>Unified Vulnerability Identifier Database</b>.
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_UVI =
             createOsvIdentifier("UVI", "Unified Vulnerability Identifier Database",
                     Pattern.compile("UVI-\\d{4}-\\d{7}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Chinese National Vulnerability Database</b> (possibly).
+     * Advisory Ids from the <b>Chinese National Vulnerability Database</b> (possibly).
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_CAN =
             createOsvIdentifier("CAN", "Chinese National Vulnerability Database",
                     Pattern.compile("CAN-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>SUSE Security Update</b>.
+     * Advisory Ids from the <b>SUSE Security Update</b>.
      * Official security advisories for curl.
      * <a href="https://www.suse.com/support/security/">SUSE Security Landing Page</a>.
      */
@@ -336,7 +336,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("SUSE-SU-\\d{3,4}([:/]\\d{3,5}-\\d)?( Forbidden-1)?", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>SUSE Risk Update</b>.
+     * Advisory Ids from the <b>SUSE Risk Update</b>.
      * Official security advisories for curl.
      * <a href="https://www.suse.com/support/security/">SUSE Security Landing Page</a>.
      */
@@ -345,7 +345,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("SUSE-RU-\\d{4}[:/]\\d{4,5}-\\d", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>SUSE Feature Update</b>.
+     * Advisory Ids from the <b>SUSE Feature Update</b>.
      * Official security advisories for curl.
      * <a href="https://www.suse.com/support/security/">SUSE Security Landing Page</a>.
      */
@@ -354,7 +354,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("SUSE-FU-\\d{4}[:/]\\d{4}-\\d", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>SUSE Other Update</b>.
+     * Advisory Ids from the <b>SUSE Other Update</b>.
      * Official security advisories for curl.
      * <a href="https://www.suse.com/support/security/">SUSE Security Landing Page</a>.
      */
@@ -363,7 +363,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("SUSE-OU-\\d{4}[:/]\\d{4}-\\d", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>openSUSE Security Update</b>.
+     * Advisory Ids from the <b>openSUSE Security Update</b>.
      * Official security advisories for curl.
      * <a href="https://www.suse.com/support/security/">SUSE Security Landing Page</a>.
      */
@@ -371,8 +371,12 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             createOsvIdentifier("openSUSE-SU", "openSUSE Security Update",
                     Pattern.compile("openSUSE-SU-\\d{4}[:/]\\d{4,5}-\\d", Pattern.CASE_INSENSITIVE));
 
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_OPENSUSE_RU =
+            createOsvIdentifier("openSUSE-RU", "openSUSE Security Update",
+                    Pattern.compile("openSUSE-RU-\\d{4}[:/-]\\d{4,5}-\\d", Pattern.CASE_INSENSITIVE));
+
     /**
-     * Advisory IDs from the <b>red Hat Security Advisory</b>.
+     * Advisory Ids from the <b>red Hat Security Advisory</b>.
      * Official security advisories for Red Hat Security Advisories.
      * <a href="https://access.redhat.com/security/">Red Hat Security Landing Page</a>.
      */
@@ -381,7 +385,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("RHSA-\\d{4}:\\d{3,5}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Red Hat Bug Advisory</b>.
+     * Advisory Ids from the <b>Red Hat Bug Advisory</b>.
      * Official security advisories for Red Hat Bug Advisories.
      * <a href="https://access.redhat.com/security/">Red Hat Security Landing Page</a>.
      */
@@ -390,7 +394,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("RHBA-\\d{4}:\\d{3,5}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Red Hat Enhancement Advisory</b>.
+     * Advisory Ids from the <b>Red Hat Enhancement Advisory</b>.
      * Official security advisories for Red Hat Enhancement Advisories.
      * <a href="https://access.redhat.com/security/">Red Hat Security Landing Page</a>.
      */
@@ -399,7 +403,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("RHEA-\\d{4}:\\d{3,5}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Mageia Security Advisory</b>.
+     * Advisory Ids from the <b>Mageia Security Advisory</b>.
      * Official security advisories for Mageia Linux.
      * <a href="https://advisories.mageia.org/">Mageia Security Advisories</a>.
      */
@@ -408,7 +412,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("(MGASA|MGAA)-\\d{4}-\\d{4}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Minimus Security Advisory</b>.
+     * Advisory Ids from the <b>Minimus Security Advisory</b>.
      * Official security advisories for Minimus Linux.
      * <a href="https://docs.minimus.io/remediate/advisories/">Minumus Security Advisories</a>.
      */
@@ -417,7 +421,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("MINI(-[23456789cfghjmpqrvwx]{4}){3}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>BellSoft Security Advisory</b>.
+     * Advisory Ids from the <b>BellSoft Security Advisory</b>.
      * Official security advisories for Alpaquite Linux.
      * <a href="https://docs.bell-sw.com/security/search/">BellSoft Security Advisories</a>.
      */
@@ -426,7 +430,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("BELL-CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Open Euler Advisory</b>.
+     * Advisory Ids from the <b>Open Euler Advisory</b>.
      * Official security advisories for Open Euler Linux.
      * <a href="https://www.openeuler.org/en/security/security-bulletins/">Open Euler Advisories</a>.
      */
@@ -435,7 +439,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("OESA-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>Alpine Linux Advisory</b>.
+     * Advisory Ids from the <b>Alpine Linux Advisory</b>.
      * Official security advisories for Alpine Linux.
      * <a href="https://secdb.alpinelinux.org/">Alpine Linux</a>.
      */
@@ -444,14 +448,86 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("ALPINE-CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
 
     /**
-     * Advisory IDs from the <b>ECHO</b>.
+     * Advisory Ids from the <b>ECHO</b>.
      * Official security advisories for echo containers.
-     * <a href="https://advisory.echohq.com/osv/all.json">echo HQ</a>.
+     * <a href="https://www.echo.ai/">echo ai</a>.
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_ECHO =
             createOsvIdentifier("ECHO", "ECHO",
                     Pattern.compile("ECHO(-[a-z\\d]{4}){3}"));
 
+    /**
+     * Advisory Ids from the <b>Drupal</b>.
+     * Official security advisories for Drupal PHP modules.
+     * <a href="https://www.drupal.org/security/">Drupal Advisories on drupal.org</a>.
+     * <a href="https://osv.dev/list?q=DRUPAL">Drupal Advisories on osv.dev</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_DRUPAL =
+            createOsvIdentifier("DRUPAL", "DRUPAL",
+                    Pattern.compile("DRUPAL-(CONTRIB|CORE)-\\d{4}-\\d{3}"));
+
+    /**
+     * Advisory Ids from the <b>OCaml Security Advisories</b>.
+     * Official security advisories for the OCaml ecosystem.
+     * <a href="https://github.com/ocaml/security-advisories">OCaml Security Advisories on GitHub</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_OSEC =
+            createOsvIdentifier("OSEC", "OSEC",
+                    Pattern.compile("OSEC-\\d{4}-\\d{2}"));
+
+    /**
+     * Advisory Ids from the <b>root.io Advisories</b>.
+     * <a href="https://osv.dev/list?q=&amp;ecosystem=Root">root.io Advisories</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_ROOT_IO =
+            createOsvIdentifier("root.io", "root.io",
+                    Pattern.compile("ROOT-.*"));
+
+    /**
+     * Advisory Ids from the <b>Erlang Ecosystem Foundation</b>.
+     * Official security advisories for Erlang and Elixir packages.
+     * <a href="https://cna.erlef.org/">EEF CNA</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_EEF_CVE =
+            createOsvIdentifier("EEF-CVE", "EEF-CVE",
+                    Pattern.compile("EEF-CVE-\\d{4}-\\d+"));
+
+    /**
+     * Advisory Ids from the <b>Julia Security Working Group</b>.
+     * Official security advisories for the Julia package ecosystem.
+     * <a href="https://osv.dev/list?q=&amp;ecosystem=Julia">JLSEC Advisories on osv.dev</a>.
+     * <a href="https://github.com/JuliaLang/SecurityAdvisories.jl">JLSEC Advisories on GitHub</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_JLSEC =
+            createOsvIdentifier("JLSEC", "JLSEC",
+                    Pattern.compile("JLSEC-\\d{4}-\\d+"));
+
+    /**
+     * Advisory Ids from the <b>CleanStart</b>.
+     * Official security advisories for CleanStart OS packages.
+     * <a href="https://github.com/cleanstart-dev/cleanstart-security-advisories">CleanStart Advisories</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_CLEANSTART =
+            createOsvIdentifier("CLEANSTART", "CLEANSTART",
+                    Pattern.compile("CLEANSTART-\\d{4}-[A-Z0-9]{7}"));
+
+    /**
+     * Advisory Ids from the <b>VMware Photon Security Advisory</b>.
+     * Official security advisories for VMware Photon Security Advisory.
+     * <a href="https://github.com/captn3m0/photon-os-advisories/tree/main/advisories">VMware Photon Security Advisory</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_PHSA =
+            createOsvIdentifier("PHSA", "VMware Photon Security Advisory",
+                    Pattern.compile("PHSA-\\d{4}-\\d{4}"));
+
+    /**
+     * Advisory Ids from the <b>V8 Chromium Advisory</b>.
+     * Official security advisories for V8 Vulnfeed.
+     * <a href="https://github.com/captn3m0/photon-os-advisories/tree/main/advisories">V8 Chromium Advisory</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_V_EIGHT =
+            createOsvIdentifier("V8", "V8 Chromium",
+                    Pattern.compile("V8-.*"));
 
     // CSAF
     public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_GENERIC_IDENTIFIER = new AeaaAdvisoryTypeIdentifier<>(

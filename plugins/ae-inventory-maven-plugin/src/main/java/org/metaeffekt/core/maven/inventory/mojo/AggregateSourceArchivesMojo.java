@@ -17,14 +17,15 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
@@ -37,6 +38,7 @@ import org.metaeffekt.core.inventory.validation.ExecutionStatusEntry;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,23 +54,14 @@ import static java.lang.String.format;
 @Mojo(name = "aggregate-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
 
-    /**
-     * The ArtifactResolver to be used.
-     */
-    @Component
-    private org.apache.maven.artifact.resolver.ArtifactResolver artifactResolver;
-
-    /**
-     * The local Maven repository where artifacts are cached during the build process.
-     */
-    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
-    private ArtifactRepository localRepository;
+    @Parameter(defaultValue="${repositorySystemSession}", readonly = true)
+    private RepositorySystemSession repositorySystemSession;
 
     /**
      * A list of remote Maven repositories to be used for the compile run.
      */
-    @Parameter(defaultValue = "${project.remoteArtifactRepositories}")
-    private List<ArtifactRepository> remoteRepositories;
+    @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true)
+    private List<RemoteRepository> remoteProjectRepositories;
 
     /**
      * A list of repositories, where the source archives for the included artifacts can be loaded from.
@@ -127,6 +120,9 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
     @Parameter(defaultValue = "true")
     private boolean failOnMissingSources;
 
+    @Inject
+    private RepositorySystem repositorySystem;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         // adapt maven logging to underlying logging facade
@@ -148,13 +144,12 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
                 throw new MojoExecutionException("Parameter 'inventoryPath' does not point to valid inventory file: " + inventoryPath);
             }
 
-            // materialize configuration
-            final List<ArtifactSourceRepository> delegateArtifactSourceRepositories = new ArrayList<>();
-            for (SourceRepository sourceRepository : sourceRepositories) {
-                sourceRepository.dumpConfig(getLog(), "");
-                delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate(
-                        artifactResolver, localRepository, remoteRepositories));
-            }
+        // materialize configuration
+        final List<ArtifactSourceRepository> delegateArtifactSourceRepositories = new ArrayList<>();
+        for (SourceRepository sourceRepository : sourceRepositories) {
+            sourceRepository.dumpConfig(getLog(), "");
+            delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate(repositorySystem, repositorySystemSession, remoteProjectRepositories));
+        }
 
             final ExecutionStatus executionStatus = new ExecutionStatus();
 
@@ -213,7 +208,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
     }
 
     private void downloadArtifact(Artifact artifact, Inventory inventory, File targetPath,
-                                  List<ArtifactSourceRepository> sourceRepositories, ExecutionStatus executionStatus) throws IOException, MojoFailureException {
+                                  List<ArtifactSourceRepository> sourceRepositories, ExecutionStatus executionStatus) throws IOException {
 
         // otherwise apply matching repos
         final List<ArtifactSourceRepository> matchingSourceRepositories =

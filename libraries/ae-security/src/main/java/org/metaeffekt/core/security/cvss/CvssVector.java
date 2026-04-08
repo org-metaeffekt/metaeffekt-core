@@ -360,13 +360,22 @@ public abstract class CvssVector {
 
     protected Pair<Integer, Integer> findOldNewSeverityOrder(CvssVectorAttribute unmodifiedAttribute, CvssVectorAttribute modifiedAttribute, CvssVectorAttribute newAttribute, boolean isNewAttributeModified) {
         // compare either the modified or the unmodified attribute with the new attribute
-        final boolean isModifiedAttributeSet = modifiedAttribute != null && modifiedAttribute.isSet();
-        final CvssVectorAttribute oldAttribute = isModifiedAttributeSet && isNewAttributeModified ? modifiedAttribute : unmodifiedAttribute;
+        final boolean isModifiedAttributeSet = modifiedAttribute != null &&
+                modifiedAttribute.isSet() &&
+                !VALUE_NOT_DEFINED.equals(modifiedAttribute.getIdentifier()) &&
+                !VALUE_NULL.equals(modifiedAttribute.getIdentifier()) &&
+                !"X".equals(modifiedAttribute.getShortIdentifier());
 
-        final int oldSeverity = determineAttributeSeverityOrder(oldAttribute);
-        final int newSeverity = determineAttributeSeverityOrder(newAttribute);
+        // if applying a new modified attribute, evaluate against the existing modified attribute (if set) or fallback to base.
+        // if applying a new base attribute, evaluate only against the existing base attribute.
+        final CvssVectorAttribute oldAttribute = isNewAttributeModified && isModifiedAttributeSet ? modifiedAttribute : unmodifiedAttribute;
 
-        // LOG.info("Comparing old [{} {}] with new [{} {}]", oldAttribute, oldSeverity, newAttribute, newSeverity);
+        final int oldSeverity = this.determineAttributeSeverityOrder(oldAttribute);
+        final int newSeverity = this.determineAttributeSeverityOrder(newAttribute);
+
+        // LOG.info("Comparing old [{} {} {}] with new [{} {} {}]",
+        //         oldAttribute.getClass().getSimpleName(), oldAttribute, oldSeverity,
+        //         newAttribute.getClass().getSimpleName(), newAttribute, newSeverity);
 
         return Pair.of(oldSeverity, newSeverity);
     }
