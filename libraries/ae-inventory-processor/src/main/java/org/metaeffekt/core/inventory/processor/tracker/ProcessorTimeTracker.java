@@ -22,7 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
-import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
+import org.metaeffekt.core.inventory.processor.report.adapter.IVulnerabilityReportAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -155,14 +155,14 @@ public class ProcessorTimeTracker {
         if (last == Long.MAX_VALUE) last = first;
         if (first == 0) first = last;
 
-        VulnerabilityReportAdapter.FormattedTime formattedTimeFirst = new VulnerabilityReportAdapter.FormattedTime(first);
+        IVulnerabilityReportAdapter.FormattedTime formattedTimeFirst = new IVulnerabilityReportAdapter.FormattedTime(first);
         final String formattedFirstEn = formattedTimeFirst.getEnDate();
         final String formattedFirstDe = formattedTimeFirst.getDeDate();
 
         final String formattedTimeFirstEn = formattedTimeFirst.getEnTimeAndDate();
         final String formattedTimeFirstDe = formattedTimeFirst.getDeTimeAndDate();
 
-        VulnerabilityReportAdapter.FormattedTime formattedTimeLast = new VulnerabilityReportAdapter.FormattedTime(last);
+        IVulnerabilityReportAdapter.FormattedTime formattedTimeLast = new IVulnerabilityReportAdapter.FormattedTime(last);
         final String formattedLastEn = formattedTimeLast.getEnDate();
         final String formattedLastDe = formattedTimeLast.getDeDate();
 

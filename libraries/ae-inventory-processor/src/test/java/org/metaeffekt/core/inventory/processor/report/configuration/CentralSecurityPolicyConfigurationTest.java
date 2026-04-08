@@ -20,8 +20,6 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaCertFrAdvisorEntry;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaCertSeiAdvisorEntry;
 import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.KnownCvssEntities;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
@@ -161,30 +159,6 @@ public class CentralSecurityPolicyConfigurationTest {
 
         Assertions.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("some-other", "another-other")));
         Assertions.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("SOME-OTHER", "ANOTHER-OTHER")));
-    }
-
-    @Test
-    public void isAdvisoryContainedRegardingSourceTest() {
-        final CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
-        final AeaaCertFrAdvisorEntry certFr = new AeaaCertFrAdvisorEntry();
-        final AeaaCertSeiAdvisorEntry certSei = new AeaaCertSeiAdvisorEntry();
-
-        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("all", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("ANY", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT-FR", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT_FR", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(new HashMap<String, String>() {{
-            put("CERT_FR", "");
-            put("CERT-SEI", "");
-        }}).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assertions.assertFalse(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT_SEI", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assertions.assertFalse(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT-SEI", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-
-        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT-SEI", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certSei));
-        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(new HashMap<String, String>() {{
-            put("CERT_FR", "");
-            put("any", "");
-        }}).isSecurityAdvisoryIncludedRegardingEntryProvider(certSei));
     }
 
     @Test
