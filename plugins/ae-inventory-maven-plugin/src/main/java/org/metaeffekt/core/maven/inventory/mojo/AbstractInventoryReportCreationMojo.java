@@ -26,7 +26,6 @@ import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
 import java.util.List;
@@ -281,31 +280,24 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        // adapt maven logging to underlying logging facade
-        MavenLogAdapter.initialize(getLog());
+        // skip execution for POM packaged projects
+        if (isPomPackagingProject()) {
+            return;
+        }
+
+        if (skip) {
+            getLog().info("Plugin execution skipped.");
+            return;
+        }
+        boolean success;
         try {
-
-            // skip execution for POM packaged projects
-            if (isPomPackagingProject()) {
-                return;
-            }
-
-            if (skip) {
-                getLog().info("Plugin execution skipped.");
-                return;
-            }
-            boolean success;
-            try {
-                InventoryReport report = initializeInventoryReport();
-                success = report.createReport();
-            } catch (Exception e) {
-                throw new MojoExecutionException(e.getMessage(), e);
-            }
-            if (!success) {
-                throw new MojoFailureException("Failing build due to findings in report.");
-            }
-        } finally {
-            MavenLogAdapter.release();
+            InventoryReport report = initializeInventoryReport();
+            success = report.createReport();
+        } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        }
+        if (!success) {
+            throw new MojoFailureException("Failing build due to findings in report.");
         }
     }
 
