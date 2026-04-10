@@ -41,7 +41,7 @@ public abstract class ReportAdapterLoader {
     public static <T extends ReportAdapter> T getAdapterOrThrow(Class<T> type) {
         return getAdapters(type).stream().findFirst().orElseThrow(() -> {
             final int totalAdapters = getAllAdapters().size();
-            final PluginCoordinates pluginCoords = getCurrentPluginCoordinates();
+            final PluginCoordinates pluginCoords = getCurrentPluginCoordinates("org.metaeffekt.core", "ae-inventory-maven-plugin");
 
             return new AdapterNotFoundException("No implementations for report adapter [" + type.getSimpleName() + "] found (" + (totalAdapters > 0 ? totalAdapters + " other adapters available" : "in fact, not a single adapter was loaded") + "). " +
                     "Ensure the classpath contains an implementation that is registered as a service for loading via a ServiceLoader. " +
@@ -69,7 +69,7 @@ public abstract class ReportAdapterLoader {
         return getAdapters(ReportAdapter.class);
     }
 
-    private static PluginCoordinates getCurrentPluginCoordinates() {
+    public static PluginCoordinates getCurrentPluginCoordinates(String defaultGroupId, String defaultArtifactId) {
         final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         if (contextClassLoader != null) {
             try {
@@ -87,10 +87,10 @@ public abstract class ReportAdapterLoader {
             }
         }
 
-        return new PluginCoordinates("org.metaeffekt.core", "ae-inventory-maven-plugin", true);
+        return new PluginCoordinates(defaultGroupId, defaultArtifactId, true);
     }
 
-    private record PluginCoordinates(String groupId, String artifactId, boolean isDefault) {
+    public record PluginCoordinates(String groupId, String artifactId, boolean isDefault) {
     }
 
     public static class AdapterNotFoundException extends RuntimeException {
