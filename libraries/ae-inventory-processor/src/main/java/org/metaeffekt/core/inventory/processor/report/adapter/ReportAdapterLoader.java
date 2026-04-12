@@ -15,8 +15,15 @@
  */
 package org.metaeffekt.core.inventory.processor.report.adapter;
 
-import java.util.*;
+import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.ServiceLoader;
+
+@Slf4j
 public abstract class ReportAdapterLoader {
     public static <T extends ReportAdapter> List<T> getAdapters(Class<T> type) {
         final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -34,14 +41,56 @@ public abstract class ReportAdapterLoader {
     public static <T extends ReportAdapter> T getAdapterOrThrow(Class<T> type) {
         return getAdapters(type).stream().findFirst().orElseThrow(() -> {
             final int totalAdapters = getAllAdapters().size();
+            final PluginCoordinates pluginCoords = getCurrentPluginCoordinates("org.metaeffekt.core", "ae-inventory-maven-plugin");
+
             return new AdapterNotFoundException("No implementations for report adapter [" + type.getSimpleName() + "] found (" + (totalAdapters > 0 ? totalAdapters + " other adapters available" : "in fact, not a single adapter was loaded") + "). " +
                     "Ensure the classpath contains an implementation that is registered as a service for loading via a ServiceLoader. " +
-                    "The implementation you are most likely to be using is located at [com.metaeffekt.artifact.analysis:ae-artifact-analysis] and can be configured in your Maven POM <pluginManagement> to be applied to all reports.");
+                    "The implementation you are most likely to be using is [com.metaeffekt.artifact.analysis:ae-artifact-analysis] and can be configured in your Maven POM to be applied to all reports:\n\n" +
+                    "    <pluginManagement>\n" +
+                    "        <plugins>\n" +
+                    "            <plugin>\n" +
+                    (pluginCoords.isDefault() ? "                <!-- could not detect plugin automatically,\n                     the following is the most common plugin for building reports -->\n" : "") +
+                    "                <groupId>" + pluginCoords.groupId() + "</groupId>\n" +
+                    "                <artifactId>" + pluginCoords.artifactId() + "</artifactId>\n" +
+                    "                <dependencies>\n" +
+                    "                    <dependency>\n" +
+                    "                        <groupId>com.metaeffekt.artifact.analysis</groupId>\n" +
+                    "                        <artifactId>ae-artifact-analysis</artifactId>\n" +
+                    "                        <version>${ae.artifact.analysis.version}</version>\n" +
+                    "                    </dependency>\n" +
+                    "                </dependencies>\n" +
+                    "            </plugin>\n" +
+                    "        </plugins>\n" +
+                    "    </pluginManagement>");
         });
     }
 
     public static List<ReportAdapter> getAllAdapters() {
         return getAdapters(ReportAdapter.class);
+    }
+
+    public static PluginCoordinates getCurrentPluginCoordinates(String defaultGroupId, String defaultArtifactId) {
+        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        if (contextClassLoader != null) {
+            try {
+                final Method getIdMethod = contextClassLoader.getClass().getMethod("getId");
+                final Object id = getIdMethod.invoke(contextClassLoader);
+                if (id instanceof String idString) {
+                    if (idString.startsWith("plugin>")) {
+                        final String[] parts = idString.substring(7).split(":");
+                        if (parts.length >= 2) {
+                            return new PluginCoordinates(parts[0], parts[1], false);
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        return new PluginCoordinates(defaultGroupId, defaultArtifactId, true);
+    }
+
+    public record PluginCoordinates(String groupId, String artifactId, boolean isDefault) {
     }
 
     public static class AdapterNotFoundException extends RuntimeException {
