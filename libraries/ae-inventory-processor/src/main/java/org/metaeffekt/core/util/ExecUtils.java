@@ -21,10 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -112,20 +109,41 @@ public abstract class ExecUtils {
     private static void manageStreams(ExecMonitor execMonitor, Process process) {
         try {
             // NOTE: process.getInputStream() is an input stream connected to the output stream of the subprocess; see javadoc
-            IOUtils.copy(process.getInputStream(), execMonitor.getOutputStreamSink());
+            copy(1024, process.getInputStream(), execMonitor.getOutputStreamSink());
         } catch (IOException e) {
             log.warn("Exception draining process output stream.", e);
         }
 
         try {
             // NOTE: process.getErrorStream() is an input stream connected to the error stream of the subprocess; see javadoc
-            IOUtils.copy(process.getErrorStream(), execMonitor.getErrorStreamSink());
+            copy(1024, process.getErrorStream(), execMonitor.getErrorStreamSink());
         } catch (IOException e) {
             log.warn("Exception draining error output stream.", e);
         }
 
         // NOTE: only an extension proposal; may provide the option to interact interactively with the executed command
         // IOUtils.copy(process.getOutputStream(), execParam.getInputStreamDrain());
+    }
+
+    /**
+     * Method was required after IOUtils.copy() failed when waiting for more data. Always requesting len = 0 bytes
+     * seems to solve the blocking issue. May not be the fault of IOUtils, but due to underlying contract issues.
+     *
+     * @param maxBytes Number of bytes to restrict memory to.
+     * @param inputStream The inputs stream from which to copy.
+     * @param outputStreamSink the output stream as copy target.
+     *
+     * @throws IOException May throw an IOException.
+     */
+    private static void copy(int maxBytes, InputStream inputStream, OutputStream outputStreamSink) throws IOException {
+        byte[] bytes = new byte[maxBytes];
+        int len;
+        do {
+            len = inputStream.read(bytes, 0, 0);
+            if (len > 0) {
+                outputStreamSink.write(bytes, 0, len);
+            }
+        } while (len > 0);
     }
 
     private static void destroyProcess(ExecMonitor execMonitor) throws InterruptedException {
