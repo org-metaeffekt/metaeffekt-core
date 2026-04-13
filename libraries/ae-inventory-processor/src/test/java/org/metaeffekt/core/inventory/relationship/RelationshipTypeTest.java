@@ -15,10 +15,8 @@
  */
 package org.metaeffekt.core.inventory.relationship;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-
-import java.io.Console;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

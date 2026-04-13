@@ -17,7 +17,7 @@ package org.metaeffekt.core.inventory.processor.report;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -30,10 +30,7 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.metaeffekt.core.inventory.processor.report.adapter.AssessmentReportAdapter;
-import org.metaeffekt.core.inventory.processor.report.adapter.AssetReportAdapter;
-import org.metaeffekt.core.inventory.processor.report.adapter.InventoryReportAdapter;
-import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
+import org.metaeffekt.core.inventory.processor.report.adapter.*;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.inventory.processor.report.model.AssetData;
@@ -111,7 +108,7 @@ public class InventoryReport {
 
     /**
      * The diff inventory is used for version diffs.
-      */
+     */
     private File diffInventoryFile;
 
     // FIXME; dir / path ambiguity
@@ -543,12 +540,18 @@ public class InventoryReport {
         // FIXME: we need to unify this; filtering is more or less obsolete
         final Inventory filteredInventory = projectInventory.getFilteredInventory();
 
+        final boolean isVulnerabilityReport = configParams.isInventoryVulnerabilityReportEnabled() ||
+                configParams.isInventoryVulnerabilityReportSummaryEnabled() ||
+                configParams.isInventoryVulnerabilityStatisticsReportEnabled() ||
+                configParams.isAssessmentReportEnabled();
+
         // build adapters
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
                 new AssetReportAdapter(filteredInventory),
-                new VulnerabilityReportAdapter(projectInventory, securityPolicy),
-                new AssessmentReportAdapter(projectInventory, securityPolicy),
+                isVulnerabilityReport ? ReportAdapterLoader.getAdapterOrThrow(IVulnerabilityReportAdapter.class).setup(projectInventory, securityPolicy) : null,
+                isVulnerabilityReport ? ReportAdapterLoader.getAdapterOrThrow(IAssessmentReportAdapter.class).setup(projectInventory, securityPolicy) : null,
                 new InventoryReportAdapter(filteredInventory));
+
 
         // write reports
         if (configParams.isInventoryBomReportEnabled()) {
@@ -663,12 +666,12 @@ public class InventoryReport {
     @Getter
     public static class InventoryReportAdapters {
         final AssetReportAdapter assetReportAdapter;
-        final VulnerabilityReportAdapter vulnerabilityReportAdapter;
-        final AssessmentReportAdapter assessmentReportAdapter;
+        final IVulnerabilityReportAdapter<?, ?, ?, ?, ?> vulnerabilityReportAdapter;
+        final IAssessmentReportAdapter assessmentReportAdapter;
         final InventoryReportAdapter inventoryReportAdapter;
 
-        private InventoryReportAdapters(AssetReportAdapter assetReportAdapter, VulnerabilityReportAdapter vulnerabilityReportAdapter,
-                    AssessmentReportAdapter assessmentReportAdapter, InventoryReportAdapter inventoryReportAdapter) {
+        private InventoryReportAdapters(AssetReportAdapter assetReportAdapter, IVulnerabilityReportAdapter<?, ?, ?, ?, ?> vulnerabilityReportAdapter,
+                                        IAssessmentReportAdapter assessmentReportAdapter, InventoryReportAdapter inventoryReportAdapter) {
             this.assetReportAdapter = assetReportAdapter;
             this.vulnerabilityReportAdapter = vulnerabilityReportAdapter;
             this.assessmentReportAdapter = assessmentReportAdapter;
@@ -677,7 +680,7 @@ public class InventoryReport {
     }
 
     protected void writeReports(Inventory projectInventory, Inventory filteredInventory, InventoryReportAdapters report,
-                String templateBaseDir, String templateGroup, ReportContext reportContext) throws IOException {
+                                String templateBaseDir, String templateGroup, ReportContext reportContext) throws IOException {
 
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         final String vtClasspathResourcePattern = templateBaseDir + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
@@ -704,11 +707,9 @@ public class InventoryReport {
         LOG.info("Producing Dita for template [{}]", templateResourcePath);
 
         final Properties properties = new Properties();
-        properties.put(Velocity.RESOURCE_LOADER, "class, file");
-        properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
+        properties.put(Velocity.RESOURCE_LOADERS, "class, file");
+        properties.put("resource.loader.class.class", ClasspathResourceLoader.class.getName());
         properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.OUTPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.SET_NULL_ALLOWED, true);
         //https://velocity.apache.org/engine/1.7/developer-guide.html#velocimacro
         properties.put("velocimacro.arguments.strict", "true");
 
@@ -727,7 +728,6 @@ public class InventoryReport {
         context.put("assetAdapter", inventoryReportAdapters.getAssetReportAdapter());
         context.put("inventoryReportAdapter", inventoryReportAdapters.getInventoryReportAdapter());
         context.put("report", this);
-        context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
         context.put("utils", reportUtils);
 
@@ -959,8 +959,8 @@ public class InventoryReport {
 
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
                 new AssetReportAdapter(baseFilteredInventory),
-                new VulnerabilityReportAdapter(baseFilteredInventory, securityPolicy),
-                new AssessmentReportAdapter(baseFilteredInventory, securityPolicy),
+                null,
+                null,
                 new InventoryReportAdapter(baseFilteredInventory));
 
         writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
@@ -1016,8 +1016,8 @@ public class InventoryReport {
         logConfigurationLogToString("relativeLicensePath", relativeLicensePath);
 
         LOG.debug("- Validation fail flags:");
-        LOG.debug(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", configParams.isFailOnError(),  configParams.isFailOnBanned(),  configParams.isFailOnDowngrade(),  configParams.isFailOnUnknown(),  configParams.isFailOnUnknownVersion(),  configParams.isFailOnDevelopment(),  configParams.isFailOnInternal());
-        LOG.debug("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]",  configParams.isFailOnUpgrade(),  configParams.isFailOnMissingLicense(),  configParams.isFailOnMissingLicenseFile(),  configParams.isFailOnMissingNotice(),  configParams.isFailOnMissingComponentFiles());
+        LOG.debug(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", configParams.isFailOnError(), configParams.isFailOnBanned(), configParams.isFailOnDowngrade(), configParams.isFailOnUnknown(), configParams.isFailOnUnknownVersion(), configParams.isFailOnDevelopment(), configParams.isFailOnInternal());
+        LOG.debug("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]", configParams.isFailOnUpgrade(), configParams.isFailOnMissingLicense(), configParams.isFailOnMissingLicenseFile(), configParams.isFailOnMissingNotice(), configParams.isFailOnMissingComponentFiles());
 
         LOG.debug("- Data display settings:");
         logConfigurationLogToString("artifactFilter", artifactFilter);
@@ -1025,8 +1025,8 @@ public class InventoryReport {
         logConfigurationLogToString("filterAdvisorySummary", configParams.isFilterAdvisorySummary());
 
         LOG.debug("- Template settings:");
-        LOG.debug(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]",  configParams.isInventoryBomReportEnabled(),  configParams.isInventoryDiffReportEnabled(),  configParams.isInventoryPomEnabled(),  configParams.isInventoryVulnerabilityReportEnabled());
-        LOG.debug("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]",  configParams.isInventoryVulnerabilityReportSummaryEnabled(),  configParams.isInventoryVulnerabilityStatisticsReportEnabled());
+        LOG.debug(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]", configParams.isInventoryBomReportEnabled(), configParams.isInventoryDiffReportEnabled(), configParams.isInventoryPomEnabled(), configParams.isInventoryVulnerabilityReportEnabled());
+        LOG.debug("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]", configParams.isInventoryVulnerabilityReportSummaryEnabled(), configParams.isInventoryVulnerabilityStatisticsReportEnabled());
         logConfigurationLogToString("templateLanguageSelector", configParams.getReportLanguage());
 
         LOG.debug("- Addon data:");

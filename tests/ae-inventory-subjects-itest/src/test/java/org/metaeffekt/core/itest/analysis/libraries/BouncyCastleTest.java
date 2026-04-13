@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.itest.analysis.libraries;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -33,7 +33,7 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk18on/1.77/bcprov-jdk18on-1.77.jar")
@@ -41,17 +41,17 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
                 .setName(BouncyCastleTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertTrue(testSetup.clear());
 
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void analyse() throws Exception {
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test

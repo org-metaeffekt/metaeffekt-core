@@ -18,6 +18,8 @@ package org.metaeffekt.core.maven.inventory.mojo;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.tools.ant.DirectoryScanner;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -29,36 +31,24 @@ import java.io.IOException;
 
 /**
  * Creates a report for the dependencies listed in the pom.
- *
- * @goal aggregate-inventory-reports
  */
+@Mojo(name = "aggregate-inventory-reports")
 public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
 
-    /**
-     * @parameter
-     */
+    // TODO-KHA: Parameter with defaultValue?
+    @Parameter
     private String[] scanIncludes = new String[]{"**/target/**/*-inventory.xls"};
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private String[] scanExcludes = new String[]{"-nothing-"};
 
-    /**
-     * @parameter expression="${project.build.directory}/inventory/${project.artifactId}-${project.version}-aggregate-inventory.xls"
-     */
+    @Parameter(defaultValue = "${project.build.directory}/inventory/${project.artifactId}-${project.version}-aggregate-inventory.xls")
     private String targetInventoryPath;
 
-    /**
-     * @parameter expression="${project.name}"
-     */
+    @Parameter(property = "project.name")
     private String projectName;
 
-    /**
-     * @parameter default-value="${session}"
-     * @required
-     * @readonly
-     */
+    @Parameter(required = true, readonly = true, property = "session")
     private MavenSession mavenSession;
 
     @Override

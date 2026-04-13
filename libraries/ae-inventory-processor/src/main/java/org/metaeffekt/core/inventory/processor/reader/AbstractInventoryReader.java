@@ -18,7 +18,7 @@ package org.metaeffekt.core.inventory.processor.reader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.metaeffekt.core.inventory.processor.model.*;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaInventoryAttribute;
+import org.metaeffekt.core.inventory.processor.report.model.types.AeaaInventoryAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

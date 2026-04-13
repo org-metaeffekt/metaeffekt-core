@@ -16,7 +16,7 @@
 
     <modules>
         <module>ae-example-module</module>
-
+        <module>ae-aggregate-sources-module</module>
         <module>ae-merge-inventory-test</module>
         <module>ae-attach-asset-metadata-test</module>
 

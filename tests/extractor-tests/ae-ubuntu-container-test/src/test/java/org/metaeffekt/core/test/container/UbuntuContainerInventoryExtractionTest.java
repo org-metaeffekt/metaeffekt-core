@@ -1,6 +1,6 @@
 package org.metaeffekt.core.test.container;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.test.container.validation.AbstractContainerValidationTest;
 
@@ -8,7 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 public class UbuntuContainerInventoryExtractionTest extends AbstractContainerValidationTest {
