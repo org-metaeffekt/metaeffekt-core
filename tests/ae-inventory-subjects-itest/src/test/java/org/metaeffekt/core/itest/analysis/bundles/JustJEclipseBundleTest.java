@@ -122,7 +122,7 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
         String[] testPaths = new String[] {
             "javac.exe-0282d90a656a74440744892c994095cf.zip",
-            "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar-0531043e8cbf3e463f1ee56b335a3d07.zip",
+            "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar-b912ea6c577784e2bd37beeafad62aba.zip",
             "temurin-jdk-17.0.2-f14a245b7695faa972e549f21dfd0ce6.zip"
         };
 

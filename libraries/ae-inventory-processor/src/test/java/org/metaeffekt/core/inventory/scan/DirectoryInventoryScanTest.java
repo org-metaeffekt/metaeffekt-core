@@ -93,7 +93,7 @@ public class DirectoryInventoryScanTest {
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
             qualifiers.add(mapper.getQualifier());
         }
-        assertThat(qualifiers.contains("test-alpha-1.0.0.jar-1.0.0-Alpha Component")).isTrue();
+        assertThat(qualifiers.contains("c:test-alpha-1.0.0.jar|v:1.0.0|n:Alpha Component")).isTrue();
 
     }
 
