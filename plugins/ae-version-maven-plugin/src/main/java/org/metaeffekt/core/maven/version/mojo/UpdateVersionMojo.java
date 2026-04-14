@@ -20,7 +20,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.common.kernel.util.ParameterConversionUtil;
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
 import java.util.Map;
@@ -51,23 +50,17 @@ public class UpdateVersionMojo extends AbstractProjectAwareConfiguredMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        // adapt maven logging to underlying logging facade
-        MavenLogAdapter.initialize(getLog());
-        try {
-            UpdateVersionTask task = new UpdateVersionTask();
+        UpdateVersionTask task = new UpdateVersionTask();
 
-            task.setProjectPath(projectPath);
-            task.setIncludes(ParameterConversionUtil.convertStringToStringArray(includes, ","));
-            task.setExcludes(ParameterConversionUtil.convertStringToStringArray(excludes, ","));
+        task.setProjectPath(projectPath);
+        task.setIncludes(ParameterConversionUtil.convertStringToStringArray(includes, ","));
+        task.setExcludes(ParameterConversionUtil.convertStringToStringArray(excludes, ","));
 
-            task.setProjectVersion(projectVersion);
-            task.setGroupIdVersionMap(groupIdVersionMap);
-            task.setPropertyVersionMap(propertyVersionMap);
+        task.setProjectVersion(projectVersion);
+        task.setGroupIdVersionMap(groupIdVersionMap);
+        task.setPropertyVersionMap(propertyVersionMap);
 
-            task.updateVersions();
-        } finally {
-            MavenLogAdapter.release();
-        }
+        task.updateVersions();
     }
 
 }

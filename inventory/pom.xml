@@ -22,6 +22,13 @@
                     <groupId>org.metaeffekt.core</groupId>
                     <artifactId>ae-inventory-maven-plugin</artifactId>
                     <version>${ae.core.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.logging.log4j</groupId>
+                            <artifactId>log4j-to-slf4j</artifactId>
+                            <version>${log4j.version}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
 
                 <plugin>
@@ -38,7 +45,6 @@
                         </execution>
                     </executions>
                 </plugin>
-
             </plugins>
         </pluginManagement>
 

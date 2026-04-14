@@ -15,14 +15,13 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
@@ -30,9 +29,8 @@ import java.util.*;
 import static java.lang.String.format;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
+@Slf4j
 public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(org.metaeffekt.core.inventory.processor.ValidateInventoryProcessor.class);
 
     /**
      * In this folder the license files are expected. The folder needs only to contain the licenses beloning to the
@@ -456,7 +454,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                 switch (sourceCategory) {
                     case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
                     case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
-                        LOG.warn(format("%04d: Source category '%s' deprecated.", index++, licenseMetaData.getSourceCategory()));
+                        log.warn(format("%04d: Source category '%s' deprecated.", index++, licenseMetaData.getSourceCategory()));
                         log(format("      Proposal: change source category to 'annex' or 'retained'."));
                     case LicenseMetaData.SOURCE_CATEGORY_RETAINED:
                     case LicenseMetaData.SOURCE_CATEGORY_ANNEX:
@@ -670,9 +668,9 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
     protected void log(String string) {
         if (isFailOnError()) {
-            LOG.error(string);
+            log.error(string);
         } else {
-            LOG.warn(string);
+            log.warn(string);
         }
     }
 

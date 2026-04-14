@@ -17,8 +17,6 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -37,7 +35,6 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -109,57 +106,50 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        // adapt maven logging to underlying logging facade
-        MavenLogAdapter.initialize(getLog());
+        // skip execution for POM packaged projects
+        if (isPomPackagingProject()) {
+            return;
+        }
+
+        if (skip) {
+            getLog().info("Plugin execution skipped.");
+            return;
+        }
+
+        // validations
+        if (inventoryPath == null || !inventoryPath.exists() || !inventoryPath.isFile()) {
+            throw new MojoExecutionException("Parameter 'inventoryPath' does not point to valid inventory file: " + inventoryPath);
+        }
+
         try {
+            Inventory inventory = new InventoryReader().readInventory(inventoryPath);
 
-            // skip execution for POM packaged projects
-            if (isPomPackagingProject()) {
-                return;
-            }
-
-            if (skip) {
-                getLog().info("Plugin execution skipped.");
-                return;
-            }
-
-            // validations
-            if (inventoryPath == null || !inventoryPath.exists() || !inventoryPath.isFile()) {
-                throw new MojoExecutionException("Parameter 'inventoryPath' does not point to valid inventory file: " + inventoryPath);
-            }
-
-            try {
-                Inventory inventory = new InventoryReader().readInventory(inventoryPath);
-
-                // iterate the license metadata and evaluate source category; we assume the license metadata was
-                // filtered.
-                for (org.metaeffekt.core.inventory.processor.model.Artifact artifact : inventory.getArtifacts()) {
-                    LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
-                    if (licenseMetaData != null) {
-                        if (StringUtils.isNotBlank(licenseMetaData.getSourceCategory())) {
-                            String sourceCategory = licenseMetaData.getSourceCategory().trim().toLowerCase();
-                            switch (sourceCategory) {
-                                case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
-                                case LicenseMetaData.SOURCE_CATEGORY_RETAINED:
-                                    downloadArtifact(artifact, retainedSourcesSourcePath);
-                                    break;
-                                case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
-                                case LicenseMetaData.SOURCE_CATEGORY_ANNEX:
-                                    downloadArtifact(artifact, softwareDistributionAnnexSourcePath);
-                                    break;
-                                default:
-                                    throw new MojoExecutionException(
-                                            String.format("Source category of license meta data for %s unknown: '%s'",
-                                                    licenseMetaData.deriveQualifier(), licenseMetaData.getSourceCategory()));
-                            }
+            // iterate the license metadata and evaluate source category; we assume the license metadata was
+            // filtered.
+            for (org.metaeffekt.core.inventory.processor.model.Artifact artifact : inventory.getArtifacts()) {
+                LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
+                if (licenseMetaData != null) {
+                    if (StringUtils.isNotBlank(licenseMetaData.getSourceCategory())) {
+                        String sourceCategory = licenseMetaData.getSourceCategory().trim().toLowerCase();
+                        switch (sourceCategory) {
+                            case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
+                            case LicenseMetaData.SOURCE_CATEGORY_RETAINED:
+                                downloadArtifact(artifact, retainedSourcesSourcePath);
+                                break;
+                            case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
+                            case LicenseMetaData.SOURCE_CATEGORY_ANNEX:
+                                downloadArtifact(artifact, softwareDistributionAnnexSourcePath);
+                                break;
+                            default:
+                                throw new MojoExecutionException(
+                                        String.format("Source category of license meta data for %s unknown: '%s'",
+                                                licenseMetaData.deriveQualifier(), licenseMetaData.getSourceCategory()));
                         }
                     }
                 }
-            } catch (IOException e) {
-                throw new MojoExecutionException(e.getMessage(), e);
             }
-        } finally {
-            MavenLogAdapter.release();
+        } catch (IOException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 

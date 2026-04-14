@@ -36,7 +36,6 @@ import org.metaeffekt.core.inventory.resolver.SourceArchiveResolverResult;
 import org.metaeffekt.core.inventory.validation.ExecutionStatus;
 import org.metaeffekt.core.inventory.validation.ExecutionStatusEntry;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -125,24 +124,20 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        // adapt maven logging to underlying logging facade
-        MavenLogAdapter.initialize(getLog());
-        try {
+        // skip execution for POM packaged projects
+        if (isPomPackagingProject()) {
+            return;
+        }
 
-            // skip execution for POM packaged projects
-            if (isPomPackagingProject()) {
-                return;
-            }
+        if (skip) {
+            getLog().info("Plugin execution skipped.");
+            return;
+        }
 
-            if (skip) {
-                getLog().info("Plugin execution skipped.");
-                return;
-            }
-
-            // validations
-            if (inventoryPath == null || !inventoryPath.exists() || !inventoryPath.isFile()) {
-                throw new MojoExecutionException("Parameter 'inventoryPath' does not point to valid inventory file: " + inventoryPath);
-            }
+        // validations
+        if (inventoryPath == null || !inventoryPath.exists() || !inventoryPath.isFile()) {
+            throw new MojoExecutionException("Parameter 'inventoryPath' does not point to valid inventory file: " + inventoryPath);
+        }
 
         // materialize configuration
         final List<ArtifactSourceRepository> delegateArtifactSourceRepositories = new ArrayList<>();
@@ -151,59 +146,56 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
             delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate(repositorySystem, repositorySystemSession, remoteProjectRepositories));
         }
 
-            final ExecutionStatus executionStatus = new ExecutionStatus();
+        final ExecutionStatus executionStatus = new ExecutionStatus();
 
-            try {
-                getLog().info("Loading inventory: " + inventoryPath);
+        try {
+            getLog().info("Loading inventory: " + inventoryPath);
 
-                final Inventory inventory = new InventoryReader().readInventory(inventoryPath);
+            final Inventory inventory = new InventoryReader().readInventory(inventoryPath);
 
-                // iterate the license metadata and evaluate source category; we assume the license metadata was
-                // filtered.
-                for (org.metaeffekt.core.inventory.processor.model.Artifact artifact : inventory.getArtifacts()) {
-                    final LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
+            // iterate the license metadata and evaluate source category; we assume the license metadata was
+            // filtered.
+            for (org.metaeffekt.core.inventory.processor.model.Artifact artifact : inventory.getArtifacts()) {
+                final LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
 
-                    // differentiate source category RETAINED and ANNEX
-                    if (licenseMetaData != null && StringUtils.isNotBlank(licenseMetaData.getSourceCategory())) {
-                        String sourceCategory = licenseMetaData.getSourceCategory().trim().toLowerCase();
-                        switch (sourceCategory) {
-                            case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
-                            case LicenseMetaData.SOURCE_CATEGORY_RETAINED:
-                                downloadArtifact(artifact, inventory, retainedSourcesSourcePath, delegateArtifactSourceRepositories, executionStatus);
-                                break;
-                            case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
-                            case LicenseMetaData.SOURCE_CATEGORY_ANNEX:
-                                downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus);
-                                break;
-                            default:
-                                throw new MojoExecutionException(format("Source category of license meta data for %s unknown: '%s'",
-                                    licenseMetaData.deriveQualifier(), licenseMetaData.getSourceCategory()));
-                        }
-                    } else {
-                        // if license metadata or no source category annotation is given, we evaluate includeAllSources
-                        if (includeAllSources) {
+                // differentiate source category RETAINED and ANNEX
+                if (licenseMetaData != null && StringUtils.isNotBlank(licenseMetaData.getSourceCategory())) {
+                    String sourceCategory = licenseMetaData.getSourceCategory().trim().toLowerCase();
+                    switch (sourceCategory) {
+                        case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
+                        case LicenseMetaData.SOURCE_CATEGORY_RETAINED:
+                            downloadArtifact(artifact, inventory, retainedSourcesSourcePath, delegateArtifactSourceRepositories, executionStatus);
+                            break;
+                        case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
+                        case LicenseMetaData.SOURCE_CATEGORY_ANNEX:
                             downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus);
-                        } else {
-                            // in this case we skip the source download
-                        }
+                            break;
+                        default:
+                            throw new MojoExecutionException(format("Source category of license meta data for %s unknown: '%s'",
+                                licenseMetaData.deriveQualifier(), licenseMetaData.getSourceCategory()));
+                    }
+                } else {
+                    // if license metadata or no source category annotation is given, we evaluate includeAllSources
+                    if (includeAllSources) {
+                        downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus);
+                    } else {
+                        // in this case we skip the source download
                     }
                 }
-
-                if (executionStatus.isError()) {
-                    getLog().error("Source aggregation incomplete:");
-                    for (ExecutionStatusEntry entry : executionStatus.getEntries()) {
-                        if (entry.getSeverity() == ExecutionStatusEntry.SEVERITY.ERROR) {
-                            getLog().error(entry.getMessage());
-                        }
-                    }
-                    throw new MojoExecutionException("Aggregation of source artifacts failed. At least one source artifact was not retrieved.");
-                }
-
-            } catch (IOException e) {
-                throw new MojoExecutionException(e.getMessage(), e);
             }
-        } finally {
-            MavenLogAdapter.release();
+
+            if (executionStatus.isError()) {
+                getLog().error("Source aggregation incomplete:");
+                for (ExecutionStatusEntry entry : executionStatus.getEntries()) {
+                    if (entry.getSeverity() == ExecutionStatusEntry.SEVERITY.ERROR) {
+                        getLog().error(entry.getMessage());
+                    }
+                }
+                throw new MojoExecutionException("Aggregation of source artifacts failed. At least one source artifact was not retrieved.");
+            }
+
+        } catch (IOException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 

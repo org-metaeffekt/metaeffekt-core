@@ -41,6 +41,7 @@
         <artifact.inventory.source.includes>ae-core-artifact-inventory.xls</artifact.inventory.source.includes>
 
         <ant.version>1.10.11</ant.version>
+        <log4j.version>2.25.4</log4j.version>
 
         <dita.infrastructure.version>2.0-SNAPSHOT</dita.infrastructure.version>
 
@@ -167,7 +168,8 @@
                                 <outputDirectory>${project.build.directory}/apidocs/META-INF</outputDirectory>
                                 <resources>
                                     <resource>
-                                        <directory>${project.build.directory}/tmp/config/license/apache-license-2.0</directory>
+                                        <directory>${project.build.directory}/tmp/config/license/apache-license-2.0
+                                        </directory>
                                     </resource>
                                 </resources>
                             </configuration>
@@ -338,6 +340,11 @@
                                     <artifactId>ae-core-inventory</artifactId>
                                     <version>${ae.core.version}</version>
                                 </dependency>
+                                <dependency>
+                                    <groupId>org.apache.logging.log4j</groupId>
+                                    <artifactId>log4j-to-slf4j</artifactId>
+                                    <version>${log4j.version}</version>
+                                </dependency>
                             </dependencies>
                         </plugin>
                     </plugins>
@@ -402,10 +409,13 @@
                                         <goal>copy-resources</goal>
                                     </goals>
                                     <configuration>
-                                        <outputDirectory>${project.basedir}/src/test/resources/META-INF</outputDirectory>
+                                        <outputDirectory>${project.basedir}/src/test/resources/META-INF
+                                        </outputDirectory>
                                         <resources>
                                             <resource>
-                                                <directory>${project.build.directory}/tmp/config/license/apache-license-2.0</directory>
+                                                <directory>
+                                                    ${project.build.directory}/tmp/config/license/apache-license-2.0
+                                                </directory>
                                             </resource>
                                         </resources>
                                     </configuration>
@@ -439,10 +449,13 @@
                                         <goal>copy-resources</goal>
                                     </goals>
                                     <configuration>
-                                        <outputDirectory>${project.basedir}/src/main/resources/META-INF</outputDirectory>
+                                        <outputDirectory>${project.basedir}/src/main/resources/META-INF
+                                        </outputDirectory>
                                         <resources>
                                             <resource>
-                                                <directory>${project.build.directory}/tmp/config/license/apache-license-2.0</directory>
+                                                <directory>
+                                                    ${project.build.directory}/tmp/config/license/apache-license-2.0
+                                                </directory>
                                             </resource>
                                         </resources>
                                     </configuration>
