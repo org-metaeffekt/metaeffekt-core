@@ -340,11 +340,6 @@
                                     <artifactId>ae-core-inventory</artifactId>
                                     <version>${ae.core.version}</version>
                                 </dependency>
-                                <dependency>
-                                    <groupId>org.apache.logging.log4j</groupId>
-                                    <artifactId>log4j-to-slf4j</artifactId>
-                                    <version>${log4j.version}</version>
-                                </dependency>
                             </dependencies>
                         </plugin>
                     </plugins>
