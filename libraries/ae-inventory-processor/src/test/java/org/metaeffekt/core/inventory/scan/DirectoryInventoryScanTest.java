@@ -233,16 +233,16 @@ public class DirectoryInventoryScanTest {
         boolean executeAggregation = true;
 
         // input
-        final File projectBaseDir = new File(".examples");
+        final File projectBaseDir = new File("../../.examples");
 
         // select case
-        String caseString = "case-001";
+        String caseString = "case-005";
 
         final File scanInputDir = new File(projectBaseDir, caseString);
         final File scanDir = new File(projectBaseDir, caseString + "-scan");
 
         // other sources
-        final File referenceInventoryDir = new File(".examples/reference/inventory");
+        final File referenceInventoryDir = new File(projectBaseDir, "reference/inventory");
 
         // outputs
         final File resultsDir = new File(projectBaseDir, caseString + "-results");

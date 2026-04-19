@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
+
 /**
  * Unifies handling with java.lang.Process class on a common abstraction-level. Supports dealing with the involved
  * streams and timeout handling.
@@ -126,8 +128,8 @@ public abstract class ExecUtils {
     }
 
     /**
-     * Method was required after IOUtils.copy() failed when waiting for more data. Always requesting len = 0 bytes
-     * seems to solve the blocking issue. May not be the fault of IOUtils, but due to underlying contract issues.
+     * Method was required after IOUtils.copy() failed when waiting for more data. This implementation is not waiting
+     * for -1 to not block. This may not be the fault of IOUtils, but due to underlying contract issues.
      *
      * @param maxBytes Number of bytes to restrict memory to.
      * @param inputStream The inputs stream from which to copy.
@@ -138,8 +140,9 @@ public abstract class ExecUtils {
     private static void copy(int maxBytes, InputStream inputStream, OutputStream outputStreamSink) throws IOException {
         byte[] bytes = new byte[maxBytes];
         int len;
+        // we read as long as bytes to read are available; do not block until -1 is returned
         do {
-            len = inputStream.read(bytes, 0, 0);
+            len = inputStream.read(bytes, 0, maxBytes);
             if (len > 0) {
                 outputStreamSink.write(bytes, 0, len);
             }
@@ -159,7 +162,7 @@ public abstract class ExecUtils {
             process.destroyForcibly();
         }
 
-        // manage streams (capturing further information)
+        // manage streams (capturing remaining information)
         manageStreams(execMonitor, process);
 
         // mark monitor
@@ -327,21 +330,27 @@ public abstract class ExecUtils {
                 final int exitCode = execMonitor.getExitCode().get();
                 if (exitCode != 0) {
                     log.debug("Execution failed with exit code [{}] for command: {}", exitCode, execParam.getCommandString());
-                    // in case the error output was recorded, append it to the debug log
-                    if (execMonitor.getErrorOutput().isPresent()) {
-                        Arrays.stream(execMonitor.getErrorOutput().get().split("\\n")).forEach(log::debug);
+                    if (log.isDebugEnabled()) {
+                        if (execMonitor.getOutput().isPresent()) {
+                            Arrays.stream(execMonitor.getOutput().get().split("\\n")).forEach(log::debug);
+                        }
+                        // in case the error output was recorded, append it to the debug log
+                        if (execMonitor.getErrorOutput().isPresent()) {
+                            Arrays.stream(execMonitor.getErrorOutput().get().split("\\n")).forEach(log::debug);
+                        }
                     }
-                    throw new IOException(String.format("Execution failed with exit code [%s] for command: %s", exitCode, execParam.getCommandString()));
-                } else {
-                    // exitCode == 0; all fine; do nothing
+                    throw new IOException(format("Execution failed with exit code [%s] for command [%s]. Enable debug mode for details.",
+                            exitCode, execParam.getCommandString()));
                 }
+
+                // exec successful return monitor
                 return execMonitor;
             } else {
-                throw new IOException(String.format("Execution in undetermined state for command: %s", execParam.getCommandString()));
+                throw new IOException(format("Execution in undetermined state for command [%s].", execParam.getCommandString()));
             }
         } catch (InterruptedException e) {
-            log.debug("Execution timed out for for command: {}", execParam.getCommandString());
-            throw new IOException(String.format("Execution timed out for command: %s", execParam.getCommandString()));
+            log.debug("Execution timed out for for command [{}].", execParam.getCommandString());
+            throw new IOException(format("Execution timed out for command [%s].", execParam.getCommandString()));
         }
     }
 }

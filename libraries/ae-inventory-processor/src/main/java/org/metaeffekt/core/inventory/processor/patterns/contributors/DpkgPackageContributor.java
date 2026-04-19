@@ -462,18 +462,16 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         }
     }
 
-    public List<ComponentPatternData> contributeStatusFileBased(File baseDir,
-                                                                String relativeAnchorFilePath,
-                                                                String checksum) {
+    public List<ComponentPatternData> contributeStatusFileBased(File baseDir, String relativeAnchorFilePath, String checksum) {
         final File anchorFile = new File(baseDir, relativeAnchorFilePath);
 
-        String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
+        final String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
 
         List<DpkgStatusFileEntry> entries;
         try {
             entries = readCompleteStatusFile(anchorFile);
         } catch (IOException e) {
-            LOG.error("Unable to parse status file [{}].", anchorFile);
+            LOG.warn("Unable to parse presumed status file [{}].", anchorFile);
             return Collections.emptyList();
         }
 
@@ -627,13 +625,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorFilePath, String checksum) {
         String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
-        if (relativeAnchorFilePath.endsWith("status")) {
-            return contributeStatusFileBased(baseDir, relativeAnchorFilePath, checksum);
-        } else if (relativeAnchorFilePath.endsWith(".md5sums")) {
+        if (relativeAnchorFilePath.endsWith(".md5sums")) {
             return contributeStatusDirectoryBased(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
         } else {
-            LOG.warn("Skipping unknown dpkg file [{}].", relativeAnchorFilePath);
-            return Collections.emptyList();
+            // always try to parse
+            return contributeStatusFileBased(baseDir, relativeAnchorFilePath, checksum);
         }
     }
 
