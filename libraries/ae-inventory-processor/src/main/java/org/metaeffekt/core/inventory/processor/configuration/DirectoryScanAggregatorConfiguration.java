@@ -240,7 +240,9 @@ public class DirectoryScanAggregatorConfiguration {
         }
 
         if (count == 0) {
-            // LOG.warn("Identified component pattern does not match any file: " + cpd.deriveQualifier());
+            // NOTE: this is very verbose, when logging; needs further inspection
+            // FIXME: activate exception or at least log a warning; perhaps control by parameter
+            // throw new IllegalStateException("Identified component pattern does not match any file: " + cpd.deriveQualifier());
         }
     }
 

@@ -120,7 +120,7 @@ public class ComponentPatternContributorRunner {
                         LOG.error("Contributor threw exception. Ensure the contributor is robust.", e);
                     }
 
-                    // NOTE: currently the resulted patterns are not aware of the phase they have been applied. This
+                    // NOTE: currently the resulting patterns are not aware of the phase they have been applied. This
                     //   implies that the file mapping may be further optimized by phases; a subsequent phase may
                     //   be applied to only the remaining files (instead of all files). Yet this would require further
                     //   analysis.

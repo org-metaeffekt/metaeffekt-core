@@ -26,8 +26,6 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.*;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
@@ -617,7 +615,6 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new MavenProjectSourcesComponentPatternContributor());
         contributorRunnerBuilder.add(new LinuxDistributionAssetContributor());
         contributorRunnerBuilder.add(new CargoContributor());
-
         contributorRunnerBuilder.add(new VersionFileComponentPatternContributor());
         contributorRunnerBuilder.add(new VersionedFolderComponentPatternContributor());
         contributorRunnerBuilder.add(new VersionFolderComponentPatternContributor());

@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.itest.analysis.bundles;
 
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -34,6 +35,7 @@ import java.io.File;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
+@Slf4j
 public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
     @BeforeAll
@@ -113,7 +115,7 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
         FileUtils.deleteDirectoryQuietly(aggregationTargetDir);
 
-        System.out.println("Analyzing files");
+        log.info("Analyzing files");
         final DirectoryScanAggregatorConfiguration aggregatorConfiguration =
                 new DirectoryScanAggregatorConfiguration(testSetup.readReferenceInventory(), testSetup.getInventory(), baseDir);
 

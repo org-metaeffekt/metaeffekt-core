@@ -324,7 +324,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
 
         componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, null);
-        // NOTE: these were the initial include patterns; unfortunately it was documented, why these were derived.
+        // NOTE: these were the initial include patterns; unfortunately it wa not documented, why these were derived.
         //       excluded for clarity
         // **/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt, **/__pycache__/**/*, /var/lib/dpkg/info/*.postinst,
         // **/var/lib/dpkg/info/*.preinst, **/var/lib/dpkg/info/*.list, **/var/lib/dpkg/info/*.md5sums,

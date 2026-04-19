@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;

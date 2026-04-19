@@ -45,7 +45,6 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
     public static final Pattern VERSION_LINE_PATTERN = Pattern.compile("^[a-zA-Z0-9 ]{1,128}\\.version *=.*", Pattern.MULTILINE);
     public static final Pattern FIRST_QUOTE_PATTERN = Pattern.compile("[\"']");
-    public static final Pattern VERSION_FROM_FILENAME_PATTERN = Pattern.compile("-[0-9]+\\.[0-9]+");
 
     public static final Pattern FOLDER_VERSION_PATTERN =
             Pattern.compile("([a-zA-Z0-9-_]+)-([0-9]+\\.[0-9]+(\\.[0-9]+)*(-x86_64-linux-gnu){0,1})");

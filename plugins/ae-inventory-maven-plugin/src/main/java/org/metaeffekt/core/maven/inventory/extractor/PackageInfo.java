@@ -72,10 +72,8 @@ class PackageInfo {
         artifact.set(KEY_LICENSE_PATH_PACKAGE, licenseDir);
         artifact.set(KEY_GROUP_PACKAGE, group);
         artifact.set(KEY_STATUS_PACKAGE, status);
-
-        artifact.set("Release", release);
-        artifact.set("Source Package", sourcePackage);
-
+        artifact.set(KEY_RELEASE, release);
+        artifact.set(KEY_SOURCE_PACKAGE, sourcePackage);
         return artifact;
     }
 
