@@ -329,14 +329,13 @@ public abstract class ExecUtils {
             if (execMonitor.getExitCode().isPresent()) {
                 final int exitCode = execMonitor.getExitCode().get();
                 if (exitCode != 0) {
-                    log.debug("Execution failed with exit code [{}] for command: {}", exitCode, execParam.getCommandString());
-                    if (log.isDebugEnabled()) {
+                    log.warn("Execution failed with exit code [{}] for command: {}", exitCode, execParam.getCommandString());
+                    if (log.isWarnEnabled()) {
                         if (execMonitor.getOutput().isPresent()) {
-                            Arrays.stream(execMonitor.getOutput().get().split("\\n")).forEach(log::debug);
+                            Arrays.stream(execMonitor.getOutput().get().split("\\n")).forEach(log::warn);
                         }
-                        // in case the error output was recorded, append it to the debug log
                         if (execMonitor.getErrorOutput().isPresent()) {
-                            Arrays.stream(execMonitor.getErrorOutput().get().split("\\n")).forEach(log::debug);
+                            Arrays.stream(execMonitor.getErrorOutput().get().split("\\n")).forEach(log::warn);
                         }
                     }
                     throw new IOException(format("Execution failed with exit code [%s] for command [%s]. Enable debug mode for details.",
