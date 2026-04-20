@@ -312,10 +312,9 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return entries;
     }
 
-    public ComponentPatternData createComponentPattern(String versionAnchor,
-                                                       DpkgStatusFileEntry entry,
-                                                       String checksum,
-                                                       String includePatterns, LinuxDistributionUtil.LinuxDistro distro) {
+    public ComponentPatternData createComponentPattern(String versionAnchor, DpkgStatusFileEntry entry,
+           String checksum, String includePatterns, LinuxDistributionUtil.LinuxDistro distro) {
+
         ComponentPatternData componentPatternData = new ComponentPatternData();
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, entry.packageName);
         // add list of comma-separated paths
@@ -324,8 +323,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         // FIXME: we need a post-processing step to clear the inventory by known individual components (e.g. if package 2 is fully a subset of package 1, remove package 2)
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
 
-        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt, **/__pycache__/**/*, /var/lib/dpkg/info/*.postinst, **/var/lib/dpkg/info/*.preinst, **/var/lib/dpkg/info/*.list, **/var/lib/dpkg/info/*.md5sums, **/var/lib/dpkg/info/*.postrm");
-
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, null);
+        // NOTE: these were the initial include patterns; unfortunately it wa not documented, why these were derived.
+        //       excluded for clarity
+        // **/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt, **/__pycache__/**/*, /var/lib/dpkg/info/*.postinst,
+        // **/var/lib/dpkg/info/*.preinst, **/var/lib/dpkg/info/*.list, **/var/lib/dpkg/info/*.md5sums,
+        // **/var/lib/dpkg/info/*.postrm"
 
         // get version from the entry
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, entry.version);
@@ -459,18 +462,16 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         }
     }
 
-    public List<ComponentPatternData> contributeStatusFileBased(File baseDir,
-                                                                String relativeAnchorFilePath,
-                                                                String checksum) {
+    public List<ComponentPatternData> contributeStatusFileBased(File baseDir, String relativeAnchorFilePath, String checksum) {
         final File anchorFile = new File(baseDir, relativeAnchorFilePath);
 
-        String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
+        final String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
 
         List<DpkgStatusFileEntry> entries;
         try {
             entries = readCompleteStatusFile(anchorFile);
         } catch (IOException e) {
-            LOG.error("Unable to parse status file [{}].", anchorFile);
+            LOG.warn("Unable to parse presumed status file [{}].", anchorFile);
             return Collections.emptyList();
         }
 
@@ -624,13 +625,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorFilePath, String checksum) {
         String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
-        if (relativeAnchorFilePath.endsWith("status")) {
-            return contributeStatusFileBased(baseDir, relativeAnchorFilePath, checksum);
-        } else if (relativeAnchorFilePath.endsWith(".md5sums")) {
+        if (relativeAnchorFilePath.endsWith(".md5sums")) {
             return contributeStatusDirectoryBased(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
         } else {
-            LOG.warn("Skipping unknown dpkg file [{}].", relativeAnchorFilePath);
-            return Collections.emptyList();
+            // always try to parse
+            return contributeStatusFileBased(baseDir, relativeAnchorFilePath, checksum);
         }
     }
 

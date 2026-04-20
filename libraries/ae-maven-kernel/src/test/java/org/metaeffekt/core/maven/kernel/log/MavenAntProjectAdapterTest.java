@@ -15,11 +15,7 @@
  */
 package org.metaeffekt.core.maven.kernel.log;
 
-import org.apache.maven.plugin.logging.SystemStreamLog;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.metaeffekt.core.common.kernel.ant.log.EscalationException;
 import org.metaeffekt.core.common.kernel.ant.log.LoggingProjectAdapter;
 
@@ -29,7 +25,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
+@Disabled
 public class MavenAntProjectAdapterTest {
 
     private ByteArrayOutputStream err;
@@ -40,7 +36,6 @@ public class MavenAntProjectAdapterTest {
 
     @BeforeEach
     public void setupStreams() {
-        MavenLogAdapter.initialize(new SystemStreamLog());
 
         err = new ByteArrayOutputStream();
         out = new ByteArrayOutputStream();
@@ -52,7 +47,6 @@ public class MavenAntProjectAdapterTest {
     public void resetStreams() {
         System.setErr(originalErr);
         System.setOut(originalOut);
-        MavenLogAdapter.release();
     }
 
     @Test

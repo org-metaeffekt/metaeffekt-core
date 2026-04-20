@@ -29,6 +29,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class GemMetadataContributor extends ComponentPatternContributor {
 
@@ -39,6 +43,9 @@ public class GemMetadataContributor extends ComponentPatternContributor {
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("metadata");
     }});
+
+    public static final Pattern FOLDER_VERSION_PATTERN =
+            Pattern.compile("([a-zA-Z0-9-_]+)-([0-9]+\\.[0-9]+(\\.[0-9]+)*(-x86_64-linux-gnu){0,1})");
 
     @Override
     public boolean applies(String pathInContext) {
@@ -72,45 +79,55 @@ public class GemMetadataContributor extends ComponentPatternContributor {
                 gemName = gemName.substring(0, folderName.length() - 4);
             }
 
-            int dashIndex = gemName.lastIndexOf('-');
-            String name = gemName.substring(0, dashIndex);
-            String version = gemName.substring(dashIndex+1, gemName.length());
+            // anchor must match at least a qualified versioning string <major>.<minor> to be able to extract a version
+            final Matcher matcher = FOLDER_VERSION_PATTERN.matcher(gemName);
 
-            // verify name / version against metadata file
-            boolean containsName = content8859.contains("name: " + name) || contentUtf8.contains("name: " + name);
-            boolean containsVersion = content8859.contains("version: " + version) || contentUtf8.contains("version: " + version);
+            if (matcher.find()) {
+                final String name = matcher.group(1);
+                final String version = matcher.group(2);
+                final String platform = matcher.group(4);
 
-            if (containsName && containsVersion) {
+                final String purifiedVersion = isBlank(platform) ? version : version.substring(0, version.lastIndexOf(platform));
 
-                // construct component pattern
-                final ComponentPatternData componentPatternData = new ComponentPatternData();
-                final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
+                // NOTE: the version may include platform specific parts
 
-                componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelPath + "/" + anchorFileName);
-                componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
+                // verify name / version against metadata file
+                boolean containsName = content8859.contains("name: " + name) || contentUtf8.contains("name: " + name);
+                boolean containsVersion = content8859.contains("version: " + purifiedVersion) || contentUtf8.contains("version: " + purifiedVersion);
 
-                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART_PATH, relativeAnchorPath);
+                if (containsName && containsVersion) {
 
-                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
-                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, folderName);
+                    // construct component pattern
+                    final ComponentPatternData componentPatternData = new ComponentPatternData();
+                    final String contextRelPath = FileUtils.asRelativePath(contextBaseDir.getParentFile(), anchorFile.getParentFile().getParentFile());
 
-                componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
-                componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
-                componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_RUBY_GEM);
+                    componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, FileUtils.asRelativePath(contextBaseDir.getParentFile(), anchorFile));
+                    componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-                String purl = buildPurl(name, version, "ruby");
-                componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
+                    componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART_PATH, FileUtils.asRelativePath(baseDir, contextBaseDir));
 
-                return Collections.singletonList(componentPatternData);
+                    componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
+                    componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
+
+                    // NOTE: here we deliberately use the name without the .gem suffix
+                    componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, gemName);
+
+                    componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, contextRelPath + "/**/*");
+                    componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+                    componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_RUBY_GEM);
+
+                    String purl = buildPurl(name, version, "ruby");
+                    componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
+
+                    return Collections.singletonList(componentPatternData);
+                }
             } else {
                 LOG.warn("Could not verify gem. Name and version not detected in file [{}]", anchorFile.getAbsolutePath());
-                return Collections.emptyList();
             }
         } catch (Exception e) {
             LOG.warn("Failure while processing anchor [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
-            return Collections.emptyList();
         }
+        return Collections.emptyList();
     }
 
     @Override
