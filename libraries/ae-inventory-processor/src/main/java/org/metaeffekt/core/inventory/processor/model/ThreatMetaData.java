@@ -40,6 +40,8 @@ public class ThreatMetaData extends AbstractModelBase {
         RELATED_TO_THREAT_REFERENCES("Related To"),
         INFORMAL_THREAT_REFERENCES("Informal References"),
         EXCLUDED_THREAT_REFERENCES("Excluded References"),
+        BASED_ON_FULL_TREE("Based on Evaluated Tree"),
+        RELATED_TO_FULL_TREE("Related To Evaluated Tree"),
 
         IMPACT_ASSESSMENTS("Impact Assessments"),
 
