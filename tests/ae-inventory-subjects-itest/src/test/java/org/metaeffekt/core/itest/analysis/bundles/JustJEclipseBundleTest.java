@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.itest.analysis.bundles;
 
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -34,6 +35,7 @@ import java.io.File;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
+@Slf4j
 public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
     @BeforeAll
@@ -113,15 +115,17 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
         FileUtils.deleteDirectoryQuietly(aggregationTargetDir);
 
+        log.info("Analyzing files");
         final DirectoryScanAggregatorConfiguration aggregatorConfiguration =
                 new DirectoryScanAggregatorConfiguration(testSetup.readReferenceInventory(), testSetup.getInventory(), baseDir);
 
+        System.out.println("Collecting files");
         aggregatorConfiguration.aggregateFiles(aggregationTargetDir);
 
         String[] testPaths = new String[] {
-            "javac.exe-5d92e5bee0d30faf2e0d600c5cad98ad.zip",
-            "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar-0b16dfa7fb45e3916e8eb8d756d86160.zip",
-            "temurin-jdk-17.0.2-3c42528d132e385566b51bb92e7b6006.zip"
+            "javac.exe-0282d90a656a74440744892c994095cf.zip",
+            "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar-b912ea6c577784e2bd37beeafad62aba.zip",
+            "temurin-jdk-17.0.2-f14a245b7695faa972e549f21dfd0ce6.zip"
         };
 
         for (String testPath : testPaths) {

@@ -200,7 +200,7 @@
             </dependency>
 
             <dependency>
-                <!-- the simple logging backend is discouraged, use log4j instead -->
+                <!-- the simple logging backend is discouraged, use log4j instead; defaults to test scope only -->
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
                 <version>${slf4j.version}</version>

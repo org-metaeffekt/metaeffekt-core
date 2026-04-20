@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -38,10 +37,10 @@ public class ComponentPatternContributorRunner {
      * <br>
      * This is used to run the contributors in the correct order.
      */
-    private TreeMap<Integer, Map<String, List<ComponentPatternContributor>>> phaseContributors;
+    private TreeMap<Integer, List<ComponentPatternContributor>> phaseContributors;
 
     public static class ComponentPatternContributorRunnerBuilder {
-        private final TreeMap<Integer, Map<String, List<ComponentPatternContributor>>> phaseContributors = new TreeMap<>();
+        private final TreeMap<Integer, List<ComponentPatternContributor>> phaseContributors = new TreeMap<>();
 
         /**
          * Use {@link ComponentPatternContributorRunner#builder()}.
@@ -50,21 +49,20 @@ public class ComponentPatternContributorRunner {
 
         /**
          * Adds a contributor to the resolver, used for later running.
+         *
          * @param contributor the contributor to be added
+         *
          * @return the builder
          */
         public synchronized ComponentPatternContributorRunnerBuilder add(ComponentPatternContributor contributor) {
             int phase = contributor.getExecutionPhase();
-            phaseContributors.computeIfAbsent(phase, k -> new HashMap<>());
-
-            for (String suffix : contributor.getSuffixes()) {
-                phaseContributors.get(phase).computeIfAbsent(suffix, k -> new ArrayList<>()).add(contributor);
-            }
+            phaseContributors.computeIfAbsent(phase, k -> new ArrayList<>()).add(contributor);
             return this;
         }
 
         /**
          * Builds a finalized object.
+         *
          * @return the built object
          */
         public synchronized ComponentPatternContributorRunner build() {
@@ -72,7 +70,7 @@ public class ComponentPatternContributorRunner {
         }
     }
 
-    private ComponentPatternContributorRunner(TreeMap<Integer, Map<String, List<ComponentPatternContributor>>> phaseContributors) {
+    private ComponentPatternContributorRunner(TreeMap<Integer, List<ComponentPatternContributor>> phaseContributors) {
         this.phaseContributors = phaseContributors;
     }
 
@@ -96,39 +94,36 @@ public class ComponentPatternContributorRunner {
      */
     public List<ComponentPatternData> collectApplicable(File baseDir, String relativeAnchorFilePath, String checksum, EvaluationContext context) {
         final List<ComponentPatternData> results = new ArrayList<>();
-        final String lowercasedPathInContext = relativeAnchorFilePath.toLowerCase(ComponentPatternProducer.LocaleConstants.PATH_LOCALE);
 
-        // provides a compiled pattern cache.
-        final Map<String, Pattern> suffixPatternMap = new HashMap<>();
+        // the applicable contributors are collected in phase order
+        for (Map.Entry<Integer, List<ComponentPatternContributor>> phaseEntry : phaseContributors.entrySet()) {
 
-        for (Map.Entry<Integer, Map<String, List<ComponentPatternContributor>>> phaseEntry : phaseContributors.entrySet()) {
+            final List<ComponentPatternContributor> contributorsForPhase = phaseEntry.getValue();
 
-            final Set<Map.Entry<String, List<ComponentPatternContributor>>> contributorsForPhase = phaseEntry.getValue().entrySet();
-            for (Map.Entry<String, List<ComponentPatternContributor>> suffixEntry : contributorsForPhase) {
+            // filter applicable contributors
+            final List<ComponentPatternContributor> applicableContributors = contributorsForPhase.stream()
+                    .filter(cpd -> cpd.applies(relativeAnchorFilePath))
+                    .collect(Collectors.toList());
 
-                // check whether one of the contributor applies before perform expensive regex operations
-                final List<ComponentPatternContributor> applicableCpcs = suffixEntry.getValue().stream().
-                        filter(c -> c.applies(relativeAnchorFilePath)).collect(Collectors.toList());
+            // let the applicable contributors contribute their patterns
+            if (!applicableContributors.isEmpty()) {
+                for (ComponentPatternContributor contributor : applicableContributors) {
+                    try {
+                        final List<ComponentPatternData> componentPatterns =
+                                contributor.contribute(baseDir, relativeAnchorFilePath, checksum, context);
 
-                if (!applicableCpcs.isEmpty()) {
-                    // FIXME-KKL: use regexp in contributors to avoid need to maintain the conversion logic
-                    final String anchorFileWildcardPattern = suffixEntry.getKey();
-                    final Pattern pattern = convertWildcardPatternToRegex(anchorFileWildcardPattern, suffixPatternMap);
-                    final Matcher matcher = pattern.matcher(lowercasedPathInContext);
-                    if (matcher.find()) {
-                        for (ComponentPatternContributor contributor : applicableCpcs) {
-                            try {
-                                List<ComponentPatternData> componentPatterns = contributor.contribute(
-                                        baseDir, relativeAnchorFilePath, checksum, context);
+                        // modulate patterns with the given context
+                        componentPatterns.forEach(cpd -> cpd.setContext(contributor.getClass().getName()));
 
-                                componentPatterns.forEach(cpd -> cpd.setContext(contributor.getClass().getName()));
-
-                                results.addAll(componentPatterns);
-                            } catch (Exception e) {
-                                LOG.error("Contributor threw exception. Make contributor more robust.", e);
-                            }
-                        }
+                        results.addAll(componentPatterns);
+                    } catch (Exception e) {
+                        LOG.error("Contributor threw exception. Ensure the contributor is robust.", e);
                     }
+
+                    // NOTE: currently the resulting patterns are not aware of the phase they have been applied. This
+                    //   implies that the file mapping may be further optimized by phases; a subsequent phase may
+                    //   be applied to only the remaining files (instead of all files). Yet this would require further
+                    //   analysis.
                 }
             }
         }

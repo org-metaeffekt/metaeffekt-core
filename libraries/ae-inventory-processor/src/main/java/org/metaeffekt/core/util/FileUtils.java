@@ -372,13 +372,20 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         // NOTE: could be moved to FileSystemMap; current impl may be more efficient
         final String[] files = FileUtils.scanDirectoryForFiles(baseDir, new String[]{"**/*"}, new String[]{"**/.DS_Store*"});
         // FIXME: we can save the normalizePathToLinux operation when the FileSystemMap could produce FileRef; revise
+
+        // iterate over the sorted list of files (may still be platform-specific)
         Arrays.stream(files).map(FileUtils::normalizePathToLinux).sorted(String::compareTo).forEach(fileName -> {
             final File file = new File(baseDir, fileName);
             try {
                 final String fileChecksum = FileUtils.computeChecksum(file);
                 if (checksumSequence.length() > 0) {
+                    // use 0 as separator
                     checksumSequence.append(0);
                 }
+
+                // append <filename->-<checksum> to file (structural factor apart from sorting)
+                checksumSequence.append(fileName);
+                checksumSequence.append("-");
                 checksumSequence.append(fileChecksum);
             } catch (Exception e) {
                 if (FileUtils.isSymlink(file)) {

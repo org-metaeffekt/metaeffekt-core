@@ -77,11 +77,6 @@ public class FilePatternQualifierMapper {
      */
     private List<ArtifactFile> sharedIncludedPatternFiles;
 
-    /**
-     * All files managed as shared excludes.
-     */
-    private List<ArtifactFile> sharedExcludedPatternFiles;
-
     // FIXME: review and comment required.
     private Map<String, List<File>> subSetMap;
 

@@ -88,6 +88,10 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
                 packageInfo.summary = ParsingUtils.getValue(fileContentLines, "Summary     :");
                 packageInfo.description = ParsingUtils.getValue(fileContentLines, "Description :");
                 packageInfo.arch = ParsingUtils.getValue(fileContentLines, "Architecture:");
+
+                // include reading release and source rpm
+                packageInfo.release = ParsingUtils.getValue(fileContentLines, "Release     :");
+                packageInfo.sourcePackage = ParsingUtils.getValue(fileContentLines, "Source RPM  :");
             } else {
                 LOG.info("File {} does not exist.", packageFile);
             }
