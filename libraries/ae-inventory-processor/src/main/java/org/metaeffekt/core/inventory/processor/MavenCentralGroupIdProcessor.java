@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -26,8 +27,6 @@ import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -35,9 +34,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Properties;
 
+@Slf4j
 public class MavenCentralGroupIdProcessor extends AbstractMavenCentralProcessor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(MavenCentralGroupIdProcessor.class);
 
     public MavenCentralGroupIdProcessor(Properties properties) {
         super(properties);
@@ -74,12 +72,12 @@ public class MavenCentralGroupIdProcessor extends AbstractMavenCentralProcessor 
                     try {
                         updateGroupId(client, request, artifact);
                     } catch (Exception e) {
-                        LOG.error("Cannot query group id for {}.", artifactId, e);
+                        log.error("Cannot query group id for {}.", artifactId, e);
                     }
                 }
             }
         } catch (Exception e) {
-            LOG.error("Cannot access maven central.", e);
+            log.error("Cannot access maven central.", e);
         }
 
     }
@@ -111,7 +109,7 @@ public class MavenCentralGroupIdProcessor extends AbstractMavenCentralProcessor 
         replacedUri = replacedUri.replaceAll("\\$\\{artifactVersion\\}", version.replace(" ", ""));
         request.setURI(new URI(replacedUri));
 
-        LOG.info(replacedUri);
+        log.info(replacedUri);
 
         CloseableHttpResponse response = client.execute(request);
         try {
@@ -136,9 +134,9 @@ public class MavenCentralGroupIdProcessor extends AbstractMavenCentralProcessor 
                     artifact.setGroupId(groupIds);
                     artifact.setArtifactId(null);
                     artifact.deriveArtifactId();
-                    LOG.info("Updated groupId for artifact {}: {}", id, groupIds);
+                    log.info("Updated groupId for artifact {}: {}", id, groupIds);
                 } else {
-                    LOG.info("Update of groupId skipped. Found groupId ambiguous: {}", groupIds);
+                    log.info("Update of groupId skipped. Found groupId ambiguous: {}", groupIds);
                 }
             }
         } finally {

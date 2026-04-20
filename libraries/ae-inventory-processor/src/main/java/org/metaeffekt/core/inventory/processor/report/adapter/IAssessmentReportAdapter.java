@@ -17,12 +17,11 @@ package org.metaeffekt.core.inventory.processor.report.adapter;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable.SeverityToStatusRow;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
@@ -45,9 +44,9 @@ public interface IAssessmentReportAdapter extends ReportAdapter {
     VulnerabilityCounts countVulnerabilities(AssetMetaData assetMetaData, boolean useEffectiveSeverity);
 
     @Data
+    @Slf4j
     @Accessors(chain = true)
     class GroupedAssetVulnerabilityCounts {
-        private static final Logger log = LoggerFactory.getLogger(GroupedAssetVulnerabilityCounts.class);
         public AssetMetaData asset;
         public String assetGroupDisplayName;
         public String assetPath;
@@ -62,9 +61,9 @@ public interface IAssessmentReportAdapter extends ReportAdapter {
     }
 
     @Data
+    @Slf4j
     @Accessors(chain = true)
     class GroupedAssetsVulnerabilityCounts {
-        private static final Logger log = LoggerFactory.getLogger(GroupedAssetsVulnerabilityCounts.class);
         public List<GroupedAssetVulnerabilityCounts> groupedAssetVulnerabilityCounts;
         public VulnerabilityCounts totalVulnerabilityCounts;
         public String assetGroupDisplayName;

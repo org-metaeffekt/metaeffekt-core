@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.report;
 
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.command.PrepareScanDirectoryCommand;
@@ -29,8 +30,6 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
@@ -38,9 +37,8 @@ import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.util.FileUtils.normalizeToLinuxPathAndCanonicalizePath;
 
+@Slf4j
 public class DirectoryInventoryScan {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DirectoryInventoryScan.class);
     public static final String[] PATTERN_ARRAY_ALL = {"**/*"};
 
     private final Inventory referenceInventory;
@@ -144,7 +142,7 @@ public class DirectoryInventoryScan {
         // use absolute, normalized and canonicalized path
         final String canonicalScanDirPath = normalizeToLinuxPathAndCanonicalizePath(directoryToScan.getAbsolutePath());
         final FileRef scanDirectoryRef = new FileRef(canonicalScanDirPath);
-        LOG.info("Scanning directory [{}]...", scanDirectoryRef.getPath());
+        log.info("Scanning directory [{}]...", scanDirectoryRef.getPath());
 
         final FileSystemScanContext fileSystemScan = new FileSystemScanContext(scanDirectoryRef, scanParam);
         final FileSystemScanExecutor fileSystemScanExecutor = new FileSystemScanExecutor(fileSystemScan);
@@ -154,7 +152,7 @@ public class DirectoryInventoryScan {
         // NOTE: at this point, the component is fully unwrapped in the file system (expecting already detected component
         //  patterns).
 
-        LOG.info("Scanning directory [{}] completed.", directoryToScan.getAbsolutePath());
+        log.info("Scanning directory [{}] completed.", directoryToScan.getAbsolutePath());
 
         // post-process inventory; merge asset groups
         mergeAssetGroups(fileSystemScan.getInventory());
@@ -179,7 +177,7 @@ public class DirectoryInventoryScan {
 
                 for (String postScanExclude : normalizedExcludePatterns) {
                     if (FileUtils.matches(postScanExclude, normalizedPath)) {
-                        LOG.info("Removing artifact [{}] due to post scan exclude [{}].", a.getId(), postScanExclude);
+                        log.info("Removing artifact [{}] due to post scan exclude [{}].", a.getId(), postScanExclude);
                         return true;
                     }
                 }

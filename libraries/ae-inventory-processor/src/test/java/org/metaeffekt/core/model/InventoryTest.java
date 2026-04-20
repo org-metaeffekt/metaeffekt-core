@@ -16,14 +16,13 @@
 package org.metaeffekt.core.model;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.inventory.processor.writer.excel.AbstractXlsInventoryWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,9 +30,8 @@ import java.util.function.Consumer;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 
+@Slf4j
 public class InventoryTest {
-
-    private static final Logger LOG = LoggerFactory.getLogger(InventoryTest.class);
 
     @Test
     public void testFindCurrent() {
@@ -310,16 +308,16 @@ public class InventoryTest {
         Assertions.assertEquals(0, inventory.getVulnerabilityMetaData("test2").size());
 
         final File xlsInventoryFile = new File("target/vulnerabilityMetaDataContextTest.xls");
-        LOG.info("Writing " + xlsInventoryFile);
+        log.info("Writing " + xlsInventoryFile);
         long ts = System.currentTimeMillis();
         new InventoryWriter().writeInventory(inventory, xlsInventoryFile);
-        LOG.info("Done in " + (System.currentTimeMillis() - ts) + " ms");
+        log.info("Done in " + (System.currentTimeMillis() - ts) + " ms");
 
         final File xlsxInventoryFile = new File("target/vulnerabilityMetaDataContextTest.xlsx");
-        LOG.info("Writing " + xlsxInventoryFile);
+        log.info("Writing " + xlsxInventoryFile);
         ts = System.currentTimeMillis();
         new InventoryWriter().writeInventory(inventory, xlsxInventoryFile);
-        LOG.info("Done in " + (System.currentTimeMillis() - ts) + " ms");
+        log.info("Done in " + (System.currentTimeMillis() - ts) + " ms");
 
         // XLS
         inventory = new InventoryReader().readInventory(xlsInventoryFile);

@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.reader;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -22,8 +23,6 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,9 +32,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+@Slf4j
 public class XlsInventoryReader extends AbstractInventoryReader {
-
-    private static final Logger LOG = LoggerFactory.getLogger(XlsInventoryReader.class);
 
     @Override
     public Inventory readInventory(InputStream in) throws IOException {
@@ -117,7 +115,7 @@ public class XlsInventoryReader extends AbstractInventoryReader {
     protected void readVulnerabilityMetaData(HSSFWorkbook workbook, Inventory inventory, String sheetName) {
         final HSSFSheet sheet = workbook.getSheet(sheetName);
         if (sheet == null) {
-            LOG.warn("Inventory sheet {} not found.", sheetName);
+            log.warn("Inventory sheet {} not found.", sheetName);
             return;
         }
 

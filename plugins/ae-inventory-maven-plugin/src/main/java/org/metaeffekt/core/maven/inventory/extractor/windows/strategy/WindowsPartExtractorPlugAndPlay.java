@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -23,15 +24,12 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile;
 import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsPnpClassGuid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
 
+@Slf4j
 public class WindowsPartExtractorPlugAndPlay extends WindowsPartExtractorBase {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WindowsPartExtractorPlugAndPlay.class);
 
     public void parse(Inventory inventory, JSONArray pnpEntityJson, JSONArray getPnpDeviceJson, JSONArray pnpSignedDriverJson) {
         // overlapping identifiers (have always been identical --> reduce to PNPDeviceID)
@@ -152,7 +150,7 @@ public class WindowsPartExtractorPlugAndPlay extends WindowsPartExtractorBase {
 
         if (pnpClassId != null && classGuidId != null) {
             if (pnpClassId != classGuidId) {
-                LOG.warn("PNPClass and ClassGuid do not match for PNP Device, picking from ClassGuid, PNPClass: {}, ClassGuid: {}", pnpClassId, classGuidId);
+                log.warn("PNPClass and ClassGuid do not match for PNP Device, picking from ClassGuid, PNPClass: {}, ClassGuid: {}", pnpClassId, classGuidId);
             }
             return typeConverter.apply(classGuidId);
         } else if (pnpClassId != null) {
@@ -264,7 +262,7 @@ public class WindowsPartExtractorPlugAndPlay extends WindowsPartExtractorBase {
             if (id != null) {
                 groupedEntryMap.computeIfAbsent(id, k -> new HashMap<>()).put(jsonArray, jsonObject);
             } else {
-                LOG.warn(noIdFoundLogMessage, jsonObject);
+                log.warn(noIdFoundLogMessage, jsonObject);
             }
         }
     }

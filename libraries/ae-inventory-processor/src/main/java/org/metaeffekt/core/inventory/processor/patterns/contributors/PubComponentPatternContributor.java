@@ -16,11 +16,10 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -31,9 +30,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 public class PubComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(PubComponentPatternContributor.class);
     private static final String DART_PACKAGE_TYPE = "pub";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("pubspec.yaml");
@@ -51,7 +49,7 @@ public class PubComponentPatternContributor extends ComponentPatternContributor 
         List<ComponentPatternData> components = new ArrayList<>();
 
         if (!pubspecFile.exists()) {
-            LOG.warn("Dart package file does not exist: {}", pubspecFile.getAbsolutePath());
+            log.warn("Dart package file does not exist: {}", pubspecFile.getAbsolutePath());
             return Collections.emptyList();
         }
 
@@ -63,7 +61,7 @@ public class PubComponentPatternContributor extends ComponentPatternContributor 
             }
             return components;
         } catch (Exception e) {
-            LOG.warn("Error processing Dart package file", e);
+            log.warn("Error processing Dart package file", e);
             return Collections.emptyList();
         }
     }

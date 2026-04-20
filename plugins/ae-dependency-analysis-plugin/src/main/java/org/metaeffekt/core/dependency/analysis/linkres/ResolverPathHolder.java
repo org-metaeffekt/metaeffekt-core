@@ -15,8 +15,7 @@
  */
 package org.metaeffekt.core.dependency.analysis.linkres;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,8 +26,8 @@ import java.util.Set;
  * Helper class, only for use within link resolution classes.<br>
  * Furthermore, only use an instance of this object with the same set of symlinks or resolution might get unstable.
  */
+@Slf4j
 public class ResolverPathHolder {
-    private static final Logger LOG = LoggerFactory.getLogger(ResolverPathHolder.class);
 
     protected String currentPath;
     protected final Set<String> previousPositions;
@@ -104,7 +103,7 @@ public class ResolverPathHolder {
         Objects.requireNonNull(status, "status must not be null");
 
         if (status != ResolverStatus.INFLIGHT) {
-            LOG.debug("Overriding status from [{}] to [{}]", this.status, status);
+            log.debug("Overriding status from [{}] to [{}]", this.status, status);
         }
 
         this.status = status;

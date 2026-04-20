@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan.tasks;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanParam;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
@@ -28,16 +27,15 @@ import java.util.List;
 /**
  * Produces an inventory with file names (id), normalized paths (projects), and checksums.
  */
+@Slf4j
 public class DirectoryScanTask extends ScanTask {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DirectoryScanTask.class);
 
     private final FileRef dirRef;
 
     public DirectoryScanTask(FileRef dirRef, List<String> assetIdChain) {
         super(assetIdChain);
         if (!dirRef.getFile().isDirectory()) {
-            LOG.error(
+            log.error(
                     "Passed dirRef does not contain a directory: [{}].",
                     dirRef.getFile().getAbsolutePath()
             );
@@ -49,15 +47,15 @@ public class DirectoryScanTask extends ScanTask {
 
     @Override
     public void process(FileSystemScanContext scanContext) {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("Executing [{}] on: [{}]", getClass().getName(), dirRef.getFile().getAbsolutePath());
+        if (log.isTraceEnabled()) {
+            log.trace("Executing [{}] on: [{}]", getClass().getName(), dirRef.getFile().getAbsolutePath());
         }
 
         final File[] files = dirRef.getFile().listFiles();
         final FileSystemScanParam scanParam = scanContext.getScanParam();
 
         if (files == null) {
-            LOG.warn("List of files unexpectedly empty for folder: " + dirRef.getFile().getAbsolutePath());
+            log.warn("List of files unexpectedly empty for folder: " + dirRef.getFile().getAbsolutePath());
         }
 
         for (File file : files) {
@@ -66,7 +64,7 @@ public class DirectoryScanTask extends ScanTask {
             if (scanParam.collects(fileRef.getPath())) {
                 if (FileUtils.isSymlink(file)) {
                     // we skip symlinks
-                    LOG.debug("Ignoring symlink: [{}]",file.getAbsolutePath());
+                    log.debug("Ignoring symlink: [{}]",file.getAbsolutePath());
                     continue;
                 }
                 // dispatch depending on type (file or folder)
@@ -90,8 +88,8 @@ public class DirectoryScanTask extends ScanTask {
                 }
                 // discard "other types", probably a symlink
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Ignored {} due to collect include/exclude patterns.", file.getAbsolutePath());
+                if (log.isDebugEnabled()) {
+                    log.debug("Ignored {} due to collect include/exclude patterns.", file.getAbsolutePath());
                 }
             }
         }

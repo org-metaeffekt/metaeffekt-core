@@ -15,9 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,9 +31,8 @@ import java.util.stream.Collectors;
  *      Low │          0 │              0 │        38 │             0 │    0 │    38 │    0,0 %
  * </pre>
  */
+@Slf4j
 public class StatisticsOverviewTable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(StatisticsOverviewTable.class);
 
     private final List<SeverityToStatusRow> rows = new ArrayList<>();
     private final boolean usesEffectiveSeverity;
@@ -73,7 +71,7 @@ public class StatisticsOverviewTable {
 
     public void incrementCount(CentralSecurityPolicyConfiguration securityPolicy, String severity, String status) {
         if (severity == null || status == null) {
-            LOG.warn("Severity [{}] or status [{}] is null. Skipping incrementCount.", severity, status);
+            log.warn("Severity [{}] or status [{}] is null. Skipping incrementCount.", severity, status);
             return;
         }
 

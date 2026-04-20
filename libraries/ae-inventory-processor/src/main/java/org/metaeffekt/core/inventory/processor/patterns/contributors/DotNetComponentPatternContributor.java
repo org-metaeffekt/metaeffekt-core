@@ -16,11 +16,10 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -32,9 +31,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 public class DotNetComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DotNetComponentPatternContributor.class);
     private static final String DOTNET_PACKAGE_TYPE = "nuget";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add(".csproj");
@@ -54,7 +52,7 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
         List<ComponentPatternData> components = new ArrayList<>();
 
         if (!projectFile.exists()) {
-            LOG.warn("Project file does not exist: {}", projectFile.getAbsolutePath());
+            log.warn("Project file does not exist: {}", projectFile.getAbsolutePath());
             return Collections.emptyList();
         }
 
@@ -66,7 +64,7 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
             }
             return components;
         } catch (Exception e) {
-            LOG.warn("Error processing DotNet project file", e);
+            log.warn("Error processing DotNet project file", e);
             return Collections.emptyList();
         }
     }
@@ -106,7 +104,7 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
             }
         } catch (Exception e) {
             // FIXME: adjust to contributor logging and exception handling convention
-            LOG.warn("Failure parsing .nuspec file", e);
+            log.warn("Failure parsing .nuspec file", e);
         }
     }
 
@@ -125,7 +123,7 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
                 addComponent(components, packageName, version, relativeAnchorPath, anchorChecksum);
             }
         } catch (Exception e) {
-            LOG.warn("Could not process project file", e);
+            log.warn("Could not process project file", e);
         }
     }
 

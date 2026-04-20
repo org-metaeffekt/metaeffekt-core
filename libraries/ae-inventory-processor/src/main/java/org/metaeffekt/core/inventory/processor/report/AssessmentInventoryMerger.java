@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
@@ -22,16 +23,13 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+@Slf4j
 public class AssessmentInventoryMerger {
-
-    private final static Logger LOG = LoggerFactory.getLogger(AssessmentInventoryMerger.class);
 
     private List<File> inputInventoryFiles;
     private List<Inventory> inputInventories;
@@ -57,7 +55,7 @@ public class AssessmentInventoryMerger {
 
         final List<File> inventoryFiles = collectInventoryFiles();
 
-        LOG.info("Processing [{}] inventories", collectedInventories.size() + inventoryFiles.size());
+        log.info("Processing [{}] inventories", collectedInventories.size() + inventoryFiles.size());
 
         {
             final InventoryReader reader = new InventoryReader();
@@ -85,7 +83,7 @@ public class AssessmentInventoryMerger {
                 throw new IllegalStateException("Asset name must not be empty on asset meta data" + (inputInventoryFile != null ? " in file [" + inputInventoryFile.getAbsolutePath() + "]" : ""));
             }
             final String assessmentContext = formatNormalizedAssessmentContextName(assetName);
-            LOG.info("Processing inventory with asset [{}] and assessment context [{}]", assetName, assessmentContext);
+            log.info("Processing inventory with asset [{}] and assessment context [{}]", assetName, assessmentContext);
 
             final List<Inventory> commonInventories = assessmentContextInventoryMap.computeIfAbsent(assessmentContext, a -> new ArrayList<>());
             final int inventoryDisplayIndex = commonInventories.size() + 1;

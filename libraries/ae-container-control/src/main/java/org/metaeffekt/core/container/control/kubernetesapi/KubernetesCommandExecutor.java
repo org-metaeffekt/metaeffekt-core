@@ -20,9 +20,8 @@ import io.fabric8.kubernetes.client.*;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.dsl.PodResource;
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.container.control.exception.CommandExecutionFailed;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -38,6 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Must guarantee that the environment doesn't change erratically between commands unless modified by the commands
  * themselves. Therefore we maintain a dependency on a single pod / container.
  */
+@Slf4j
 @SuppressWarnings("unused")
 public class KubernetesCommandExecutor implements AutoCloseable {
     /**
@@ -55,8 +55,6 @@ public class KubernetesCommandExecutor implements AutoCloseable {
      * How long to wait for before warning the user (via log warn message) when pod is pending for a while.
      */
     public static final long SECONDS_UNTIL_WARN_ON_POD_PENDING = 30;
-
-    private static final Logger LOG = LoggerFactory.getLogger(KubernetesCommandExecutor.class);
 
     /**
      * The kubernetes client used for later api interactions. Encapsulates the endpoint.
@@ -146,7 +144,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
             this.client = client;
             this.reservedPod = getPod(client, namespaceName, imageIdentifier, UUID.randomUUID(), envVars, command);
         } catch (Exception e) {
-            LOG.debug(
+            log.debug(
                     "Constructor of [{}] failed for image identifier [{}].",
                     this.getClass().getSimpleName(),
                     imageIdentifier
@@ -245,7 +243,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                         if (((current - startTime) / 1000) > secondsToWarnFloored &&
                                 shouldLog.getAndSet(false)) {
                             // inform user that a pod is taking a long time to start
-                            LOG.info(
+                            log.info(
                                     "Pod for image spec [{}] has been pending for more than [{}] seconds." +
                                             " Could indicate slow download or" +
                                             " unreachable image id (in which case we're stuck forever).",
@@ -270,7 +268,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
 
         if (!"Running".equals(lastSeenPhase.get())) {
             // pod.getStatus().getPhase() does not return the same, it seems, so we get phase from inside our wait
-            LOG.debug(
+            log.debug(
                     "Last seen state in checker is [{}] for podname [{}] with identifier [{}]. Will throw!",
                     lastSeenPhase.get(),
                     podName,
@@ -279,16 +277,16 @@ public class KubernetesCommandExecutor implements AutoCloseable {
 
             // insta-delete the pod
             try {
-                LOG.debug("Instantly deleting pod [{}] after it didn't transition to running phase.", podName);
+                log.debug("Instantly deleting pod [{}] after it didn't transition to running phase.", podName);
                 client.pods().resource(pod).withGracePeriod(0).delete();
             } catch (KubernetesClientException e) {
-                LOG.debug("Ignoring client exception from forceful pod deletion on invalid pod [{}].", podName, e);
+                log.debug("Ignoring client exception from forceful pod deletion on invalid pod [{}].", podName, e);
             }
 
             throw new CommandExecutionFailed("Pod not 'Running' after startup procedure.");
         }
 
-        LOG.debug(
+        log.debug(
                 "Returning pod after seemingly successful creation: namespace=[{}], name=[{}], identifier [{}]",
                 namespaceName,
                 podName,

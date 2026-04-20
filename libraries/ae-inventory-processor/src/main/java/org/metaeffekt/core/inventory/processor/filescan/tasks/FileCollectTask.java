@@ -15,14 +15,13 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan.tasks;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,9 +36,8 @@ import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 /**
  * Contributes to the inventory managed by {@link FileSystemScanContext}.
  */
+@Slf4j
 public class FileCollectTask extends ScanTask {
-
-    private static final Logger LOG = LoggerFactory.getLogger(FileCollectTask.class);
 
     public static final String ATTRIBUTE_KEY_UNWRAP = "UNWRAP";
 
@@ -54,8 +52,8 @@ public class FileCollectTask extends ScanTask {
 
     @Override
     public void process(FileSystemScanContext fileSystemScanContext) throws IOException {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("Executing [{}] on [{}].", getClass().getName(), fileRef.getFile().getAbsolutePath());
+        if (log.isTraceEnabled()) {
+            log.trace("Executing [{}] on [{}].", getClass().getName(), fileRef.getFile().getAbsolutePath());
         }
 
         final File file = fileRef.getFile();

@@ -15,11 +15,11 @@
  */
 package org.metaeffekt.core.common.kernel.ant.log;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
@@ -36,9 +36,8 @@ import java.util.Set;
  *
  * @author Karsten Klein
  */
+@Slf4j
 public class LoggingProjectAdapter extends Project {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LoggingProjectAdapter.class);
 
     private boolean escalate = true;
 
@@ -55,23 +54,23 @@ public class LoggingProjectAdapter extends Project {
         }
 
         if (msgLevel == Project.MSG_VERBOSE) {
-            LOG.debug(message);
+            log.debug(message);
             return;
         }
         if (msgLevel == Project.MSG_DEBUG) {
-            LOG.debug(message);
+            log.debug(message);
             return;
         }
         if (msgLevel == Project.MSG_INFO) {
-            LOG.info(message);
+            log.info(message);
             return;
         }
         if (msgLevel == Project.MSG_WARN) {
-            LOG.warn(message);
+            log.warn(message);
             return;
         }
         if (msgLevel == Project.MSG_ERR) {
-            LOG.error(message);
+            log.error(message);
             return;
         }
     }
@@ -81,7 +80,7 @@ public class LoggingProjectAdapter extends Project {
             if (errorEscalationTerms != null) {
                 for (String term : errorEscalationTerms) {
                     if (message.contains(term)) {
-                        LOG.error(message);
+                        log.error(message);
                         if (failOnErrorEscalation) {
                             throw new EscalationException(message);
                         }
@@ -92,7 +91,7 @@ public class LoggingProjectAdapter extends Project {
             if (warnEscalationTerms != null) {
                 for (String term : warnEscalationTerms) {
                     if (message.contains(term)) {
-                        LOG.warn(message);
+                        log.warn(message);
                         if (failOnWarnEscalation) {
                             throw new EscalationException(message);
                         }
@@ -110,30 +109,30 @@ public class LoggingProjectAdapter extends Project {
             return;
         }
         if (msgLevel == Project.MSG_VERBOSE) {
-            LOG.debug(message, throwable);
+            log.debug(message, throwable);
             return;
         }
         if (msgLevel == Project.MSG_DEBUG) {
-            LOG.debug(message, throwable);
+            log.debug(message, throwable);
             return;
         }
         if (msgLevel == Project.MSG_INFO) {
-            LOG.info(message, throwable);
+            log.info(message, throwable);
             return;
         }
         if (msgLevel == Project.MSG_WARN) {
-            LOG.warn(message, throwable);
+            log.warn(message, throwable);
             return;
         }
         if (msgLevel == Project.MSG_ERR) {
-            LOG.error(message, throwable);
+            log.error(message, throwable);
             return;
         }
     }
 
     @Override
     public void log(String message) {
-        LOG.info(message);
+        log.info(message);
     }
 
     @Override
@@ -197,7 +196,7 @@ public class LoggingProjectAdapter extends Project {
     }
 
     public Logger getLog() {
-        return LOG;
+        return log;
     }
 
 }

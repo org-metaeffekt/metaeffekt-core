@@ -15,14 +15,13 @@
  */
 package org.metaeffekt.core.security.cvss;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.metaeffekt.core.security.cvss.CvssSource.CvssEntity;
 import org.metaeffekt.core.security.cvss.CvssSource.ReportStep;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -49,9 +48,8 @@ import java.util.stream.Collectors;
  * object to the known entities, so that the Vulnerability Assessment Dashboard and Inventory Report can use them and
  * display according links.
  */
+@Slf4j
 public abstract class KnownCvssEntities {
-
-    private final static Logger LOG = LoggerFactory.getLogger(KnownCvssEntities.class);
 
     public static final Map<String, CvssEntity> ENTITIES_BY_KEYNAME = new HashMap<>();
     public static final Map<String, CvssEntity> ENTITIES_BY_NAME = new HashMap<>();

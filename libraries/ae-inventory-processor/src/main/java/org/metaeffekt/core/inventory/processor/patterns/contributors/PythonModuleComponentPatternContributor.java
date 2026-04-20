@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
@@ -22,8 +23,6 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.ParsingUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +31,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+@Slf4j
 public class PythonModuleComponentPatternContributor extends ComponentPatternContributor {
-    private static final Logger LOG = LoggerFactory.getLogger(PythonModuleComponentPatternContributor.class);
 
     // TODO: unify suffixes and other checks like in "applies"
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
@@ -117,7 +116,7 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
                 // update id with better data
                 componentPart = componentName + "-" + componentVersion;
             } catch (IOException e) {
-                LOG.debug("IOException while trying to parse a METADATA file at [{}].", anchorFile);
+                log.debug("IOException while trying to parse a METADATA file at [{}].", anchorFile);
             }
         } else {
             // in case it is not a METADATA file we extract name and version from the path
@@ -161,7 +160,7 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
                         includePattern += "," + line + "/**/*";
                     }
                 } catch (IOException e) {
-                    LOG.debug("IOException while trying to parse top_level.txt at [{}].", topLevelInfo);
+                    log.debug("IOException while trying to parse top_level.txt at [{}].", topLevelInfo);
                 }
             } else {
                 // FIXME: this creates VERY inclusive paths like "numpy/**/*" which didn't even do anything in testing
@@ -217,7 +216,7 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
                 }
 
             } catch (IOException e) {
-                LOG.warn("Unable to parse RECORD file: "+ recordFile.getAbsolutePath());
+                log.warn("Unable to parse RECORD file: "+ recordFile.getAbsolutePath());
             }
             return recordListedFiles;
         }

@@ -15,20 +15,21 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.ComponentPatternContributor;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.EvaluationContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class ComponentPatternContributorRunner {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternContributorRunner.class);
 
     /**
      * This map is used to store the contributors in the order of their phase.
@@ -117,7 +118,7 @@ public class ComponentPatternContributorRunner {
 
                         results.addAll(componentPatterns);
                     } catch (Exception e) {
-                        LOG.error("Contributor threw exception. Ensure the contributor is robust.", e);
+                        log.error("Contributor threw exception. Ensure the contributor is robust.", e);
                     }
 
                     // NOTE: currently the resulting patterns are not aware of the phase they have been applied. This

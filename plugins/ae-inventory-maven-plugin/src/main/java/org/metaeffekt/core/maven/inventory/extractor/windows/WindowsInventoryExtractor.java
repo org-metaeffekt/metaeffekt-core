@@ -15,13 +15,12 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor.windows;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.maven.inventory.extractor.InventoryExtractor;
 import org.metaeffekt.core.maven.inventory.extractor.windows.strategy.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,9 +32,8 @@ import java.util.stream.Collectors;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_SOURCE_PROJECT;
 import static org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile.*;
 
+@Slf4j
 public class WindowsInventoryExtractor implements InventoryExtractor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WindowsInventoryExtractor.class);
 
     /**
      * Checks if the specified analysis directory contains:
@@ -58,7 +56,7 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
 
     @Override
     public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns) throws IOException {
-        LOG.info("Windows inventory extraction [{}] started with analysis directory: {}", inventoryId, analysisDir);
+        log.info("Windows inventory extraction [{}] started with analysis directory: {}", inventoryId, analysisDir);
 
         final Inventory inventory = new Inventory();
 
@@ -148,16 +146,16 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
                     .thenComparing(a -> ((Artifact) a).get(Artifact.Attribute.TYPE) == null ? "" : ((Artifact) a).get(Artifact.Attribute.TYPE))
                     .thenComparing(a -> ((Artifact) a).get(Artifact.Attribute.ID) == null ? "" : ((Artifact) a).get(Artifact.Attribute.ID)));
         } catch (Exception e) {
-            LOG.warn("Failed to sort artifacts in windows extracted inventory", e);
+            log.warn("Failed to sort artifacts in windows extracted inventory", e);
         }
 
-        LOG.info("Windows inventory extraction completed");
-        LOG.info("With results:"); // list count by "Windows Source"
+        log.info("Windows inventory extraction completed");
+        log.info("With results:"); // list count by "Windows Source"
         inventory.getArtifacts().stream()
                 .collect(Collectors.groupingBy(a -> a.get("Windows Source") == null ? "other" : a.get("Windows Source")))
                 .entrySet().stream()
                 .sorted(Comparator.comparingInt(e -> -e.getValue().size()))
-                .forEach(e -> LOG.info("  {}: {}", e.getKey(), e.getValue().size()));
+                .forEach(e -> log.info("  {}: {}", e.getKey(), e.getValue().size()));
 
         return inventory;
     }

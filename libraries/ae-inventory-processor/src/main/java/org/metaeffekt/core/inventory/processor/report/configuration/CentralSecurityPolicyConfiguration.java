@@ -19,10 +19,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.processor.configuration.ExcludeProcessConfigurationProperty;
 import org.metaeffekt.core.inventory.processor.configuration.ProcessConfiguration;
 import org.metaeffekt.core.inventory.processor.configuration.ProcessConfigurationProperty;
 import org.metaeffekt.core.inventory.processor.configuration.ProcessMisconfiguration;
@@ -37,8 +37,6 @@ import org.metaeffekt.core.security.cvss.processor.CvssSelectionResult.CvssScore
 import org.metaeffekt.core.security.cvss.processor.CvssSelector;
 import org.metaeffekt.core.security.cvss.processor.CvssSelector.*;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,10 +55,8 @@ import static org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole
  */
 @Accessors(chain = true)
 @NoArgsConstructor
+@Slf4j
 public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
-
-    @ExcludeProcessConfigurationProperty
-    private static final Logger LOG = LoggerFactory.getLogger(CentralSecurityPolicyConfiguration.class);
 
     public final static String LATEST_VERSION = "1";
 
@@ -556,7 +552,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             throw new IOException("Security policy configuration file is not a file: " + jsonFile.getAbsolutePath());
         }
 
-        LOG.info("Loading security policy configuration from: {}", jsonFile.getAbsolutePath());
+        log.info("Loading security policy configuration from: {}", jsonFile.getAbsolutePath());
 
         final String json;
         try {
@@ -593,7 +589,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
         try {
             if (jsonFile != null) {
-                LOG.info("Reading security policy from securityPolicyFile: file://{}", jsonFile.getAbsolutePath());
+                log.info("Reading security policy from securityPolicyFile: file://{}", jsonFile.getAbsolutePath());
                 final JSONObject jsonFromFile = new JSONObject(FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8));
                 for (String key : jsonFromFile.keySet()) {
                     effectiveApplyJson.put(key, jsonFromFile.get(key));
@@ -605,7 +601,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
         try {
             if (jsonOverwrite != null) {
-                LOG.info("Applying security policy from securityPolicyJson: {}", String.join("", jsonOverwrite.split("\n")));
+                log.info("Applying security policy from securityPolicyJson: {}", String.join("", jsonOverwrite.split("\n")));
                 final JSONObject jsonFromOverwrite = new JSONObject(jsonOverwrite);
                 for (String key : jsonFromOverwrite.keySet()) {
                     effectiveApplyJson.put(key, jsonFromOverwrite.get(key));

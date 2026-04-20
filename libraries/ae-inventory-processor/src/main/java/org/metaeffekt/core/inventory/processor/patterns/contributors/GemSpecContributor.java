@@ -15,13 +15,12 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.filepatterns.FileMetaData;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -33,9 +32,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class GemSpecContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(GemSpecContributor.class);
 
     public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem-spec";
 
@@ -168,10 +166,10 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
             if (versionDerivedFromFileName == null && versionDerivedFromFolderName == null) {
                 // FIXME: why do we care? it seems it's not standard to quality version in filanems.
-                LOG.trace("No version denoted in file's or folder's name.");
+                log.trace("No version denoted in file's or folder's name.");
             }
             if (version == null || "VERSION".equals(version)) {
-                LOG.warn("No version extracted from Gemspec [{}. Skipped.", relativeAnchorPath);
+                log.warn("No version extracted from Gemspec [{}. Skipped.", relativeAnchorPath);
                 return Collections.emptyList();
             }
 
@@ -186,7 +184,7 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
-            LOG.warn("Failure while processing anchor [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
+            log.warn("Failure while processing anchor [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
             return Collections.emptyList();
         }
     }

@@ -22,7 +22,9 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 public class VersionFileComponentPatternContributor extends ComponentPatternContributor {

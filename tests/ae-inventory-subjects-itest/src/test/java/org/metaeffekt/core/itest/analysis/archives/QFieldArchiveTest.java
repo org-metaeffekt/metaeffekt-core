@@ -29,8 +29,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import java.io.File;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
-import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ROOT_PATHS;
 
 public class QFieldArchiveTest extends AbstractCompositionAnalysisTest {
 

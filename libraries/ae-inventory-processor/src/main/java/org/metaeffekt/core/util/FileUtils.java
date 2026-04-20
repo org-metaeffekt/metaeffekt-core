@@ -15,13 +15,12 @@
  */
 package org.metaeffekt.core.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Checksum;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +35,8 @@ import java.util.regex.Pattern;
 /**
  * FileUtils extension.
  */
+@Slf4j
 public class FileUtils extends org.apache.commons.io.FileUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class);
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
@@ -389,9 +387,9 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
                 checksumSequence.append(fileChecksum);
             } catch (Exception e) {
                 if (FileUtils.isSymlink(file)) {
-                    LOG.warn("Cannot compute checksum for symbolic link file [{}].", file);
+                    log.warn("Cannot compute checksum for symbolic link file [{}].", file);
                 } else {
-                    LOG.warn("Cannot compute checksum for file [{}].", file);
+                    log.warn("Cannot compute checksum for file [{}].", file);
                 }
             }
         });
@@ -432,7 +430,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
             }
         }
         if (dir.exists()) {
-            LOG.error("Failed to delete tmp folder: {}", dir.getAbsolutePath(), t);
+            log.error("Failed to delete tmp folder: {}", dir.getAbsolutePath(), t);
         }
 
         // recreate empty folder

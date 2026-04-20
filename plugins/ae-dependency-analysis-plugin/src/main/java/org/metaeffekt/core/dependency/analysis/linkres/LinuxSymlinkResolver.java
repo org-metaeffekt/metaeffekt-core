@@ -15,8 +15,7 @@
  */
 package org.metaeffekt.core.dependency.analysis.linkres;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,8 +27,8 @@ import java.util.regex.Pattern;
  * A class for resolving linux symlinks using only string paths.<br>
  * This is not perfect if root differs. In other words, root must be ROOT. Symlinks to the outside may not resolve.
  */
+@Slf4j
 public class LinuxSymlinkResolver {
-    private static final Logger LOG = LoggerFactory.getLogger(LinuxSymlinkResolver.class);
     protected Map<String, String> symlinks = new HashMap<>();
 
     // should be way higher than on any reasonable system.
@@ -86,7 +85,7 @@ public class LinuxSymlinkResolver {
 
     public ResolverPathHolder resolve(String inputPath) {
         if (!inputPath.startsWith("/")) {
-            LOG.error("path [{}] is not absolute. refusing to resolve.", inputPath);
+            log.error("path [{}] is not absolute. refusing to resolve.", inputPath);
             throw new IllegalArgumentException("inputPath must be absolute (start with '/')");
         }
 
@@ -112,7 +111,7 @@ public class LinuxSymlinkResolver {
 
         // if the link is still INFLIGHT, mark it as cyclic after all attempts are used up
         if (holder.getStatus() == ResolverStatus.INFLIGHT) {
-            LOG.debug("resolver ran out of depth at [{}] after [{}] cycles", holder.getCurrentPath(), maxDepth);
+            log.debug("resolver ran out of depth at [{}] after [{}] cycles", holder.getCurrentPath(), maxDepth);
             holder.setStatus(ResolverStatus.CYCLIC);
         }
     }

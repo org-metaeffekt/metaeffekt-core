@@ -17,6 +17,7 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import com.github.packageurl.PackageURL;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,8 +25,6 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,9 +32,8 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class BitnamiComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(BitnamiComponentPatternContributor.class);
     private static final String BITNAMI_PACKAGE_TYPE = "bitnami-module";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add(".spdx");
@@ -55,7 +53,7 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
         String packagesDir = spdxFile.getParentFile().getPath();
 
         if (!spdxFile.exists()) {
-            LOG.warn("SPDX file does not exist: [{}]", spdxFile.getAbsolutePath());
+            log.warn("SPDX file does not exist: [{}]", spdxFile.getAbsolutePath());
             return Collections.emptyList();
         }
 
@@ -64,11 +62,11 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
             JSONObject rootNode = new JSONObject(spdxContent);
             return parseSpdxFile(rootNode, bitnamiPackagesDir, packagesDir, relativePathForAnchor, anchorChecksum);
         } catch (IOException e) {
-            LOG.error("Error reading SPDX file", e);
+            log.error("Error reading SPDX file", e);
             return Collections.emptyList();
         } catch (JSONException e) {
             // ignore JSONExceptions; the detected file may not be an SPDX-json file
-            LOG.debug("Ignoring format issues. Not an SPDX JSON file: " + spdxFile.toPath());
+            log.debug("Ignoring format issues. Not an SPDX JSON file: " + spdxFile.toPath());
             return Collections.emptyList();
         }
     }
@@ -143,7 +141,7 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
                 }
             }
         } catch (Exception e) {
-            LOG.warn("Could not read bitnami-components.json", e);
+            log.warn("Could not read bitnami-components.json", e);
         }
 
         return components;
@@ -183,7 +181,7 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
                 packageNameCandidates.add(packagePurlName);
             }
         } catch (Exception e) {
-            LOG.warn("Could not parse purl [{}].", currentPackageNodePurl);
+            log.warn("Could not parse purl [{}].", currentPackageNodePurl);
         }
 
         packageName = currentPackageNode.optString("name");
@@ -205,7 +203,7 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
                 versionCandidates.add(currentPackagePurl.getVersion());
             }
         } catch (Exception e) {
-            LOG.warn("Could not parse purl [{}].", currentPackageNodePurl);
+            log.warn("Could not parse purl [{}].", currentPackageNodePurl);
         }
 
         String versionInfo = currentPackageNode.optString("versionInfo");

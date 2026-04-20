@@ -15,14 +15,13 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModuleDependency;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,9 +34,8 @@ import java.util.Map;
 /**
  * Extracts an inventory for Bower modules based on a .bower.json file.
  */
+@Slf4j
 public class BowerLockAdapter {
-
-    private static final Logger LOG = LoggerFactory.getLogger(BowerLockAdapter.class);
 
     public static final String TYPE_VALUE_BOWER = "bower-module";
 
@@ -109,7 +107,7 @@ public class BowerLockAdapter {
 
             return inventory;
         } catch (IOException e) {
-            LOG.warn("Cannot read / parse [{}]: {}", bowerJson.getAbsoluteFile(), e.getMessage());
+            log.warn("Cannot read / parse [{}]: {}", bowerJson.getAbsoluteFile(), e.getMessage());
             return null;
         }
     }

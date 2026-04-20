@@ -15,11 +15,10 @@
  */
 package org.metaeffekt.core.container.control;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.container.control.exception.CommandExecutionFailed;
 import org.metaeffekt.core.container.control.kubernetesapi.KubernetesCommandExecutor;
 import org.metaeffekt.core.container.control.kubernetesapi.KubernetesContainerCommandProcess;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
@@ -27,9 +26,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Utility function for running commands in an executor.
  */
+@Slf4j
 @SuppressWarnings("unused")
 public class ExecutorUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(ExecutorUtils.class);
 
     /**
      * Runs a command demanding success.
@@ -58,8 +57,8 @@ public class ExecutorUtils {
             throw new CommandExecutionFailed("Failed to execute: execution failed with exception", e);
         }
         if (exitValue != 0) {
-            LOG.debug("Failed command stdout: [{}]", stdout);
-            LOG.debug("Failed command stderr: [{}]", stderr);
+            log.debug("Failed command stdout: [{}]", stdout);
+            log.debug("Failed command stderr: [{}]", stderr);
             throw new CommandExecutionFailed("Failed to execute: command failed with exit value " + exitValue);
         }
     }

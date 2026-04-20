@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.security.cvss.v4P0;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,9 +29,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class Cvss4P0Test {
-
-    private final static Logger LOG = LoggerFactory.getLogger(Cvss4P0Test.class);
 
     private final static File CVSS_RESOURCE_DIR = new File("src/test/resources/cvss");
 
@@ -42,9 +40,9 @@ public class Cvss4P0Test {
         final String vectorString = "CVSS:4.0/AV:P/AC:H/AT:P/PR:L/UI:P/VC:L/VI:L/VA:L/SC:H/SI:L/SA:L/E:U/IR:M/AR:H/MAT:P/MPR:N/MUI:P/MVC:N/MVI:L/MVA:L/MSC:L/MSI:L/MSA:S/S:P/R:I/U:Red";
         final Cvss4P0 cvss4P0 = new Cvss4P0(vectorString);
 
-        LOG.info("{}", cvss4P0);
-        LOG.info("{}", cvss4P0.getMacroVector());
-        LOG.info("{}", cvss4P0.getOverallScore());
+        log.info("{}", cvss4P0);
+        log.info("{}", cvss4P0.getMacroVector());
+        log.info("{}", cvss4P0.getOverallScore());
     }
 
     @Test
@@ -120,30 +118,30 @@ public class Cvss4P0Test {
         }
 
         if (!invalidVectors.isEmpty()) {
-            LOG.error("Invalid macro vectors:");
+            log.error("Invalid macro vectors:");
             for (String invalidVector : invalidVectors) {
-                LOG.error("  {}", invalidVector);
+                log.error("  {}", invalidVector);
             }
         }
 
         if (!toStringNotEqualsVectors.isEmpty()) {
-            LOG.error("toString() not equals:");
+            log.error("toString() not equals:");
             for (String invalidVector : toStringNotEqualsVectors) {
-                LOG.error("  {}", invalidVector);
+                log.error("  {}", invalidVector);
             }
         }
 
         if (!incorrectScores.isEmpty()) {
-            LOG.error("Incorrect scores:");
+            log.error("Incorrect scores:");
             for (String incorrectScore : incorrectScores) {
-                LOG.error("  {}", incorrectScore);
+                log.error("  {}", incorrectScore);
             }
         }
 
         if (!exceptionVectors.isEmpty()) {
-            LOG.error("Exception vectors:");
+            log.error("Exception vectors:");
             for (Map.Entry<String, String> entry : exceptionVectors.entrySet()) {
-                LOG.error("  {} ({})", entry.getKey(), entry.getValue());
+                log.error("  {} ({})", entry.getKey(), entry.getValue());
             }
         }
 
@@ -152,6 +150,6 @@ public class Cvss4P0Test {
         Assertions.assertTrue(incorrectScores.isEmpty());
         Assertions.assertTrue(exceptionVectors.isEmpty());
 
-        LOG.info("Successfully validated [{}] vectors", lines.size());
+        log.info("Successfully validated [{}] vectors", lines.size());
     }
 }

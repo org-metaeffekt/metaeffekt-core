@@ -15,19 +15,18 @@
  */
 package org.metaeffekt.core.dependency.analysis.depres;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class RequirementsResult {
-    private static final Logger LOG = LoggerFactory.getLogger(RequirementsResult.class);
 
     protected static final String statusMarkKey = "Requirement Evaluation";
 
@@ -70,7 +69,7 @@ public class RequirementsResult {
         packageToRequiredPackages.values().forEach((set) -> {
             for (String requiredPackage : set) {
                 if (requiredPackages.add(requiredPackage)) {
-                    LOG.warn("Oddity: required package [{}] wasn't a key (not resolved).", requiredPackage);
+                    log.warn("Oddity: required package [{}] wasn't a key (not resolved).", requiredPackage);
                 }
             }
         });
@@ -92,19 +91,19 @@ public class RequirementsResult {
 
     public void logNotResolvable() {
         if (!packageToUnresolvedRequirements.isEmpty()) {
-            LOG.warn("Unsatisfied (or unresolvable with current data) requirements in [{}] packages.",
+            log.warn("Unsatisfied (or unresolvable with current data) requirements in [{}] packages.",
                     packageToUnresolvedRequirements.size());
 
-            LOG.error("Logging [{}] issues:", packageToUnresolvedRequirements.size());
+            log.error("Logging [{}] issues:", packageToUnresolvedRequirements.size());
 
             for (Map.Entry<String, Set<String>> e : packageToUnresolvedRequirements.entrySet()) {
-                LOG.error("- " + e.getKey());
+                log.error("- " + e.getKey());
                 for (String unresolvable : e.getValue()) {
-                    LOG.error("  - " + unresolvable);
+                    log.error("  - " + unresolvable);
                 }
             }
         } else {
-            LOG.info("Map of unsatisfiable dependencies is empty.");
+            log.info("Map of unsatisfiable dependencies is empty.");
         }
     }
 
