@@ -24,7 +24,6 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,8 +52,6 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        // adapt maven logging to underlying logging facade
-        MavenLogAdapter.initialize(getLog());
         try {
             boolean isRoot = false;
             File sessionPath = new File(mavenSession.getExecutionRootDirectory());
@@ -92,8 +89,6 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
             }
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
-        } finally {
-            MavenLogAdapter.release();
         }
     }
 

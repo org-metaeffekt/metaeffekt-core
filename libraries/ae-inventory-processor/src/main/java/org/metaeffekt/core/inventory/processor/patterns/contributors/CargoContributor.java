@@ -48,7 +48,7 @@ public class CargoContributor extends ComponentPatternContributor {
 
     @Override
     public boolean applies(String pathInContext) {
-        return suffixes.stream().map(s -> pathInContext.endsWith(s)).findFirst().isPresent();
+        return suffixes.stream().anyMatch(pathInContext::endsWith);
     }
 
     @Override

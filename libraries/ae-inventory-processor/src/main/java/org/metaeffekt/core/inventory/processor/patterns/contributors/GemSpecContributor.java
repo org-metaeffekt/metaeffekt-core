@@ -43,6 +43,12 @@ public class GemSpecContributor extends ComponentPatternContributor {
         add(".gemspec");
     }});
 
+    public static final Pattern VERSION_LINE_PATTERN = Pattern.compile("^[a-zA-Z0-9 ]{1,128}\\.version *=.*", Pattern.MULTILINE);
+    public static final Pattern FIRST_QUOTE_PATTERN = Pattern.compile("[\"']");
+
+    public static final Pattern FOLDER_VERSION_PATTERN =
+            Pattern.compile("([a-zA-Z0-9-_]+)-([0-9]+\\.[0-9]+(\\.[0-9]+)*(-x86_64-linux-gnu){0,1})");
+
     @Override
     public boolean applies(String pathInContext) {
         return pathInContext.endsWith(".gemspec");
@@ -52,27 +58,40 @@ public class GemSpecContributor extends ComponentPatternContributor {
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);
-        final File contextBaseDir = anchorFile.getParentFile().getParentFile();
+        File contextBaseDir = anchorFile.getParentFile();
+
+        // kklein/workspace/metaeffekt-core/.examples/case-001-scan/[root]/user/local/bundle/cache/[webrick-1.9.1.gem]/
+        if (contextBaseDir.getName().equals("[data.tar]")) {
+            contextBaseDir = contextBaseDir.getParentFile();
+        }
+        if (contextBaseDir.getName().equals("[data.tar.gz]")) {
+            contextBaseDir = contextBaseDir.getParentFile();
+        }
 
         try {
             // parse gemspec
-            String content = FileUtils.readFileToString(anchorFile, StandardCharsets.UTF_8);
+            final String content = FileUtils.readFileToString(anchorFile, StandardCharsets.UTF_8);
 
             final String anchorFileName = anchorFile.getName();
-            final String anchorFileNameNoSuffix = anchorFileName.replace(".gemspec", "");
+            String parentDirName = contextBaseDir.getName();
 
-            final String parentDirName = anchorFile.getParentFile().getName();
+            if (parentDirName.startsWith("[")) {
+                parentDirName = parentDirName.substring(1, parentDirName.length() - 1);
+            }
+
+            if (parentDirName.endsWith(".gem")) {
+                parentDirName = parentDirName.substring(0, parentDirName.length() - 4);
+            }
 
             // anchor must match at least a qualified versioning string <major>.<minor> to be able to extract a version
-            // FIXME: why is there a minus ("-") at the beginning of the pattern? ask karsten what this is.
-            final Pattern versionFromFilenamePattern = Pattern.compile("-[0-9]+\\.[0-9]+");
-            final Matcher matcher = versionFromFilenamePattern.matcher(anchorFileNameNoSuffix);
-            int anchorNameSeparatorIndex = matcher.find() ? matcher.start() : -1;
+            final Matcher matcher = FOLDER_VERSION_PATTERN.matcher(parentDirName);
+
             final String nameDerivedFromFile;
             final String versionDerivedFromFileName;
-            if (anchorNameSeparatorIndex != -1) {
-                nameDerivedFromFile = anchorFileNameNoSuffix.substring(0, anchorNameSeparatorIndex);
-                versionDerivedFromFileName = anchorFileNameNoSuffix.substring(anchorNameSeparatorIndex + 1);
+
+            if (matcher.find()) {
+                nameDerivedFromFile = matcher.group(1);
+                versionDerivedFromFileName = matcher.group(2);
             } else {
                 nameDerivedFromFile = anchorFileName;
                 versionDerivedFromFileName = null;
@@ -91,17 +110,14 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
             String versionDerivedFromGemspecContent = null;
             try {
-                final Pattern versionLinePattern = Pattern.compile(
-                        "^[a-zA-Z0-9 ]{1,128}\\.version *=.*", Pattern.MULTILINE);
+                final Pattern versionLinePattern = VERSION_LINE_PATTERN;
                 final Matcher versionLineMatcher = versionLinePattern.matcher(content);
                 if (!versionLineMatcher.find()) {
                     throw new IllegalStateException("Regex could not find a valid version line in file.");
                 }
                 final String matchingVersionLine = versionLineMatcher.group();
-                final String cutAfterFirstEquals = matchingVersionLine
-                        .split("=", 2)[1]
-                        .trim();
-                final Pattern firstQuoteFinder = Pattern.compile("[\"']");
+                final String cutAfterFirstEquals = matchingVersionLine.split("=", 2)[1].trim();
+                final Pattern firstQuoteFinder = FIRST_QUOTE_PATTERN;
                 Matcher firstQuoteMatcher = firstQuoteFinder.matcher(cutAfterFirstEquals);
                 if (!firstQuoteMatcher.find()) {
                     throw new IllegalStateException("Regex could not find a valid quote in the line.");
@@ -109,8 +125,7 @@ public class GemSpecContributor extends ComponentPatternContributor {
                 String firstQuote = firstQuoteMatcher.group();
                 // find corresponding next quote. does not respect escapes.
                 int lastQuoteIndex = cutAfterFirstEquals.indexOf(firstQuote, firstQuoteMatcher.end());
-                versionDerivedFromGemspecContent = cutAfterFirstEquals
-                        .substring(firstQuoteMatcher.end(), lastQuoteIndex);
+                versionDerivedFromGemspecContent = cutAfterFirstEquals.substring(firstQuoteMatcher.end(), lastQuoteIndex);
             } catch (Exception e) {
                 // ignore, try to get version from other sources, otherwise crash later.
                 // gemspecs are actually CODE, so we may find all sorts of non-literal shenanigans.
@@ -136,14 +151,11 @@ public class GemSpecContributor extends ComponentPatternContributor {
                 concludedName = concludedName.substring(0, versionIndex);
             }
 
-            concludedName = concludedName.replace(".gemspec", "");
-            concludedName = concludedName.replace(".gem", "");
-
             String concludedId = concludedName + "-" + version;
 
             // construct component pattern
             final ComponentPatternData componentPatternData = new ComponentPatternData();
-            final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
+            final String contextRelPath = FileUtils.asRelativePath(contextBaseDir.getParentFile(), anchorFile.getParentFile());
 
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelPath + "/" + anchorFileName);
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
@@ -158,36 +170,12 @@ public class GemSpecContributor extends ComponentPatternContributor {
                 // FIXME: why do we care? it seems it's not standard to quality version in filanems.
                 LOG.trace("No version denoted in file's or folder's name.");
             }
-            if (version == null) {
+            if (version == null || "VERSION".equals(version)) {
                 LOG.warn("No version extracted from Gemspec [{}. Skipped.", relativeAnchorPath);
                 return Collections.emptyList();
             }
 
-            if (versionDerivedFromFileName != null) {
-                // covers folders with name as folder name and anything deeper nested
-                sb.append("**/" + nameDerivedFromFile + "-" + versionDerivedFromFileName + "/**/*").append(", ");
-
-                // cover cache files
-                sb.append("/**/cache/**/" + nameDerivedFromFile + "-" + versionDerivedFromFileName + ".gem").append(", ");
-
-                // this may be redundant
-                sb.append("/**/cache/**/[" + nameDerivedFromFile + "-" + versionDerivedFromFileName + ".gem]/**/*").append(", ");
-            } else {
-                if (versionDerivedFromFolderName != null) {
-                    // covers folders with name as folder name and anything deeper nested
-                    sb.append("**/" + nameDerivedFromFile + "-" + versionDerivedFromFolderName + "/**/*").append(", ");
-                    sb.append("**/" + nameDerivedFromFolderName + "-" + versionDerivedFromFolderName + "/**/*").append(", ");
-
-                    // cover cache folders (version may vary in cache; potential to catch more than required)
-                    sb.append("/**/cache/**/" + nameDerivedFromFile + "-" + "*" + "/**/*").append(", ");
-                    sb.append("/**/cache/**/" + nameDerivedFromFolderName + "-" + "*" + "/**/*").append(", ");
-                }
-            }
-
-            // cover anchor file itself and those matching the same name
-            sb.append("**/" + anchorFileName);
-
-            componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, sb.toString());
+            componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, contextBaseDir.getName() + "/**/*");
             componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
             componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_RUBY_GEM);
             componentPatternData.set(Artifact.Attribute.URL.getKey(), url);
