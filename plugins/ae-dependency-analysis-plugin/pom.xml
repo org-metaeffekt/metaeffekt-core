@@ -8,7 +8,6 @@
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
         <version>HEAD-SNAPSHOT</version>
-        <relativePath>../</relativePath>
     </parent>
 
     <artifactId>ae-dependency-analysis-plugin</artifactId>
