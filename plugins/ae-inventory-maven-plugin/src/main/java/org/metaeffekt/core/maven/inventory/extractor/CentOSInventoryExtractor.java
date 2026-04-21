@@ -15,11 +15,10 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,9 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(CentOSInventoryExtractor.class);
 
     public static final String FILE_PACKAGES_RPM_TXT = "packages_rpm.txt";
 
@@ -93,7 +91,7 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
                 packageInfo.release = ParsingUtils.getValue(fileContentLines, "Release     :");
                 packageInfo.sourcePackage = ParsingUtils.getValue(fileContentLines, "Source RPM  :");
             } else {
-                LOG.info("File {} does not exist.", packageFile);
+                log.info("File {} does not exist.", packageFile);
             }
         }
     }

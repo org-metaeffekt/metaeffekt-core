@@ -15,13 +15,12 @@
  */
 package org.metaeffekt.core.security.cvss.v2;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class Cvss2Test {
-    private final static Logger LOG = LoggerFactory.getLogger(Cvss2Test.class);
 
     @Test
     public void cvss2Test() {
@@ -102,18 +101,18 @@ public class Cvss2Test {
 
     private void checkScores(Cvss2 vector, double base, double impact, double exploitability, double temporal, double environmental, double adjImpact, double overall) {
         // calculate values
-        LOG.info("                 Input: [{}]", vector);
-        LOG.info("                Vector: [{}]", vector);
-        LOG.info("            Base score: [{}]", vector.getBaseScore());
-        LOG.info("          Impact score: [{}]", vector.getImpactScore());
-        LOG.info("  Exploitability score: [{}]", vector.getExploitabilityScore());
-        LOG.info("        Temporal score: [{}]", vector.getTemporalScore());
-        LOG.info("   Environmental score: [{}]", vector.getEnvironmentalScore());
-        LOG.info(" Adjusted impact score: [{}]", vector.getAdjustedImpactScore());
-        LOG.info("         Overall score: [{}]", vector.getOverallScore());
-        LOG.info("            Has scores: [{} {} {}]", vector.isBaseFullyDefined(), vector.isAnyTemporalDefined(), vector.isAnyEnvironmentalDefined());
-        LOG.info("                  Link: {}", vector.getWebEditorLink());
-        LOG.info("\n");
+        log.info("                 Input: [{}]", vector);
+        log.info("                Vector: [{}]", vector);
+        log.info("            Base score: [{}]", vector.getBaseScore());
+        log.info("          Impact score: [{}]", vector.getImpactScore());
+        log.info("  Exploitability score: [{}]", vector.getExploitabilityScore());
+        log.info("        Temporal score: [{}]", vector.getTemporalScore());
+        log.info("   Environmental score: [{}]", vector.getEnvironmentalScore());
+        log.info(" Adjusted impact score: [{}]", vector.getAdjustedImpactScore());
+        log.info("         Overall score: [{}]", vector.getOverallScore());
+        log.info("            Has scores: [{} {} {}]", vector.isBaseFullyDefined(), vector.isAnyTemporalDefined(), vector.isAnyEnvironmentalDefined());
+        log.info("                  Link: {}", vector.getWebEditorLink());
+        log.info("\n");
 
         Assertions.assertEquals(base, vector.getBaseScore(), 0.01);
         Assertions.assertEquals(impact, vector.getImpactScore(), 0.01);

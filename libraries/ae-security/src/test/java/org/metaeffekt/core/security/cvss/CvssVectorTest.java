@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.security.cvss;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.security.cvss.processor.UniversalCvssCalculatorLinkGenerator;
@@ -22,12 +23,9 @@ import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P0;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class CvssVectorTest {
-
-    private static final Logger log = LoggerFactory.getLogger(CvssVectorTest.class);
 
     @Test
     public void parseStaticVersionTest() {

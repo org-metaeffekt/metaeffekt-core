@@ -15,14 +15,13 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,10 +32,9 @@ import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 
-@Disabled // Integration Test; move out
+@Disabled
+@Slf4j // Integration Test; move out
 public class ValidateInventoryProcessorTest {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ValidateInventoryProcessorTest.class);
 
     @Test
     public void testInventoryProcessor() throws IOException {
@@ -94,19 +92,19 @@ public class ValidateInventoryProcessorTest {
                     URLConnection urlConnection = url.openConnection();
                     String contentEncoding = urlConnection.getContentType();
                     if (contentEncoding.contains("application/java-archive") || contentEncoding.contains("application/x-java-archive")) {
-                        LOG.info("URL: {}", url);
+                        log.info("URL: {}", url);
                         found = true;
                         break;
                     } else {
                         if (contentEncoding.contains("text/html")) {
                             // ignore
                         } else {
-                            LOG.error("Don't know encoding: {}", contentEncoding);
+                            log.error("Don't know encoding: {}", contentEncoding);
                         }
                     }
                 }
                 if (!found) {
-                    LOG.error("Cannot find source for {}.", sourceId);
+                    log.error("Cannot find source for {}.", sourceId);
                 }
             }
         }

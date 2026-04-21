@@ -15,8 +15,7 @@
  */
 package org.metaeffekt.core.security.cvss.v4P0;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,9 +28,8 @@ import java.util.function.Predicate;
  * <a href="https://www.first.org/cvss/v4.0/specification-document">https://www.first.org/cvss/v4.0/specification-document</a><br>
  * See the {@link Cvss4P0} class documentation for more information on how this is used.
  */
+@Slf4j
 public class Cvss4P0MacroVector {
-
-    private final static Logger LOG = LoggerFactory.getLogger(Cvss4P0MacroVector.class);
 
     private final EQ eq1;
     private final EQ eq2;

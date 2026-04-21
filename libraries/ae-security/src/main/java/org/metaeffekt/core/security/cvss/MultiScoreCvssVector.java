@@ -15,10 +15,9 @@
  */
 package org.metaeffekt.core.security.cvss;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,9 +36,8 @@ import java.util.function.Function;
  *     <li>environmental</li>
  * </ul>
  */
+@Slf4j
 public abstract class MultiScoreCvssVector extends CvssVector {
-
-    private final static Logger LOG = LoggerFactory.getLogger(MultiScoreCvssVector.class);
 
     public MultiScoreCvssVector() {
         super();

@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.common.kernel.ant.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.util.FileUtils;
 import org.metaeffekt.core.common.kernel.ant.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,13 +28,12 @@ import java.io.InputStream;
 import java.util.Properties;
 
 
+@Slf4j
 public class PropertyUtils {
 
     public static final String PROPERTY_SYSTEM_LEVEL = "system";
 
     public static final String PROPERTY_PROJECT_LEVEL = "project";
-
-    private static final Logger LOG = LoggerFactory.getLogger(PropertyUtils.class);
 
     public static String getProperty(String key, Properties properties, Project project) {
         Object result = null;
@@ -91,7 +89,7 @@ public class PropertyUtils {
 
         if (globalPropertyFile != null && globalPropertyFile.exists()
                 && globalPropertyFile.isFile()) {
-            LOG.debug("Loading global property file. '{}'.", globalPropertyFile);
+            log.debug("Loading global property file. '{}'.", globalPropertyFile);
             properties.putAll(loadPropertyFile(globalPropertyFile));
         }
 
@@ -113,12 +111,12 @@ public class PropertyUtils {
                     filepath = path + "/" + file;
                 }
 
-                LOG.debug("Loading included properties: {}", filepath);
+                log.debug("Loading included properties: {}", filepath);
                 File propertyFile = new File(filepath);
                 // check convention
                 String filename = propertyFile.getName();
                 if (!filename.toLowerCase().equals(filename)) {
-                    LOG.warn("Included file name does not satisfy convention "
+                    log.warn("Included file name does not satisfy convention "
                             + "(properties are all lower case): [{}]", filename);
                 }
                 // be kind and load the property file

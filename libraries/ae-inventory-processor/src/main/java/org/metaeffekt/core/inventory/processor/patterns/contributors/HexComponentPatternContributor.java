@@ -16,11 +16,10 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,9 +32,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 public class HexComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(HexComponentPatternContributor.class);
     private static final String MIX_PACKAGE_TYPE = "mix";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("mix.exs");
@@ -53,7 +51,7 @@ public class HexComponentPatternContributor extends ComponentPatternContributor 
         boolean inDepsBlock = false;
 
         if (!mixFile.exists()) {
-            LOG.warn("Mix package file does not exist: {}", mixFile.getAbsolutePath());
+            log.warn("Mix package file does not exist: {}", mixFile.getAbsolutePath());
             return Collections.emptyList();
         }
 
@@ -145,7 +143,7 @@ public class HexComponentPatternContributor extends ComponentPatternContributor 
             }
             return components;
         } catch (IOException e) {
-            LOG.warn("Error reading mix file: {}", mixFile.getAbsolutePath());
+            log.warn("Error reading mix file: {}", mixFile.getAbsolutePath());
             return Collections.emptyList();
         }
     }

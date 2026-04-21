@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -34,9 +33,8 @@ import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+@Slf4j
 public class GemMetadataContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(GemMetadataContributor.class);
 
     public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem-metadata";
 
@@ -122,10 +120,10 @@ public class GemMetadataContributor extends ComponentPatternContributor {
                     return Collections.singletonList(componentPatternData);
                 }
             } else {
-                LOG.warn("Could not verify gem. Name and version not detected in file [{}]", anchorFile.getAbsolutePath());
+                log.warn("Could not verify gem. Name and version not detected in file [{}]", anchorFile.getAbsolutePath());
             }
         } catch (Exception e) {
-            LOG.warn("Failure while processing anchor [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
+            log.warn("Failure while processing anchor [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
         }
         return Collections.emptyList();
     }

@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.security.cvss;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole;
 import org.metaeffekt.core.security.cvss.processor.CvssSelector;

@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.configuration;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryMergeUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
@@ -26,8 +27,6 @@ import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.ArtifactUtils;
 import org.metaeffekt.core.util.FileSystemMap;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +35,8 @@ import java.util.*;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
+@Slf4j
 public class DirectoryScanAggregatorConfiguration {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DirectoryScanAggregatorConfiguration.class);
 
     final private Inventory referenceInventory;
 
@@ -115,7 +113,7 @@ public class DirectoryScanAggregatorConfiguration {
             filePatternQualifierMapperList.add(filePatternQualifierMapper);
 
             if (!filePatternQualifierMapper.getFiles().isEmpty()) {
-                LOG.debug("Artifact [{}] mapped to [{}] files.", artifact.deriveQualifier(), filePatternQualifierMapper.getFiles().size());
+                log.debug("Artifact [{}] mapped to [{}] files.", artifact.deriveQualifier(), filePatternQualifierMapper.getFiles().size());
             }
         }
 
@@ -174,8 +172,8 @@ public class DirectoryScanAggregatorConfiguration {
                 if (componentBaseDir.exists()) {
 
                     // aggregate matching files to dedicated folders
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("Scanning {} including {} excluding {}", componentBaseDir, includes, excludes);
+                    if (log.isTraceEnabled()) {
+                        log.trace("Scanning {} including {} excluding {}", componentBaseDir, includes, excludes);
                     }
 
                     // differentiate directories and single files
@@ -355,7 +353,7 @@ public class DirectoryScanAggregatorConfiguration {
             try {
                 FileUtils.forceMkdir(aggregationDir);
             } catch (IOException e) {
-                LOG.error("Cannot create aggregation directory [{}].", aggregationDir.getAbsolutePath(), e);
+                log.error("Cannot create aggregation directory [{}].", aggregationDir.getAbsolutePath(), e);
             }
         }
 
@@ -363,7 +361,7 @@ public class DirectoryScanAggregatorConfiguration {
             // post-processing steps
 
             // evaluate component patterns
-            LOG.debug("Evaluating component patterns...");
+            log.debug("Evaluating component patterns...");
             final List<FilePatternQualifierMapper> filePatternQualifierMappers = evaluateComponentPatterns();
 
             // aggregate files (atomic and component patterns)
@@ -419,7 +417,7 @@ public class DirectoryScanAggregatorConfiguration {
                         FileUtils.copyFile(file, targetFile);
                         artifact.set(KEY_ARCHIVE_PATH, targetFile.getAbsolutePath());
                     } catch (IOException e) {
-                        LOG.warn("Cannot copy file [{}] to aggregation folder [{}]", file.getAbsolutePath(), targetDir.getAbsolutePath());
+                        log.warn("Cannot copy file [{}] to aggregation folder [{}]", file.getAbsolutePath(), targetDir.getAbsolutePath());
                     }
                 }
             }
@@ -464,7 +462,7 @@ public class DirectoryScanAggregatorConfiguration {
                             FileUtils.copyFile(file, new File(tmpContentDir, relativePath));
                         } catch (IllegalArgumentException e) {
                             if (FileUtils.isSymlink(file)) {
-                                LOG.warn("Cannot copy symlink: {}", file.getAbsolutePath());
+                                log.warn("Cannot copy symlink: {}", file.getAbsolutePath());
                             }
                         }
                     }
@@ -493,12 +491,12 @@ public class DirectoryScanAggregatorConfiguration {
                 ArchiveUtils.zipAnt(tmpContentDir, zipFile);
 
                 if (!zipFile.exists()) {
-                    LOG.warn("Failed to create zip file for artifact: [{}]", mapper.getArtifact().getId());
+                    log.warn("Failed to create zip file for artifact: [{}]", mapper.getArtifact().getId());
                 }
 
             }
         } catch (IOException e) {
-            LOG.error("Error processing artifact: [{}] with following error: [{}]", mapper.getArtifact().getId(), e.getMessage());
+            log.error("Error processing artifact: [{}] with following error: [{}]", mapper.getArtifact().getId(), e.getMessage());
         } finally {
             // ensure the tmp folder is deleted (content and checksum file)
             FileUtils.deleteDirectoryQuietly(tmpFolder);
@@ -556,7 +554,7 @@ public class DirectoryScanAggregatorConfiguration {
                 if (parentFile != null) {
                     candidatePath = FileUtils.canonicalizeLinuxPath(parentFile.getAbsolutePath());
                 } else {
-                    LOG.warn("Issue detected evaluating common root path. Inputs: scanBasePath={}, candidatePath={}", canonicalScanBasePath, candidatePath);
+                    log.warn("Issue detected evaluating common root path. Inputs: scanBasePath={}, candidatePath={}", canonicalScanBasePath, candidatePath);
                     candidatePath = null;
                 }
             }
@@ -614,7 +612,7 @@ public class DirectoryScanAggregatorConfiguration {
             // deep scanned artifacts are not further scanned. It would be good to get an aggregated view however
             if (ArtifactUtils.hasScanClassification(artifact)) {
                 if (hasContentChecksum || hasChecksum) {
-                    LOG.warn("Artifact {} with scan classification must have checksum and a content checksum.", artifact);
+                    log.warn("Artifact {} with scan classification must have checksum and a content checksum.", artifact);
                 }
                 continue;
             }
@@ -625,7 +623,7 @@ public class DirectoryScanAggregatorConfiguration {
             if (StringUtils.isBlank(archivePath)) {
                 // only report issue, when we have a checksum; implicitly excluded shaded subcomponents from being reported
                 if (hasContentChecksum || hasChecksum) {
-                    LOG.warn("Artifact {} with file content does not have an archive path! " +
+                    log.warn("Artifact {} with file content does not have an archive path! " +
                             "Validate that the component patterns for this process are complete.", artifact);
                 }
             }
@@ -723,7 +721,7 @@ public class DirectoryScanAggregatorConfiguration {
         childOnlyFiles.removeAll(filesToRemoveFromParent);
 
         if (childOnlyFiles.isEmpty()) {
-            LOG.info("Qualifier [{}] is a full subset of qualifier [{}].", childQualifier, parentQualifier);
+            log.info("Qualifier [{}] is a full subset of qualifier [{}].", childQualifier, parentQualifier);
             removeAllFilesFromParent(parentQualifier, childQualifier, childFiles, qualifierToMapperMap);
         }
     }
@@ -795,8 +793,8 @@ public class DirectoryScanAggregatorConfiguration {
         }
 
         if (!childMapper.isLocked() && p != null && !p.equals(c)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Removing all files of child qualifier [{}] from parent qualifier [{}].", childQualifier, parentQualifier);
+            if (log.isDebugEnabled()) {
+                log.debug("Removing all files of child qualifier [{}] from parent qualifier [{}].", childQualifier, parentQualifier);
             }
 
             // the lock prevents that files symmetrically being part of two components are bidirectionally removed
@@ -814,7 +812,7 @@ public class DirectoryScanAggregatorConfiguration {
             childMapper.getArtifact().set(assetId, Constants.MARKER_CONTAINS);
             parentMapper.getArtifact().set(assetId, Constants.MARKER_CROSS);
         } else if (childMapper.isLocked()) {
-            LOG.info("Skipping removal of child qualifier [{}] from parent qualifier [{}]. Child qualifier is locked.", childQualifier, parentQualifier);
+            log.info("Skipping removal of child qualifier [{}] from parent qualifier [{}]. Child qualifier is locked.", childQualifier, parentQualifier);
         }
     }
 

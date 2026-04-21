@@ -17,12 +17,11 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.report.model.AssetData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,9 +48,8 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
  *
  * @author Karsten Klein
  */
+@Slf4j
 public class Inventory implements Serializable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
 
     /**
      * The serial version UID for this class. This UID is used to ensure that
@@ -1090,7 +1088,7 @@ public class Inventory implements Serializable {
             Collections.sort(strings);
             FileUtils.writeLines(file, strings, true);
         } catch (IOException e) {
-            LOG.warn("Cannot dump inventory into {}", file, e);
+            log.warn("Cannot dump inventory into {}", file, e);
         }
     }
 
@@ -1324,7 +1322,7 @@ public class Inventory implements Serializable {
                 String qualifier = key + "/" + a.getLicense() + "/" + a.getVersion();
                 if (uniqueSet.contains(key) && !qualifiedSet.contains(qualifier)) {
                     Artifact duplicate = map.get(key);
-                    LOG.warn("Detected inconsistency #{}: {} {}",
+                    log.warn("Detected inconsistency #{}: {} {}",
                             index++, a.createCompareStringRepresentation(),
                             duplicate.createCompareStringRepresentation());
                     b = false;
@@ -1542,10 +1540,10 @@ public class Inventory implements Serializable {
                     LicenseMetaData currentLicenseMetaData = currentLicenseMetaDataMap.get(qualifier);
                     if (currentLicenseMetaData.createCompareStringRepresentation().equals(
                             licenseMetaData.createCompareStringRepresentation())) {
-                        LOG.info("License meta data {} overwritten. Relevant content nevertheless matches. " +
+                        log.info("License meta data {} overwritten. Relevant content nevertheless matches. " +
                                 "Consider removing the overwrite.", qualifier);
                     } else {
-                        LOG.info("License meta data {} overwritten.", qualifier);
+                        log.info("License meta data {} overwritten.", qualifier);
                     }
                 }
             } else {
@@ -1591,10 +1589,10 @@ public class Inventory implements Serializable {
                     Artifact currentArtifact = currentArtifactMap.get(qualifier);
                     if (artifact.createCompareStringRepresentation().equals(
                             currentArtifact.createCompareStringRepresentation())) {
-                        LOG.info("Artifact {} overwritten. Relevant content nevertheless matches. " +
+                        log.info("Artifact {} overwritten. Relevant content nevertheless matches. " +
                                 "Consider removing the overwrite.", qualifier);
                     } else {
-                        LOG.info(String.format("Artifact %s overwritten. %n  %s%n  %s", qualifier,
+                        log.info(String.format("Artifact %s overwritten. %n  %s%n  %s", qualifier,
                                 artifact.createCompareStringRepresentation(),
                                 currentArtifact.createCompareStringRepresentation()));
                     }
@@ -1620,10 +1618,10 @@ public class Inventory implements Serializable {
                     ComponentPatternData localCpd = localCpds.get(qualifier);
                     if (cpd.createCompareStringRepresentation().equals(
                             localCpd.createCompareStringRepresentation())) {
-                        LOG.info("Component pattern {} overwritten. Relevant content nevertheless matches. " +
+                        log.info("Component pattern {} overwritten. Relevant content nevertheless matches. " +
                                 "Consider removing the overwrite.", qualifier);
                     } else {
-                        LOG.info(String.format("Component pattern %s overwritten. %n  %s%n  %s", qualifier,
+                        log.info(String.format("Component pattern %s overwritten. %n  %s%n  %s", qualifier,
                                 cpd.createCompareStringRepresentation(),
                                 localCpd.createCompareStringRepresentation()));
                     }
@@ -1648,10 +1646,10 @@ public class Inventory implements Serializable {
                 if (infoOnLocalOverwrite) {
                     LicenseData localLd = localLds.get(qualifier);
                     if (ld.createCompareStringRepresentation().equals(localLd.createCompareStringRepresentation())) {
-                        LOG.info("License data {} overwritten. Relevant content nevertheless matches. " +
+                        log.info("License data {} overwritten. Relevant content nevertheless matches. " +
                                 "Consider removing the overwrite.", qualifier);
                     } else {
-                        LOG.info(String.format("License data %s overwritten. %n  %s%n  %s", qualifier,
+                        log.info(String.format("License data %s overwritten. %n  %s%n  %s", qualifier,
                                 ld.createCompareStringRepresentation(), localLd.createCompareStringRepresentation()));
                     }
                 }
@@ -1679,10 +1677,10 @@ public class Inventory implements Serializable {
                     if (infoOnLocalOverwrite) {
                         VulnerabilityMetaData localVmd = localVmds.get(qualifier);
                         if (vmd.createCompareStringRepresentation().equals(localVmd.createCompareStringRepresentation())) {
-                            LOG.info("Vulnerability metadata {} overwritten. Relevant content nevertheless matches. " +
+                            log.info("Vulnerability metadata {} overwritten. Relevant content nevertheless matches. " +
                                     "Consider removing the overwrite.", qualifier);
                         } else {
-                            LOG.info("Vulnerability metadata {} overwritten. \n  {}\n  {}", qualifier, vmd.createCompareStringRepresentation(), localVmd.createCompareStringRepresentation());
+                            log.info("Vulnerability metadata {} overwritten. \n  {}\n  {}", qualifier, vmd.createCompareStringRepresentation(), localVmd.createCompareStringRepresentation());
                         }
                     }
 
@@ -1707,10 +1705,10 @@ public class Inventory implements Serializable {
                 if (infoOnLocalOverwrite) {
                     AdvisoryMetaData localCert = localCerts.get(qualifier);
                     if (cert.createCompareStringRepresentation().equals(localCert.createCompareStringRepresentation())) {
-                        LOG.info("Cert metadata {} overwritten. Relevant content nevertheless matches. " +
+                        log.info("Cert metadata {} overwritten. Relevant content nevertheless matches. " +
                                 "Consider removing the overwrite.", qualifier);
                     } else {
-                        LOG.info(String.format("Cert metadata %s overwritten. %n  %s%n  %s", qualifier,
+                        log.info(String.format("Cert metadata %s overwritten. %n  %s%n  %s", qualifier,
                                 cert.createCompareStringRepresentation(), localCert.createCompareStringRepresentation()));
                     }
                 }
@@ -1734,10 +1732,10 @@ public class Inventory implements Serializable {
                     AssetMetaData localAssetMetadata = localAssets.get(qualifier);
                     if (assetMetaData.createCompareStringRepresentation().equals(
                             localAssetMetadata.createCompareStringRepresentation())) {
-                        LOG.info("Asset metadata {} overwritten. Relevant content nevertheless matches. " +
+                        log.info("Asset metadata {} overwritten. Relevant content nevertheless matches. " +
                                 "Consider removing the overwrite.", qualifier);
                     } else {
-                        LOG.info(String.format("Asset metadata %s overwritten. %n  %s%n  %s", qualifier,
+                        log.info(String.format("Asset metadata %s overwritten. %n  %s%n  %s", qualifier,
                                 assetMetaData.createCompareStringRepresentation(),
                                 localAssetMetadata.createCompareStringRepresentation()));
                     }
@@ -1761,10 +1759,10 @@ public class Inventory implements Serializable {
                     InventoryInfo localInventoryInfo = localInfo.get(qualifier);
                     if (inventoryInfo.createCompareStringRepresentation().equals(
                             localInventoryInfo.createCompareStringRepresentation())) {
-                        LOG.info("Inventory info {} overwritten. Relevant content nevertheless matches. " +
+                        log.info("Inventory info {} overwritten. Relevant content nevertheless matches. " +
                                 "Consider removing the overwrite.", qualifier);
                     } else {
-                        LOG.info(String.format("Inventory info %s overwritten. %n  %s%n  %s", qualifier,
+                        log.info(String.format("Inventory info %s overwritten. %n  %s%n  %s", qualifier,
                                 inventoryInfo.createCompareStringRepresentation(),
                                 localInventoryInfo.createCompareStringRepresentation()));
                     }
@@ -1792,7 +1790,7 @@ public class Inventory implements Serializable {
                     filter(Objects::nonNull).
                     forEach(coveredVulnerabilityIds::add);
         }
-        LOG.debug("Covered vulnerabilities: {}", coveredVulnerabilityIds);
+        log.debug("Covered vulnerabilities: {}", coveredVulnerabilityIds);
 
         final List<VulnerabilityMetaData> forDeletion = new ArrayList<>();
 
@@ -1811,8 +1809,8 @@ public class Inventory implements Serializable {
         }
 
         // log vulnerabilities deleted
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Removing vulnerability metadata for: {}",
+        if (log.isDebugEnabled()) {
+            log.debug("Removing vulnerability metadata for: {}",
                     forDeletion.stream().map(v -> v.get(VulnerabilityMetaData.Attribute.NAME)).collect(Collectors.joining(", "))
             );
         }
@@ -2108,7 +2106,7 @@ public class Inventory implements Serializable {
      */
     protected static void logModelAttributesVertical(List<? extends AbstractModelBase> models, boolean asTable) {
         if (models.isEmpty()) {
-            LOG.info("No models to display.");
+            log.info("No models to display.");
         }
 
         final int maxKeyLength = models.stream()
@@ -2129,8 +2127,8 @@ public class Inventory implements Serializable {
             final String separatorLineDashes = String.format("|%s|%s|", StringUtils.repeat("-", maxKeyLength + 2), StringUtils.repeat("-", maxValLength + 2));
             separatorBetweenModels = String.format("|%s|%s|", StringUtils.repeat(" ", maxKeyLength + 2), StringUtils.repeat(" ", maxValLength + 2));
 
-            LOG.info("| {} | {} |", StringUtils.rightPad("Attribute", maxKeyLength), StringUtils.rightPad("Value", maxValLength));
-            LOG.info(separatorLineDashes);
+            log.info("| {} | {} |", StringUtils.rightPad("Attribute", maxKeyLength), StringUtils.rightPad("Value", maxValLength));
+            log.info(separatorLineDashes);
         } else {
             maxValLength = -1;
             separatorBetweenModels = "";
@@ -2139,7 +2137,7 @@ public class Inventory implements Serializable {
         for (Iterator<? extends AbstractModelBase> iterator = models.iterator(); iterator.hasNext(); ) {
             iterator.next().logModelAttributesVertical(maxKeyLength, maxValLength);
             if (iterator.hasNext()) {
-                LOG.info(separatorBetweenModels);
+                log.info(separatorBetweenModels);
             }
         }
     }
@@ -2172,7 +2170,7 @@ public class Inventory implements Serializable {
      */
     public static void logModelAttributesHorizontalTable(List<? extends AbstractModelBase> models) {
         if (models == null || models.isEmpty()) {
-            LOG.info("No models to display.");
+            log.info("No models to display.");
             return;
         }
 
@@ -2194,15 +2192,15 @@ public class Inventory implements Serializable {
         final String separator = rearrangedAttributeWidths.values().stream()
                 .map(integer -> StringUtils.repeat("-", integer + 2))
                 .collect(Collectors.joining("|", "|", "|"));
-        LOG.info(header);
-        LOG.info(separator);
+        log.info(header);
+        log.info(separator);
 
         // logging each model's attributes
         for (AbstractModelBase model : models) {
             String row = rearrangedAttributeWidths.keySet().stream()
                     .map(key -> StringUtils.rightPad(model.get(key) != null ? model.get(key).replace("\n", "<br>") : "", rearrangedAttributeWidths.get(key)))
                     .collect(Collectors.joining(" | ", "| ", " |"));
-            LOG.info(row);
+            log.info(row);
         }
     }
 

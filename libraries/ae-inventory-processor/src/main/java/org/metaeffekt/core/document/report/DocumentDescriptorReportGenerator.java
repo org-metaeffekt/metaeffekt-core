@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.document.report;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
 import org.metaeffekt.core.document.model.DocumentPartType;
@@ -29,8 +30,6 @@ import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,9 +51,8 @@ import java.util.stream.Collectors;
  * @see InventoryReport
  * @see InventoryContext
  */
+@Slf4j
 public class DocumentDescriptorReportGenerator {
-
-    private static final Logger log = LoggerFactory.getLogger(DocumentDescriptorReportGenerator.class);
     public static final String GEN_PATH = "genPath";
 
     /**

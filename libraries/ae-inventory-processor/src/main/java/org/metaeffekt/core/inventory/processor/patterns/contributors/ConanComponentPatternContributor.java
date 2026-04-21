@@ -16,11 +16,10 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,9 +31,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 public class ConanComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ConanComponentPatternContributor.class);
     private static final String CONAN_PACKAGE_TYPE = "conan";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("conaninfo.txt");
@@ -52,7 +50,7 @@ public class ConanComponentPatternContributor extends ComponentPatternContributo
         List<ComponentPatternData> components = new ArrayList<>();
 
         if (!conanFile.exists()) {
-            LOG.warn("Conan package file does not exist: {}", conanFile.getAbsolutePath());
+            log.warn("Conan package file does not exist: {}", conanFile.getAbsolutePath());
             return Collections.emptyList();
         }
 
@@ -64,7 +62,7 @@ public class ConanComponentPatternContributor extends ComponentPatternContributo
             }
             return components;
         } catch (IOException e) {
-            LOG.warn("Error processing Conan package file", e);
+            log.warn("Error processing Conan package file", e);
             return Collections.emptyList();
         }
     }

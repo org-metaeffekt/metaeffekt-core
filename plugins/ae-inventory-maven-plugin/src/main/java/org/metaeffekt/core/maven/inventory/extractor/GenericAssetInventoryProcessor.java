@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
@@ -22,8 +23,6 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,9 +31,8 @@ import java.util.Map;
 /**
  * Processor to attach key value pairs to assets
  */
+@Slf4j
 public class GenericAssetInventoryProcessor extends BaseInventoryProcessor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(GenericAssetInventoryProcessor.class);
 
     private Map<String, String> attributes;
 

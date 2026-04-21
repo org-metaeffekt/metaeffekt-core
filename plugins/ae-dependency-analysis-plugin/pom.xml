@@ -8,7 +8,6 @@
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
         <version>HEAD-SNAPSHOT</version>
-        <relativePath>../</relativePath>
     </parent>
 
     <artifactId>ae-dependency-analysis-plugin</artifactId>
@@ -53,6 +52,11 @@
             <groupId>org.metaeffekt.core</groupId>
             <artifactId>ae-inventory-processor</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

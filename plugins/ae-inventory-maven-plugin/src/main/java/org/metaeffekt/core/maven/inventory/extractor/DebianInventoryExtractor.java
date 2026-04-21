@@ -15,10 +15,9 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,9 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class DebianInventoryExtractor extends AbstractInventoryExtractor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DebianInventoryExtractor.class);
 
     public static final String FILE_PACKAGES_DPKG_TXT = "packages_dpkg.txt";
 

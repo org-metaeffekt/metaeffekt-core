@@ -16,11 +16,10 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -30,9 +29,8 @@ import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
+@Slf4j
 public class JenkinsPluginsComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JenkinsPluginsComponentPatternContributor.class);
     private static final String JENKINS_PLUGIN_TYPE = "jenkins-plugin";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add(".jpi");
@@ -50,7 +48,7 @@ public class JenkinsPluginsComponentPatternContributor extends ComponentPatternC
         List<ComponentPatternData> components = new ArrayList<>();
 
         if (!pluginFile.exists()) {
-            LOG.warn("Jenkins plugin file does not exist: {}", pluginFile.getAbsolutePath());
+            log.warn("Jenkins plugin file does not exist: {}", pluginFile.getAbsolutePath());
             return Collections.emptyList();
         }
 
@@ -62,14 +60,14 @@ public class JenkinsPluginsComponentPatternContributor extends ComponentPatternC
                 if (pluginName != null && pluginVersion != null) {
                     addComponent(components, pluginName, pluginVersion, relativeAnchorPath, anchorChecksum);
                 } else {
-                    LOG.debug("Missing Extension-Name or Plugin-Version in manifest for plugin file: {}", pluginFile.getAbsolutePath());
+                    log.debug("Missing Extension-Name or Plugin-Version in manifest for plugin file: {}", pluginFile.getAbsolutePath());
                 }
             } else {
-                LOG.debug("Manifest not found in plugin file: {}", pluginFile.getAbsolutePath());
+                log.debug("Manifest not found in plugin file: {}", pluginFile.getAbsolutePath());
             }
             return components;
         } catch (Exception e) {
-            LOG.warn("Error processing Jenkins plugin file", e);
+            log.warn("Error processing Jenkins plugin file", e);
             return Collections.emptyList();
         }
     }

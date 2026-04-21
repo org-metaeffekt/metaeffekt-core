@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filepatterns.FileMetaData;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -23,8 +24,6 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.cargo.CargoLock;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.cargo.CargoMetadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,9 +33,8 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 import static org.metaeffekt.core.util.FileUtils.findSingleFile;
 
+@Slf4j
 public class CargoContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(CargoContributor.class);
 
     public static final String TYPE_CARGO_CRATE = "cargo-crate";
     public static final String TYPE_CARGO_APP = "cargo-application";
@@ -134,7 +132,7 @@ public class CargoContributor extends ComponentPatternContributor {
                     componentPatternData.setExpansionInventorySupplier(() -> inventory);
                 } else {
                     // FIXME: add toml file dependencies as seeds
-                    LOG.warn("Incomplete contributor implementation. No Cargo.lock file available for [{}].", cargoTomlFile.getAbsolutePath());
+                    log.warn("Incomplete contributor implementation. No Cargo.lock file available for [{}].", cargoTomlFile.getAbsolutePath());
                 }
 
                 if (!incomplete) {
@@ -147,13 +145,13 @@ public class CargoContributor extends ComponentPatternContributor {
                     // skip this evaluation; toml file is detected separately
                 } else {
                     // FIXME: no toml file; handle lock file individually
-                    LOG.warn("Incomplete contributor implementation. No Cargo.toml file available for [{}].", cargoLockFile.getAbsolutePath());
+                    log.warn("Incomplete contributor implementation. No Cargo.toml file available for [{}].", cargoLockFile.getAbsolutePath());
                 }
             }
 
             return list;
         } catch (IOException e) {
-            LOG.warn("Failure processing composer.lock file: [{}]", e.getMessage());
+            log.warn("Failure processing composer.lock file: [{}]", e.getMessage());
             return Collections.emptyList();
         }
 
@@ -163,7 +161,7 @@ public class CargoContributor extends ComponentPatternContributor {
         final Inventory inventory = new Inventory();
 
         final String lockFileVersion = cargoLock.getVersion();
-        LOG.debug("Parsing Cargo Lock file [{}] with version [{}].", relLockFilePath, lockFileVersion);
+        log.debug("Parsing Cargo Lock file [{}] with version [{}].", relLockFilePath, lockFileVersion);
 
         // keep track of package name to artifact mapping
         final Map<String, Artifact> nameArtifactMap = new HashMap<>();

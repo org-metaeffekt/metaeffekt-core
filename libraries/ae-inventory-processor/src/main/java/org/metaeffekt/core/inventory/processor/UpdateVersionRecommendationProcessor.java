@@ -15,17 +15,15 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
+@Slf4j
 public class UpdateVersionRecommendationProcessor extends AbstractInventoryProcessor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(UpdateVersionRecommendationProcessor.class);
 
     public UpdateVersionRecommendationProcessor() {
         super();
@@ -54,7 +52,7 @@ public class UpdateVersionRecommendationProcessor extends AbstractInventoryProce
                     comment = (comment.substring(0, index) + comment.substring(endIndex + 1)).trim();
                 } else {
                     comment = comment.substring(0, index);
-                    LOG.warn("Recommended version for [{}] not terminated with ']' ", artifact.createStringRepresentation());
+                    log.warn("Recommended version for [{}] not terminated with ']' ", artifact.createStringRepresentation());
                 }
             }
 

@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.reader;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.report.model.types.AeaaInventoryAttribute;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,9 +35,8 @@ import java.util.stream.Collectors;
 import static org.metaeffekt.core.inventory.processor.model.InventorySerializationContext.*;
 import static org.metaeffekt.core.inventory.processor.writer.InventoryWriter.VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX;
 
+@Slf4j
 public abstract class AbstractInventoryReader {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractInventoryReader.class);
 
     public static final String WORKSHEET_NAME_ARTIFACT_DATA = "Artifacts";
     public static final String WORKSHEET_NAME_INVENTORY_INFO = "Info";
@@ -189,7 +187,7 @@ public abstract class AbstractInventoryReader {
                 if (!originalKeyContent.equals(updatedAttributeContent)) {
 
                     // warn in case the values differ
-                    LOG.warn("Vulnerability metadata inconsistent: " +
+                    log.warn("Vulnerability metadata inconsistent: " +
                                     "[{}] shows different content in attributes [{}] and [{}]. Please consolidate to [{}].",
                             object.get(VulnerabilityMetaData.Attribute.NAME), originalKey,
                             updatedAttribute.getKey(), updatedAttribute.getKey());

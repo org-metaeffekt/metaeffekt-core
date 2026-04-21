@@ -15,11 +15,10 @@
  */
 package org.metaeffekt.core.inventory.processor.linux;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.PropertiesUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -31,9 +30,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 public class LinuxDistributionUtil {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LinuxDistributionUtil.class);
 
     private static final Pattern CPE_PATTERN = Pattern.compile("cpe:/o:(.*?):.*?:(.*?):.*?$");
 
@@ -146,7 +144,7 @@ public class LinuxDistributionUtil {
                     }
                 }
             } catch (Exception e) {
-                LOG.debug("Exception tying to parse distro in file [{}].", path);
+                log.debug("Exception tying to parse distro in file [{}].", path);
             }
         }
         return null;
@@ -156,7 +154,7 @@ public class LinuxDistributionUtil {
 
         final File challengeBaseDir = new File(distroBaseDir, "etc");
         if (!challengeBaseDir.exists()) {
-            LOG.warn("Received base directory for detecting linux distro does not have expected structure: " + distroBaseDir.getAbsolutePath());
+            log.warn("Received base directory for detecting linux distro does not have expected structure: " + distroBaseDir.getAbsolutePath());
         }
 
         LinuxDistro linuxDistro = new LinuxDistro();
@@ -247,7 +245,7 @@ public class LinuxDistributionUtil {
                 }
             }
         } catch (Exception e) {
-            LOG.debug("Cannot parse [{}].", file.getAbsolutePath());
+            log.debug("Cannot parse [{}].", file.getAbsolutePath());
         }
     }
 
@@ -260,7 +258,7 @@ public class LinuxDistributionUtil {
                 }
             }
         } catch (Exception e) {
-            LOG.debug("Cannot parse [{}].", file.getAbsolutePath());
+            log.debug("Cannot parse [{}].", file.getAbsolutePath());
         }
     }
 
@@ -281,7 +279,7 @@ public class LinuxDistributionUtil {
                 linuxDistro.issue = modulateValue(issueExtract, linuxDistro.issue);
             }
         } catch (Exception e) {
-            LOG.debug("Cannot parse [{}].", issueFile.getAbsolutePath());
+            log.debug("Cannot parse [{}].", issueFile.getAbsolutePath());
         }
     }
 
@@ -347,7 +345,7 @@ public class LinuxDistributionUtil {
                     return content;
                 }
             } catch (Exception e) {
-                LOG.debug("Cannot parse [{}].", file.getAbsolutePath());
+                log.debug("Cannot parse [{}].", file.getAbsolutePath());
             }
         }
         return null;

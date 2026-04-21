@@ -15,13 +15,12 @@
  */
 package org.metaeffekt.core.inventory.processor.inspector;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.File;
@@ -32,9 +31,8 @@ import java.util.Properties;
 /**
  * Abstract {@link ArtifactInspector} with basis support for JARs (Java Archives).
  */
+@Slf4j
 public abstract class AbstractJarInspector implements ArtifactInspector {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractJarInspector.class);
 
     protected File getJarFile(Artifact artifact, ProjectPathParam param) {
         // add all existing regular files to file list for later processing.
@@ -68,8 +66,8 @@ public abstract class AbstractJarInspector implements ArtifactInspector {
         } catch (EOFException e) {
             return false;
         } catch (IOException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("IOException while inspecting file [{}] for zip characteristics.", file);
+            if (log.isDebugEnabled()) {
+                log.debug("IOException while inspecting file [{}] for zip characteristics.", file);
             }
             return false;
         }
