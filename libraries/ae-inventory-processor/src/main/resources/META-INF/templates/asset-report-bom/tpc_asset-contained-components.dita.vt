@@ -17,7 +17,11 @@
 
         #set($assetEscapedId = $report.xmlEscapeStringAttribute($asset))
         #set($assetName = $asset.get("Name"))
-        #set($title = "${assetName}: " + $utils.getText("general.short.components"))
+        ## Fallback to Asset ID if Name is null or missing
+        #if(!$assetName)
+            #set($assetName = $asset.get("Asset Id"))
+        #end
+        #set($title = "$assetName: " + $utils.getText("general.short.components"))
         #set($artifacts = $assetAdapter.getRelatedArtifacts($asset))
         #set($toRemove = [])
 

@@ -840,6 +840,60 @@ public class Inventory implements Serializable {
         return artifactLicenseData;
     }
 
+    /**
+     * Collects {@link ArtifactLicenseData} for artifacts associated with assets that match the specified effective license.
+     * This method mirrors the logic of {@link #evaluateComponents(String)}, but aggregates results based on
+     * Asset metadata instead of Component metadata.
+     *
+     * @param effectiveLicense The effective license to filter for.
+     * @return A sorted list of {@link ArtifactLicenseData} representing assets and their associated artifacts.
+     */
+    public List<ArtifactLicenseData> evaluateAssets(String effectiveLicense) {
+        // The implementation collects ArtifactLicenseData which are shared by several artifacts within an asset context
+        final Map<String, ArtifactLicenseData> map = new LinkedHashMap<>();
+
+        for (AssetMetaData asset : getAssetMetaData()) {
+            final String assetId = asset.get(AssetMetaData.Attribute.ASSET_ID);
+            final String assetName = asset.get(AssetMetaData.Attribute.NAME);
+            final String assetVersion = asset.get(KEY_VERSION);
+
+            for (final Artifact artifact : getArtifacts()) {
+                // Check if the artifact is associated with the current asset.
+                // In metaeffekt inventories, association is typically marked by a column named after the Asset ID.
+                if (StringUtils.isNotBlank(artifact.get(assetId))) {
+
+                    final List<String> artifactLicenses = getEffectiveLicenses(artifact);
+
+                    if (!artifactLicenses.isEmpty() && artifactLicenses.contains(effectiveLicense)) {
+                        // Normalize license expression to ensure consistent grouping
+                        final String normalizedLicenseExpression = artifactLicenses.stream()
+                                .distinct()
+                                .sorted()
+                                .collect(Collectors.joining(", "));
+
+                        // Compute the qualifier using the Asset's name and version
+                        final String qualifier = computeQualifier(assetName, assetVersion, normalizedLicenseExpression);
+
+                        // Map or construct the ArtifactLicenseData using the asset name as the 'component' name
+                        ArtifactLicenseData assetLicenseData = map.computeIfAbsent(qualifier,
+                                k -> new ArtifactLicenseData(assetName, assetVersion, qualifier));
+
+                        // Add the current artifact to the asset's license data collection
+                        assetLicenseData.add(artifact);
+                    }
+                }
+            }
+        }
+
+        final List<ArtifactLicenseData> result = new ArrayList<>(map.values());
+
+        // Sort the results alphabetically by the computed qualifier
+        result.sort((o1, o2) ->
+                Objects.compare(o1.getQualifier(), o2.getQualifier(), String::compareToIgnoreCase));
+
+        return result;
+    }
+
     private static String computeQualifier(String component, String version, String normalizedLicenseExpression) {
         String qualifier = "";
         if (StringUtils.isNotBlank(component)) qualifier += component;

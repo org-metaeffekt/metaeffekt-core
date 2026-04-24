@@ -115,6 +115,12 @@ public class ReportConfigurationParameters {
     @Builder.Default
     private boolean failOnMissingComponentFiles = false;
 
+    /**
+     * Controls whether the execution using velocity engine fails as soon as a runtime reference is missing.
+     */
+    @Builder.Default
+    private final boolean failOnMissingVelocityRuntimeReferences = true;
+
     // template inclusion section
 
     @Builder.Default
