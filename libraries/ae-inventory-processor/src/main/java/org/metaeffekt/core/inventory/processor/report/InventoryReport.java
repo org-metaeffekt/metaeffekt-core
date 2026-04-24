@@ -541,13 +541,14 @@ public class InventoryReport {
         final boolean isVulnerabilityReport = configParams.isInventoryVulnerabilityReportEnabled() ||
                 configParams.isInventoryVulnerabilityReportSummaryEnabled() ||
                 configParams.isInventoryVulnerabilityStatisticsReportEnabled() ||
+                configParams.isInventoryBomReportEnabled() ||
                 configParams.isAssessmentReportEnabled();
 
         // build adapters
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
                 new AssetReportAdapter(filteredInventory),
-                ReportAdapterLoader.getAdapterOrThrow(IVulnerabilityReportAdapter.class).setup(projectInventory, securityPolicy),
-                ReportAdapterLoader.getAdapterOrThrow(IAssessmentReportAdapter.class).setup(projectInventory, securityPolicy),
+                isVulnerabilityReport ? ReportAdapterLoader.getAdapterOrThrow(IVulnerabilityReportAdapter.class).setup(projectInventory, securityPolicy) : null,
+                isVulnerabilityReport ? ReportAdapterLoader.getAdapterOrThrow(IAssessmentReportAdapter.class).setup(projectInventory, securityPolicy) : null,
                 new InventoryReportAdapter(filteredInventory));
 
 
