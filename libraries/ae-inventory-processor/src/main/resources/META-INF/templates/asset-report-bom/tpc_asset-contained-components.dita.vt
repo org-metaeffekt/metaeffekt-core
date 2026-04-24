@@ -26,7 +26,7 @@
         #set($toRemove = [])
 
         #foreach($artifact in $artifacts)
-            #if($vulnerabilityAdapter.getVulnerabilitiesForComponent($artifact.getComponent()).isEmpty())
+            #if($vulnerabilityAdapter && $vulnerabilityAdapter.getVulnerabilitiesForComponent($artifact.getComponent()).isEmpty())
                 #set($unused = $toRemove.add($artifact))
             #end
         #end
