@@ -53,6 +53,8 @@
         <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
         <ae.core.version_last>${ae.core.version}</ae.core.version_last>
 
+        <ae.artifact.analysis.version>HEAD-SNAPSHOT</ae.artifact.analysis.version>
+
         <artifact.inventory.version>${ae.core.version}</artifact.inventory.version>
         <artifact.inventory.enabled>true</artifact.inventory.enabled>
 
@@ -71,6 +73,18 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.metaeffekt.core</groupId>
+                    <artifactId>ae-inventory-maven-plugin</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.metaeffekt.artifact.analysis</groupId>
+                            <artifactId>ae-artifact-analysis</artifactId>
+                            <version>${ae.artifact.analysis.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
