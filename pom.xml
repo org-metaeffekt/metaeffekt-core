@@ -83,18 +83,6 @@
 
                 <plugin>
                     <groupId>org.metaeffekt.core</groupId>
-                    <artifactId>ae-inventory-maven-plugin</artifactId>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.metaeffekt.artifact.analysis</groupId>
-                            <artifactId>ae-artifact-analysis</artifactId>
-                            <version>HEAD-SNAPSHOT</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.metaeffekt.core</groupId>
                     <!-- FIXME: rename plugin -->
                     <artifactId>ae-version-maven-plugin</artifactId>
                     <version>${ae.core.version_last}</version>
