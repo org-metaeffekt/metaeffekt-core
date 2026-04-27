@@ -177,6 +177,7 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, componentName);
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, componentVersion);
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, componentPart);
+        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART_PATH, distInfoFolderName);
 
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
                 "**/node_modules/**/*" + ", **/bower_components/**/*");

@@ -60,6 +60,11 @@ public class VersionFileComponentPatternContributor extends ComponentPatternCont
 
             final String componentName = anchorFile.getParentFile().getName();
 
+            // a version file within a python egg; do not process any further; expecting the dedicated contributor to pick up
+            if ("EGG-INFO".equals(componentName)) {
+                return Collections.emptyList();
+            }
+
             // there are some names, we do not want to get triggered on
             if (componentName.startsWith("[") || componentName.contains(".")) {
                 return Collections.emptyList();

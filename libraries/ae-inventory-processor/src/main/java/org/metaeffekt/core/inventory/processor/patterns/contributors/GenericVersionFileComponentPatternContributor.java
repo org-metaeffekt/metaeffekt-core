@@ -53,6 +53,11 @@ public class GenericVersionFileComponentPatternContributor extends ComponentPatt
             return Collections.emptyList();
         }
 
+        // a version file within a python egg; do not process any further; expecting the dedicated contributor to pick up
+        if (relativeAnchorPath.endsWith("EGG-INFO/version.txt")) {
+            return Collections.emptyList();
+        }
+
         try (Stream<String> lines = Files.lines(versionFile.toPath())) {
             for (String line: lines.collect(Collectors.toList())) {
                 Pattern versionPattern = Pattern.compile("\\d+\\.\\d+\\.\\d+");

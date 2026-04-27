@@ -256,6 +256,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         final InspectorRunner runner = InspectorRunner.builder()
                 .queue(JarInspector.class)
                 .queue(RpmMetadataInspector.class)
+                .queue(SharedObjectInspector.class)
                 .queue(InventoryInspector.class)
                 .build();
 
