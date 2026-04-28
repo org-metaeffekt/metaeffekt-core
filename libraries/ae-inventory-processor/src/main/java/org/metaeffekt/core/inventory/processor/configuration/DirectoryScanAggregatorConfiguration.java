@@ -531,7 +531,6 @@ public class DirectoryScanAggregatorConfiguration {
         }
 
         String candidatePath = FileUtils.normalizeToLinuxPathAndCanonicalizePath(files.get(0).getParentFile().getAbsolutePath());
-
         boolean commonRoot;
         do {
             // presume the candidate path is a common root
