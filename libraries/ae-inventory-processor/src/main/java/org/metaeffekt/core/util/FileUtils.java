@@ -372,8 +372,8 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         // FIXME: we can save the normalizePathToLinux operation when the FileSystemMap could produce FileRef; revise
 
         // iterate over the sorted list of files (may still be platform-specific)
-        Arrays.stream(files).map(FileUtils::normalizePathToLinux).sorted(String::compareTo).forEach(fileName -> {
-            final File file = new File(baseDir, fileName);
+        Arrays.stream(files).map(FileUtils::normalizePathToLinux).sorted(String::compareTo).forEach(path -> {
+            final File file = new File(baseDir, path);
             try {
                 final String fileChecksum = FileUtils.computeChecksum(file);
                 if (checksumSequence.length() > 0) {
@@ -381,10 +381,12 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
                     checksumSequence.append(0);
                 }
 
-                // append <filename->-<checksum> to file (structural factor apart from sorting)
-                checksumSequence.append(fileName);
+                // append <path->-<checksum> to file (structural factor apart from sorting)
+                checksumSequence.append(path);
                 checksumSequence.append("-");
                 checksumSequence.append(fileChecksum);
+
+                log.info(path + "-" + fileChecksum);
             } catch (Exception e) {
                 if (FileUtils.isSymlink(file)) {
                     log.warn("Cannot compute checksum for symbolic link file [{}].", file);
