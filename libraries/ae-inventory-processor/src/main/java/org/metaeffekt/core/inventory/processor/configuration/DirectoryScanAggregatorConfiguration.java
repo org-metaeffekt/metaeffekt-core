@@ -390,7 +390,7 @@ public class DirectoryScanAggregatorConfiguration {
 
         // perform aggregation for each map
         final Set<Artifact> coveredArtifacts = new HashSet<>();
-        final String canonicalScanBaseDir = FileUtils.canonicalizeLinuxPath(scanBaseDir.getAbsolutePath());
+        final String canonicalScanBaseDir = FileUtils.normalizeToLinuxPathAndCanonicalizePath(scanBaseDir.getAbsolutePath());
 
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
             coveredArtifacts.addAll(aggregateFilesForMapper(mapper, canonicalScanBaseDir, targetDir));
@@ -530,7 +530,7 @@ public class DirectoryScanAggregatorConfiguration {
             return canonicalScanBasePath;
         }
 
-        String candidatePath = FileUtils.canonicalizeLinuxPath(files.get(0).getParentFile().getAbsolutePath());
+        String candidatePath = FileUtils.normalizeToLinuxPathAndCanonicalizePath(files.get(0).getParentFile().getAbsolutePath());
 
         boolean commonRoot;
         do {
@@ -543,7 +543,7 @@ public class DirectoryScanAggregatorConfiguration {
             final String matchPath = candidatePath + "/";
 
             for (File file : files) {
-                final String filePath = FileUtils.canonicalizeLinuxPath(file.getAbsolutePath());
+                final String filePath = FileUtils.normalizeToLinuxPathAndCanonicalizePath(file.getAbsolutePath());
 
                 if (!filePath.startsWith(matchPath)) {
                     commonRoot = false;
@@ -555,7 +555,7 @@ public class DirectoryScanAggregatorConfiguration {
                 // try next level up
                 final File parentFile = new File(candidatePath).getParentFile();
                 if (parentFile != null) {
-                    candidatePath = FileUtils.canonicalizeLinuxPath(parentFile.getAbsolutePath());
+                    candidatePath = FileUtils.normalizeToLinuxPathAndCanonicalizePath(parentFile.getAbsolutePath());
                 } else {
                     log.warn("Issue detected evaluating common root path. Inputs: scanBasePath={}, candidatePath={}", canonicalScanBasePath, candidatePath);
                     candidatePath = null;
