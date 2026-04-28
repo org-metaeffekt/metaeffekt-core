@@ -376,7 +376,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
             final File file = new File(baseDir, path);
             try {
                 final String fileChecksum = FileUtils.computeChecksum(file);
-                if (checksumSequence.length() > 0) {
+                if (!checksumSequence.isEmpty()) {
                     // use 0 as separator
                     checksumSequence.append(0);
                 }
@@ -386,7 +386,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
                 checksumSequence.append("-");
                 checksumSequence.append(fileChecksum);
 
-                log.info(path + "-" + fileChecksum);
+                System.out.println(path + "-" + fileChecksum);
             } catch (Exception e) {
                 if (FileUtils.isSymlink(file)) {
                     log.warn("Cannot compute checksum for symbolic link file [{}].", file);
