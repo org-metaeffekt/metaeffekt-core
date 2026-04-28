@@ -86,6 +86,9 @@ public class ArchiveUtils {
         // whl: python / pip wheel files (used for distribution binary dependencies like libraries)
         zipExtensions.add("whl");
 
+        // python eggs are also just zips
+        zipExtensions.add("egg");
+
         // gzip: gzip compressed file, less commonly used extention than ".gz"
         gzipExtensions.add("gzip");
         // gz: gzip compressed file

@@ -77,7 +77,7 @@
 #foreach($license in $assetData.getRepresentedAssociatedLicenses())
     #set($licenseList=$assetData.getLicensesForRepresentedLicense($license))
     #if(!$assetData.isLicenseSubstructureRequired($license))
-        #insertLicenseAssetTopic($license)
+        #insertLicenseAssetTopic($license, $assetData)
     #else
         <topic id="tpc_associated_license_details_$inventory.deriveLicenseId($license)">
             <title>$report.xmlEscapeLicense($license)</title>
@@ -96,7 +96,7 @@
                 </p>
 
                 #foreach($associatedLicense in $licenseList)
-                   #insertLicenseAssetTopic($associatedLicense)
+                   #insertLicenseAssetTopic($associatedLicense, $assetData)
                 #end
             </body>
         </topic>
