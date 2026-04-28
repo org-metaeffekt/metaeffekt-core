@@ -534,8 +534,6 @@ public class DirectoryScanAggregatorConfiguration {
 
         boolean commonRoot;
         do {
-            System.out.println("Testing candidatePath: " + candidatePath);
-
             // presume the candidate path is a common root
             commonRoot = true;
 
@@ -563,11 +561,7 @@ public class DirectoryScanAggregatorConfiguration {
             }
         } while (!commonRoot && candidatePath != null && !canonicalScanBasePath.equals(candidatePath));
 
-        String s = (candidatePath == null) ? canonicalScanBasePath : candidatePath;
-
-        System.out.println("Resulting common root path: " + s);
-
-        return s;
+        return (candidatePath == null) ? canonicalScanBasePath : candidatePath;
     }
 
     public static boolean matchQualifierToIdOrDerivedQualifier(String qualifier, Artifact a) {

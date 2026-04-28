@@ -119,7 +119,6 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
         final DirectoryScanAggregatorConfiguration aggregatorConfiguration =
                 new DirectoryScanAggregatorConfiguration(testSetup.readReferenceInventory(), testSetup.getInventory(), baseDir);
 
-        System.out.println("Collecting files");
         aggregatorConfiguration.aggregateFiles(aggregationTargetDir);
 
         String[] testPaths = new String[] {
