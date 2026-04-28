@@ -367,9 +367,21 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     public static void createDirectoryContentChecksumFile(File baseDir, File targetContentChecksumFile) throws IOException {
         final StringBuilder checksumSequence = new StringBuilder();
 
+        System.out.println("Scanning baseDir: " + baseDir.getAbsolutePath());
+
         // NOTE: could be moved to FileSystemMap; current impl may be more efficient
         final String[] files = FileUtils.scanDirectoryForFiles(baseDir, new String[]{"**/*"}, new String[]{"**/.DS_Store*"});
         // FIXME: we can save the normalizePathToLinux operation when the FileSystemMap could produce FileRef; revise
+
+        int i = 0;
+        for (String file : files) {
+            System.out.println(file);
+            i++;
+
+            if (i > 500) {
+                break;
+            }
+        }
 
         // iterate over the sorted list of files (may still be platform-specific)
         Arrays.stream(files).map(FileUtils::normalizePathToLinux).sorted(String::compareTo).forEach(path -> {
