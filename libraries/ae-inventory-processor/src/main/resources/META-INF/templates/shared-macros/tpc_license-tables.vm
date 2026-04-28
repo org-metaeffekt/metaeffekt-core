@@ -47,12 +47,12 @@
     #else
         #set($filteredLicenseList = $licenseList)
     #end
-    
+
     <tbody>
         #foreach($license in $filteredLicenseList)
-            #if(!$license.contains("+"))
-            #set($licenseData=$inventory.findMatchingLicenseData($license))
-            #set($count = $inventory.countComponentsForSingleLicense($license, $onlyCountAssets))
+            #if(!$license.contains(" + "))
+                #set($licenseData=$inventory.findMatchingLicenseData($license))
+                #set($count = $assetData.countComponentsForSingleLicense($license, $onlyCountAssets))
 
                 #if ($count != 0)
                     <row>
@@ -96,9 +96,9 @@
                             <entry>
                                 <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">
                                     #if($useRepresentedLicenses)
-                                        <codeph>$inventory.countComponentsForRepresentedLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets)</codeph>
+                                        <codeph>$assetData.countComponentsForRepresentedLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets)</codeph>
                                     #else
-                                        <codeph>$inventory.countComponentsForSingleLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets)</codeph>
+                                        <codeph>$assetData.countComponentsForSingleLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets)</codeph>
                                     #end
                                 </xref>
                             </entry>
@@ -146,8 +146,7 @@
 </tgroup>
 </table>
 #end
-#macro (insertLicenseAssetTopic $license)
-    #set($assetData=$report.getAssetData($inventory))
+#macro (insertLicenseAssetTopic $license $assetData)
     #set($folder=$inventory.getLicenseFolder($license))
     #set($assetLicenseDataList=$assetData.evaluateAssets($license))
     #if(!$assetLicenseDataList.isEmpty())

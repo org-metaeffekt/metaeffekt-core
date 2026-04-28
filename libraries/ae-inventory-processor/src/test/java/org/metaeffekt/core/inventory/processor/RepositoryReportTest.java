@@ -130,6 +130,7 @@ public class RepositoryReportTest {
         final File reportDir = new File("target/test-inventory-02_ILD_DE");
 
         final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
+                .assetBomReportEnabled(true)
                 .assessmentReportEnabled(false)
                 .inventoryBomReportEnabled(false)
                 .inventoryDiffReportEnabled(false)
@@ -141,7 +142,7 @@ public class RepositoryReportTest {
                 .failOnUnknownVersion(false)
                 .build());
 
-        prepareReport(inventoryDir, "*.xls", inventoryDir, "*.xls", reportDir, report);
+        prepareReport(inventoryDir, "*.xls*", inventoryDir, "*.xls", reportDir, report);
 
         report.createReport();
 
