@@ -531,8 +531,11 @@ public class DirectoryScanAggregatorConfiguration {
         }
 
         String candidatePath = FileUtils.canonicalizeLinuxPath(files.get(0).getParentFile().getAbsolutePath());
+
         boolean commonRoot;
         do {
+            System.out.println("Testing candidatePath: " + candidatePath);
+
             // presume the candidate path is a common root
             commonRoot = true;
 
@@ -560,7 +563,11 @@ public class DirectoryScanAggregatorConfiguration {
             }
         } while (!commonRoot && candidatePath != null && !canonicalScanBasePath.equals(candidatePath));
 
-        return (candidatePath == null) ? canonicalScanBasePath : candidatePath;
+        String s = (candidatePath == null) ? canonicalScanBasePath : candidatePath;
+
+        System.out.println("Resulting common root path: " + s);
+
+        return s;
     }
 
     public static boolean matchQualifierToIdOrDerivedQualifier(String qualifier, Artifact a) {
