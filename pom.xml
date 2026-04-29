@@ -107,23 +107,28 @@
         <lombok.version>1.18.46</lombok.version>
 
         <maven.version>3.9.15</maven.version>
-        <maven.plugin.plugin.version>3.7.0</maven.plugin.plugin.version>
+        <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
+        <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
+        <maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
         <maven.javadoc.plugin.version>3.12.0</maven.javadoc.plugin.version>
         <maven.plugin.annotations.version>3.15.2</maven.plugin.annotations.version>
-        <maven.plugin.testing.harness.version>2.1</maven.plugin.testing.harness.version>
         <maven.plugin.plugin.version>3.7.0</maven.plugin.plugin.version>
+        <maven.plugin.testing.harness.version>2.1</maven.plugin.testing.harness.version>
+        <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>
         <maven.site.plugin.version>3.7.1</maven.site.plugin.version>
+        <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
         <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
-        <plexus.utils.version>3.0.24</plexus.utils.version>
+        <plexus.utils.version>3.6.0</plexus.utils.version>
 
         <poi.version>5.2.4</poi.version>
-        <!-- FIXME: changing to latest version required reconfiguration of binders vs providers -->
         <slf4j.version>2.0.17</slf4j.version>
         <spring.framework.version>7.0.7</spring.framework.version>
         <tukaani.xz.version>1.9</tukaani.xz.version>
         <velocity.version>2.4.1</velocity.version>
         <velocity.tools.generic.version>3.1</velocity.tools.generic.version>
         <xalan.version>2.7.2</xalan.version>
+        <ae.version.maven.plugin.version>0.24.0</ae.version.maven.plugin.version>
+        <central.publishing.maven.plugin.version>0.10.0</central.publishing.maven.plugin.version>
     </properties>
 
     <build>
@@ -132,7 +137,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.6.2</version>
+                    <version>${maven.compiler.plugin.version}</version>
                     <configuration>
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
@@ -173,7 +178,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>${maven.jar.plugin.version}</version>
                     <configuration>
                         <archive>
                             <index>false</index>
@@ -198,13 +203,13 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>${maven.source.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${maven.project.info.reports.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -270,7 +275,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.12.0</version>
+                        <version>${maven.javadoc.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -336,7 +341,7 @@
                     <plugin>
                         <groupId>org.metaeffekt.core</groupId>
                         <artifactId>ae-version-maven-plugin</artifactId>
-                        <version>0.24.0</version>
+                        <version>${ae.version.maven.plugin.version}</version>
                     </plugin>
                 </plugins>
             </build>
@@ -357,7 +362,7 @@
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.10.0</version>
+                        <version>${central.publishing.maven.plugin.version}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
@@ -367,7 +372,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>${maven.gpg.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
