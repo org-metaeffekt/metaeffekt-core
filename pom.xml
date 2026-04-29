@@ -70,7 +70,7 @@
 
 
         <ant.contrib.version>1.0b3</ant.contrib.version>
-        <ant.version>1.10.13</ant.version>
+        <ant.version>1.10.17</ant.version>
         <asm.version>5.2</asm.version>
         <assertj.version>3.27.7</assertj.version>
         <commons.codec.version>1.22.0</commons.codec.version>
