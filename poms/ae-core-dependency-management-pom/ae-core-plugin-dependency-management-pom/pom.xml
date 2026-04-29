@@ -14,7 +14,7 @@
     <artifactId>ae-core-plugin-dependency-management-pom</artifactId>
     <name>${project.artifactId}</name>
     <properties>
-        <maven.archiver.version>3.6.0</maven.archiver.version>
+        <maven.archiver.version>3.6.6</maven.archiver.version>
         <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
         <maven.plugin.annotations.version>3.15.2</maven.plugin.annotations.version>
     </properties>
