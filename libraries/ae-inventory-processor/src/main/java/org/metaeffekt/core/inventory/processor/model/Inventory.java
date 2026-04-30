@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.report.model.AssetData;
 
 import java.io.File;
 import java.io.IOException;
@@ -1962,7 +1961,6 @@ public class Inventory implements Serializable {
         return license;
     }
 
-
     public List<String> getRepresentedLicensesForArtifactGroup(List<List<String>> artifactGroupEffectiveLicenses) {
         List<String> representedLicenses = new ArrayList<>();
 
@@ -1971,7 +1969,7 @@ public class Inventory implements Serializable {
                     .map(this::getRepresentedLicenseName)
                     .sorted()
                     .distinct()
-                    .collect(Collectors.toList()));
+                    .toList());
         }
         return representedLicenses.stream().distinct().collect(Collectors.toList());
     }
@@ -1992,13 +1990,14 @@ public class Inventory implements Serializable {
 
         for (LicenseData ld : getLicenseData()) {
             final String representedAs = ld.get(LicenseData.Attribute.REPRESENTED_AS);
-            if (representedAs != null && representedLicenseName.equals(representedAs)) {
+            if (representedLicenseName.equals(representedAs)) {
                 representedEffectiveLicenses.add(ld.get(LicenseData.Attribute.CANONICAL_NAME));
             }
         }
         return representedEffectiveLicenses.stream().sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList());
     }
 
+    // FIXME-JFU: move to adapter or adapter-centric class
     /**
      * The substructure is required when:
      * <ol>
@@ -2018,30 +2017,7 @@ public class Inventory implements Serializable {
         }
     }
 
-    public int countComponentsForRepresentedLicense(String license, boolean onlyCountAssets) {
-
-        List<String> singleEffectiveLicenses = getLicensesRepresentedBy(license);
-        int count = 0;
-
-        for (String singleEffectiveLicense : singleEffectiveLicenses) {
-            count += countComponentsForSingleLicense(singleEffectiveLicense, onlyCountAssets);
-        }
-        return count;
-    }
-
-    public int countComponentsForSingleLicense(String license, boolean onlyCountAssets) {
-        if (onlyCountAssets) {
-            return AssetData.fromInventory(this)
-                    .countAssetsWithRepresentedAssociatedLicense(license, true);
-        } else {
-            final Set<String> componentQualifiers = new HashSet<>();
-
-            evaluateComponents(license).stream()
-                    .forEach(ald -> componentQualifiers.add(ald.deriveComponentQualifierForCounting()));
-            return componentQualifiers.size();
-        }
-    }
-
+    // FIXME-JFU: move to adapter or adapter-centric class
     public boolean isFootnoteRequired(List<String> effectiveLicenses, List<String> representedEffectiveLicenses) {
         for (String license : effectiveLicenses) {
             if (isSubstructureRequired(license, representedEffectiveLicenses)) {

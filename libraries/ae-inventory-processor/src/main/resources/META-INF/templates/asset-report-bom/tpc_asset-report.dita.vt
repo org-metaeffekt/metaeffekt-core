@@ -13,11 +13,7 @@
     </body>
 #foreach($asset in $assets)
     <topic id="asset-$inventory.deriveLicenseId($asset.get("Asset Id"))">
-#if($assessmentReportAdapter)
-        <title>$assessmentReportAdapter.assetDisplayType($asset) - $assessmentReportAdapter.assetDisplayName($asset)</title>
-#else
-        <title>$!asset.get("Type") - $!asset.get("Name")</title>
-#end
+        <title>$report.xmlEscapeString($asset.get("Type")) - $report.xmlEscapeString($asset.get("Name"))</title>
         <body>
             <p>
                 <table id="asset-$inventory.deriveLicenseId($asset.get("Asset Id"))">

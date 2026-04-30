@@ -588,6 +588,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new ComposerWebModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new UnwrappedEclipseBundleContributor());
         contributorRunnerBuilder.add(new PythonModuleComponentPatternContributor());
+        contributorRunnerBuilder.add(new PythonEggComponentPatternContributor());
         contributorRunnerBuilder.add(new JarModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new NextcloudAppInfoContributor());
         contributorRunnerBuilder.add(new XWikiExtensionComponentPatternContributor());
