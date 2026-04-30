@@ -53,8 +53,6 @@
         <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
         <ae.core.version_last>${ae.core.version}</ae.core.version_last>
 
-        <ae.artifact.analysis.version>HEAD-SNAPSHOT</ae.artifact.analysis.version>
-
         <artifact.inventory.version>${ae.core.version}</artifact.inventory.version>
         <artifact.inventory.enabled>true</artifact.inventory.enabled>
 
