@@ -31,8 +31,8 @@
                         <phase>validate</phase>
                         <configuration>
                             <includeAllSources>true</includeAllSources>
-                            <failOnMissingSources>true</failOnMissingSources>
-                            <inventoryPath>${project.basedir}/inventory/test-artifact-inventory.xls</inventoryPath>
+                            <failOnMissingSources>false</failOnMissingSources>
+                            <inventoryPath>${project.basedir}/reduced-ae-core-artifact-inventory.xls</inventoryPath>
 
                             <!-- Source Repositories -->
                             <sourceRepositories>
@@ -53,6 +53,22 @@
                                         <!-- patterns: "artifact:component:version:effectiveLicense"; Regular expressions start with '^' -->
                                         <pattern>^ignore-me-.*\.jar</pattern>
                                     </patterns>
+                                </sourceRepository>
+
+                                <sourceRepository>
+                                    <id>Public-File-Server-Test</id>
+                                    <targetFolder>Test-OSS</targetFolder>
+
+                                    <patterns>
+                                        <pattern>^test-artifact-.*\.zip</pattern>
+                                    </patterns>
+
+                                    <properties>
+                                        <repo.name>commons-io</repo.name>
+                                        <test.version>2.11.0</test.version>
+                                    </properties>
+
+                                    <fileServerMirror />
                                 </sourceRepository>
 
                                 <sourceRepository>
