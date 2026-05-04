@@ -15,13 +15,12 @@
  */
 package org.metaeffekt.core.dependency.analysis.depres;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.metaeffekt.core.dependency.analysis.linkres.LinuxSymlinkResolver;
 import org.metaeffekt.core.dependency.analysis.linkres.ResolverPathHolder;
 import org.metaeffekt.core.dependency.analysis.linkres.ResolverStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -31,8 +30,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class ResolutionRun {
-    private static final Logger LOG = LoggerFactory.getLogger(ResolutionRun.class);
 
     /**
      * A list of hardcoded packaage name prefixes that can be safely ignored for our purposes.<br>
@@ -78,12 +77,12 @@ public class ResolutionRun {
 
         for (File packageDir : packageDirsArray) {
             if (shouldIgnorePackageDir(packageDir)) {
-                LOG.debug("Ignoring package dir '[{}]'", packageDir);
+                log.debug("Ignoring package dir '[{}]'", packageDir);
                 continue;
             }
 
             if (!packageDir.isDirectory()) {
-                LOG.error("package dir '[{}]' is not a directory", packageDir);
+                log.error("package dir '[{}]' is not a directory", packageDir);
             }
 
             String packageName = packageDir.getName();
@@ -94,7 +93,7 @@ public class ResolutionRun {
             // read and add lines from the providers file
             File providesFile = new File(packageDir, "provides.txt");
             if (!Files.isRegularFile(providesFile.toPath())) {
-                LOG.warn("provides file '[{}]' doesn't exist. skipping '[{}]' in provides indexing.",
+                log.warn("provides file '[{}]' doesn't exist. skipping '[{}]' in provides indexing.",
                         providesFile, packageName);
                 continue;
             }
@@ -135,16 +134,16 @@ public class ResolutionRun {
 
         for (File packageFilesFile : packageFilesArray) {
             if (shouldIgnorePackageDir(packageFilesFile)) {
-                LOG.debug("Ignoring package files in '[{}]'", packageFilesFile);
+                log.debug("Ignoring package files in '[{}]'", packageFilesFile);
                 continue;
             }
 
             if (!Files.isRegularFile(packageFilesFile.toPath())) {
-                LOG.error("package file '[{}]' is not a file", packageFilesFile);
+                log.error("package file '[{}]' is not a file", packageFilesFile);
             }
 
             if (!packageFilesFile.getName().endsWith("_files.txt")) {
-                LOG.warn("expected files file at [{}] to end in \"_files.txt\".", packageFilesFile);
+                log.warn("expected files file at [{}] to end in \"_files.txt\".", packageFilesFile);
             }
 
             String packageName = packageFilesFile.getName().replaceAll("_files\\.txt$", "");
@@ -177,7 +176,7 @@ public class ResolutionRun {
                 String symlinkSeparator = " --> ";
                 int cutAt = line.indexOf(symlinkSeparator);
                 if (cutAt == -1) {
-                    LOG.error("Invalid line [{}] in symlinks.txt file: no \" --> \" separator in [{}]", i, line);
+                    log.error("Invalid line [{}] in symlinks.txt file: no \" --> \" separator in [{}]", i, line);
                     continue;
                 }
 
@@ -186,7 +185,7 @@ public class ResolutionRun {
                 String symlinkTarget = line.substring(cutAt + symlinkSeparator.length());
 
                 if (!symlinkPath.startsWith("/")) {
-                    LOG.error(
+                    log.error(
                             "Invalid line [{}] in symlinks.txt file: no identifiable absolute path in [{}]",
                             i,
                             line
@@ -196,7 +195,7 @@ public class ResolutionRun {
 
                 String previousValue = symlinks.put(symlinkPath, symlinkTarget);
                 if (previousValue != null) {
-                    LOG.error("Dupe symlink path, Overrode present symlink at [{}] to [{}] with target [{}].",
+                    log.error("Dupe symlink path, Overrode present symlink at [{}] to [{}] with target [{}].",
                             symlinkPath,
                             previousValue,
                             symlinkTarget
@@ -224,7 +223,7 @@ public class ResolutionRun {
                 String symlinkSeparator = "\0 --> ";
                 int cutAt = line.indexOf(symlinkSeparator);
                 if (cutAt == -1) {
-                    LOG.error("Invalid entry [{}] in symlinks_z.bin file: no \"\\0 --> \" separator.", i);
+                    log.error("Invalid entry [{}] in symlinks_z.bin file: no \"\\0 --> \" separator.", i);
                     continue;
                 }
 
@@ -233,7 +232,7 @@ public class ResolutionRun {
                 String symlinkTarget = line.substring(cutAt + symlinkSeparator.length());
 
                 if (!symlinkPath.startsWith("/")) {
-                    LOG.error(
+                    log.error(
                             "Invalid entry [{}] in symlinks_z.bin file: path [{}] isn't absolute",
                             i,
                             symlinkPath
@@ -243,7 +242,7 @@ public class ResolutionRun {
 
                 String previousValue = symlinks.put(symlinkPath, symlinkTarget);
                 if (previousValue != null) {
-                    LOG.error("Dupe symlink path, Overrode present symlink at [{}] to [{}] with target [{}].",
+                    log.error("Dupe symlink path, Overrode present symlink at [{}] to [{}] with target [{}].",
                             symlinkPath,
                             previousValue,
                             symlinkTarget
@@ -272,14 +271,14 @@ public class ResolutionRun {
             Set<String> installedProvidersForReal = filesystemPathToProvider.get(holder.getCurrentPath());
 
             if (installedProviders != null && !Objects.equals(installedProviders, installedProvidersForReal)) {
-                LOG.debug("Oddity: Different providers [{}] and [{}] for symlink paths [{}] and [{}].",
+                log.debug("Oddity: Different providers [{}] and [{}] for symlink paths [{}] and [{}].",
                         installedProviders,
                         installedProvidersForReal,
                         requirement,
                         holder.getCurrentPath());
             }
         } else {
-            LOG.warn("Resolving requirement [{}] as path returned status [{}]", requirement, holder.getStatus());
+            log.warn("Resolving requirement [{}] as path returned status [{}]", requirement, holder.getStatus());
             return Collections.emptySet();
         }
 
@@ -313,7 +312,7 @@ public class ResolutionRun {
         for (Map.Entry<String, String> entry : ignoreIfStart.entrySet()) {
             if (requirement.startsWith(entry.getKey())) {
                 // print ignored requirement and rationale in debug log
-                LOG.debug("Ignoring known requirement [{}]: {}",
+                log.debug("Ignoring known requirement [{}]: {}",
                         requirement,
                         entry.getValue()
                 );
@@ -341,7 +340,7 @@ public class ResolutionRun {
             // this is a boolean dependency
             if (!requirement.endsWith(")")) {
                 // AFAIK these have to end with a bracket if they start with one
-                LOG.warn("boolean dependency [{}] was expected to end in a bracket", requirement);
+                log.warn("boolean dependency [{}] was expected to end in a bracket", requirement);
             }
 
             // instead of properly resolving these, we'll collect them and output them separately.
@@ -375,7 +374,7 @@ public class ResolutionRun {
 
                 // warn if we still find odd package names
                 if (choppedRequirement.contains(" ")) {
-                    LOG.warn("skipping odd package name (after chopping) [{}] from [{}]", choppedRequirement, requirement);
+                    log.warn("skipping odd package name (after chopping) [{}] from [{}]", choppedRequirement, requirement);
                     continue;
                 }
 
@@ -393,7 +392,7 @@ public class ResolutionRun {
             try {
                 installedProviders = tryFileRequirementResolve(requirement);
             } catch (Exception e) {
-                LOG.warn("couldn't resolve requirement [{}] as a symlink. might not be one after all.", requirement);
+                log.warn("couldn't resolve requirement [{}] as a symlink. might not be one after all.", requirement);
             }
         }
 
@@ -424,25 +423,25 @@ public class ResolutionRun {
         HashMap<String, Set<String>> packageToRequiredPackages = new HashMap<>();
         for (String packageName : toResolve) {
             if (!installedPackages.contains(packageName)) {
-                LOG.debug("Looked up package name [{}] is not contained in installed packages list.", packageName);
+                log.debug("Looked up package name [{}] is not contained in installed packages list.", packageName);
             }
 
             File packageDir = new File(packageDepsDir, packageName);
 
             if (shouldIgnorePackageDir(packageDir)) {
-                LOG.debug("Ignoring package dir '[{}]'", packageDir.getPath());
+                log.debug("Ignoring package dir '[{}]'", packageDir.getPath());
                 continue;
             }
 
             if (!packageDir.isDirectory()) {
-                LOG.error("Package directory [{}] is not a directory", packageDir.toPath());
-                LOG.error("This will likely lead to a crash and is likely caused by missing extraction data.");
+                log.error("Package directory [{}] is not a directory", packageDir.toPath());
+                log.error("This will likely lead to a crash and is likely caused by missing extraction data.");
             }
 
             File requiresFile = new File(packageDir, "requires.txt");
 
             if (!Files.isRegularFile(requiresFile.toPath())) {
-                LOG.error("File '[{}]' with requires data doesn't exist. skipping '[{}]'.", requiresFile, packageName);
+                log.error("File '[{}]' with requires data doesn't exist. skipping '[{}]'.", requiresFile, packageName);
                 throw new RuntimeException("Couldn't resolve critical package, data missing or dependency invalid.");
             }
 
@@ -470,7 +469,7 @@ public class ResolutionRun {
                                 .add(line.trim());
                     } else {
                         if (resolvedRequired.size() > 1) {
-                            LOG.warn("multiple providers were resolved for '[{}]' in package '[{}]', " +
+                            log.warn("multiple providers were resolved for '[{}]' in package '[{}]', " +
                                             "marking all as a requirement.",
                                     line.trim(), packageName);
                         }
@@ -515,7 +514,7 @@ public class ResolutionRun {
             String readFile = IOUtils.toString(reader);
 
             if (StringUtils.isBlank(readFile)) {
-                LOG.warn("Read [{}] is empty. This is likely an error.", packagesNameOnlyFile.getName());
+                log.warn("Read [{}] is empty. This is likely an error.", packagesNameOnlyFile.getName());
             }
 
             for (String packageName : readFile.split("\n")) {
@@ -544,21 +543,21 @@ public class ResolutionRun {
         // use NUL-delimited data if present, otherwise fall back
         File symlinksFileNulDelim = new File(filesystemDir, "symlinks_z.bin");
         if (Files.isRegularFile(symlinksFileNulDelim.toPath())) {
-            LOG.info("Reading symlinks from [{}]", symlinksFileNulDelim);
+            log.info("Reading symlinks from [{}]", symlinksFileNulDelim);
             linkResolver = getSymlinksResolverFromSymlinksNull(symlinksFileNulDelim);
         } else {
             File symlinksFile = new File(filesystemDir, "symlinks.txt");
-            LOG.info("No NUL-delimited symlink file. Reading the less accurate [{}] file.", symlinksFile);
+            log.info("No NUL-delimited symlink file. Reading the less accurate [{}] file.", symlinksFile);
 
             if (!Files.isRegularFile(symlinksFile.toPath())) {
-                LOG.warn("Directory doesn't contain [filesystem/symlinks.txt]. File dependencies might not resolve.");
+                log.warn("Directory doesn't contain [filesystem/symlinks.txt]. File dependencies might not resolve.");
                 linkResolver = new LinuxSymlinkResolver(Collections.emptyMap());
             } else {
                 linkResolver = getSymlinksResolverFromSymlinksNewline(symlinksFile);
             }
         }
 
-        LOG.debug("Building maps");
+        log.debug("Building maps");
 
         // build maps for provides
         providesStringToProvider = getProvidesMap(packageDepsPackageDirArray);
@@ -574,7 +573,7 @@ public class ResolutionRun {
 
         doPrep();
 
-        LOG.debug("Performing lookups");
+        log.debug("Performing lookups");
         // try to resolve all dependency strings, leaving only simple package names
         HashMap<String, Set<String>> packageToRequiredPackages = new HashMap<>();
         Set<String> newlyRequired = new HashSet<>(mustHaves);

@@ -19,29 +19,24 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.processor.configuration.*;
+import org.metaeffekt.core.inventory.processor.configuration.ProcessConfiguration;
+import org.metaeffekt.core.inventory.processor.configuration.ProcessConfigurationProperty;
+import org.metaeffekt.core.inventory.processor.configuration.ProcessMisconfiguration;
 import org.metaeffekt.core.inventory.processor.configuration.converter.FieldConverter;
 import org.metaeffekt.core.inventory.processor.configuration.converter.JsonArrayConverter;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaAdvisoryEntry;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
-import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.KnownCvssEntities;
-import org.metaeffekt.core.security.cvss.processor.CvssSelectionResult;
 import org.metaeffekt.core.security.cvss.processor.CvssSelectionResult.CvssScoreVersionSelectionPolicy;
 import org.metaeffekt.core.security.cvss.processor.CvssSelector;
 import org.metaeffekt.core.security.cvss.processor.CvssSelector.*;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,10 +55,8 @@ import static org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole
  */
 @Accessors(chain = true)
 @NoArgsConstructor
+@Slf4j
 public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
-
-    @ExcludeProcessConfigurationProperty
-    private static final Logger LOG = LoggerFactory.getLogger(CentralSecurityPolicyConfiguration.class);
 
     public final static String LATEST_VERSION = "1";
 
@@ -211,7 +204,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * The key "name" is mandatory and can optionally be combined with an "implementation" value.
      * If the implementation is not specified, the name will be used as the implementation.<br>
      * If a vulnerability does not have an advisory from one of the specified sources, it will be excluded from the reports.
-     * See {@link AeaaAdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
+     * See {@code AdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
      * Use <code>[{"name": "all", "implementation": "all"}]</code> to ignore this check.<p>
      * Example:
      * <pre>
@@ -229,7 +222,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * The key "name" is mandatory and can optionally be combined with an "implementation" value.
      * If the implementation is not specified, the name will be used as the implementation.<br>
      * If an advisory is not of one of the specified sources, it will be excluded.
-     * See {@link AeaaAdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
+     * See {@code AdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
      * Use <code>[{"name": "all", "implementation": "all"}]</code> to ignore this check.<p>
      */
     @Getter
@@ -242,7 +235,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
      * For every provider listed here, an additional overview table will be generated only evaluating the vulnerabilities referencing that provider via a security advisory or directly.
      * If left empty, no additional table will be created.<br>
-     * See {@link AeaaAdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
+     * See {@code AdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
      * Example:
      * <pre>
      *     [{"name":"CERT_FR"},
@@ -352,24 +345,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return super.accessCachedProperty("contextCvssSelector", this.contextCvssSelector, CvssSelector::fromJson);
     }
 
-    public boolean isVulnerabilityInsignificant(AeaaVulnerability vulnerability) {
-        final double insignificantThreshold = this.getInsignificantThreshold();
-        if (insignificantThreshold == -1.0) return true;
-        final CvssVector vector = vulnerability.getCvssSelectionResult(this).getSelectedContextIfAvailableOtherwiseInitial();
-        if (vector == null) {
-            return false;
-        } else {
-            return vector.getOverallScore() < insignificantThreshold;
-        }
-    }
-
-    public boolean isVulnerabilityAboveIncludeScoreThreshold(AeaaVulnerability vulnerability) {
-        if (includeScoreThreshold == -1.0 || includeScoreThreshold == Double.MIN_VALUE) return true;
-        final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedByCustomMetric(CvssVector::getOverallScore, CvssSelectionResult.CUSTOM_VECTOR_SCORE_SELECTOR_MAX);
-        final double score = vector == null ? 0.0 : vector.getOverallScore();
-        return isVulnerabilityAboveIncludeScoreThreshold(score);
-    }
-
     public boolean isVulnerabilityAboveIncludeScoreThreshold(double score) {
         if (includeScoreThreshold == -1.0 || includeScoreThreshold == Double.MIN_VALUE) return true;
         return score >= includeScoreThreshold;
@@ -392,39 +367,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return new JSONArray(this.includeVulnerabilitiesWithAdvisoryProviders);
     }
 
-    public boolean isVulnerabilityIncludedRegardingAdvisoryProviders(AeaaVulnerability vulnerability) {
-        if (containsAny(new JSONArray(includeVulnerabilitiesWithAdvisoryProviders))) {
-            return true;
-        }
-
-        final List<AeaaAdvisoryTypeIdentifier<?>> filter = getIncludeAdvisoryProvidersInst();
-        return isVulnerabilityIncludedRegardingAdvisoryProviders(vulnerability, filter);
-    }
-
-    public static List<AeaaVulnerability> filterVulnerabilitiesForAdvisoryProviders(Collection<AeaaVulnerability> vulnerabilities, Collection<AeaaAdvisoryTypeIdentifier<?>> filter) {
-        return vulnerabilities.stream()
-                .filter(v -> isVulnerabilityIncludedRegardingAdvisoryProviders(v, filter))
-                .collect(Collectors.toList());
-    }
-
-    public static boolean isVulnerabilityIncludedRegardingAdvisoryProviders(AeaaVulnerability vulnerability, Collection<AeaaAdvisoryTypeIdentifier<?>> filter) {
-        return vulnerability.getSecurityAdvisories().stream().anyMatch(a -> filter.contains(a.getSourceIdentifier()));
-    }
-
     public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryReviewStatus(List<String> includeVulnerabilitiesWithAdvisoryReviewStatus) {
         this.includeVulnerabilitiesWithAdvisoryReviewStatus.clear();
         this.includeVulnerabilitiesWithAdvisoryReviewStatus.addAll(includeVulnerabilitiesWithAdvisoryReviewStatus);
         return this;
-    }
-
-    public boolean isVulnerabilityIncludedRegardingAdvisoryReviewStatus(AeaaVulnerability vulnerability) {
-        if (containsAny(includeVulnerabilitiesWithAdvisoryReviewStatus)) {
-            return true;
-        }
-        return vulnerability.getSecurityAdvisories().stream()
-                .map(a -> a.getAdditionalAttribute(AdvisoryMetaData.Attribute.REVIEW_STATUS))
-                .filter(Objects::nonNull)
-                .anyMatch(includeVulnerabilitiesWithAdvisoryReviewStatus::contains);
     }
 
     public CentralSecurityPolicyConfiguration setIncludeAdvisoryProviders(JSONArray includeAdvisoryProviders) {
@@ -454,10 +400,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return this;
     }
 
-    public List<AeaaAdvisoryTypeIdentifier<?>> getGenerateOverviewTablesForAdvisoriesInst() {
-        return super.accessCachedProperty("generateOverviewTablesForAdvisories", this.generateOverviewTablesForAdvisories, AeaaAdvisoryTypeStore::parseAdvisoryProviders);
-    }
-
     public CentralSecurityPolicyConfiguration setIncludeAdvisoryTypes(List<String> includeAdvisoryTypes) {
         this.includeAdvisoryTypes.clear();
         this.includeAdvisoryTypes.addAll(includeAdvisoryTypes);
@@ -468,43 +410,11 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         this.includeAdvisoryProviders = advisoryProviders;
     }
 
-    public List<AeaaAdvisoryTypeIdentifier<?>> getIncludeAdvisoryProvidersInst() {
-        return super.accessCachedProperty("includeAdvisoryProviders", this.includeAdvisoryProviders, AeaaAdvisoryTypeStore::parseAdvisoryProviders);
-    }
-
-    public boolean isSecurityAdvisoryIncludedRegardingEntrySourceType(AeaaAdvisoryEntry advisory) {
-        return isSecurityAdvisoryIncludedRegardingEntrySourceType(advisory.getType());
-    }
-
     public boolean isSecurityAdvisoryIncludedRegardingEntrySourceType(String advisoryType) {
         if (containsAny(includeAdvisoryTypes)) {
             return true;
         }
         return includeAdvisoryTypes.contains(advisoryType);
-    }
-
-    public boolean isSecurityAdvisoryIncludedRegardingEntryProvider(AeaaAdvisoryEntry advisory) {
-        if (containsAny(new JSONArray(includeAdvisoryProviders))) {
-            return true;
-        }
-        for (AeaaAdvisoryTypeIdentifier<?> identifier : getIncludeAdvisoryProvidersInst()) {
-            if (identifier == advisory.getSourceIdentifier()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean isSecurityAdvisoryIncludedRegardingEntryProvider(String providerName) {
-        if (containsAny(new JSONArray(includeAdvisoryProviders))) {
-            return true;
-        }
-        for (AeaaAdvisoryTypeIdentifier<?> identifier : getIncludeAdvisoryProvidersInst()) {
-            if (identifier.getName().equals(providerName)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public CentralSecurityPolicyConfiguration setVulnerabilityStatusDisplayMapper(String vulnerabilityStatusDisplayMapper) {
@@ -642,7 +552,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             throw new IOException("Security policy configuration file is not a file: " + jsonFile.getAbsolutePath());
         }
 
-        LOG.info("Loading security policy configuration from: {}", jsonFile.getAbsolutePath());
+        log.info("Loading security policy configuration from: {}", jsonFile.getAbsolutePath());
 
         final String json;
         try {
@@ -679,7 +589,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
         try {
             if (jsonFile != null) {
-                LOG.info("Reading security policy from securityPolicyFile: file://{}", jsonFile.getAbsolutePath());
+                log.info("Reading security policy from securityPolicyFile: file://{}", jsonFile.getAbsolutePath());
                 final JSONObject jsonFromFile = new JSONObject(FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8));
                 for (String key : jsonFromFile.keySet()) {
                     effectiveApplyJson.put(key, jsonFromFile.get(key));
@@ -691,7 +601,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
         try {
             if (jsonOverwrite != null) {
-                LOG.info("Applying security policy from securityPolicyJson: {}", String.join("", jsonOverwrite.split("\n")));
+                log.info("Applying security policy from securityPolicyJson: {}", String.join("", jsonOverwrite.split("\n")));
                 final JSONObject jsonFromOverwrite = new JSONObject(jsonOverwrite);
                 for (String key : jsonFromOverwrite.keySet()) {
                     effectiveApplyJson.put(key, jsonFromOverwrite.get(key));

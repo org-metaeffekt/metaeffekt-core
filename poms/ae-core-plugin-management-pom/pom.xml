@@ -8,6 +8,10 @@
     <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
+    <prerequisites>
+        <maven>3.9.0</maven>
+    </prerequisites>
+
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-poms</artifactId>
@@ -37,6 +41,7 @@
         <artifact.inventory.source.includes>ae-core-artifact-inventory.xls</artifact.inventory.source.includes>
 
         <ant.version>1.10.11</ant.version>
+        <log4j.version>2.25.4</log4j.version>
 
         <dita.infrastructure.version>2.0-SNAPSHOT</dita.infrastructure.version>
 
@@ -81,7 +86,7 @@
                     <!-- introduced to manage version -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.20</version>
+                    <version>3.5.4</version>
                     <configuration>
                         <argLine>-Duser.timezone=Europe/Berlin</argLine>
                     </configuration>
@@ -90,7 +95,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.5</version>
+                    <version>3.15.2</version>
                     <executions>
                         <execution>
                             <id>default-descriptor</id>
@@ -163,7 +168,8 @@
                                 <outputDirectory>${project.build.directory}/apidocs/META-INF</outputDirectory>
                                 <resources>
                                     <resource>
-                                        <directory>${project.build.directory}/tmp/config/license/apache-license-2.0</directory>
+                                        <directory>${project.build.directory}/tmp/config/license/apache-license-2.0
+                                        </directory>
                                     </resource>
                                 </resources>
                             </configuration>
@@ -398,10 +404,13 @@
                                         <goal>copy-resources</goal>
                                     </goals>
                                     <configuration>
-                                        <outputDirectory>${project.basedir}/src/test/resources/META-INF</outputDirectory>
+                                        <outputDirectory>${project.basedir}/src/test/resources/META-INF
+                                        </outputDirectory>
                                         <resources>
                                             <resource>
-                                                <directory>${project.build.directory}/tmp/config/license/apache-license-2.0</directory>
+                                                <directory>
+                                                    ${project.build.directory}/tmp/config/license/apache-license-2.0
+                                                </directory>
                                             </resource>
                                         </resources>
                                     </configuration>
@@ -435,10 +444,13 @@
                                         <goal>copy-resources</goal>
                                     </goals>
                                     <configuration>
-                                        <outputDirectory>${project.basedir}/src/main/resources/META-INF</outputDirectory>
+                                        <outputDirectory>${project.basedir}/src/main/resources/META-INF
+                                        </outputDirectory>
                                         <resources>
                                             <resource>
-                                                <directory>${project.build.directory}/tmp/config/license/apache-license-2.0</directory>
+                                                <directory>
+                                                    ${project.build.directory}/tmp/config/license/apache-license-2.0
+                                                </directory>
                                             </resource>
                                         </resources>
                                     </configuration>

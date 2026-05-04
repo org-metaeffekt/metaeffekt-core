@@ -15,17 +15,15 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class AdvisoryUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AdvisoryUtils.class);
 
     public final static Map<String, List<String>> TYPE_NORMALIZATION_MAP = new HashMap<String, List<String>>() {{
         put("notice", Arrays.asList(

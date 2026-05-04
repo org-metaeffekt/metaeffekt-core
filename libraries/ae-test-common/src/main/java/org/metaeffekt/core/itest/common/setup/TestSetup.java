@@ -17,8 +17,6 @@ package org.metaeffekt.core.itest.common.setup;
 
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
-import java.io.File;
-
 
 public interface TestSetup {
 

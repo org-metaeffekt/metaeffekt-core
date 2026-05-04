@@ -16,13 +16,12 @@
 
 package org.metaeffekt.core.inventory.processor.inspector;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.packagedrone.utils.rpm.RpmTag;
 import org.eclipse.packagedrone.utils.rpm.parse.RpmInputStream;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,9 +30,8 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 public class RpmMetadataInspector implements ArtifactInspector {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RpmMetadataInspector.class);
 
     @Override
     public void run(Inventory inventory, Properties properties) {
@@ -51,7 +49,7 @@ public class RpmMetadataInspector implements ArtifactInspector {
                             artifact.set(Artifact.Attribute.SOURCE, (String) in.getPayloadHeader().getTag(RpmTag.SOURCE_PACKAGE));
                         }
                     } catch (IOException e) {
-                        LOG.info("Failed to read RPM metadata", e);
+                        log.info("Failed to read RPM metadata", e);
                 }
             }
         }

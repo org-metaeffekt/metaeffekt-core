@@ -17,11 +17,13 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.metaeffekt.core.inventory.processor.AbstractInventoryProcessor;
 import org.metaeffekt.core.inventory.processor.InventoryProcessor;
 import org.metaeffekt.core.inventory.processor.InventoryUpdate;
 import org.metaeffekt.core.maven.inventory.resolver.Mapping;
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,95 +33,73 @@ import java.util.Properties;
 
 /**
  * Mojo dedicated to automated inventory updates and consolidation.
- *
- * @goal update-inventory
- * @requiresDependencyResolution runtime
  */
+@Mojo(name = "update-inventory", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class InventoryUpdateMojo extends AbstractProjectAwareConfiguredMojo {
 
-    /**
-     * @parameter
-     * @required
-     */
+    @Parameter(required = true)
     private File sourceInventoryPath;
 
-    /**
-     * @parameter
-     * @required
-     */
+    @Parameter(required = true)
     private File targetInventoryPath;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private List<Processor> processors;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private Map<String, String> properties;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private Mapping componentNameMapping;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private Mapping licenseNameMapping;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        // adapt maven logging to underlying logging facade
-        MavenLogAdapter.initialize(getLog());
-        try {
-            List<InventoryProcessor> inventoryProcessors =
-                    new ArrayList<InventoryProcessor>();
+        List<InventoryProcessor> inventoryProcessors =
+                new ArrayList<>();
 
-            if (processors != null) {
-                for (Processor processorConfig : processors) {
-                    if (!processorConfig.isSkip()) {
-                        AbstractInventoryProcessor processor = createInstanceOf(processorConfig.getClassName(), AbstractInventoryProcessor.class);
+        if (processors != null) {
+            for (Processor processorConfig : processors) {
+                if (!processorConfig.isSkip()) {
+                    AbstractInventoryProcessor processor = createInstanceOf(processorConfig.getClassName(), AbstractInventoryProcessor.class);
 
-                        Properties aggregrateProperties = new Properties();
-                        aggregrateProperties.putAll(System.getProperties());
-                        aggregrateProperties.putAll(getProject().getProperties());
-                        if (this.properties != null) {
-                            aggregrateProperties.putAll(this.properties);
-                        }
-                        if (processorConfig.getProperties() != null) {
-                            aggregrateProperties.putAll(processorConfig.getProperties());
-                        }
-
-                        processor.setProperties(aggregrateProperties);
-                        inventoryProcessors.add(processor);
+                    Properties aggregrateProperties = new Properties();
+                    aggregrateProperties.putAll(System.getProperties());
+                    aggregrateProperties.putAll(getProject().getProperties());
+                    if (this.properties != null) {
+                        aggregrateProperties.putAll(this.properties);
                     }
+                    if (processorConfig.getProperties() != null) {
+                        aggregrateProperties.putAll(processorConfig.getProperties());
+                    }
+
+                    processor.setProperties(aggregrateProperties);
+                    inventoryProcessors.add(processor);
                 }
             }
-
-            getLog().info("Processors found: ");
-            for (InventoryProcessor inventoryProcessor : inventoryProcessors) {
-                getLog().info(inventoryProcessor.getClass().toString());
-            }
-
-            InventoryUpdate inventoryUpdate = new InventoryUpdate();
-            inventoryUpdate.setInventoryProcessors(inventoryProcessors);
-            inventoryUpdate.setSourceInventoryFile(sourceInventoryPath);
-            inventoryUpdate.setTargetInventoryFile(targetInventoryPath);
-
-            if (componentNameMapping != null) {
-                inventoryUpdate.setComponentNameMap(componentNameMapping.getMap());
-            }
-
-            if (licenseNameMapping != null) {
-                inventoryUpdate.setLicenseNameMap(licenseNameMapping.getMap());
-            }
-
-            inventoryUpdate.process();
-        } finally {
-            MavenLogAdapter.release();
         }
+
+        getLog().info("Processors found: ");
+        for (InventoryProcessor inventoryProcessor : inventoryProcessors) {
+            getLog().info(inventoryProcessor.getClass().toString());
+        }
+
+        InventoryUpdate inventoryUpdate = new InventoryUpdate();
+        inventoryUpdate.setInventoryProcessors(inventoryProcessors);
+        inventoryUpdate.setSourceInventoryFile(sourceInventoryPath);
+        inventoryUpdate.setTargetInventoryFile(targetInventoryPath);
+
+        if (componentNameMapping != null) {
+            inventoryUpdate.setComponentNameMap(componentNameMapping.getMap());
+        }
+
+        if (licenseNameMapping != null) {
+            inventoryUpdate.setLicenseNameMap(licenseNameMapping.getMap());
+        }
+
+        inventoryUpdate.process();
     }
 
 }

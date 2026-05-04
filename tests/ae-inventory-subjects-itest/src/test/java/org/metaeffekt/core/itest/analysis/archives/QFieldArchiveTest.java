@@ -16,10 +16,9 @@
 package org.metaeffekt.core.itest.analysis.archives;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -30,12 +29,11 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import java.io.File;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
-import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ROOT_PATHS;
 
 public class QFieldArchiveTest extends AbstractCompositionAnalysisTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://github.com/opengisch/QField/archive/refs/tags/v3.4.7.zip")
@@ -43,16 +41,16 @@ public class QFieldArchiveTest extends AbstractCompositionAnalysisTest {
                 .setName(QFieldArchiveTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertThat(testSetup.clear()).isTrue();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertThat(testSetup.rebuildInventory()).isTrue();
     }
 
     @Test
@@ -60,10 +58,6 @@ public class QFieldArchiveTest extends AbstractCompositionAnalysisTest {
         final ArtifactList artifactList = getAnalysisAfterInvariantCheck().selectArtifacts();
 
         artifactList.logListWithAllAttributes();
-
-        artifactList.with(attributeValue(ID, "LICENSE"),
-                    attributeValue(CHECKSUM, "e8c1458438ead3c34974bc0be3a03ed6"))
-                .assertNotEmpty();
 
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
         final File aggregationTargetDir = new File(testSetup.getInventoryFolder(), "aggregation");
@@ -77,7 +71,7 @@ public class QFieldArchiveTest extends AbstractCompositionAnalysisTest {
 
         new InventoryWriter().writeInventory(aggregatedInventory, resultFile);
 
-        final Artifact artifact = aggregatedInventory.findArtifactByIdAndChecksum("LICENSE", "e8c1458438ead3c34974bc0be3a03ed6");
+        final Artifact artifact = aggregatedInventory.findArtifact("QField-3.4.7");
         Assertions.assertThat(artifact).isNotNull();
 
         Assertions.assertThat(artifact.get(ROOT_PATHS)).isNotNull();

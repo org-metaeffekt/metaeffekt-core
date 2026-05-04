@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,9 +29,8 @@ import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.PATH_LOCALE;
 
+@Slf4j
 public class JettyComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JettyComponentPatternContributor.class);
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/jetty/version.txt");
@@ -72,7 +70,7 @@ public class JettyComponentPatternContributor extends ComponentPatternContributo
             }
             return Collections.emptyList();
         } catch (Exception e) {
-            LOG.warn("Error parsing Jetty version from file: {}", relativeAnchorPath, e);
+            log.warn("Error parsing Jetty version from file: {}", relativeAnchorPath, e);
             return Collections.emptyList();
         }
     }

@@ -18,9 +18,8 @@ package org.metaeffekt.core.inventory.scan;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -94,7 +93,7 @@ public class DirectoryInventoryScanTest {
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
             qualifiers.add(mapper.getQualifier());
         }
-        assertThat(qualifiers.contains("test-alpha-1.0.0.jar-1.0.0-Alpha Component")).isTrue();
+        assertThat(qualifiers.contains("c:test-alpha-1.0.0.jar|v:1.0.0|n:Alpha Component")).isTrue();
 
     }
 
@@ -159,15 +158,15 @@ public class DirectoryInventoryScanTest {
             }
         }
 
-        Assert.assertTrue(found0000);
-        Assert.assertTrue(found0001);
-        Assert.assertTrue(found0002);
-        Assert.assertTrue(found0003);
-        Assert.assertTrue(found0004);
-        Assert.assertTrue(found0005);
+        Assertions.assertThat(found0000).isTrue();
+        Assertions.assertThat(found0001).isTrue();
+        Assertions.assertThat(found0002).isTrue();
+        Assertions.assertThat(found0003).isTrue();
+        Assertions.assertThat(found0004).isTrue();
+        Assertions.assertThat(found0005).isTrue();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testScanExtractedFiles_External() throws IOException {
         File inputDir = new File("<project.baseDir>/input");
@@ -219,24 +218,31 @@ public class DirectoryInventoryScanTest {
         Assertions.assertThat(inventory.getArtifacts().size()).isEqualTo(1543);
     }
 
-    @Ignore
+    /**
+     * Test to scan an external folder.
+     *
+     * @throws IOException
+     */
+    @Disabled
     @Test
-    public void testScanExtractedFiles_ExternalNG() throws IOException {
+    public void testScanExternalFolder() throws IOException {
 
-        String caseString;
-        caseString = "case-002";
-        // caseString = "case-003";
-        // caseString = "case-004";
-        // caseString = "case-005";
-        // caseString = "case-006";
+        // enables control of different stages
+        boolean executeExtractionScan = true;
+        boolean executeRuntimeFiltering = true;
+        boolean executeAggregation = true;
 
-        // inputs
-        final File projectBaseDir = new File("<path>");
+        // input
+        final File projectBaseDir = new File("../../.examples");
+
+        // select case
+        String caseString = "case-005";
+
         final File scanInputDir = new File(projectBaseDir, caseString);
         final File scanDir = new File(projectBaseDir, caseString + "-scan");
 
         // other sources
-        final File referenceInventoryDir = new File("src/test/resources/reference-inventory-01");
+        final File referenceInventoryDir = new File(projectBaseDir, "reference/inventory");
 
         // outputs
         final File resultsDir = new File(projectBaseDir, caseString + "-results");
@@ -249,13 +255,13 @@ public class DirectoryInventoryScanTest {
         FileUtils.forceMkdir(targetAggregationDir);
 
         // scan
-        if (true) {
+        if (executeExtractionScan) {
             final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
             new InventoryWriter().writeInventory(inventory, targetScanInventoryFile);
         }
 
         // filter
-        if (true) {
+        if (executeRuntimeFiltering) {
             Inventory inventory = new InventoryReader().readInventory(targetScanInventoryFile);
             InventoryUtils.filterInventoryForRuntimeArtifacts(inventory,
                     inventory.getAssetMetaData().stream()
@@ -265,12 +271,12 @@ public class DirectoryInventoryScanTest {
         }
 
         // aggregate (based on filtered)
-        if (true) {
+        if (executeAggregation) {
             aggregateArchives(scanDir, filteredTargetScanInventoryFile, referenceInventoryDir, targetAggregationInventoryFile, targetAggregationDir);
         }
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testScanExtractedFiles_ExternalNG_Aggregate() throws IOException {
         // inputs
@@ -360,7 +366,7 @@ public class DirectoryInventoryScanTest {
         return scan.createScanInventory();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testScanContainersAndStuff() throws IOException {
         final File inputDir = new File("INPUT FILE GOES HERE");

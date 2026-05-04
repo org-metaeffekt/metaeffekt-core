@@ -15,9 +15,10 @@
  */
 package org.metaeffekt.core.maven.inventory.resolver;
 
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.logging.Log;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.metaeffekt.core.inventory.resolver.ArtifactPattern;
 import org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository;
 
@@ -43,8 +44,7 @@ public class SourceRepository extends IdentifiableComponent {
 
     private boolean ignoreMatches;
 
-    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate(
-            ArtifactResolver artifactResolver, ArtifactRepository localRepository, List<ArtifactRepository> remoteRepositories) {
+    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate(final RepositorySystem repositorySystem, final RepositorySystemSession repositorySystemSession, final List<RemoteRepository> remoteProjectRepositories) {
 
         ArtifactSourceRepository artifactSourceRepository = new ArtifactSourceRepository();
         artifactSourceRepository.setId(getId());
@@ -84,7 +84,7 @@ public class SourceRepository extends IdentifiableComponent {
         }
 
         if (mavenMirror != null) {
-            artifactSourceRepository.setSourceArchiveResolver(mavenMirror.createResolver(artifactResolver, localRepository, remoteRepositories));
+            artifactSourceRepository.setSourceArchiveResolver(mavenMirror.createResolver(repositorySystem, repositorySystemSession, remoteProjectRepositories));
         }
 
         if (fileServerMirror != null) {

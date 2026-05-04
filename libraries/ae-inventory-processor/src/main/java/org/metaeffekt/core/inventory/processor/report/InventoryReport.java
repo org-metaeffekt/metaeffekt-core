@@ -17,7 +17,8 @@ package org.metaeffekt.core.inventory.processor.report;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang.StringEscapeUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -30,18 +31,13 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.metaeffekt.core.inventory.processor.report.adapter.AssessmentReportAdapter;
-import org.metaeffekt.core.inventory.processor.report.adapter.AssetReportAdapter;
-import org.metaeffekt.core.inventory.processor.report.adapter.InventoryReportAdapter;
-import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
+import org.metaeffekt.core.inventory.processor.report.adapter.*;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.inventory.processor.report.model.AssetData;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.RegExUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -56,9 +52,8 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 @Getter
 @Setter
+@Slf4j
 public class InventoryReport {
-
-    private static final Logger LOG = LoggerFactory.getLogger(InventoryReport.class);
 
     private static final String SEPARATOR_SLASH = "/";
     private static final String PATTERN_ANY_VT = "**/*.vt";
@@ -111,7 +106,7 @@ public class InventoryReport {
 
     /**
      * The diff inventory is used for version diffs.
-      */
+     */
     private File diffInventoryFile;
 
     // FIXME; dir / path ambiguity
@@ -187,7 +182,7 @@ public class InventoryReport {
 
     public boolean createReport() throws IOException {
         logHeaderBox("Creating Inventory Report for project [" + getProjectName() + "]");
-        if (LOG.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             this.logConfiguration();
         }
 
@@ -227,7 +222,7 @@ public class InventoryReport {
         if (referenceInventoryDir == null || referenceInventoryIncludes == null) {
             return new Inventory();
         }
-        LOG.info("Creating global inventory for inventory report by combining inventories from {}: file://{}",
+        log.info("Creating global inventory for inventory report by combining inventories from {}: file://{}",
                 referenceInventoryDir.isDirectory() ? "directory" : "file", referenceInventoryDir.getAbsolutePath());
         return InventoryUtils.readInventory(referenceInventoryDir, referenceInventoryIncludes);
     }
@@ -235,7 +230,7 @@ public class InventoryReport {
     protected void checkReportInventory(Inventory inventory) {
         final int totalSize = inventory.getArtifacts().size() + inventory.getAssetMetaData().size() + inventory.getLicenseMetaData().size() + inventory.getVulnerabilityMetaData().size();
         if (totalSize == 0) {
-            LOG.warn("The provided inventory appears to be empty: {}", inventory.getInventorySizePrintString());
+            log.warn("The provided inventory appears to be empty: {}", inventory.getInventorySizePrintString());
         }
     }
 
@@ -249,7 +244,7 @@ public class InventoryReport {
             diffInventory = new InventoryReader().readInventory(diffInventoryFile);
         }
 
-        LOG.debug("Constructing project inventory from local inventory {} and global inventory {}", globalInventory.getInventorySizePrintString(), localInventory.getInventorySizePrintString());
+        log.debug("Constructing project inventory from local inventory {} and global inventory {}", globalInventory.getInventorySizePrintString(), localInventory.getInventorySizePrintString());
 
         // FIXME-KKL: why don't we simply use the local inventory
         final Inventory projectInventory = new Inventory();
@@ -313,8 +308,8 @@ public class InventoryReport {
                 matchedReferenceArtifact = globalInventory.findArtifact(localArtifact, true);
             }
 
-            LOG.debug("Query for local artifact: " + localArtifact);
-            LOG.debug("Matched reference artifact: " + matchedReferenceArtifact);
+            log.debug("Query for local artifact: " + localArtifact);
+            log.debug("Matched reference artifact: " + matchedReferenceArtifact);
 
             String classifier = "";
             String comment = "";
@@ -414,7 +409,7 @@ public class InventoryReport {
                             copy.setVersion(version);
                             copy.set(Constants.KEY_WILDCARD_MATCH, STRING_TRUE);
                         } catch (Exception e) {
-                            LOG.error("Cannot extract version from artifact {}. To express that no version information " +
+                            log.error("Cannot extract version from artifact {}. To express that no version information " +
                                     "is available use a different version keyword such as 'undefined' or 'unspecific'.", id);
                         }
                     }
@@ -460,7 +455,7 @@ public class InventoryReport {
                         final String messagePattern = "{} for artifact [{}] {}";
                         if (localError) {
                             // all errors are logged
-                            LOG.error(messagePattern, classifier, artifactQualifier, comment);
+                            log.error(messagePattern, classifier, artifactQualifier, comment);
                         } else if (localWarn) {
 
                             // only 10 warnings of each kind (classifier) are logged to not pollute the log.
@@ -469,22 +464,22 @@ public class InventoryReport {
                             classifierMessageCount.put(classifier, count);
 
                             if (count <= 10) {
-                                LOG.warn(messagePattern, classifier, artifactQualifier, comment);
+                                log.warn(messagePattern, classifier, artifactQualifier, comment);
                             }
                             if (count == 10) {
-                                LOG.warn("{} - logging no further warnings for classifier.", classifier);
+                                log.warn("{} - logging no further warnings for classifier.", classifier);
                             }
                         } else {
-                            LOG.info(messagePattern, classifier, artifactQualifier, comment);
+                            log.info(messagePattern, classifier, artifactQualifier, comment);
                         }
                     } else {
                         if (classifier.contains("[hint]")) {
                             if (!localArtifact.isRelevant()) {
                                 final String messagePattern = "{} {} {} (not relevant for report)";
-                                LOG.info(messagePattern, classifier, artifactQualifier, comment);
+                                log.info(messagePattern, classifier, artifactQualifier, comment);
                             } else {
                                 final String messagePattern = "{} {} {} (not managed)";
-                                LOG.info(messagePattern, classifier, artifactQualifier, comment);
+                                log.info(messagePattern, classifier, artifactQualifier, comment);
                             }
                         }
                     }
@@ -531,24 +526,30 @@ public class InventoryReport {
         // transfer available asset information
         projectInventory.inheritAssetMetaData(globalInventory, false);
 
-        LOG.debug("Project inventory constructed: {}", projectInventory.getInventorySizePrintString());
+        log.debug("Project inventory constructed: {}", projectInventory.getInventorySizePrintString());
         this.checkReportInventory(projectInventory);
 
         // filter the vulnerability metadata to only cover the items remaining in the inventory
         if (configParams.isFilterVulnerabilitiesNotCoveredByArtifacts()) {
             projectInventory.filterVulnerabilityMetaData();
-            LOG.debug("Project inventory after filtering using [filterVulnerabilitiesNotCoveredByArtifacts]: {}", projectInventory.getInventorySizePrintString());
+            log.debug("Project inventory after filtering using [filterVulnerabilitiesNotCoveredByArtifacts]: {}", projectInventory.getInventorySizePrintString());
         }
 
         // FIXME: we need to unify this; filtering is more or less obsolete
         final Inventory filteredInventory = projectInventory.getFilteredInventory();
 
+        final boolean isVulnerabilityReport = configParams.isInventoryVulnerabilityReportEnabled() ||
+                configParams.isInventoryVulnerabilityReportSummaryEnabled() ||
+                configParams.isInventoryVulnerabilityStatisticsReportEnabled() ||
+                configParams.isAssessmentReportEnabled();
+
         // build adapters
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
                 new AssetReportAdapter(filteredInventory),
-                new VulnerabilityReportAdapter(projectInventory, securityPolicy),
-                new AssessmentReportAdapter(projectInventory, securityPolicy),
+                isVulnerabilityReport ? ReportAdapterLoader.getAdapterOrThrow(IVulnerabilityReportAdapter.class).setup(projectInventory, securityPolicy) : null,
+                isVulnerabilityReport ? ReportAdapterLoader.getAdapterOrThrow(IAssessmentReportAdapter.class).setup(projectInventory, securityPolicy) : null,
                 new InventoryReportAdapter(filteredInventory));
+
 
         // write reports
         if (configParams.isInventoryBomReportEnabled()) {
@@ -613,15 +614,15 @@ public class InventoryReport {
             // write the report
             try {
                 new InventoryWriter().writeInventory(projectInventory, targetInventoryFile);
-                LOG.info("Report inventory written to [{}].", getTargetInventoryPath());
+                log.info("Report inventory written to [{}].", getTargetInventoryPath());
             } catch (Exception e) {
-                LOG.error("Unable to write inventory to [{}]. Skipping write.", getTargetInventoryPath(), e);
+                log.error("Unable to write inventory to [{}]. Skipping write.", getTargetInventoryPath(), e);
             }
         }
 
         if (!error && !unknown && !unknownVersion && !development && !internal && !upgrade && !downgrade &&
                 !missingLicenseFile && !missingNotice) {
-            LOG.info("No findings!");
+            log.info("No findings!");
         }
 
         if (error && configParams.isFailOnError()) {
@@ -663,12 +664,12 @@ public class InventoryReport {
     @Getter
     public static class InventoryReportAdapters {
         final AssetReportAdapter assetReportAdapter;
-        final VulnerabilityReportAdapter vulnerabilityReportAdapter;
-        final AssessmentReportAdapter assessmentReportAdapter;
+        final IVulnerabilityReportAdapter<?, ?, ?, ?, ?> vulnerabilityReportAdapter;
+        final IAssessmentReportAdapter assessmentReportAdapter;
         final InventoryReportAdapter inventoryReportAdapter;
 
-        private InventoryReportAdapters(AssetReportAdapter assetReportAdapter, VulnerabilityReportAdapter vulnerabilityReportAdapter,
-                    AssessmentReportAdapter assessmentReportAdapter, InventoryReportAdapter inventoryReportAdapter) {
+        private InventoryReportAdapters(AssetReportAdapter assetReportAdapter, IVulnerabilityReportAdapter<?, ?, ?, ?, ?> vulnerabilityReportAdapter,
+                                        IAssessmentReportAdapter assessmentReportAdapter, InventoryReportAdapter inventoryReportAdapter) {
             this.assetReportAdapter = assetReportAdapter;
             this.vulnerabilityReportAdapter = vulnerabilityReportAdapter;
             this.assessmentReportAdapter = assessmentReportAdapter;
@@ -677,7 +678,7 @@ public class InventoryReport {
     }
 
     protected void writeReports(Inventory projectInventory, Inventory filteredInventory, InventoryReportAdapters report,
-                String templateBaseDir, String templateGroup, ReportContext reportContext) throws IOException {
+                                String templateBaseDir, String templateGroup, ReportContext reportContext) throws IOException {
 
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         final String vtClasspathResourcePattern = templateBaseDir + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
@@ -701,14 +702,13 @@ public class InventoryReport {
     private void produceDita(Inventory projectInventory, Inventory filteredInventory,
                              InventoryReportAdapters inventoryReportAdapters,
                              String templateResourcePath, File target, ReportContext reportContext) throws IOException {
-        LOG.info("Producing Dita for template [{}]", templateResourcePath);
+        log.info("Producing Dita for template [{}]", templateResourcePath);
 
         final Properties properties = new Properties();
-        properties.put(Velocity.RESOURCE_LOADER, "class, file");
-        properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
+        properties.put(Velocity.RESOURCE_LOADERS, "class, file");
+        properties.put("resource.loader.class.class", ClasspathResourceLoader.class.getName());
         properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.OUTPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.SET_NULL_ALLOWED, true);
+        properties.put(Velocity.RUNTIME_REFERENCES_STRICT, configParams.isFailOnMissingVelocityRuntimeReferences());
         //https://velocity.apache.org/engine/1.7/developer-guide.html#velocimacro
         properties.put("velocimacro.arguments.strict", "true");
 
@@ -727,7 +727,6 @@ public class InventoryReport {
         context.put("assetAdapter", inventoryReportAdapters.getAssetReportAdapter());
         context.put("inventoryReportAdapter", inventoryReportAdapters.getInventoryReportAdapter());
         context.put("report", this);
-        context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
         context.put("utils", reportUtils);
 
@@ -764,10 +763,10 @@ public class InventoryReport {
                     if (licenseMetaData == null) {
                         final String messagePattern = "No notice for artifact '{}' with license '{}'.";
                         if (configParams.isFailOnMissingNotice()) {
-                            LOG.error(messagePattern, artifact.createStringRepresentation(), license);
+                            log.error(messagePattern, artifact.createStringRepresentation(), license);
                             return true;
                         } else {
-                            LOG.warn(messagePattern, artifact.createStringRepresentation(), license);
+                            log.warn(messagePattern, artifact.createStringRepresentation(), license);
                         }
                         missingNotice = true;
                     }
@@ -796,13 +795,13 @@ public class InventoryReport {
         } else {
             if (!reportedLicenseFolders.contains(licenseFolderName)) {
                 if (configParams.isFailOnMissingLicenseFile()) {
-                    LOG.error("[missing license file] in folder [{}]", licenseFolderName);
+                    log.error("[missing license file] in folder [{}]", licenseFolderName);
                 } else {
                     if (reportedLicenseFolders.size() <= 10) {
-                        LOG.warn("[missing license file] in folder [{}]", licenseFolderName);
+                        log.warn("[missing license file] in folder [{}]", licenseFolderName);
                     }
                     if (reportedLicenseFolders.size() == 10) {
-                        LOG.warn("[missing license file] - logging no further warnings for classifier.");
+                        log.warn("[missing license file] - logging no further warnings for classifier.");
                     }
                 }
                 reportedLicenseFolders.add(licenseFolderName);
@@ -823,13 +822,13 @@ public class InventoryReport {
         } else {
             if (!reportedLicenseFolders.contains(componentFolderName)) {
                 if (configParams.isFailOnMissingComponentFiles()) {
-                    LOG.error("[missing component specific license file] in folder '{}'", componentFolderName);
+                    log.error("[missing component specific license file] in folder '{}'", componentFolderName);
                 } else {
                     if (reportedLicenseFolders.size() <= 10) {
-                        LOG.warn("[missing component specific license file] in folder '{}'", componentFolderName);
+                        log.warn("[missing component specific license file] in folder '{}'", componentFolderName);
                     }
                     if (reportedLicenseFolders.size() == 10) {
-                        LOG.warn("[missing component specific license file] - logging no further warnings for classifier.");
+                        log.warn("[missing component specific license file] - logging no further warnings for classifier.");
                     }
                 }
                 reportedLicenseFolders.add(componentFolderName);
@@ -959,8 +958,8 @@ public class InventoryReport {
 
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
                 new AssetReportAdapter(baseFilteredInventory),
-                new VulnerabilityReportAdapter(baseFilteredInventory, securityPolicy),
-                new AssessmentReportAdapter(baseFilteredInventory, securityPolicy),
+                null,
+                null,
                 new InventoryReportAdapter(baseFilteredInventory));
 
         writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
@@ -994,15 +993,15 @@ public class InventoryReport {
     }
 
     private static void logHeaderBox(String str) {
-        LOG.info(repeat("*", str.length() + 4));
-        LOG.info("* {} *", str);
-        LOG.info(repeat("*", str.length() + 4));
+        log.info(repeat("*", str.length() + 4));
+        log.info("* {} *", str);
+        log.info(repeat("*", str.length() + 4));
     }
 
     private void logConfiguration() {
-        LOG.debug("Report configuration:");
+        log.debug("Report configuration:");
 
-        LOG.debug("- Source/Target paths:");
+        log.debug("- Source/Target paths:");
         logConfigurationLogFile("referenceInventoryDir", referenceInventoryDir);
         logConfigurationLogToString("referenceInventoryIncludes", referenceInventoryIncludes);
         logConfigurationLogToString("referenceComponentPath", referenceComponentPath);
@@ -1015,27 +1014,27 @@ public class InventoryReport {
         logConfigurationLogFile("targetLicenseDir", targetLicenseDir);
         logConfigurationLogToString("relativeLicensePath", relativeLicensePath);
 
-        LOG.debug("- Validation fail flags:");
-        LOG.debug(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", configParams.isFailOnError(),  configParams.isFailOnBanned(),  configParams.isFailOnDowngrade(),  configParams.isFailOnUnknown(),  configParams.isFailOnUnknownVersion(),  configParams.isFailOnDevelopment(),  configParams.isFailOnInternal());
-        LOG.debug("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]",  configParams.isFailOnUpgrade(),  configParams.isFailOnMissingLicense(),  configParams.isFailOnMissingLicenseFile(),  configParams.isFailOnMissingNotice(),  configParams.isFailOnMissingComponentFiles());
+        log.debug("- Validation fail flags:");
+        log.debug(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", configParams.isFailOnError(), configParams.isFailOnBanned(), configParams.isFailOnDowngrade(), configParams.isFailOnUnknown(), configParams.isFailOnUnknownVersion(), configParams.isFailOnDevelopment(), configParams.isFailOnInternal());
+        log.debug("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]", configParams.isFailOnUpgrade(), configParams.isFailOnMissingLicense(), configParams.isFailOnMissingLicenseFile(), configParams.isFailOnMissingNotice(), configParams.isFailOnMissingComponentFiles());
 
-        LOG.debug("- Data display settings:");
+        log.debug("- Data display settings:");
         logConfigurationLogToString("artifactFilter", artifactFilter);
         logConfigurationLogToString("filterVulnerabilitiesNotCoveredByArtifacts", configParams.isFilterVulnerabilitiesNotCoveredByArtifacts());
         logConfigurationLogToString("filterAdvisorySummary", configParams.isFilterAdvisorySummary());
 
-        LOG.debug("- Template settings:");
-        LOG.debug(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]",  configParams.isInventoryBomReportEnabled(),  configParams.isInventoryDiffReportEnabled(),  configParams.isInventoryPomEnabled(),  configParams.isInventoryVulnerabilityReportEnabled());
-        LOG.debug("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]",  configParams.isInventoryVulnerabilityReportSummaryEnabled(),  configParams.isInventoryVulnerabilityStatisticsReportEnabled());
+        log.debug("- Template settings:");
+        log.debug(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]", configParams.isInventoryBomReportEnabled(), configParams.isInventoryDiffReportEnabled(), configParams.isInventoryPomEnabled(), configParams.isInventoryVulnerabilityReportEnabled());
+        log.debug("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]", configParams.isInventoryVulnerabilityReportSummaryEnabled(), configParams.isInventoryVulnerabilityStatisticsReportEnabled());
         logConfigurationLogToString("templateLanguageSelector", configParams.getReportLanguage());
 
-        LOG.debug("- Addon data:");
+        log.debug("- Addon data:");
         if (addOnArtifacts == null) {
-            LOG.debug(" - addOnArtifacts: <null>");
+            log.debug(" - addOnArtifacts: <null>");
         } else if (addOnArtifacts.isEmpty()) {
-            LOG.debug(" - addOnArtifacts: <empty>");
+            log.debug(" - addOnArtifacts: <empty>");
         } else {
-            LOG.debug(" - addOnArtifacts: {}", addOnArtifacts.stream().map(Artifact::getId).collect(Collectors.toList()));
+            log.debug(" - addOnArtifacts: {}", addOnArtifacts.stream().map(Artifact::getId).collect(Collectors.toList()));
         }
 
         securityPolicy.debugLogConfiguration();
@@ -1043,15 +1042,15 @@ public class InventoryReport {
 
     private void logConfigurationLogFile(String property, File file) {
         if (file == null) {
-            LOG.info(" - {}: <null>", property);
+            log.info(" - {}: <null>", property);
         } else {
-            LOG.info(" - {}: file://{}", property, file.getAbsolutePath());
+            log.info(" - {}: file://{}", property, file.getAbsolutePath());
         }
     }
 
     private void logConfigurationLogToString(String property, Object data) {
         if (data == null) {
-            LOG.info(" - {}: <null>", property);
+            log.info(" - {}: <null>", property);
         } else {
             final String asString = String.valueOf(data);
 
@@ -1061,7 +1060,7 @@ public class InventoryReport {
                 return;
             }
 
-            LOG.info(" - {}: {}", property, asString);
+            log.info(" - {}: {}", property, asString);
         }
     }
 

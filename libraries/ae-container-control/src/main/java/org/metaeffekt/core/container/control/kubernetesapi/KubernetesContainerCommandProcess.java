@@ -25,12 +25,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Represents a running process in a kubernetes container.
+ */
 @SuppressWarnings("unused")
 public class KubernetesContainerCommandProcess extends Process implements AutoCloseable {
-    public static final Logger LOG = LoggerFactory.getLogger(KubernetesContainerCommandProcess.class);
+    /**
+     * Logger used with this class
+     */
+    protected static final Logger LOG = LoggerFactory.getLogger(KubernetesContainerCommandProcess.class);
 
     private boolean closed = false;
 
+    /**
+     * Watch object to interact with the running process.
+     */
     private final ExecWatch watch;
 
     /**
@@ -107,26 +116,41 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
         this.bufferType = Buffering.MEM_BUF;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public OutputStream getOutputStream() {
         return sin;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public InputStream getInputStream() {
         return sout;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public InputStream getErrorStream() {
         return serr;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int waitFor() throws InterruptedException {
         return watch.exitCode().join();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int exitValue() throws IllegalThreadStateException {
         int exitValue = watch.exitCode().getNow(-1);
@@ -136,6 +160,9 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
         return exitValue;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void destroy() {
         try {
@@ -148,6 +175,9 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close() throws IOException {
         if (!closed) {
@@ -182,6 +212,13 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
         return bufferType;
     }
 
+    /**
+     * Helper function that ensures that output is set to be buffered in-memory of java.
+     * <p>
+     *     This makes sure that processes that output stuff can run properly and not get stuck waiting for
+     *     us to read their output.
+     * </p>
+     */
     protected void ensureBuffering() {
         if (bufferType != Buffering.MEM_BUF) {
             throw new IllegalStateException("Buffering is not turned on.");

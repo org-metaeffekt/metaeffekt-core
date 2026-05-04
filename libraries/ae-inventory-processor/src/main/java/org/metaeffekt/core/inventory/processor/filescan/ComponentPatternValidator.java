@@ -17,17 +17,11 @@
 package org.metaeffekt.core.inventory.processor.filescan;
 
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.List;
 
 public class ComponentPatternValidator {
 

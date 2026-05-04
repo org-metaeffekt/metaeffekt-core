@@ -15,18 +15,16 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+@Slf4j
 public abstract class InventoryExtractorUtil {
-
-    private static final Logger LOG = LoggerFactory.getLogger(InventoryExtractorUtil.class);
 
     public static final String SEPARATOR_LINK_MAP = " --> ";
 
@@ -65,10 +63,10 @@ public abstract class InventoryExtractorUtil {
         final Set<String> folder = new HashSet<>(FileUtils.readLines(foldersFile, FileUtils.ENCODING_UTF_8));
 
         // optimize exclude patterns
-        LOG.info("Optimizing exclude patterns...");
+        log.info("Optimizing exclude patterns...");
         final PatternSetMatcher excludePatternSetMatcher = new PatternSetMatcher(excludePatterns);
 
-        LOG.info("Building symlink map...");
+        log.info("Building symlink map...");
         // The symLinkMap maps symbolic links to there origin (target to source); in the original dataset the source
         // can be relative to the target (e.g. /var/spool/mail --> ../mail;
         // or /usr/share/zoneinfo/right/Pacific/Ponape --> Pohnpei) or absolut (e.g. /var/run --> /run).
@@ -76,18 +74,18 @@ public abstract class InventoryExtractorUtil {
         final List<String> symbolicLinks = FileUtils.readLines(symbolicLinksFile, FileUtils.ENCODING_UTF_8);
         final Map<String, String> symLinkMap = buildSymLinkMap(symbolicLinks);
 
-        LOG.info("Filtering [{}] files applying exclude patterns and file symlinks...", fileList.size());
+        log.info("Filtering [{}] files applying exclude patterns and file symlinks...", fileList.size());
         final Set<String> resultingFileSet = filterByExcludePatternsAndLinkedFiles(fileList, excludePatternSetMatcher, symLinkMap);
 
-        LOG.info("Filtering [{}] files analyzing coverage by packages and symlinks...", resultingFileSet.size());
+        log.info("Filtering [{}] files analyzing coverage by packages and symlinks...", resultingFileSet.size());
         filterByPackageFiles(packageFilesDir, resultingFileSet, folder, symLinkMap, packageFiles);
 
-        LOG.info("Filtering [{}] files applying exclude patterns and folder symlinks...", resultingFileSet.size());
+        log.info("Filtering [{}] files applying exclude patterns and folder symlinks...", resultingFileSet.size());
 
         // FIXME: temporarily deactivated; identified to remove too many files
         // filterByExcludePatternsAndLinkedFolders(resultingFileSet, excludePatternSetMatcher, symLinkMap);
 
-        LOG.info("Filtering files completed resulting in [{}] files.", resultingFileSet.size());
+        log.info("Filtering files completed resulting in [{}] files.", resultingFileSet.size());
 
         return resultingFileSet;
     }
@@ -110,8 +108,8 @@ public abstract class InventoryExtractorUtil {
             if (patternSetMatcher.matches(file)) {
                 if (linkedFile != null) {
                     if (resultingFileSet.remove(linkedFile)) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Removing " + file + " due to symlink " + linkedFile + "=" + file);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Removing " + file + " due to symlink " + linkedFile + "=" + file);
                         }
                     }
                 }
@@ -137,8 +135,8 @@ public abstract class InventoryExtractorUtil {
                     }
                     for (String filePath : toBeDeleted) {
                         if (fileSet.remove(filePath)) {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("Removing " + file + " due to folder symlink " + linkedFile + "=" + file);
+                            if (log.isDebugEnabled()) {
+                                log.debug("Removing " + file + " due to folder symlink " + linkedFile + "=" + file);
                             }
                         }
                     }
@@ -177,8 +175,8 @@ public abstract class InventoryExtractorUtil {
                             final String effectivePath = replacePathPrefix(
                                     convertedFile, symLinkEntry.getKey(), symLinkEntry.getValue());
                             if (resultingFileSet.remove(effectivePath)) {
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("Removing " + effectivePath + " due to symlink " + symLinkEntry);
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Removing " + effectivePath + " due to symlink " + symLinkEntry);
                                 }
                             }
                         }
@@ -218,7 +216,7 @@ public abstract class InventoryExtractorUtil {
             final int separatorIndex = symLinkLine.indexOf(SEPARATOR_LINK_MAP);
 
             if (separatorIndex == -1) {
-                LOG.warn("Cannot parse symlink information: " + symLinkLine);
+                log.warn("Cannot parse symlink information: " + symLinkLine);
                 continue;
             }
 

@@ -15,17 +15,15 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
 import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class WindowsPartExtractorOptionalFeature extends WindowsPartExtractorBase {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WindowsPartExtractorOptionalFeature.class);
 
     public void parse(Inventory inventory, JSONArray optionalFeatureJson) {
         for (int i = 0; i < optionalFeatureJson.length(); i++) {
@@ -35,7 +33,7 @@ public class WindowsPartExtractorOptionalFeature extends WindowsPartExtractorBas
 
             final String effectiveFeatureName;
             if (inventory.findInventoryInfo(featureName) != null) {
-                LOG.warn("Duplicate [{}] feature name found: {}", WindowsExtractorAnalysisFile.Class_Win32_OptionalFeature.getTypeName(), featureName);
+                log.warn("Duplicate [{}] feature name found: {}", WindowsExtractorAnalysisFile.Class_Win32_OptionalFeature.getTypeName(), featureName);
                 effectiveFeatureName = featureName + " (" + getJsonFieldValue(featureJson, "Caption") + ")";
             } else {
                 effectiveFeatureName = featureName;

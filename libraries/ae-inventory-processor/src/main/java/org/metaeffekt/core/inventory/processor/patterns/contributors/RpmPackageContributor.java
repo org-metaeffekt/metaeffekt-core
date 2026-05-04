@@ -16,6 +16,7 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -30,8 +31,6 @@ import org.metaeffekt.core.inventory.processor.patterns.contributors.util.bdb.RP
 import org.metaeffekt.core.inventory.processor.patterns.contributors.util.ndb.NDB;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.util.sqlite3.SQLite3;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -41,8 +40,8 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.concurrent.BlockingQueue;
 
+@Slf4j
 public class RpmPackageContributor extends ComponentPatternContributor {
-    private static final Logger LOG = LoggerFactory.getLogger(RpmPackageContributor.class);
     private static final String RPM_TYPE = "rpm";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("/packages");
@@ -65,7 +64,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
         File packagesFile = new File(baseDir, relativeAnchorPath);
 
         if (!packagesFile.exists()) {
-            LOG.warn("RPM packages file does not exist: [{}]", packagesFile.getAbsolutePath());
+            log.warn("RPM packages file does not exist: [{}]", packagesFile.getAbsolutePath());
             return Collections.emptyList();
         }
 
@@ -82,7 +81,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     entry = entries.take();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    LOG.warn("Thread interrupted while waiting for entries", e);
+                    log.warn("Thread interrupted while waiting for entries", e);
                     break;
                 }
                 if (entry.getValue() == null && entry.getError() == null) {
@@ -90,7 +89,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     break;
                 }
                 if (entry.getError() != null) {
-                    LOG.warn("Could not read entry:", entry.getError());
+                    log.warn("Could not read entry:", entry.getError());
                     break;
                 }
                 if (entry.getValue() != null) {
@@ -123,7 +122,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                             throw new IllegalStateException("No files found for rpm-package: " + packageInfo.getName());
                         }
                     } catch (Exception e) { // FIXME: what kind of exceptions happen here; also observed NPE
-                        LOG.warn("Could not derive include patterns for rpm-package: [{}]", packageInfo.getName());
+                        log.warn("Could not derive include patterns for rpm-package: [{}]", packageInfo.getName());
 
                         // include even, when there is no file match
                         cpd.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
@@ -160,7 +159,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
             }
             return components;
         } catch (Exception e) {
-            LOG.warn("Could not read RPM packages file", e);
+            log.warn("Could not read RPM packages file", e);
             return Collections.emptyList();
         }
     }

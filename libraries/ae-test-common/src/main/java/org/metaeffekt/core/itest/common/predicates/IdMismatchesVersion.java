@@ -15,18 +15,14 @@
  */
 package org.metaeffekt.core.itest.common.predicates;
 
-import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class IdMismatchesVersion implements NamedBasePredicate<Artifact> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(IdMismatchesVersion.class);
 
     public static final NamedBasePredicate<Artifact> ID_MISMATCHING_VERSION = new IdMismatchesVersion();
 

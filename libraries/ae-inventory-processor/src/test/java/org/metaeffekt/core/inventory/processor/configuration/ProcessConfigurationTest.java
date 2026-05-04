@@ -16,10 +16,8 @@
 package org.metaeffekt.core.inventory.processor.configuration;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,23 +28,23 @@ public class ProcessConfigurationTest {
 
     @Test
     public void processConfigurationTest() {
-        DemoConfiguration demoConfiguration = new DemoConfiguration();
+        final DemoConfiguration demoConfiguration = new DemoConfiguration();
         Map<String, Object> properties = demoConfiguration.getProperties();
 
-        Assert.assertTrue(properties.size() >= 4);
-        Assert.assertFalse(properties.containsKey("ignoreProperty"));
+        Assertions.assertTrue(properties.size() >= 4);
+        Assertions.assertFalse(properties.containsKey("ignoreProperty"));
 
         demoConfiguration.setProperties(properties);
 
-        List<AeaaAdvisoryTypeIdentifier<?>> advisoryTypeIdentifiers = demoConfiguration.getAdvisoryTypes();
-        Assert.assertEquals(AeaaAdvisoryTypeStore.OSV_GENERIC_IDENTIFIER, advisoryTypeIdentifiers.get(0));
-        Assert.assertThrows(UnsupportedOperationException.class, () -> advisoryTypeIdentifiers.add(AeaaAdvisoryTypeStore.OSV_GENERIC_IDENTIFIER));
+        final List<DemoConfiguration.CustomAdvisoryTypeIdentifier> advisoryTypeIdentifiers = demoConfiguration.getAdvisoryTypes();
+        Assertions.assertEquals(DemoConfiguration.OSV_GENERIC_IDENTIFIER, advisoryTypeIdentifiers.get(0));
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> advisoryTypeIdentifiers.add(DemoConfiguration.OSV_GENERIC_IDENTIFIER));
 
-        List<AeaaAdvisoryTypeIdentifier<?>> advisoryTypes = new ArrayList<>(advisoryTypeIdentifiers);
-        advisoryTypes.add(AeaaAdvisoryTypeStore.CSAF_GENERIC_IDENTIFIER);
+        List<DemoConfiguration.CustomAdvisoryTypeIdentifier> advisoryTypes = new ArrayList<>(advisoryTypeIdentifiers);
+        advisoryTypes.add(DemoConfiguration.CSAF_GENERIC_IDENTIFIER);
         demoConfiguration.setAdvisoryTypes(advisoryTypes);
 
-        Assert.assertEquals(2, demoConfiguration.getAdvisoryTypes().size());
+        Assertions.assertEquals(2, demoConfiguration.getAdvisoryTypes().size());
 
         properties = demoConfiguration.getProperties();
         properties.remove("advisoryTypes");
@@ -55,6 +53,6 @@ public class ProcessConfigurationTest {
         demoConfiguration.setProperties(properties);
 
         advisoryTypes = demoConfiguration.getAdvisoryTypes();
-        Assert.assertEquals(0, advisoryTypes.size());
+        Assertions.assertEquals(0, advisoryTypes.size());
     }
 }

@@ -15,23 +15,21 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ArtifactType;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import static org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile.Class_Win32_PrinterDriver;
 
+@Slf4j
 public class WindowsPartExtractorPrinterDriver extends WindowsPartExtractorBase {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WindowsPartExtractorPrinterDriver.class);
 
     public void parse(Inventory inventory, JSONArray networkAdapterArrayJson) {
         for (int i = 0; i < networkAdapterArrayJson.length(); i++) {

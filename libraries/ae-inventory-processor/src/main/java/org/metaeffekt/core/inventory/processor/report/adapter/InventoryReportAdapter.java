@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.processor.report.adapter;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.model.License;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;

@@ -15,19 +15,32 @@
  */
 package org.metaeffekt.core.container.control;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.container.control.exception.CommandExecutionFailed;
 import org.metaeffekt.core.container.control.kubernetesapi.KubernetesCommandExecutor;
 import org.metaeffekt.core.container.control.kubernetesapi.KubernetesContainerCommandProcess;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Utility function for running commands in an executor.
+ */
+@Slf4j
 @SuppressWarnings("unused")
 public class ExecutorUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(ExecutorUtils.class);
 
+    /**
+     * Runs a command demanding success.
+     * <p>
+     *     Throws with a generic failure message and logs some failure information on failure.
+     * </p>
+     * @param executor the executor to run in
+     * @param command the command to run (and arguments)
+     * @param time time to wait for execution to complete
+     * @param timeUnit unit of time to wait for completion
+     * @throws CommandExecutionFailed if the execution failed / is incomplete (such as non-null process exit value)
+     */
     public static void demandSuccess(KubernetesCommandExecutor executor,
                                      String[] command,
                                      long time,
@@ -44,8 +57,8 @@ public class ExecutorUtils {
             throw new CommandExecutionFailed("Failed to execute: execution failed with exception", e);
         }
         if (exitValue != 0) {
-            LOG.debug("Failed command stdout: [{}]", stdout);
-            LOG.debug("Failed command stderr: [{}]", stderr);
+            log.debug("Failed command stdout: [{}]", stdout);
+            log.debug("Failed command stderr: [{}]", stderr);
             throw new CommandExecutionFailed("Failed to execute: command failed with exit value " + exitValue);
         }
     }

@@ -15,11 +15,10 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,9 +31,8 @@ import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class SystemBinaryComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SystemBinaryComponentPatternContributor.class);
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/usr/bin/**");
         add("/usr/sbin/**");
@@ -55,7 +53,7 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
 
         try {
             if (!isFileExecutable(anchorFile.getAbsolutePath())) {
-                LOG.warn("File {} is not executable. Skipping.", anchorFile.getAbsolutePath());
+                log.warn("File {} is not executable. Skipping.", anchorFile.getAbsolutePath());
                 return Collections.emptyList();
             }
             executeCommand(new String[]{"chmod", "+x", anchorFile.getAbsolutePath()});
@@ -100,7 +98,7 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
             try {
                 process = processBuilder.start();
             } catch (IOException e) {
-                LOG.warn("Cannot run program: {}", e.getMessage());
+                log.warn("Cannot run program: {}", e.getMessage());
                 return "N/A";
             }
             String versionString = null; // This will hold the first matched version string
@@ -122,7 +120,7 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
             }
             int exitVal = process.waitFor();
             if (exitVal != 0) {
-                LOG.warn("Command execution failed with exit code {} and output: {}", exitVal, output);
+                log.warn("Command execution failed with exit code {} and output: {}", exitVal, output);
                 return "N/A";
             }
             if (versionString != null) {
@@ -136,11 +134,11 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
             // wait for the command to complete within 500 milliseconds
             return future.get(500, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            LOG.warn("Command execution timed out: {}", e.getMessage());
+            log.warn("Command execution timed out: {}", e.getMessage());
             future.cancel(true);  // attempt to cancel the ongoing command
             return "N/A";
         } catch (ExecutionException | InterruptedException e) {
-            LOG.warn("Failed to execute command: {}", e.getMessage());
+            log.warn("Failed to execute command: {}", e.getMessage());
             return "N/A";
         } finally {
             executor.shutdownNow();  // ensure the executor is properly shut down
@@ -151,20 +149,20 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
         // check if the file is executable and get detailed info
         String fileInfo = getFileDetails(filePath);
         if (!fileInfo.contains("executable") || fileInfo.contains("ASCII text") || fileInfo.contains("script")) {
-            LOG.info("File {} is not an executable. Skipping.", filePath);
+            log.info("File {} is not an executable. Skipping.", filePath);
             return false;
         }
 
         // check for compatibility with the current architecture
         if (!isArchitectureCompatible(fileInfo)) {
-            LOG.info("File {} is not compatible with the current architecture. Skipping.", filePath);
+            log.info("File {} is not compatible with the current architecture. Skipping.", filePath);
             return false;
         }
 
         // extract and verify the interpreter (dynamic linker)
         String interpreter = extractInterpreter(fileInfo);
         if (interpreter != null && !new File(interpreter).exists()) {
-            LOG.info("Interpreter not found: {}.", interpreter);
+            log.info("Interpreter not found: {}.", interpreter);
             return false;
         }
         return true;
@@ -204,7 +202,7 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
 
         int exitVal = process.waitFor();
         if (exitVal != 0) {
-            LOG.error("File command failed for: {}", filePath);
+            log.error("File command failed for: {}", filePath);
             return "";
         }
         return output.toString();

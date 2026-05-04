@@ -15,17 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.assessment.AeaaEffectiveVulnerabilityAssessment;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
-import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
-import org.metaeffekt.core.security.cvss.CvssVector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,9 +31,8 @@ import java.util.stream.Collectors;
  *      Low │          0 │              0 │        38 │             0 │    0 │    38 │    0,0 %
  * </pre>
  */
+@Slf4j
 public class StatisticsOverviewTable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(StatisticsOverviewTable.class);
 
     private final List<SeverityToStatusRow> rows = new ArrayList<>();
     private final boolean usesEffectiveSeverity;
@@ -59,20 +49,7 @@ public class StatisticsOverviewTable {
         return usesEffectiveSeverity;
     }
 
-    protected void incrementCount(CentralSecurityPolicyConfiguration securityPolicy, String severity, String status) {
-        if (severity == null || status == null) {
-            LOG.warn("Severity [{}] or status [{}] is null. Skipping incrementCount.", severity, status);
-            return;
-        }
-
-        final String normalizedSeverity = normalize(severity);
-        final String normalizedStatus = normalize(status);
-
-        final SeverityToStatusRow row = findOrCreateRowBySeverity(securityPolicy, normalizedSeverity);
-        row.incrementCount(normalizedStatus);
-    }
-
-    protected SeverityToStatusRow findOrCreateRowBySeverity(CentralSecurityPolicyConfiguration securityPolicy, String severity) {
+    public SeverityToStatusRow findOrCreateRowBySeverity(CentralSecurityPolicyConfiguration securityPolicy, String severity) {
         final String normalizedSeverity = normalize(severity);
         return rows.stream()
                 .filter(row -> row.isSeverity(normalizedSeverity))
@@ -92,72 +69,17 @@ public class StatisticsOverviewTable {
                 .orElse(null);
     }
 
-    public static StatisticsOverviewTable buildTableStrFilterAdvisor(CentralSecurityPolicyConfiguration securityPolicy, Collection<AeaaVulnerability> inputVulnerabilities, String filterAdvisory, boolean useEffectiveSeverityScores) {
-        final AeaaAdvisoryTypeIdentifier<?> filterCertAsAeaaContentIdentifiers = StringUtils.isEmpty(filterAdvisory) ? null : AeaaAdvisoryTypeStore.get().fromNameWithoutCreation(filterAdvisory);
-        return buildTable(securityPolicy, inputVulnerabilities, filterCertAsAeaaContentIdentifiers, useEffectiveSeverityScores);
-    }
-
-    public static StatisticsOverviewTable buildTable(CentralSecurityPolicyConfiguration securityPolicy, Collection<AeaaVulnerability> inputVulnerabilities, AeaaAdvisoryTypeIdentifier<?> filterAdvisory, boolean useEffectiveSeverity) {
-        final StatisticsOverviewTable table = new StatisticsOverviewTable(useEffectiveSeverity);
-
-        final Collection<AeaaVulnerability> effectiveVulnerabilities;
-        if (filterAdvisory != null) {
-            effectiveVulnerabilities = CentralSecurityPolicyConfiguration.filterVulnerabilitiesForAdvisoryProviders(inputVulnerabilities, Collections.singleton(filterAdvisory));
-        } else {
-            effectiveVulnerabilities = inputVulnerabilities;
+    public void incrementCount(CentralSecurityPolicyConfiguration securityPolicy, String severity, String status) {
+        if (severity == null || status == null) {
+            log.warn("Severity [{}] or status [{}] is null. Skipping incrementCount.", severity, status);
+            return;
         }
 
-        final List<String> requiredSeverityCategories = Arrays.stream(securityPolicy.getCvssSeverityRanges().getRanges())
-                .sorted(Comparator.reverseOrder())
-                .map(CvssSeverityRanges.SeverityRange::getName)
-                .map(String::toLowerCase)
-                .collect(Collectors.toList());
-        final List<String> requiredStatusCategories = securityPolicy.getVulnerabilityStatusDisplayMapper().getStatusNames();
+        final String normalizedSeverity = normalize(severity);
+        final String normalizedStatus = normalize(status);
 
-        // add the default severity categories
-        for (String severityCategory : requiredSeverityCategories) {
-            table.findOrCreateRowBySeverity(securityPolicy, severityCategory);
-        }
-
-        // count the individual severity and status combinations
-        for (AeaaVulnerability vulnerability : effectiveVulnerabilities) {
-
-            // status in effectiveStatus
-            final AeaaEffectiveVulnerabilityAssessment assessment = vulnerability.getEffectiveVulnerabilityAssessment(securityPolicy);
-            final String effectiveStatus = securityPolicy.getVulnerabilityStatusDisplayMapper().getMapper().apply(assessment.getStatus());
-
-            // severity in effectiveSeverity
-            final CvssVector vector = useEffectiveSeverity ? vulnerability.getCvssSelectionResult().getSelectedContextIfAvailableOtherwiseInitial() : vulnerability.getCvssSelectionResult().getSelectedInitialCvss();
-            final String effectiveSeverity;
-            if (vector == null || (useEffectiveSeverity && (VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE.equals(assessment.getStatus()) || VulnerabilityMetaData.STATUS_VALUE_VOID.equals(assessment.getStatus())))) {
-                effectiveSeverity = "none";
-            } else {
-                final double overallScore = vector.getBakedScores().getOverallScore();
-                final CvssSeverityRanges.SeverityRange severityRange = securityPolicy.getCvssSeverityRanges().getRange(overallScore);
-                effectiveSeverity = severityRange.getName();
-            }
-
-            table.incrementCount(securityPolicy, effectiveSeverity, effectiveStatus);
-        }
-
-        table.getRows().forEach(row -> row.updateCalculatedColumns(securityPolicy));
-
-        // remove 'none' if all but the 'assessed' column are 0
-        final SeverityToStatusRow noneEntry = table.findRowBySeverity("none");
-        if (noneEntry != null) {
-            // remove the 'none' entry if the content does not contribute any further
-            // information. That is when only 0s are included.
-            // n/a cannot occur here, as the queried values are all integers.
-            final boolean allZero = noneEntry.getStatusCountMap().values().stream().allMatch(i -> i == 0);
-            if (allZero) {
-                table.rows.remove(noneEntry);
-            }
-        }
-
-        table.getRows().forEach(row -> row.rearrangeStatusCategories(requiredStatusCategories));
-
-        LOG.debug("Generated {} Overview Table for [{}] vulnerabilities with{}:\n{}", useEffectiveSeverity ? "effective" : "provided", effectiveVulnerabilities.size(), filterAdvisory == null ? "out advisory filtering" : " advisory filtering using [" + filterAdvisory + "]", table);
-        return table;
+        final SeverityToStatusRow row = findOrCreateRowBySeverity(securityPolicy, normalizedSeverity);
+        row.incrementCount(normalizedStatus);
     }
 
     public List<String> getHeaders() {

@@ -30,6 +30,8 @@ public class WeaknessMetaData extends AbstractModelBase {
 
     public enum Attribute implements AbstractModelBase.Attribute {
         ID("Id"),
+        NAME("Name"),
+        URL("Url"),
         CONTENT("Content"),
 
         REFERENCED_VULNERABILITIES("Referenced Vulnerabilities"),

@@ -17,17 +17,17 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 /**
  * Creates a report for the dependencies listed in the pom.
- *
- * @goal create-pom-report
- * @requiresDependencyResolution test
  */
+@Mojo(name = "create-pom-report", requiresDependencyResolution = ResolutionScope.TEST)
 public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
 
     private static final String DEPENDENCY_TYPE_JAR = "jar";
@@ -37,96 +37,66 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
     private static final String SCOPE_SYSTEM = "system";
     private static final String SCOPE_TEST = "test";
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean includeScopeProvided;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean includeScopeSystem;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean includeScopeTest;
 
-    /**
-     * @parameter default-value="true"
-     */
+    @Parameter(defaultValue = "true")
     private boolean includeOptional;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean includePlugins;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean manageScopeProvided;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean manageScopeSystem;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean manageScopeTest;
 
-    /**
-     * @parameter default-value="true"
-     */
+    @Parameter(defaultValue = "true")
     private boolean manageOptional;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean managePlugins;
 
-    /**
-     * @parameter default-value="false"
-     */
+    @Parameter(defaultValue = "false")
     private boolean skipPomPackagingProjectExecution;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        // adapt maven logging to underlying logging facade
-        MavenLogAdapter.initialize(getLog());
+        if (skipExecution()) {
+            return;
+        }
+
+        InventoryReport report = initializeInventoryReport();
+        Inventory inventory = createInventoryFromPom();
+        report.setInventory(inventory);
+
+        boolean success = false;
         try {
-            if (skipExecution()) {
-                return;
-            }
-
-            InventoryReport report = initializeInventoryReport();
-            Inventory inventory = createInventoryFromPom();
-            report.setInventory(inventory);
-
-            boolean success = false;
-            try {
-                success = report.createReport();
-            } catch (Exception e) {
-                throw new MojoExecutionException(e.getMessage(), e);
-            }
-            if (!success) {
-                throw new MojoFailureException("Failing build due to findings in report.");
-            }
-        } finally {
-            MavenLogAdapter.release();
+            success = report.createReport();
+        } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        }
+        if (!success) {
+            throw new MojoFailureException("Failing build due to findings in report.");
         }
     }
 
     private boolean skipExecution() {
         if (isPomPackagingProject()) {
-            // NOTE: usually skipping the execute for a POM build is sensible. However
+            // NOTE: usually skipping the execute for a POM build is sensible. However,
             //  we would already like to detect harmful artifacts in the scope
             //  a pom packaging project.
-            if (skipPomPackagingProjectExecution) {
-                return true;
-            }
+            return skipPomPackagingProjectExecution;
         }
         return false;
     }

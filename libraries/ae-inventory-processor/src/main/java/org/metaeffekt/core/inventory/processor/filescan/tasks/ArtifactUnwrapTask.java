@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan.tasks;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -26,8 +27,6 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,9 +40,8 @@ import static org.metaeffekt.core.util.ArchiveUtils.unpackIfPossible;
 /**
  * {@link ScanTask} unwrapping {@link Artifact}s (if possible).
  */
+@Slf4j
 public class ArtifactUnwrapTask extends ScanTask {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ArtifactUnwrapTask.class);
 
     public static final String CONTAINER_AGGREGATION_FOLDER = "[root]";
 
@@ -60,8 +58,8 @@ public class ArtifactUnwrapTask extends ScanTask {
 
         final FileRef fileRef = new FileRef(fileSystemScanContext.getBaseDir().getPath() + "/" + path);
 
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("Executing [{}] on: [{}]", getClass().getName(), fileRef.getFile().getAbsolutePath());
+        if (log.isTraceEnabled()) {
+            log.trace("Executing [{}] on: [{}]", getClass().getName(), fileRef.getFile().getAbsolutePath());
         }
 
         // unknown or requires expansion
@@ -131,18 +129,18 @@ public class ArtifactUnwrapTask extends ScanTask {
                         // apply implicit exclusion only for sub-artifacts
                         final FileRef parentPath = new FileRef(fileRef.getFile().getParentFile().getAbsolutePath());
                         if (!parentPath.getPath().equals(fileSystemScanContext.getBaseDir().getPath())) {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("Excluding archive [{}] from resulting artifacts. Classified as intermediate archive.", artifact.getId());
+                            if (log.isDebugEnabled()) {
+                                log.debug("Excluding archive [{}] from resulting artifacts. Classified as intermediate archive.", artifact.getId());
                             }
                             markForDelete = true;
                         } else {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("Including archive [{}] in resulting artifacts. Classified as intermediate top-level archive.", artifact.getId());
+                            if (log.isDebugEnabled()) {
+                                log.debug("Including archive [{}] in resulting artifacts. Classified as intermediate top-level archive.", artifact.getId());
                             }
                         }
                     } else {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Excluding archive [{}] from resulting artifacts. Explicitly classified for exclusion.", artifact.getId());
+                        if (log.isDebugEnabled()) {
+                            log.debug("Excluding archive [{}] from resulting artifacts. Explicitly classified for exclusion.", artifact.getId());
                         }
                         markForDelete = true;
                     }
@@ -159,7 +157,7 @@ public class ArtifactUnwrapTask extends ScanTask {
                 }
 
                 // trigger collection of content
-                LOG.info("Collecting files in [{}].", targetFolder.getPath());
+                log.info("Collecting files in [{}].", targetFolder.getPath());
                 final FileRef dirRef = new FileRef(targetFolder);
 
                 // currently we anticipate a virtual context with any unwrapped artifact; except for those marked for deletion (implicit archives)

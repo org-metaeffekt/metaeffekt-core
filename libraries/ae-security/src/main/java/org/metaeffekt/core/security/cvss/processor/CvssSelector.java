@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.security.cvss.processor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
@@ -25,8 +26,6 @@ import org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.*;
@@ -335,9 +334,8 @@ import java.util.stream.Collectors;
  *    </tbody>
  * </table>
  */
+@Slf4j
 public class CvssSelector implements Cloneable {
-
-    private final static Logger LOG = LoggerFactory.getLogger(CvssSelector.class);
 
     private final List<CvssRule> rules;
     private final List<SelectorStatsEvaluator> statsEvaluatorActions;

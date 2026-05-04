@@ -28,7 +28,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
-import static org.metaeffekt.core.inventory.processor.model.Constants.MARKER_OPTIONAL_DEPENDENCY;
 
 @Slf4j
 public abstract class AbstractLockAdapter {

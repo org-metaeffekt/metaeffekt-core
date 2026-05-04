@@ -31,11 +31,13 @@ class PackageInfo {
     String name;
     String component;
     String version;
+    String release;
     String arch;
     String summary;
     String description;
     String license;
     String url;
+    String sourcePackage;
     String documentationDir;
     String licenseDir;
     String group;
@@ -70,6 +72,8 @@ class PackageInfo {
         artifact.set(KEY_LICENSE_PATH_PACKAGE, licenseDir);
         artifact.set(KEY_GROUP_PACKAGE, group);
         artifact.set(KEY_STATUS_PACKAGE, status);
+        artifact.set(KEY_RELEASE, release);
+        artifact.set(KEY_SOURCE_PACKAGE, sourcePackage);
         return artifact;
     }
 

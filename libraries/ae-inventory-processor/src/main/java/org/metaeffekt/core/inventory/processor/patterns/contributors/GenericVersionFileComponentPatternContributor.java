@@ -16,11 +16,10 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -32,9 +31,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 public class GenericVersionFileComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(GenericVersionFileComponentPatternContributor.class);
     private static final String GENERIC_VERSION_TYPE = "generic-version";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("version.txt");
@@ -51,7 +49,12 @@ public class GenericVersionFileComponentPatternContributor extends ComponentPatt
         List<ComponentPatternData> components = new ArrayList<>();
 
         if (!versionFile.exists()) {
-            LOG.warn("Generic version file does not exist: {}", versionFile.getAbsolutePath());
+            log.warn("Generic version file does not exist: {}", versionFile.getAbsolutePath());
+            return Collections.emptyList();
+        }
+
+        // a version file within a python egg; do not process any further; expecting the dedicated contributor to pick up
+        if (relativeAnchorPath.endsWith("EGG-INFO/version.txt")) {
             return Collections.emptyList();
         }
 
@@ -67,7 +70,7 @@ public class GenericVersionFileComponentPatternContributor extends ComponentPatt
             }
             return components;
         } catch (Exception e) {
-            LOG.warn("Could not process generic version file", e);
+            log.warn("Could not process generic version file", e);
             return Collections.emptyList();
         }
     }

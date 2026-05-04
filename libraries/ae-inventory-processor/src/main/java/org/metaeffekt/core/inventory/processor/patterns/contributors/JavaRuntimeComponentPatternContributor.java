@@ -15,13 +15,12 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.PropertiesUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,9 +32,8 @@ import java.util.Properties;
 import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.OTHER_LOCALE;
 import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.PATH_LOCALE;
 
+@Slf4j
 public class JavaRuntimeComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JavaRuntimeComponentPatternContributor.class);
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/release");
@@ -76,7 +74,7 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
             }
             return Collections.emptyList();
         } catch (Exception e) {
-            LOG.warn("Failed to process release file: {}", relativeAnchorPath, e);
+            log.warn("Failed to process release file: {}", relativeAnchorPath, e);
             return Collections.emptyList();
         }
     }

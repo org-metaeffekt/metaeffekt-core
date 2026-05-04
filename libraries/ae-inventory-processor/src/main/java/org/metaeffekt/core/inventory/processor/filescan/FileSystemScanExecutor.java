@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
@@ -29,8 +30,6 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
@@ -41,9 +40,8 @@ import java.util.stream.Collectors;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
+@Slf4j
 public class FileSystemScanExecutor implements FileSystemScanTaskListener {
-
-    private static final Logger LOG = LoggerFactory.getLogger(FileSystemScanExecutor.class);
 
     private final FileSystemScanContext fileSystemScanContext;
 
@@ -94,7 +92,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
             // push tasks for being processed and mark for another iteration
             if (!scanTasks.isEmpty()) {
-                LOG.info("Triggering {} outstanding tasks...", scanTasks.size());
+                log.info("Triggering {} outstanding tasks...", scanTasks.size());
                 scanTasks.forEach(fileSystemScanContext::push);
                 iteration.set(true);
             }
@@ -147,7 +145,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
                     // fallback to asset path; more as a processing failure indication
                     if (StringUtils.isBlank(assetId)) {
-                        LOG.warn("Cannot resolve asset id for path " + assetPath);
+                        log.warn("Cannot resolve asset id for path " + assetPath);
                     } else {
                         artifact.set(assetId, MARKER_CONTAINS);
                     }
@@ -232,9 +230,9 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             try {
                 scanTask.process(fileSystemScanContext);
             } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             } catch (Error error) {
-                LOG.error(error.getMessage(), error);
+                log.error(error.getMessage(), error);
                 System.exit(-1);
             } finally {
                 notifyOnTaskPopped(scanTask);
@@ -258,6 +256,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         final InspectorRunner runner = InspectorRunner.builder()
                 .queue(JarInspector.class)
                 .queue(RpmMetadataInspector.class)
+                .queue(SharedObjectInspector.class)
                 .queue(InventoryInspector.class)
                 .build();
 

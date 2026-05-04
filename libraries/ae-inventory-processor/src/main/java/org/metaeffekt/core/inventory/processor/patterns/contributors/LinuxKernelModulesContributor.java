@@ -16,14 +16,13 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import net.fornwall.jelf.ElfFile;
 import net.fornwall.jelf.ElfSection;
 import net.fornwall.jelf.ElfStringTable;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -32,9 +31,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class LinuxKernelModulesContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LinuxKernelModulesContributor.class);
     private static final String LINUX_KERNEL_MODULE_TYPE = "linux-kernel-module";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add(".ko");
@@ -51,7 +49,7 @@ public class LinuxKernelModulesContributor extends ComponentPatternContributor {
         List<ComponentPatternData> components = new ArrayList<>();
 
         if (!moduleFile.exists()) {
-            LOG.warn("Linux kernel module file does not exist: {}", moduleFile.getAbsolutePath());
+            log.warn("Linux kernel module file does not exist: {}", moduleFile.getAbsolutePath());
             return Collections.emptyList();
         }
 
@@ -63,11 +61,11 @@ public class LinuxKernelModulesContributor extends ComponentPatternContributor {
             if (moduleName != null && moduleVersion != null) {
                 addComponent(components, moduleName, moduleVersion, relativeAnchorPath, anchorChecksum);
             } else {
-                LOG.warn("Module name or version not found in file: {}", moduleFile.getAbsolutePath());
+                log.warn("Module name or version not found in file: {}", moduleFile.getAbsolutePath());
             }
             return components;
         } catch (Exception e) {
-            LOG.warn("Error processing Linux kernel module file", e);
+            log.warn("Error processing Linux kernel module file", e);
             return Collections.emptyList();
         }
     }
