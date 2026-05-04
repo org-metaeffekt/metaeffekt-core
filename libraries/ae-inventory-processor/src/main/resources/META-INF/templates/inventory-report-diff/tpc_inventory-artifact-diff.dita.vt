@@ -26,7 +26,7 @@
 <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#if($artifact.getGroupId())</lines>#end
                         </entry>
                         <entry><codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph></entry>
-                        <entry><codeph>$report.xmlEscapeGAV($artifact.getPreviousVersion())</codeph></entry>
+                        <entry><codeph>$report.xmlEscapeGAV($artifact.get("Previous Version"))</codeph></entry>
                     </row>
 #end#end
                 </tbody>

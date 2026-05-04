@@ -6,27 +6,28 @@
 
     <p>$utils.getText("asset-report-bom.contained-components-table")</p>
 
-        <table>
-            <tgroup cols="3">
-                <colspec colname="COLSPEC0" colnum="1" colwidth="25*" align="left"/>
-                <colspec colname="COLSPEC1" colnum="2" colwidth="60*" align="left"/>
-                <colspec colname="COLSPEC2" colnum="3" colwidth="15*" align="left"/>
+    <table>
+        <tgroup cols="3">
+            <colspec colname="COLSPEC0" colnum="1" colwidth="25*" align="left"/>
+            <colspec colname="COLSPEC1" colnum="2" colwidth="60*" align="left"/>
+            <colspec colname="COLSPEC2" colnum="3" colwidth="15*" align="left"/>
 
-                <thead>
-                    <row>
-                        <entry colname="COLSPEC0" valign="top">Name</entry>
-                        <entry colname="COLSPEC1" valign="top">Id</entry>
-                        <entry colname="COLSPEC2" valign="top">Version</entry>
-                    </row>
-                </thead>
+            <thead>
+            <row>
+                <entry colname="COLSPEC0" valign="top">Name</entry>
+                <entry colname="COLSPEC1" valign="top">Id</entry>
+                <entry colname="COLSPEC2" valign="top">Version</entry>
+            </row>
+            </thead>
 
-                <tbody>
-                    #foreach ($artifact in $artifacts)
+            <tbody>
+                #foreach ($artifact in $artifacts)
+                    #if(!$vulnerabilityAdapter.getVulnerabilitiesForArtifact($artifact).isEmpty())
                     <row>
                         <entry>
                             #if($configParams.isInventoryVulnerabilityReportEnabled())
-                                <xref href="tpc_inventory-vulnerability-components.dita#component-$report
-                                  .xmlEscapeStringAttribute($artifact.getComponent())" type="topic">
+                                <xref href="tpc_inventory-vulnerability-components.dita#component-$report.xmlEscapeStringAttribute($artifact.getComponent())"
+                                      type="topic">
                                     $report.xmlEscapeString($artifact.getComponent())
                                 </xref>
                             #else
@@ -39,9 +40,10 @@
                         </entry>
                     </row>
                     #end
-                </tbody>
-            </tgroup>
-        </table>
+                #end
+            </tbody>
+        </tgroup>
+    </table>
     #else
         $utils.getText("general.no-affected-components")
     #end
