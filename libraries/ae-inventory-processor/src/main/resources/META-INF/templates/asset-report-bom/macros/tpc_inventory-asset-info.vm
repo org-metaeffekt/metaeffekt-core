@@ -22,23 +22,25 @@
 
             <tbody>
                 #foreach ($artifact in $artifacts)
-                    #if(!$vulnerabilityAdapter.getVulnerabilitiesForArtifact($artifact).isEmpty())
-                    <row>
-                        <entry>
-                            #if($configParams.isInventoryVulnerabilityReportEnabled())
-                                <xref href="tpc_inventory-vulnerability-components.dita#component-$report.xmlEscapeStringAttribute($artifact.getComponent())"
-                                      type="topic">
+                    #if($vulnerabilityAdapter)
+                        #if(!$vulnerabilityAdapter.getVulnerabilitiesForArtifact($artifact).isEmpty())
+                        <row>
+                            <entry>
+                                #if($configParams.isInventoryVulnerabilityReportEnabled())
+                                    <xref href="tpc_inventory-vulnerability-components.dita#component-$report.xmlEscapeStringAttribute($artifact.getComponent())"
+                                          type="topic">
+                                        $report.xmlEscapeString($artifact.getComponent())
+                                    </xref>
+                                #else
                                     $report.xmlEscapeString($artifact.getComponent())
-                                </xref>
-                            #else
-                                $report.xmlEscapeString($artifact.getComponent())
-                            #end
-                        </entry>
-                        <entry>$report.xmlEscapeString($artifact.getId())</entry>
-                        <entry>
-                            <codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph>
-                        </entry>
-                    </row>
+                                #end
+                            </entry>
+                            <entry>$report.xmlEscapeString($artifact.getId())</entry>
+                            <entry>
+                                <codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph>
+                            </entry>
+                        </row>
+                        #end
                     #end
                 #end
             </tbody>
