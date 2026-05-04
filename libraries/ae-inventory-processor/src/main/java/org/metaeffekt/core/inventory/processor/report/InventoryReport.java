@@ -708,6 +708,7 @@ public class InventoryReport {
         properties.put(Velocity.RESOURCE_LOADERS, "class, file");
         properties.put("resource.loader.class.class", ClasspathResourceLoader.class.getName());
         properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
+        properties.put(Velocity.RUNTIME_REFERENCES_STRICT, configParams.isFailOnMissingVelocityRuntimeReferences());
         //https://velocity.apache.org/engine/1.7/developer-guide.html#velocimacro
         properties.put("velocimacro.arguments.strict", "true");
 

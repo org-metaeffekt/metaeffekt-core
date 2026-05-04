@@ -9,6 +9,7 @@
     #set($termsCategorization=$inventoryReportAdapter.categorizeTerms($effectiveLicensesRepresented))
     #set($termsWithOptions=$termsCategorization.getTermsWithOptions())
     #set($atomicTerms=$termsCategorization.getAtomicTerms())
+    #set($assetData=$report.getAssetData($inventory))
 
 <body>
     <p>$utils.getText("inventory-report-bom.different-effective-licenses")</p>

@@ -34,12 +34,16 @@
                                     #set($rows=$rows - 1)
                                     <row>
                                         <entry>
-                                            #if($hasNotice)
-                                                <xref href="tpc_inventory-component-license-details.dita#tpc_component_notice_$inventory.deriveLicenseId($artifact.getComponent())" type="topic">
-                                                    $report.xmlEscapeString($artifact.getComponent())
-                                                </xref>
-                                            #else
-                                                $report.xmlEscapeString($artifact.getComponent())
+                                            #set($componentName = $artifact.getComponent())
+                                            ## Only proceed if the component name is not null
+                                            #if($componentName)
+                                                #if($hasNotice)
+                                                    <xref href="tpc_inventory-component-license-details.dita#tpc_component_notice_$inventory.deriveLicenseId($componentName)" type="topic">
+                                                        $report.xmlEscapeString($componentName)
+                                                    </xref>
+                                                #else
+                                                    $report.xmlEscapeString($componentName)
+                                                #end
                                             #end
                                         </entry>
                                         <entry>

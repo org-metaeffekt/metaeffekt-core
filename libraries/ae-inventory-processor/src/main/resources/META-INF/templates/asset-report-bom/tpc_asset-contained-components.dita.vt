@@ -17,19 +17,12 @@
 
         #set($assetEscapedId = $report.xmlEscapeStringAttribute($asset))
         #set($assetName = $asset.get("Name"))
-        #set($title = "${assetName}: " + $utils.getText("general.short.components"))
+        ## Fallback to Asset Id if Name is null or missing
+        #if(!$assetName)
+            #set($assetName = $asset.get("Asset Id"))
+        #end
+        #set($title = "$assetName: " + $utils.getText("general.short.components"))
         #set($artifacts = $assetAdapter.getRelatedArtifacts($asset))
-        #set($toRemove = [])
-
-        #foreach($artifact in $artifacts)
-            #if($vulnerabilityAdapter.getVulnerabilitiesForComponent($artifact.getComponent()).isEmpty())
-                #set($unused = $toRemove.add($artifact))
-            #end
-        #end
-
-        #foreach($artifact in $toRemove)
-            #set($unused = $artifacts.remove($artifact))
-        #end
 
         #if(!$artifacts.isEmpty())
         <body>

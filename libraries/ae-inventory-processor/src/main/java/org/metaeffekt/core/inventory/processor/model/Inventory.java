@@ -792,6 +792,7 @@ public class Inventory implements Serializable {
         return componentNotices;
     }
 
+    //FIXME-KKL: Check behavior of this method and the usage in inventory-report.properties.vt
     /**
      * Collect ArtifactLicenseData aggregates artifacts that use the effective license given.
      *
