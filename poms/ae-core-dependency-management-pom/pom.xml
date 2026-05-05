@@ -20,9 +20,6 @@
         <module>ae-core-plugin-dependency-management-pom</module>
     </modules>
 
-    <!-- FIXME: reduce to the required minimum -->
-
-
     <dependencyManagement>
         <dependencies>
             <dependency>
