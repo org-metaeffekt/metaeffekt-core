@@ -64,6 +64,7 @@
 
         <organization>metaeffekt.org</organization>
 
+        <failOnJavadocError>true</failOnJavadocError>
         <failOnJavadocWarn>true</failOnJavadocWarn>
 
         <ant.contrib.version>1.0b3</ant.contrib.version>
