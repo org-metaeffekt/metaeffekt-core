@@ -101,7 +101,7 @@
         <json.version>20231013</json.version>
         <junit.version>6.0.3</junit.version>
         <kubernetes.java.client.version>20.0.0</kubernetes.java.client.version>
-        <log4j2.version>2.25.4</log4j2.version>
+        <log4j.version>2.25.4</log4j.version>
         <lombok.version>1.18.46</lombok.version>
         <luben.zstd.version>1.5.5-11</luben.zstd.version>
         <lucene.version>9.12.3</lucene.version>
