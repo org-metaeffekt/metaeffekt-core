@@ -64,26 +64,26 @@
                     <!-- determining bumped up version -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
+                    <version>${maven.deploy.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <!-- determining bumped up version -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
-                    <version>2.5.2</version>
+                    <version>${maven.install.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <!-- determining bumped up version -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.7.1</version>
+                    <version>${maven.site.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <!-- introduced to manage version -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.4</version>
+                    <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <argLine>-Duser.timezone=Europe/Berlin</argLine>
                     </configuration>
@@ -92,7 +92,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.15.2</version>
+                    <version>${maven.plugin.plugin.version}</version>
                     <executions>
                         <execution>
                             <id>default-descriptor</id>
@@ -104,7 +104,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${maven.build.helper.plugin.version}</version>
                     <executions>
                         <execution>
                             <!-- maven3 populates the local repository with timestamped snapshots.
@@ -129,13 +129,13 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>jaxb2-maven-plugin</artifactId>
-                    <version>1.6</version>
+                    <version>${maven.jaxb2.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.8</version>
+                    <version>${maven.antrun.plugin.version}</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.apache.ant</groupId>
@@ -148,12 +148,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${maven.clean.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>${maven.resources.plugin.version}</version>
                     <executions>
                         <execution>
                             <id>apply-license-to-javadoc</id>
@@ -176,19 +176,19 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>2.17</version>
+                    <version>${maven.checkstyle.plugin.version}</version>
                 </plugin>
 
                 <!-- FIXME: check whether we need and want this -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>1.4.1</version>
+                    <version>${maven.enforcer.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>${maven.dependency.plugin.version}</version>
                     <executions>
                         <execution>
                             <id>include-license</id>
@@ -213,7 +213,7 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>4.1</version>
+                    <version>${maven.license.plugin.version}</version>
                     <configuration>
                         <licenseSets>
                             <licenseSet>
@@ -397,7 +397,7 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-resources-plugin</artifactId>
-                            <version>3.0.2</version>
+                            <version>${maven.resources.plugin.version}</version>
                             <executions>
                                 <execution>
                                     <id>apply-license-to-test</id>
@@ -437,7 +437,7 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-resources-plugin</artifactId>
-                            <version>3.0.2</version>
+                            <version>${maven.resources.plugin.version}</version>
                             <executions>
                                 <execution>
                                     <id>apply-license-to-main</id>
