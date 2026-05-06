@@ -122,6 +122,7 @@
         <plexus.utils.version>3.6.1</plexus.utils.version>
 
         <poi.version>5.2.4</poi.version>
+        <snakeyaml.version>2.3</snakeyaml.version>
         <slf4j.version>2.0.17</slf4j.version>
         <spring.framework.version>7.0.7</spring.framework.version>
         <tukaani.xz.version>1.9</tukaani.xz.version>
