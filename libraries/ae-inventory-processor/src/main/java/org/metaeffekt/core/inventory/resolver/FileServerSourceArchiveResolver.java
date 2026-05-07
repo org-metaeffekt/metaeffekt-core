@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.resolver;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaInventoryAttribute;
+import org.metaeffekt.core.inventory.processor.report.model.types.AeaaInventoryAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
