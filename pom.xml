@@ -108,7 +108,6 @@
         <lucene.version>9.12.3</lucene.version>
 
         <maven.version>3.9.15</maven.version>
-        <maven.ae.version.plugin.version>0.24.0</maven.ae.version.plugin.version>
         <maven.antrun.plugin.version>3.2.0</maven.antrun.plugin.version>
         <maven.assembly.plugin.version>3.8.0</maven.assembly.plugin.version>
         <maven.build.helper.plugin.version>3.6.1</maven.build.helper.plugin.version>
@@ -140,6 +139,9 @@
         <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
         <maven.typescript.generator.plugin.version>2.37.1128</maven.typescript.generator.plugin.version>
         <plexus.utils.version>3.6.1</plexus.utils.version>
+
+        <!-- FIXME-KKL: review with KHA -->
+        <maven.ae.version.plugin.version>${ae.core.version_last}</maven.ae.version.plugin.version>
 
         <poi.version>5.2.4</poi.version>
         <snakeyaml.version>2.3</snakeyaml.version>
