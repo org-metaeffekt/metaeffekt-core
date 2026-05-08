@@ -101,30 +101,6 @@
                     </executions>
                 </plugin>
 
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>${maven.build.helper.plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <!-- maven3 populates the local repository with timestamped snapshots.
-                                This execution removes all artifacts for THIS version of the 
-                                project including the the SNAPSHOT version that is currently being
-                                built and the timestamped artifact for this version)
-                             -->
-                            <id>remove-obsolete-artifacts</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>remove-project-artifact</goal>
-                            </goals>
-                            <configuration>
-                                <failOnError>false</failOnError>
-                                <removeAll>false</removeAll>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-
                 <!-- FIXME: check this is needed in the current project scope -->
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -260,11 +236,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
             </plugin>
 
             <plugin>
