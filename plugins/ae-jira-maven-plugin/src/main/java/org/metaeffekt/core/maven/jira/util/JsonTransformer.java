@@ -15,15 +15,15 @@
  */
 package org.metaeffekt.core.maven.jira.util;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig.Feature;
-import org.codehaus.jackson.node.ArrayNode;
-import org.codehaus.jackson.node.ObjectNode;
-import org.codehaus.jackson.node.POJONode;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.POJONode;
 
 import java.io.IOException;
 import java.util.*;
@@ -44,7 +44,7 @@ public class JsonTransformer {
     public static String transform(Object data, boolean indent) {
         ObjectMapper mapper = new ObjectMapper();
         if (indent) {
-            mapper.configure(Feature.INDENT_OUTPUT, true);
+            mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         }
         try {
             return mapper.writeValueAsString(data);
@@ -91,27 +91,27 @@ public class JsonTransformer {
         } else if (node.isPojo()) {
             return transformPojo((POJONode) node);
         } else if (node.isInt()) {
-            return node.getIntValue();
+            return node.intValue();
         } else if (node.isBigInteger()) {
-            return node.getBigIntegerValue();
+            return node.bigIntegerValue();
         } else if (node.isLong()) {
-            return node.getLongValue();
+            return node.longValue();
         } else if (node.isDouble() || node.isFloatingPointNumber()) {
-            return node.getDoubleValue();
+            return node.doubleValue();
         } else if (node.isBoolean()) {
-            return node.getBooleanValue();
+            return node.booleanValue();
         } else if (node.isTextual()) {
-            return node.getTextValue();
+            return node.textValue();
         } else if (node.isNull()) {
             return null;
         } else {
-            return node.getValueAsText();
+            return node.asText();
         }
     }
 
     private static Map<String, Object> transformPojo(POJONode pojoNode) {
         Map<String, Object> result = new HashMap<String, Object>();
-        Iterator<String> fieldNames = pojoNode.getFieldNames();
+        Iterator<String> fieldNames = pojoNode.fieldNames();
         while (fieldNames.hasNext()) {
             String key = fieldNames.next();
             JsonNode node = pojoNode.get(key);
@@ -122,7 +122,7 @@ public class JsonTransformer {
 
     private static Map<String, Object> transformObject(ObjectNode objectNode) {
         Map<String, Object> result = new HashMap<String, Object>();
-        Iterator<String> fieldNames = objectNode.getFieldNames();
+        Iterator<String> fieldNames = objectNode.fieldNames();
         while (fieldNames.hasNext()) {
             String key = fieldNames.next();
             JsonNode node = objectNode.get(key);
@@ -133,7 +133,7 @@ public class JsonTransformer {
 
     private static List<Object> transformArray(ArrayNode arrayNode) {
         List<Object> result = new ArrayList<Object>();
-        Iterator<JsonNode> nodes = arrayNode.getElements();
+        Iterator<JsonNode> nodes = arrayNode.elements();
         while (nodes.hasNext()) {
             JsonNode node = nodes.next();
             result.add(transformNode(node));
