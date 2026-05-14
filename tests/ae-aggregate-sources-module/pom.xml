@@ -64,8 +64,8 @@
                                     <fileServerMirror>
                                         <propertyFilePath>${project.basedir}/.properties</propertyFilePath>
                                         <sourceUrls>
-                                            <url>${host01}/repo/${artifact.Namespace}/${artifact.name}-${artifact.version}-source.zip</url>
-                                            <url>${host02}/repository/${artifact.Namespace}/${artifact.name}-${artifact.version}-sources.tar</url>
+                                            <url>$[host01]/repo/$[artifact.Namespace]/$[artifact.name]-$[artifact.version]-source.zip</url>
+                                            <url>$[host02]/repository/$[artifact.Namespace]/$[artifact.name]-$[artifact.version]-sources.tar</url>
                                         </sourceUrls>
                                     </fileServerMirror>
                                 </sourceRepository>

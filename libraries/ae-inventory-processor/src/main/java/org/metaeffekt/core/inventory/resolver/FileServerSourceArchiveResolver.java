@@ -42,7 +42,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
     private String propertyFilePath;
     private List<String> sourceUrls = new ArrayList<>();
 
-    private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}");
+    private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\[([^}]+)\\]");
 
     /**
      * Resolve the source archive for a given artifact and provide a File instance that points to the file.
