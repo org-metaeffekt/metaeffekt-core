@@ -15,22 +15,38 @@
  */
 package org.metaeffekt.core.maven.inventory.resolver;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.inventory.resolver.FileServerSourceArchiveResolver;
 import org.metaeffekt.core.inventory.resolver.RemoteUriResolver;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
+@Setter
+@Getter
 public class FileServerMirror extends AbstractMirror {
+
+    @Parameter
+    private String propertyFilePath;
+
+    @Parameter
+    private List<String> sourceUrls = new ArrayList<>();
 
     public FileServerSourceArchiveResolver createResolver(Properties properties) {
         final FileServerSourceArchiveResolver resolver = new FileServerSourceArchiveResolver();
 
-        // Pass the plugin configuration properties for placeholder replacement
+        // Pass the plugin configuration properties
         resolver.setProperties(properties);
+        resolver.setPropertyFilePath(propertyFilePath);
+        resolver.setSourceUrls(sourceUrls);
 
-        // Initialize the URI resolver with properties (supports proxy/auth)
+        // Initialize the URI resolver
         resolver.setUriResolver(new RemoteUriResolver(properties));
 
         return resolver;
     }
+
 }

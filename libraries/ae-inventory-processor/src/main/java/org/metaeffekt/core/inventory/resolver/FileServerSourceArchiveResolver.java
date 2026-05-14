@@ -21,6 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,6 +39,8 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
 
     private RemoteUriResolver uriResolver;
     private Properties properties;
+    private String propertyFilePath;
+    private List<String> sourceUrls = new ArrayList<>();
 
     private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}");
 
@@ -50,38 +56,83 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
     public SourceArchiveResolverResult resolveArtifactSourceArchive(Artifact artifact, File targetDir) {
         final SourceArchiveResolverResult result = new SourceArchiveResolverResult();
 
+        // Prepare effective properties
+        final Properties effectiveProperties = new Properties();
+        if (properties != null) {
+            effectiveProperties.putAll(properties);
+        }
+        loadPropertiesFromFile(effectiveProperties);
+
+        // Attempt to resolve using artifact attributes
         String url = artifact.get(AeaaInventoryAttribute.SOURCE_ARTIFACT_URL.getKey());
         if (url == null) {
             url = artifact.get(AeaaInventoryAttribute.SOURCE_ARCHIVE_URL.getKey());
         }
 
         if (url != null) {
-            // Resolve placeholders like ${internal.server} using the provided properties
-            final String resolvedUrl = resolvePlaceholders(url, properties);
-
-            // Determine file name from the resolved URL
-            String fileName = resolvedUrl.substring(resolvedUrl.lastIndexOf('/') + 1);
-            if (fileName.contains("?")) {
-                fileName = fileName.substring(0, fileName.indexOf("?"));
+            final String resolvedUrl = resolvePlaceholders(url, effectiveProperties);
+            if (downloadFile(resolvedUrl, targetDir, result)) {
+                return result;
             }
+        }
 
-            final File destinationFile = new File(targetDir, fileName);
+        // Iterate through sourceUrls as fallback
+        if (sourceUrls != null && !sourceUrls.isEmpty()) {
+            for (String urlPattern : sourceUrls) {
+                // Placeholder resolution only uses provided properties
+                final String resolvedFallbackUrl = resolvePlaceholders(urlPattern, effectiveProperties);
 
-            try {
-                final File downloadedFile = uriResolver.resolve(resolvedUrl, destinationFile);
-
-                if (downloadedFile != null && downloadedFile.exists()) {
-                    result.addFile(downloadedFile, resolvedUrl);
-                } else {
-                    result.addAttemptedResourceLocation(resolvedUrl);
+                // Call placeholder method for custom resolution logic
+                if (resolveFromFallbackUrl(resolvedFallbackUrl, artifact, targetDir, result)) {
+                    return result;
                 }
-            } catch (Exception e) {
-                LOG.debug("Failed to download source from {}: {}", resolvedUrl, e.getMessage());
-                result.addAttemptedResourceLocation(resolvedUrl);
             }
         }
 
         return result;
+    }
+
+    protected boolean resolveFromFallbackUrl(String url, Artifact artifact, File targetDir, SourceArchiveResolverResult result) {
+        System.out.println("fallback logic activated");
+        return downloadFile(url, targetDir, result);
+    }
+
+    private boolean downloadFile(String url, File targetDir, SourceArchiveResolverResult result) {
+        // Determine file name from the URL
+        String fileName = url.substring(url.lastIndexOf('/') + 1);
+        if (fileName.contains("?")) {
+            fileName = fileName.substring(0, fileName.indexOf("?"));
+        }
+
+        final File destinationFile = new File(targetDir, fileName);
+
+        try {
+            final File downloadedFile = uriResolver.resolve(url, destinationFile);
+
+            if (downloadedFile != null && downloadedFile.exists()) {
+                result.addFile(downloadedFile, url);
+                return true;
+            } else {
+                result.addAttemptedResourceLocation(url);
+            }
+        } catch (Exception e) {
+            LOG.debug("Failed to download source from {}: {}", url, e.getMessage());
+            result.addAttemptedResourceLocation(url);
+        }
+        return false;
+    }
+
+    private void loadPropertiesFromFile(Properties props) {
+        if (propertyFilePath != null) {
+            File file = new File(propertyFilePath);
+            if (file.exists() && file.isFile()) {
+                try (FileInputStream inputStream = new FileInputStream(file)) {
+                    props.load(inputStream);
+                } catch (IOException e) {
+                    LOG.error("Failed to load properties from file {}: {}", propertyFilePath, e.getMessage());
+                }
+            }
+        }
     }
 
     private String resolvePlaceholders(String input, Properties props) {
@@ -116,5 +167,13 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
      */
     public void setProperties(Properties properties) {
         this.properties = properties;
+    }
+
+    public void setPropertyFilePath(String propertyFilePath) {
+        this.propertyFilePath = propertyFilePath;
+    }
+
+    public void setSourceUrls(List<String> sourceUrls) {
+        this.sourceUrls = sourceUrls;
     }
 }

@@ -58,17 +58,16 @@
                                 <sourceRepository>
                                     <id>Public-File-Server-Test</id>
                                     <targetFolder>Test-OSS</targetFolder>
-
                                     <patterns>
                                         <pattern>^test-artifact-.*\.zip</pattern>
                                     </patterns>
-
-                                    <properties>
-                                        <repo.name>commons-io</repo.name>
-                                        <test.version>2.11.0</test.version>
-                                    </properties>
-
-                                    <fileServerMirror />
+                                    <fileServerMirror>
+                                        <propertyFilePath>${project.basedir}/.properties</propertyFilePath>
+                                        <sourceUrls>
+                                            <url>${host01}/repo/${artifact.Namespace}/${artifact.name}-${artifact.version}-source.zip</url>
+                                            <url>${host02}/repository/${artifact.Namespace}/${artifact.name}-${artifact.version}-sources.tar</url>
+                                        </sourceUrls>
+                                    </fileServerMirror>
                                 </sourceRepository>
 
                                 <sourceRepository>
