@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.resolver;
 
+import lombok.Setter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.report.model.types.AeaaInventoryAttribute;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ import java.util.regex.Pattern;
  * Resolver that downloads source archives from URLs specified in artifact attributes,
  * supporting placeholder resolution.
  */
+@Setter
 public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileServerSourceArchiveResolver.class);
@@ -42,14 +44,13 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
     private String propertyFilePath;
     private List<String> sourceUrls = new ArrayList<>();
 
-    private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\[([^}]+)\\]");
+    private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\[([^\\]]+)\\]");
 
     /**
      * Resolve the source archive for a given artifact and provide a File instance that points to the file.
      *
-     * @param artifact The {@link Artifact} for which the source is to be resolved.
+     * @param artifact  The {@link Artifact} for which the source is to be resolved.
      * @param targetDir The proposed target directory.
-     *
      * @return The {@link SourceArchiveResolverResult}.
      */
     @Override
@@ -69,8 +70,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
         }
 
         if (url != null) {
-            final String resolvedUrl = resolveFromArtifactAttributes(url, effectiveProperties);
-            if (downloadFile(resolvedUrl, targetDir, result)) {
+            if (resolveUrl(url, artifact, targetDir, result, effectiveProperties)) {
                 return result;
             }
         }
@@ -78,9 +78,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
         // Iterate through sourceUrls as fallback
         if (sourceUrls != null && !sourceUrls.isEmpty()) {
             for (String urlPattern : sourceUrls) {
-                final String resolvedSourceUrl = resolveFromArtifactAttributes(urlPattern, effectiveProperties);
-
-                if (resolveFromSourceUrl(resolvedSourceUrl, artifact, targetDir, result)) {
+                if (resolveUrl(urlPattern, artifact, targetDir, result, effectiveProperties)) {
                     return result;
                 }
             }
@@ -89,9 +87,38 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
         return result;
     }
 
-    protected boolean resolveFromSourceUrl(String url, Artifact artifact, File targetDir, SourceArchiveResolverResult result) {
-        // implement handlers for fields
-        return downloadFile(url, targetDir, result);
+    protected boolean resolveUrl(String url, Artifact artifact, File targetDir, SourceArchiveResolverResult result, Properties effectiveProperties) {
+        PatternResolver resolver = new PatternResolver();
+
+        resolver.addHandler(new PatternResolver.PropertyPlaceholderHandler(effectiveProperties));
+        resolver.addHandler(new PatternResolver.ArtifactAttributeHandler(artifact));
+
+        String resolvedUrl = url;
+        if (resolvedUrl != null) {
+            StringBuilder sb = new StringBuilder();
+            Matcher matcher = PROPERTY_PATTERN.matcher(resolvedUrl);
+            int lastEnd = 0;
+
+            while (matcher.find()) {
+                sb.append(resolvedUrl, lastEnd, matcher.start());
+                String pattern = matcher.group(1);
+                String resolvedValue = resolver.resolve(pattern);
+
+                // If the resolver returns the exact pattern name, it failed to resolve it.
+                // In that case, we keep the original placeholder syntax.
+                if (resolvedValue != null && !resolvedValue.equals(pattern)) {
+                    sb.append(resolvedValue);
+                } else {
+                    sb.append(matcher.group(0));
+                }
+                lastEnd = matcher.end();
+            }
+            sb.append(resolvedUrl.substring(lastEnd));
+            resolvedUrl = sb.toString();
+
+            return downloadFile(resolvedUrl, targetDir, result);
+        }
+        return false;
     }
 
     private boolean downloadFile(String url, File targetDir, SourceArchiveResolverResult result) {
@@ -118,58 +145,16 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
         return false;
     }
 
-    private void loadPropertiesFromFile(Properties props) {
+    private void loadPropertiesFromFile(Properties properties) {
         if (propertyFilePath != null) {
             File file = new File(propertyFilePath);
             if (file.exists() && file.isFile()) {
                 try (FileInputStream inputStream = new FileInputStream(file)) {
-                    props.load(inputStream);
+                    properties.load(inputStream);
                 } catch (IOException e) {
                     LOG.error("Failed to load properties from file {}: {}", propertyFilePath, e.getMessage());
                 }
             }
         }
-    }
-
-    private String resolveFromArtifactAttributes(String input, Properties props) {
-        if (input == null || props == null) return input;
-        StringBuilder sb = new StringBuilder();
-        Matcher matcher = PROPERTY_PATTERN.matcher(input);
-        int lastEnd = 0;
-        while (matcher.find()) {
-            sb.append(input, lastEnd, matcher.start());
-            String propName = matcher.group(1);
-            String propValue = props.getProperty(propName);
-            sb.append(propValue != null ? propValue : matcher.group(0));
-            lastEnd = matcher.end();
-        }
-        sb.append(input.substring(lastEnd));
-        return sb.toString();
-    }
-
-    /**
-     * Set {@link #uriResolver}.
-     *
-     * @param uriResolver the resolver to be set.
-     */
-    public void setUriResolver(RemoteUriResolver uriResolver) {
-        this.uriResolver = uriResolver;
-    }
-
-    /**
-     * Set {@link #properties}.
-     *
-     * @param properties the properties to be set.
-     */
-    public void setProperties(Properties properties) {
-        this.properties = properties;
-    }
-
-    public void setPropertyFilePath(String propertyFilePath) {
-        this.propertyFilePath = propertyFilePath;
-    }
-
-    public void setSourceUrls(List<String> sourceUrls) {
-        this.sourceUrls = sourceUrls;
     }
 }
