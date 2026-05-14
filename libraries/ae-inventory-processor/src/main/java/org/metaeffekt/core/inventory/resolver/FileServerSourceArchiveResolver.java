@@ -56,7 +56,6 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
     public SourceArchiveResolverResult resolveArtifactSourceArchive(Artifact artifact, File targetDir) {
         final SourceArchiveResolverResult result = new SourceArchiveResolverResult();
 
-        // Prepare effective properties
         final Properties effectiveProperties = new Properties();
         if (properties != null) {
             effectiveProperties.putAll(properties);
@@ -70,7 +69,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
         }
 
         if (url != null) {
-            final String resolvedUrl = resolvePlaceholders(url, effectiveProperties);
+            final String resolvedUrl = resolveFromArtifactAttributes(url, effectiveProperties);
             if (downloadFile(resolvedUrl, targetDir, result)) {
                 return result;
             }
@@ -79,11 +78,9 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
         // Iterate through sourceUrls as fallback
         if (sourceUrls != null && !sourceUrls.isEmpty()) {
             for (String urlPattern : sourceUrls) {
-                // Placeholder resolution only uses provided properties
-                final String resolvedFallbackUrl = resolvePlaceholders(urlPattern, effectiveProperties);
+                final String resolvedSourceUrl = resolveFromArtifactAttributes(urlPattern, effectiveProperties);
 
-                // Call placeholder method for custom resolution logic
-                if (resolveFromFallbackUrl(resolvedFallbackUrl, artifact, targetDir, result)) {
+                if (resolveFromSourceUrl(resolvedSourceUrl, artifact, targetDir, result)) {
                     return result;
                 }
             }
@@ -92,13 +89,12 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
         return result;
     }
 
-    protected boolean resolveFromFallbackUrl(String url, Artifact artifact, File targetDir, SourceArchiveResolverResult result) {
-        System.out.println("fallback logic activated");
+    protected boolean resolveFromSourceUrl(String url, Artifact artifact, File targetDir, SourceArchiveResolverResult result) {
+        // implement handlers for fields
         return downloadFile(url, targetDir, result);
     }
 
     private boolean downloadFile(String url, File targetDir, SourceArchiveResolverResult result) {
-        // Determine file name from the URL
         String fileName = url.substring(url.lastIndexOf('/') + 1);
         if (fileName.contains("?")) {
             fileName = fileName.substring(0, fileName.indexOf("?"));
@@ -135,7 +131,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
         }
     }
 
-    private String resolvePlaceholders(String input, Properties props) {
+    private String resolveFromArtifactAttributes(String input, Properties props) {
         if (input == null || props == null) return input;
         StringBuilder sb = new StringBuilder();
         Matcher matcher = PROPERTY_PATTERN.matcher(input);
