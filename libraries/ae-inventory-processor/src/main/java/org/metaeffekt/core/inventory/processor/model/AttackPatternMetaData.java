@@ -38,6 +38,8 @@ public class AttackPatternMetaData extends AbstractModelBase {
         RELATED_ATTACK_PATTERNS("Related Attack Pattern"),
         REFERENCES("References"),
         URL("Url"),
+        MITIGATIONS("Mitigations"),
+        DETECTION_METHODS("Detection Methods"),
         CONTENT("Content"),
 
         REFERENCED_VULNERABILITIES("Referenced Vulnerabilities"),
