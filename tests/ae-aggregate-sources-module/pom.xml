@@ -32,7 +32,7 @@
                         <configuration>
                             <includeAllSources>true</includeAllSources>
                             <failOnMissingSources>false</failOnMissingSources>
-                            <inventoryPath>${project.basedir}/reduced-ae-core-artifact-inventory.xls</inventoryPath>
+                            <inventoryPath>${project.basedir}/inventory/test-artifact-inventory.xls</inventoryPath>
 
                             <!-- Source Repositories -->
                             <sourceRepositories>
@@ -56,16 +56,15 @@
                                 </sourceRepository>
 
                                 <sourceRepository>
-                                    <id>Public-File-Server-Test</id>
+                                    <id>Public FileServer Mirrors</id>
                                     <targetFolder>Test-OSS</targetFolder>
                                     <patterns>
-                                        <pattern>^test-artifact-.*\.zip</pattern>
+                                        <pattern>^.*\.jar</pattern>
                                     </patterns>
                                     <fileServerMirror>
                                         <propertyFilePath>${project.basedir}/.properties</propertyFilePath>
                                         <sourceUrls>
-                                            <url>$[host01]/repo/$[artifact.Namespace]/$[artifact.name]-$[artifact.version]-source.zip</url>
-                                            <url>$[host02]/repository/$[artifact.Namespace]/$[artifact.name]-$[artifact.version]-sources.tar</url>
+                                            <url>https://$[host02]/maven2/$[artifact.groupId]/$[artifact.groupId]/$[artifact.version]/$[artifact.name]</url>
                                         </sourceUrls>
                                     </fileServerMirror>
                                 </sourceRepository>

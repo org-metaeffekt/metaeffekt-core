@@ -239,8 +239,8 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
      * </ul>
      */
     CVSS_APPLICABILITY_CONDITION_ATTRIBUTES("CVSS Applicability Condition Attributes"),
-    SOURCE_ARCHIVE_URL("Source Archive URL"),
-    SOURCE_ARTIFACT_URL("Source Archive URL");
+    SOURCE_ARCHIVE_URL("Source Archive - URL"),
+    SOURCE_ARTIFACT_URL("Source Archive - URL");
 
     private final String key;
 
