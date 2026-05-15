@@ -23,6 +23,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.metaeffekt.core.inventory.processor.AbstractInventoryProcessor;
 import org.metaeffekt.core.inventory.processor.InventoryProcessor;
 import org.metaeffekt.core.inventory.processor.InventoryUpdate;
+import org.metaeffekt.core.maven.inventory.resolver.Mapping;
 
 import java.io.File;
 import java.util.ArrayList;

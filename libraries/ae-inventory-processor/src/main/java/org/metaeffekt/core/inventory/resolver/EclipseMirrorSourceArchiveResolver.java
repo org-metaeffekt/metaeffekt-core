@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.resolver;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.springframework.core.io.FileSystemResourceLoader;
 import org.springframework.core.io.Resource;
@@ -29,6 +31,8 @@ import java.util.List;
  * This implementation of the {@link SourceArchiveResolver} interface uses common rules to derive the resolve source
  * archives of eclipse bundles.
  */
+@Setter
+@Getter
 public class EclipseMirrorSourceArchiveResolver extends AbstractMirrorSourceArchiveResolver {
 
     private String select = "([^_]*)(_)(.*)";
@@ -54,19 +58,4 @@ public class EclipseMirrorSourceArchiveResolver extends AbstractMirrorSourceArch
         return Collections.singletonList(sourceId);
     }
 
-    public String getSelect() {
-        return select;
-    }
-
-    public void setSelect(String select) {
-        this.select = select;
-    }
-
-    public String getReplacement() {
-        return replacement;
-    }
-
-    public void setReplacement(String replacement) {
-        this.replacement = replacement;
-    }
 }

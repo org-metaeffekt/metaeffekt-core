@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
+import org.metaeffekt.core.maven.inventory.resolver.Mapping;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

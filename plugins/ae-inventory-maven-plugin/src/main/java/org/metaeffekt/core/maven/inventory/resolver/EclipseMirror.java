@@ -13,38 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.mojo;
+package org.metaeffekt.core.maven.inventory.resolver;
 
 import org.apache.maven.plugin.logging.Log;
-import org.metaeffekt.core.inventory.resolver.ComponentSourceArchiveResolver;
-import org.metaeffekt.core.inventory.resolver.Mapping;
+import org.metaeffekt.core.inventory.resolver.EclipseMirrorSourceArchiveResolver;
 import org.metaeffekt.core.inventory.resolver.RemoteUriResolver;
 
-import java.util.List;
 import java.util.Properties;
 
-public class ComponentMirror extends AbstractMirror {
+public class EclipseMirror extends AbstractMirror {
 
-    private List<String> mappings;
+    private String passThrough = "[^_]\\.source_.*";
 
-    public ComponentSourceArchiveResolver createResolver(Properties properties) {
-        ComponentSourceArchiveResolver resolver = new ComponentSourceArchiveResolver();
-        resolver.setMirrorBaseUrls(getMirrorUrls());
+    private String select = "([^_]*)(_)(.*)";
+
+    private String replacement = "$1.source_$3";
+
+    public EclipseMirrorSourceArchiveResolver createResolver(Properties properties) {
+        EclipseMirrorSourceArchiveResolver resolver = new EclipseMirrorSourceArchiveResolver();
         resolver.setUriResolver(new RemoteUriResolver(properties));
 
-        if (mappings != null) {
-            for (String mapping : mappings) {
-                String[] split = mapping.split(":");
-                resolver.addMapping(new Mapping(extractPattern(0, split), extractPattern(1, split)));
-            }
-        }
+        // FIXME: missing passThrough
 
+        resolver.setReplacement(replacement);
+        resolver.setSelect(select);
+        resolver.setMirrorBaseUrls(getMirrorUrls());
         return resolver;
     }
 
     public void dumpConfig(Log log, String prefix) {
         super.dumpConfig(log, prefix);
-        log.debug(prefix + "  mappings: " + mappings);
+        log.debug(prefix + "  passThrough: " + passThrough);
+        log.debug(prefix + "  select: " + select);
+        log.debug(prefix + "  replacement: " + replacement);
     }
 
 }

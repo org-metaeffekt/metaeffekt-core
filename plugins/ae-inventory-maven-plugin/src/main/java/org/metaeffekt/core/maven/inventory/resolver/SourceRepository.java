@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.mojo;
+package org.metaeffekt.core.maven.inventory.resolver;
 
 import org.apache.maven.plugin.logging.Log;
 import org.eclipse.aether.RepositorySystem;
@@ -38,6 +38,8 @@ public class SourceRepository extends IdentifiableComponent {
 
     private MavenMirror mavenMirror;
 
+    private FileServerMirror fileServerMirror;
+
     private List<String> patterns;
 
     private boolean ignoreMatches;
@@ -61,6 +63,7 @@ public class SourceRepository extends IdentifiableComponent {
         mirrorCount += eclipseMirror == null ? 0 : 1;
         mirrorCount += componentMirror == null ? 0 : 1;
         mirrorCount += mavenMirror == null ? 0 : 1;
+        mirrorCount += fileServerMirror == null ? 0 : 1;
 
         if (mirrorCount > 1) {
             throw new IllegalStateException(String.format(
@@ -84,6 +87,10 @@ public class SourceRepository extends IdentifiableComponent {
             artifactSourceRepository.setSourceArchiveResolver(mavenMirror.createResolver(repositorySystem, repositorySystemSession, remoteProjectRepositories));
         }
 
+        if (fileServerMirror != null) {
+            artifactSourceRepository.setSourceArchiveResolver(fileServerMirror.createResolver(p));
+        }
+
         return artifactSourceRepository;
     }
 
@@ -103,6 +110,7 @@ public class SourceRepository extends IdentifiableComponent {
         if (eclipseMirror != null) eclipseMirror.dumpConfig(log, prefix + "  ");
         if (componentMirror != null) componentMirror.dumpConfig(log, prefix + "  ");
         if (mavenMirror != null) mavenMirror.dumpConfig(log, prefix + "  ");
+        if (fileServerMirror != null) fileServerMirror.dumpConfig(log, prefix + "  ");
     }
 
 }

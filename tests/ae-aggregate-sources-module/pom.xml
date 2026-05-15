@@ -56,6 +56,20 @@
                                 </sourceRepository>
 
                                 <sourceRepository>
+                                    <id>Public FileServer Mirrors</id>
+                                    <targetFolder>Test-OSS</targetFolder>
+                                    <patterns>
+                                        <pattern>^.*\.jar</pattern>
+                                    </patterns>
+                                    <fileServerMirror>
+                                        <propertyFilePath>${project.basedir}/.properties</propertyFilePath>
+                                        <sourceUrls>
+                                            <url>https://$[host02]/maven2/$[artifact.groupId]/$[artifact.groupId]/$[artifact.version]/$[artifact.name]</url>
+                                        </sourceUrls>
+                                    </fileServerMirror>
+                                </sourceRepository>
+
+                                <sourceRepository>
                                     <id>Internal / External Eclipse Mirrors</id>
                                     <targetFolder>Original OSS</targetFolder>
                                     <patterns>
