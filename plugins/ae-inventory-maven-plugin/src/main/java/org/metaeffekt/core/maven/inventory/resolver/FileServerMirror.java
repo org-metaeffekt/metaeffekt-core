@@ -38,12 +38,12 @@ public class FileServerMirror extends AbstractMirror {
     public FileServerSourceArchiveResolver createResolver(Properties properties) {
         final FileServerSourceArchiveResolver resolver = new FileServerSourceArchiveResolver();
 
-        // Pass the plugin configuration properties
+        // pass the plugin configuration properties
         resolver.setProperties(properties);
         resolver.setPropertyFilePath(propertyFilePath);
         resolver.setSourceUrls(sourceUrls);
 
-        // Initialize the URI resolver
+        // initialize the URI resolver
         resolver.setUriResolver(new RemoteUriResolver(properties));
 
         return resolver;

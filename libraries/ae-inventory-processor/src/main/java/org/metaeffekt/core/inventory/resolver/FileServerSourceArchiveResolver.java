@@ -63,7 +63,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
         }
         loadPropertiesFromFile(effectiveProperties);
 
-        // Attempt to resolve using artifact attributes
+        // attempt to resolve using artifact attributes
         String url = artifact.get(AeaaInventoryAttribute.SOURCE_ARTIFACT_URL.getKey());
         if (url == null) {
             url = artifact.get(AeaaInventoryAttribute.SOURCE_ARCHIVE_URL.getKey());
@@ -75,7 +75,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
             }
         }
 
-        // Iterate through sourceUrls as fallback
+        // aterate through sourceUrls as fallback
         if (sourceUrls != null && !sourceUrls.isEmpty()) {
             for (String urlPattern : sourceUrls) {
                 if (resolveUrl(urlPattern, artifact, targetDir, result, effectiveProperties)) {
@@ -104,8 +104,8 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
                 String pattern = matcher.group(1);
                 String resolvedValue = resolver.resolve(pattern);
 
-                // If the resolver returns the exact pattern name, it failed to resolve it.
-                // In that case, we keep the original placeholder syntax.
+                // if the resolver returns the exact pattern name, it failed to resolve it.
+                // in that case, we keep the original placeholder syntax.
                 if (resolvedValue != null && !resolvedValue.equals(pattern)) {
                     sb.append(resolvedValue);
                 } else {

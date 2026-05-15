@@ -102,7 +102,7 @@ public class PatternResolver {
                 return groupId != null ? groupId : "";
             }
 
-            // Fallback for any other artifact attributes requested
+            // fallback for any other artifact attributes requested
             String value = artifact.get(field);
             return value != null ? value : "";
         }
