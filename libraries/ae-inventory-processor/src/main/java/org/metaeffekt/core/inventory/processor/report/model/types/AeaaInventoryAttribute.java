@@ -238,9 +238,7 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
      *     <li>The {@code InventoryPostProcessingEnrichmentConfiguration.storeArtifactCvssRelevantAttributesInVulnerabilities} stores the {@code InventoryAttribute#MS_PRODUCT_ID}s of referenced artifacts as a JSON Array using the {@code com.metaeffekt.mirror.contents.base.CvssConditionAttributes#MATCHES_ON_MS_PRODUCT_ID} key.</li>
      * </ul>
      */
-    CVSS_APPLICABILITY_CONDITION_ATTRIBUTES("CVSS Applicability Condition Attributes"),
-    SOURCE_ARCHIVE_URL("Source Archive - URL"),
-    SOURCE_ARTIFACT_URL("Source Archive - URL");
+    CVSS_APPLICABILITY_CONDITION_ATTRIBUTES("CVSS Applicability Condition Attributes");
 
     private final String key;
 

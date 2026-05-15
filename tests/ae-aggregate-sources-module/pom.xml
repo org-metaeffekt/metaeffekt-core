@@ -31,7 +31,7 @@
                         <phase>validate</phase>
                         <configuration>
                             <includeAllSources>true</includeAllSources>
-                            <failOnMissingSources>false</failOnMissingSources>
+                            <failOnMissingSources>true</failOnMissingSources>
                             <inventoryPath>${project.basedir}/inventory/test-artifact-inventory.xls</inventoryPath>
 
                             <!-- Source Repositories -->

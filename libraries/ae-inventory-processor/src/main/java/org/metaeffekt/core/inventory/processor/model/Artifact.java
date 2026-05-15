@@ -106,7 +106,7 @@ public class Artifact extends AbstractModelBase {
         ORGANIZATION("Organization"),
 
         /**
-         * The Organization URL identifies the organisation and not necessarily the artifact.
+         * The Organization URL identifies the Organization and not necessarily the artifact.
          */
         ORGANIZATION_URL("Organization URL"),
 
@@ -132,7 +132,9 @@ public class Artifact extends AbstractModelBase {
 
         ARCHIVE("Archive"),
         STRUCTURED("Structured"),
-        EXECUTABLE("Executable");
+        EXECUTABLE("Executable"),
+        SOURCE_ARCHIVE_URL("Source Archive - URL"),
+        SOURCE_ARTIFACT_URL("Source Archive - URL");
 
         private String key;
 
