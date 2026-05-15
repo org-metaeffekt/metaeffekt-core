@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.resolver;
 
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.report.model.types.AeaaInventoryAttribute;
 import org.slf4j.Logger;
@@ -34,10 +35,9 @@ import java.util.regex.Pattern;
  * Resolver that downloads source archives from URLs specified in artifact attributes,
  * supporting placeholder resolution.
  */
+@Slf4j
 @Setter
 public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
-
-    private static final Logger LOG = LoggerFactory.getLogger(FileServerSourceArchiveResolver.class);
 
     private RemoteUriResolver uriResolver;
     private Properties properties;
@@ -139,7 +139,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
                 result.addAttemptedResourceLocation(url);
             }
         } catch (Exception e) {
-            LOG.debug("Failed to download source from {}: {}", url, e.getMessage());
+            log.debug("Failed to download source from {}: {}", url, e.getMessage());
             result.addAttemptedResourceLocation(url);
         }
         return false;
@@ -152,7 +152,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
                 try (FileInputStream inputStream = new FileInputStream(file)) {
                     properties.load(inputStream);
                 } catch (IOException e) {
-                    LOG.error("Failed to load properties from file {}: {}", propertyFilePath, e.getMessage());
+                    log.error("Failed to load properties from file {}: {}", propertyFilePath, e.getMessage());
                 }
             }
         }
