@@ -87,12 +87,11 @@ public class PatternResolver {
         public String resolve(String pattern) {
             String field = pattern.substring("artifact.".length());
 
-            if (field.equalsIgnoreCase("Namespace")) {
-                // for maven artifacts this is the groupId, otherwise retrieve from PURL
-                String namespace = artifact.get("Component");
-                return namespace != null ? namespace : "";
+            if (field.equalsIgnoreCase("namespace")) {
+                String namespace = artifact.getGroupId();
+                return namespace != null ? namespace : (artifact.get("PURL") != null ? artifact.get("PURL") : "");
             } else if (field.equalsIgnoreCase("name")) {
-                String name = artifact.getId();
+                String name = artifact.deriveArtifactId();
                 return name != null ? name : "";
             } else if (field.equalsIgnoreCase("version")) {
                 String version = artifact.getVersion();
@@ -100,6 +99,9 @@ public class PatternResolver {
             } else if (field.equalsIgnoreCase("groupId")) {
                 String groupId = artifact.getGroupId();
                 return groupId != null ? groupId : "";
+            } else if (field.equalsIgnoreCase("id")) {
+                String id = artifact.getId();
+                return id != null ? id : "";
             }
 
             // fallback for any other artifact attributes requested
