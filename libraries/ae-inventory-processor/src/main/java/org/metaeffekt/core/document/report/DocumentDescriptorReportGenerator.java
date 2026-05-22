@@ -207,7 +207,7 @@ public class DocumentDescriptorReportGenerator {
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getAssetName());
 
-                report.setTargetReportDir(new File(documentDescriptor.getTargetDocumentDir(), inventoryContext.getIdentifier()));
+                report.setTargetReportDir(new File(documentDescriptor.getTargetDocumentDir(), documentPart.getIdentifier()));
                 report.getReportContext().setReportInventoryVersion(inventoryContext.getAssetVersion());
 
                 if (!report.createReport()) {

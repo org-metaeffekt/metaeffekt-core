@@ -266,10 +266,10 @@ public class DocumentDescriptorReport {
                 }
 
                 if (propertiesFilename != null) {
-                    final File targetDir = new File(targetReportDir, inventoryContext.getIdentifier());
+                    final File targetDir = new File(targetReportDir, documentPart.getIdentifier());
                     final File propertiesFile = new File(targetDir, propertiesFilename);
                     final Properties properties = PropertiesUtils.loadPropertiesFile(propertiesFile, true);
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+                    adapters.getPropertiesMap().put(documentPart.getIdentifier(), properties);
                 }
             }
         }
@@ -314,7 +314,7 @@ public class DocumentDescriptorReport {
             }
 
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
-            final File targetReportPath = new File(this.targetReportDir + "/parts", new File(relPath, targetFileName).toString());
+            final File targetReportPath = new File(this.targetReportDir + "/part-ditamaps", new File(relPath, targetFileName).toString());
 
             produceDita(documentDescriptor, documentPart, adapters, filePath, targetReportPath);
         }
