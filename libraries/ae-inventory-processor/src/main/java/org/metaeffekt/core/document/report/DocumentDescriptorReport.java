@@ -121,23 +121,18 @@ public class DocumentDescriptorReport {
         List<String> partBookMaps = new ArrayList<>();
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             String bookMapFilename = null;
-            if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-annex.ditamap";
-            } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-report.ditamap";
-            } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-statistics-report.ditamap";
-            } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_PART) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-summary-part.ditamap";
-            }else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-summary-report.ditamap";
-            } else if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-initial-license-documentation.ditamap";
-            } else if (documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-license-documentation.ditamap";
+            if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX ||
+                documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT ||
+                documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT ||
+                documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_PART ||
+                documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT ||
+                documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION ||
+                documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION) {
+                
+                bookMapFilename = "map_" + documentPart.getIdentifier() + ".ditamap";
             }
             if (bookMapFilename != null) {
-                partBookMaps.add(bookMapFilename);
+                partBookMaps.add("parts/" + documentPart.getIdentifier() + "/" + bookMapFilename);
             }
         }
 
@@ -266,7 +261,7 @@ public class DocumentDescriptorReport {
                 }
 
                 if (propertiesFilename != null) {
-                    final File targetDir = new File(targetReportDir, documentPart.getIdentifier());
+                    final File targetDir = new File(new File(targetReportDir, "parts"), documentPart.getIdentifier());
                     final File propertiesFile = new File(targetDir, propertiesFilename);
                     final Properties properties = PropertiesUtils.loadPropertiesFile(propertiesFile, true);
                     adapters.getPropertiesMap().put(documentPart.getIdentifier(), properties);
@@ -307,14 +302,13 @@ public class DocumentDescriptorReport {
             // Modify filename only if it starts with "map_"
             String targetFileName;
             if (originalFileName.startsWith("map_")) {
-                int splitIndex = originalFileName.indexOf("_") + 1; // Position after "map_"
-                targetFileName = "map_" + documentPart.getIdentifier() + "-" + originalFileName.substring(splitIndex);
+                targetFileName = "map_" + documentPart.getIdentifier() + ".ditamap";
             } else {
                 targetFileName = originalFileName;
             }
 
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
-            final File targetReportPath = new File(this.targetReportDir + "/part-ditamaps", new File(relPath, targetFileName).toString());
+            final File targetReportPath = new File(new File(new File(this.targetReportDir, "parts"), documentPart.getIdentifier()), new File(relPath, targetFileName).toString());
 
             produceDita(documentDescriptor, documentPart, adapters, filePath, targetReportPath);
         }

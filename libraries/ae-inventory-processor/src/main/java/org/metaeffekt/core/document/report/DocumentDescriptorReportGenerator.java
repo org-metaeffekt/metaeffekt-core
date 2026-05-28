@@ -188,9 +188,9 @@ public class DocumentDescriptorReportGenerator {
                 report.setReferenceLicensePath("licenses");
 
                 // the genPath specifies, where the SVGs are generated, it is relative to the targetDocumentDir of the document,
-                // the InventoryReport however requires this path to be relative to its local targetReportDir (e.g. <targetDocumentDir>/<inventoryContext>)
+                // the InventoryReport however requires this path to be relative to its local targetReportDir (e.g. <targetDocumentDir>/parts/<partName>)
                 if (mergedParams.get(GEN_PATH) != null) {
-                    String partSvgPath = String.format("../%s/%s", mergedParams.get(GEN_PATH), documentPart.getIdentifier());
+                    String partSvgPath = String.format("../../%s/%s", mergedParams.get(GEN_PATH), documentPart.getIdentifier());
                     report.setReportPartSvgPath(partSvgPath);
                 }
                 if (mergedParams.get("referenceLicensePath") != null) {
@@ -216,7 +216,7 @@ public class DocumentDescriptorReportGenerator {
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getAssetName());
 
-                report.setTargetReportDir(new File(documentDescriptor.getTargetDocumentDir(), documentPart.getIdentifier()));
+                report.setTargetReportDir(new File(new File(documentDescriptor.getTargetDocumentDir(), "parts"), documentPart.getIdentifier()));
                 report.getReportContext().setReportInventoryVersion(inventoryContext.getAssetVersion());
 
                 if (!report.createReport()) {
@@ -353,6 +353,14 @@ public class DocumentDescriptorReportGenerator {
     }
 
     private static void generateLabelSvgs(DocumentDescriptor documentDescriptor) throws IOException {
+        final DocumentType documentType = documentDescriptor.getDocumentType();
+        if (documentType != DocumentType.VULNERABILITY_REPORT &&
+                documentType != DocumentType.VULNERABILITY_STATISTICS_REPORT &&
+                documentType != DocumentType.PERIODIC_VULNERABILITY_REPORT &&
+                documentType != DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+            return;
+        }
+
         final File targetDir = new File(documentDescriptor.getTargetDocumentDir(), "resources/svg/labels");
         if (!targetDir.exists() && !targetDir.mkdirs()) {
             throw new IOException("Failed to create directory " + targetDir.getAbsolutePath());

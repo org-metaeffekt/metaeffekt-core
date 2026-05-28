@@ -3,10 +3,10 @@
 <bookmap id="map_initial-license-documentation">
 #foreach($inventoryContext in $documentPart.getInventoryContexts())
     #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($documentPart.getIdentifier()))
-        <chapter href="../$documentPart.getIdentifier()/tpc_asset-report.dita" />
-        <chapter href="../$documentPart.getIdentifier()/tpc_asset-licenses.dita" />
+        <chapter href="tpc_asset-report.dita" />
+        <chapter href="tpc_asset-licenses.dita" />
         #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.components.no.license-switch") == "true")
-            <topicref href="../$documentPart.getIdentifier()/tpc_asset-no-license.dita" />
+            <topicref href="tpc_asset-no-license.dita" />
         #end
 #end
 </bookmap>
