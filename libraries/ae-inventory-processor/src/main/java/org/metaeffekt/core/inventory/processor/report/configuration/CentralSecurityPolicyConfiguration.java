@@ -350,14 +350,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return score >= includeScoreThreshold;
     }
 
-    public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryProviders(Map<String, String> includeVulnerabilitiesWithAdvisoryProviders) {
-        this.includeVulnerabilitiesWithAdvisoryProviders = includeVulnerabilitiesWithAdvisoryProviders.entrySet().stream()
-                .map((entry) -> new JSONObject().put("name", entry.getKey()).put("implementation", StringUtils.isNotEmpty(entry.getValue()) ? entry.getValue() : entry.getKey()))
-                .collect(JSONArray::new, JSONArray::put, JSONArray::putAll)
-                .toString();
-        return this;
-    }
-
     public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryProviders(JSONArray includeVulnerabilitiesWithAdvisoryProviders) {
         this.includeVulnerabilitiesWithAdvisoryProviders = includeVulnerabilitiesWithAdvisoryProviders.toString();
         return this;
@@ -378,25 +370,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return this;
     }
 
-    public CentralSecurityPolicyConfiguration setIncludeAdvisoryProviders(Map<String, String> includeAdvisoryProviders) {
-        this.includeAdvisoryProviders = includeAdvisoryProviders.entrySet().stream()
-                .map((entry) -> new JSONObject().put("name", entry.getKey()).put("implementation", StringUtils.isNotEmpty(entry.getValue()) ? entry.getValue() : entry.getKey()))
-                .collect(JSONArray::new, JSONArray::put, JSONArray::putAll)
-                .toString();
-        return this;
-    }
-
     public CentralSecurityPolicyConfiguration setGenerateOverviewTablesForAdvisories(JSONArray generateOverviewTablesForAdvisories) {
         this.generateOverviewTablesForAdvisories = generateOverviewTablesForAdvisories.toString();
-        return this;
-    }
-
-    public CentralSecurityPolicyConfiguration setGenerateOverviewTablesForAdvisories(Map<String, String> generateOverviewTablesForAdvisories) {
-        this.generateOverviewTablesForAdvisories = generateOverviewTablesForAdvisories.entrySet().stream()
-                .map((entry) -> new JSONObject().put("name", entry.getKey()).put("implementation", StringUtils.isNotEmpty(entry.getValue()) ? entry.getValue() : entry.getKey()))
-                .collect(JSONArray::new, JSONArray::put, JSONArray::putAll)
-                .toString();
-
         return this;
     }
 
@@ -957,29 +932,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     public static boolean containsAny(Collection<String> collection) {
         return collection != null && !collection.isEmpty()
                 && (collection.contains("ALL") || collection.contains("all") || collection.contains("ANY") || collection.contains("any"));
-    }
-
-    public static boolean containsAny(Map<String, String> collection) {
-        return collection != null && !collection.isEmpty()
-                && (collection.containsKey("ALL") || collection.containsKey("all") || collection.containsKey("ANY") || collection.containsKey("any"));
-    }
-
-    public static boolean containsAny(JSONArray collection) { // List<Map<String, String>>
-        if (collection == null || collection.isEmpty()) {
-            return false;
-        }
-
-        for (int i = 0; i < collection.length(); i++) {
-            if (isAny(collection.getJSONObject(i))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static boolean isAny(JSONObject entry) {
-        return entry != null && isAny(entry.getString("name"));
     }
 
     public static boolean isAny(String value) {
