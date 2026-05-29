@@ -120,20 +120,8 @@ public class DocumentDescriptorReport {
         // Collect the file names of the generated part bookmaps.
         List<String> partBookMaps = new ArrayList<>();
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
-            String bookMapFilename = null;
-            if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX ||
-                documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT ||
-                documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT ||
-                documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_PART ||
-                documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT ||
-                documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION ||
-                documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION) {
-                
-                bookMapFilename = "map_" + documentPart.getIdentifier() + ".ditamap";
-            }
-            if (bookMapFilename != null) {
+                String bookMapFilename = "map_" + documentPart.getIdentifier() + ".ditamap";
                 partBookMaps.add("parts/" + documentPart.getIdentifier() + "/" + bookMapFilename);
-            }
         }
 
         // Specify the overall document bookmap template and target file.
