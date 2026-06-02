@@ -215,7 +215,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      */
     @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
     private String includeVulnerabilitiesWithAdvisoryProviders = new JSONArray()
-            .put(new JSONObject().put("name", "all").put("implementation", "all")).toString();
+            .put(new JSONObject().put("src", "*").put("impl", "*").put("st", "*")).toString();
     /**
      * Filters the Security Advisories displayed in the reports based on their provider.<br>
      * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
@@ -228,7 +228,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @Getter
     @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
     private String includeAdvisoryProviders = new JSONArray()
-            .put(new JSONObject().put("name", "all").put("implementation", "all")).toString();
+            .put(new JSONObject().put("src", "*").put("impl", "*").put("st", "*")).toString();
     /**
      * Used by the <code>AbstractInventoryReportCreationMojo</code> in all the vulnerability PDF report generations.<br>
      * Triggers the generation of specific overview tables for the provided advisory sources.<br>
