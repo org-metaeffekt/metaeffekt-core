@@ -27,14 +27,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-
+/**
+ * Utility for reading properties from files and streams.
+ */
 @Slf4j
 public class PropertyUtils {
 
-    public static final String PROPERTY_SYSTEM_LEVEL = "system";
+    private static final String PROPERTY_SYSTEM_LEVEL = "system";
 
-    public static final String PROPERTY_PROJECT_LEVEL = "project";
+    private static final String PROPERTY_PROJECT_LEVEL = "project";
 
+    /**
+     * Get a property from the given {@code properties}, ant {@code project} or system properties in exact that order.
+     *
+     * @param key property key
+     * @param properties the property object to search
+     * @param project the ant project to search
+     * @return trimmed value string or null if key not found
+     */
     public static String getProperty(String key, Properties properties, Project project) {
         Object result = null;
         if (properties != null) {
@@ -52,6 +62,12 @@ public class PropertyUtils {
         return null;
     }
 
+    /**
+     * Load properties from given file.
+     * @param file property file
+     * @return Properties object filled with properties read from given file
+     * @throws BuildException in case of file reading errors
+     */
     public static Properties loadPropertyFile(File file) {
         Properties properties = new Properties();
         FileInputStream in = null;
@@ -68,6 +84,12 @@ public class PropertyUtils {
         return properties;
     }
 
+    /**
+     * Load properties from given {@link InputStream}.
+     * @param in properties input stream
+     * @return Properties object filled with properties read from input stream
+     * @throws BuildException in case of input stream errors
+     */
     public static Properties loadPropertyFile(InputStream in) {
         final Properties properties = new Properties();
 
@@ -84,6 +106,12 @@ public class PropertyUtils {
         return properties;
     }
 
+    /**
+     * Load properties from global, root and child property files and merge them.
+     * @param rootPropertyFile the root file
+     * @param globalPropertyFile the global properties file
+     * @return the merged {@link Properties}
+     */
     public static Properties loadProperties(File rootPropertyFile, File globalPropertyFile) {
         Properties properties = loadPropertyFile(rootPropertyFile);
 
@@ -163,6 +191,13 @@ public class PropertyUtils {
         return properties;
     }
 
+    /**
+     * Set either a system property or a project property to the given value.
+     * @param name property's key
+     * @param value value to set
+     * @param level either "system" or "project"
+     * @param project the project to set the property for
+     */
     public static void setProperty(String name, String value, String level, Project project) {
         if (PROPERTY_SYSTEM_LEVEL.equalsIgnoreCase(level)) {
             System.setProperty(name, value);

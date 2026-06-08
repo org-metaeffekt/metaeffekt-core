@@ -159,6 +159,11 @@ public class LoggingProjectAdapter extends Project {
         return escalate;
     }
 
+    /**
+     * Set on {@code true} if verbose message should be escalated.
+     *
+     * @param escalate {@code true} if escalate
+     */
     public void setEscalate(boolean escalate) {
         this.escalate = escalate;
     }
@@ -167,22 +172,26 @@ public class LoggingProjectAdapter extends Project {
         return warnEscalationTerms;
     }
 
+    /**
+     * Set terms that should trigger an escalation on warning level.
+     * @param warnEscalationTerms a set of strings
+     */
     public void setWarnEscalationTerms(Set<String> warnEscalationTerms) {
         this.warnEscalationTerms = warnEscalationTerms;
     }
 
-    public Set<String> getErrorEscalationTerms() {
-        return errorEscalationTerms;
-    }
-
+    /**
+     * Set terms that should trigger an escalation on error level.
+     * @param errorEscalationTerms a set of strings
+     */
     public void setErrorEscalationTerms(Set<String> errorEscalationTerms) {
         this.errorEscalationTerms = errorEscalationTerms;
     }
 
-    public boolean isFailOnWarnEscalation() {
-        return failOnWarnEscalation;
-    }
-
+    /**
+     * Set on {@code true} if an escalated warning message should trigger an exception.
+     * @param failOnWarnEscalation {@code true} if exception should be triggered
+     */
     public void setFailOnWarnEscalation(boolean failOnWarnEscalation) {
         this.failOnWarnEscalation = failOnWarnEscalation;
     }
@@ -191,10 +200,18 @@ public class LoggingProjectAdapter extends Project {
         return failOnErrorEscalation;
     }
 
+    /**
+     * Set on {@code true} if an escalated error message should trigger an exception.
+     * @param failOnErrorEscalation {@code true} if exception should be triggered
+     */
     public void setFailOnErrorEscalation(boolean failOnErrorEscalation) {
         this.failOnErrorEscalation = failOnErrorEscalation;
     }
 
+    /**
+     * Get the current {@link Logger}.
+     * @return a {@link Logger}
+     */
     public Logger getLog() {
         return log;
     }
