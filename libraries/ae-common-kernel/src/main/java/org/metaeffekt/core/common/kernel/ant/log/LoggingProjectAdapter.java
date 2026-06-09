@@ -155,6 +155,10 @@ public class LoggingProjectAdapter extends Project {
         super.log(message, throwable, msgLevel);
     }
 
+    /**
+     * Will verbose messages be escalated.
+     * @return {@code true} if escalating
+     */
     public boolean isEscalate() {
         return escalate;
     }
@@ -168,6 +172,10 @@ public class LoggingProjectAdapter extends Project {
         this.escalate = escalate;
     }
 
+    /**
+     * Get terms that trigger an escalation to warn level.
+     * @return set of string terms
+     */
     public Set<String> getWarnEscalationTerms() {
         return warnEscalationTerms;
     }
@@ -189,6 +197,14 @@ public class LoggingProjectAdapter extends Project {
     }
 
     /**
+     * Will escalated warn message trigger an exception.
+     * @return {@code true} if exception is triggered
+     */
+    public boolean isFailOnWarnEscalation() {
+        return failOnWarnEscalation;
+    }
+
+    /**
      * Set on {@code true} if an escalated warning message should trigger an exception.
      * @param failOnWarnEscalation {@code true} if exception should be triggered
      */
@@ -196,6 +212,10 @@ public class LoggingProjectAdapter extends Project {
         this.failOnWarnEscalation = failOnWarnEscalation;
     }
 
+    /**
+     * Will escalated error message trigger an exception.
+     * @return {@code true} if exception is triggered
+     */
     public boolean isFailOnErrorEscalation() {
         return failOnErrorEscalation;
     }
