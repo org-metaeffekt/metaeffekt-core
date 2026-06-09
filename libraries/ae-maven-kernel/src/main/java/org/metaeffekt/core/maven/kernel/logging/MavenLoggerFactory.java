@@ -19,10 +19,17 @@ import org.apache.maven.plugin.logging.Log;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 
+/**
+ * Create loggers adapting maven logging to slf4j.
+ */
 public class MavenLoggerFactory implements ILoggerFactory {
 
     private final Log mavenLog;
 
+    /**
+     * Constructor
+     * @param mavenLog maven logger that has to be adapted
+     */
     public MavenLoggerFactory(Log mavenLog) {
         this.mavenLog = mavenLog;
     }

@@ -20,12 +20,22 @@ import org.slf4j.Logger;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
 
+/**
+ * An slf4j logger implementation that adapts maven logging to slf4j logging.
+ */
 public class MavenLogger extends MarkerIgnoringBase implements Logger {
 
     private static final long serialVersionUID = -5633359196835524947L;
 
+    /**
+     * maven logging to be apapted
+     */
     private Log mavenLog;
 
+    /**
+     * Contructor
+     * @param mavenLog maven logging to be apapted
+     */
     public MavenLogger(Log mavenLog) {
         this.mavenLog = mavenLog;
     }
