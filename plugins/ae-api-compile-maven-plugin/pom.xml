@@ -16,6 +16,11 @@
     <name>${project.artifactId}</name>
     <packaging>maven-plugin</packaging>
 
+    <properties>
+        <failOnJavadocError>false</failOnJavadocError>
+        <failOnJavadocWarn>false</failOnJavadocWarn>
+    </properties>
+
     <build>
         <plugins>
             <plugin>

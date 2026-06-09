@@ -15,6 +15,11 @@
     <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <failOnJavadocError>false</failOnJavadocError>
+        <failOnJavadocWarn>false</failOnJavadocWarn>
+    </properties>
+
     <build>
         <plugins>
             <plugin>

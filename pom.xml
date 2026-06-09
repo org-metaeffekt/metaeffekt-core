@@ -307,7 +307,6 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <doclint>-accessibility</doclint>
                             <bottom>
                                 Licensed under the ${license.identifier} - Copyright &#169; {inceptionYear} &#x2013;
                                 {currentYear} the original author or authors.

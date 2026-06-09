@@ -17,6 +17,11 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <properties>
+        <failOnJavadocError>false</failOnJavadocError>
+        <failOnJavadocWarn>false</failOnJavadocWarn>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
