@@ -30,6 +30,14 @@ import org.apache.maven.project.MavenProject;
 public abstract class AbstractProjectAwareMojo extends AbstractMojo {
 
     /**
+     * Override default constructor to make javadoc tool happy.
+     * <p>
+     * <B>Only needed for builds with jdk 21.</B>
+     * </p>
+     */
+    public AbstractProjectAwareMojo() {}
+
+    /**
      * Get the current project in which context the mojo is executed.
      * Implementation should look like
      * <pre>
