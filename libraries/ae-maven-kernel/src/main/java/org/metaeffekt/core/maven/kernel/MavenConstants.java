@@ -23,7 +23,14 @@ package org.metaeffekt.core.maven.kernel;
  */
 public abstract class MavenConstants {
 
+    /**
+     * package type pom
+     */
     public static final String MAVEN_PACKAGING_POM = "pom";
+
+    /**
+     * package type pom
+     */
     public static final String MAVEN_PACKAGING_JAR = "jar";
 
     private MavenConstants() {

@@ -20,17 +20,29 @@ import org.apache.maven.project.MavenProject;
 import static org.metaeffekt.core.maven.kernel.MavenConstants.MAVEN_PACKAGING_JAR;
 import static org.metaeffekt.core.maven.kernel.MavenConstants.MAVEN_PACKAGING_POM;
 
-
+/**
+ * Utility for {@link MavenProject}.
+ */
 public final class MavenProjectUtil {
 
     private MavenProjectUtil() {
     }
 
+    /**
+     * Checks if the given project is packaging type 'pom'.
+     * @param project project to check
+     * @return {@code true} if type is 'pom'
+     */
     public static boolean isPomPackagingProject(MavenProject project) {
         validateProject(project);
         return MAVEN_PACKAGING_POM.equalsIgnoreCase(project.getPackaging());
     }
 
+    /**
+     * Checks if the given project is packaging type 'jar'.
+     * @param project project to check
+     * @return {@code true} if type is 'jar'
+     */
     public static boolean isJarPackagingProject(MavenProject project) {
         validateProject(project);
         return MAVEN_PACKAGING_JAR.equalsIgnoreCase(project.getPackaging());
