@@ -2054,7 +2054,7 @@ public class Inventory implements Serializable {
      * When {@code asTable} is false, the output is a simple list of attribute-value pairs without additional formatting.
      * <p>
      * Note: The method calculates the maximum length of both attribute names and values to ensure proper alignment in the table format.
-     * <h3>Example Output:</h3>
+     * <h4>Example Output:</h4>
      * <pre>
      * // asTable = true
      * | Attribute    | Value        |
@@ -2130,7 +2130,7 @@ public class Inventory implements Serializable {
      * Note: The method first calculates the maximum length of each attribute across all models for proper alignment. It
      * also calls {@code logModelRearrangeAttributes} to potentially rearrange the output attributes.
      * </p>
-     * <h3>Example Output:</h3>
+     * <h4>Example Output:</h4>
      * <pre>
      * | Name   | Type   | Other   |
      * |--------|--------|---------|

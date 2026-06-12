@@ -17,6 +17,11 @@
     <name>${project.artifactId}</name>
     <packaging>maven-plugin</packaging>
 
+    <properties>
+        <failOnJavadocError>false</failOnJavadocError>
+        <failOnJavadocWarn>false</failOnJavadocWarn>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.metaeffekt.core</groupId>

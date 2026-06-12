@@ -26,11 +26,11 @@ public class EscalationException extends RuntimeException {
 
     private static final long serialVersionUID = -2396549143165229501L;
 
-    public EscalationException(String message, Throwable cause) {
+    EscalationException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public EscalationException(String message) {
+    EscalationException(String message) {
         super(message);
     }
 

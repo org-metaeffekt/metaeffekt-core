@@ -307,7 +307,6 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <doclint>-accessibility</doclint>
                             <bottom>
                                 Licensed under the ${license.identifier} - Copyright &#169; {inceptionYear} &#x2013;
                                 {currentYear} the original author or authors.
@@ -329,25 +328,6 @@
                                     </manifestSection>
                                 </manifestSections>
                             </archive>
-                            <!-- FIXME: remove once all plugins have been moved to real annotations -->
-                            <tags>
-                                <tag>
-                                    <name>goal</name>
-                                    <placement>X</placement>
-                                </tag>
-                                <tag>
-                                    <name>parameter</name>
-                                    <placement>X</placement>
-                                </tag>
-                                <tag>
-                                    <name>required</name>
-                                    <placement>X</placement>
-                                </tag>
-                                <tag>
-                                    <name>requiresDependencyResolution</name>
-                                    <placement>X</placement>
-                                </tag>
-                            </tags>
                             <failOnError>true</failOnError>
                             <failOnWarnings>${failOnJavadocWarn}</failOnWarnings>
                         </configuration>

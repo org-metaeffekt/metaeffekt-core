@@ -31,6 +31,14 @@ import java.util.concurrent.TimeUnit;
 public class ExecutorUtils {
 
     /**
+     * Override default constructor to make javadoc tool happy.
+     * <p>
+     * <B>Only needed for builds with jdk 21.</B>
+     * </p>
+     */
+    public ExecutorUtils() {}
+
+    /**
      * Runs a command demanding success.
      * <p>
      *     Throws with a generic failure message and logs some failure information on failure.
