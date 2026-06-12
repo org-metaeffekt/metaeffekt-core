@@ -139,8 +139,7 @@ public class CentralSecurityPolicyConfigurationTest {
 
     @Test
     public void anyProviderListTest() {
-        Assertions.assertFalse(CentralSecurityPolicyConfiguration.containsAny((Collection<String>) null));
-        Assertions.assertFalse(CentralSecurityPolicyConfiguration.containsAny((Map<String, String>) null));
+        Assertions.assertFalse(CentralSecurityPolicyConfiguration.containsAny(null));
         Assertions.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Collections.emptyList()));
 
         Assertions.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("any")));

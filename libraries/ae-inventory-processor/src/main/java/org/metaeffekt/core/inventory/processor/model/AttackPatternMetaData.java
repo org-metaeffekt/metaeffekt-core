@@ -33,7 +33,6 @@ public class AttackPatternMetaData extends AbstractModelBase {
         NAME("Name"),
         DESCRIPTION("Description"),
         DEPRECATED("Deprecated"),
-        REVOKED("Revoked"),
         ALTERNATE_TERMS("Alternate Terms"),
         RELATED_ATTACK_PATTERNS("Related Attack Pattern"),
         REFERENCES("References"),
