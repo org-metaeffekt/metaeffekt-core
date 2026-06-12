@@ -207,10 +207,8 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile01 = new File(targetReportDir, "parts/test/map_test.ditamap");
+        File expectedFile01 = new File(targetReportDir, "map_test-document.ditamap");
         assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
-        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
-        assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
 
         File labelsDir = new File(targetReportDir, "resources/svg/labels");
         assertTrue(labelsDir.exists(), "Labels directory should exist for VULNERABILITY_REPORT");
