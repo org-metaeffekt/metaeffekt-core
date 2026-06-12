@@ -73,7 +73,6 @@ public class DocumentDescriptorReport {
     public static final String TEMPLATE_GROUP_LICENSE_DOCUMENTATION_BOOKMAP = "license-documentation-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP = "vulnerability-report-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP = "vulnerability-statistics-report-bookmap";
-    public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_PART_BOOKMAP = "vulnerability-summary-part-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP = "vulnerability-summary-report-bookmap";
 
     /**
@@ -96,7 +95,7 @@ public class DocumentDescriptorReport {
                 writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
             }
             if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_PART) {
-                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_PART_BOOKMAP);
+                continue;
             }
             if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
                 writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
