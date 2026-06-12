@@ -30,8 +30,16 @@ import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.util.FileUtils;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -69,6 +77,7 @@ public class DocumentDescriptorReportGenerator {
         documentDescriptor.validate();
         deriveAssets(documentDescriptor);
         generateInventoryReports(documentDescriptor);
+        generateLabelSvgs(documentDescriptor);
 
         // generate bookmaps to integrate InventoryReport-generated results
         DocumentDescriptorReport documentDescriptorReport = new DocumentDescriptorReport();
@@ -179,9 +188,9 @@ public class DocumentDescriptorReportGenerator {
                 report.setReferenceLicensePath("licenses");
 
                 // the genPath specifies, where the SVGs are generated, it is relative to the targetDocumentDir of the document,
-                // the InventoryReport however requires this path to be relative to its local targetReportDir (e.g. <targetDocumentDir>/<inventoryContext>)
+                // the InventoryReport however requires this path to be relative to its local targetReportDir (e.g. <targetDocumentDir>/parts/<partName>)
                 if (mergedParams.get(GEN_PATH) != null) {
-                    String partSvgPath = String.format("../%s/%s", mergedParams.get(GEN_PATH), documentPart.getIdentifier());
+                    String partSvgPath = String.format("../../%s/%s", mergedParams.get(GEN_PATH), documentPart.getIdentifier());
                     report.setReportPartSvgPath(partSvgPath);
                 }
                 if (mergedParams.get("referenceLicensePath") != null) {
@@ -207,7 +216,7 @@ public class DocumentDescriptorReportGenerator {
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getAssetName());
 
-                report.setTargetReportDir(new File(documentDescriptor.getTargetDocumentDir(), inventoryContext.getIdentifier()));
+                report.setTargetReportDir(new File(new File(documentDescriptor.getTargetDocumentDir(), "parts"), documentPart.getIdentifier()));
                 report.getReportContext().setReportInventoryVersion(inventoryContext.getAssetVersion());
 
                 if (!report.createReport()) {
@@ -341,5 +350,49 @@ public class DocumentDescriptorReportGenerator {
         configParams.setAllFailConditions(false); // current default handling for all document types
 
         return configParams;
+    }
+
+    private static void generateLabelSvgs(DocumentDescriptor documentDescriptor) throws IOException {
+        final DocumentType documentType = documentDescriptor.getDocumentType();
+        if (documentType != DocumentType.VULNERABILITY_REPORT &&
+                documentType != DocumentType.VULNERABILITY_STATISTICS_REPORT &&
+                documentType != DocumentType.PERIODIC_VULNERABILITY_REPORT &&
+                documentType != DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+            return;
+        }
+
+        final File targetDir = new File(documentDescriptor.getTargetDocumentDir(), "resources/svg/labels");
+        if (!targetDir.exists() && !targetDir.mkdirs()) {
+            throw new IOException("Failed to create directory " + targetDir.getAbsolutePath());
+        }
+
+        final Properties properties = new Properties();
+        properties.put(Velocity.RESOURCE_LOADERS, "class, file");
+        properties.put("resource.loader.class.class", ClasspathResourceLoader.class.getName());
+        properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
+        // disable strict runtime references to match InventoryReport behavior if needed
+        properties.put(Velocity.RUNTIME_REFERENCES_STRICT, "false");
+        properties.put("velocimacro.arguments.strict", "true");
+
+        final VelocityEngine velocityEngine = new VelocityEngine(properties);
+        final VelocityContext context = new VelocityContext();
+        context.put("report", new InventoryReport());
+
+        final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        final String labelTemplatePath = "/META-INF/templates/" + InventoryReport.TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT + "/svg/";
+        final Resource[] resources = resolver.getResources(labelTemplatePath + "*.svg.vt");
+
+        for (Resource r : resources) {
+            final String targetFileName = r.getFilename().replace(".vt", "");
+            final File targetFile = new File(targetDir, targetFileName);
+
+            log.info("Generating label SVG: {}", targetFile.getAbsolutePath());
+
+            final Template template = velocityEngine.getTemplate(labelTemplatePath + r.getFilename());
+
+            try (FileWriter writer = new FileWriter(targetFile)) {
+                template.merge(context, writer);
+            }
+        }
     }
 }

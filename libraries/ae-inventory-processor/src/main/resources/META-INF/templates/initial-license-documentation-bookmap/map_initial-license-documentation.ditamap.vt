@@ -2,11 +2,11 @@
 <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/bookmap.dtd">
 <bookmap id="map_initial-license-documentation">
 #foreach($inventoryContext in $documentPart.getInventoryContexts())
-    #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
-        <chapter href="../$inventoryContext.getIdentifier()/tpc_asset-report.dita" />
-        <chapter href="../$inventoryContext.getIdentifier()/tpc_asset-licenses.dita" />
+    #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($documentPart.getIdentifier()))
+        <chapter href="tpc_asset-report.dita" />
+        <chapter href="tpc_asset-licenses.dita" />
         #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.components.no.license-switch") == "true")
-            <topicref href="../$inventoryContext.getIdentifier()/tpc_asset-no-license.dita" />
+            <topicref href="tpc_asset-no-license.dita" />
         #end
 #end
 </bookmap>

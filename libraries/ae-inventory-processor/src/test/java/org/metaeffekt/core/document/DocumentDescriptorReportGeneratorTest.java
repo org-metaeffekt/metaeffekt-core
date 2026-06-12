@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -81,10 +82,13 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile01 = new File(targetReportDir, "parts/map_test-annex.ditamap");
+        File expectedFile01 = new File(targetReportDir, "parts/test/map_test.ditamap");
         assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
         assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
+
+        File labelsDir = new File(targetReportDir, "resources/svg/labels");
+        assertFalse(labelsDir.exists(), "Labels directory should not exist for ANNEX");
     }
 
     @Test
@@ -103,10 +107,13 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile01 = new File(targetReportDir, "parts/map_test-initial-license-documentation.ditamap");
+        File expectedFile01 = new File(targetReportDir, "parts/test/map_test.ditamap");
         assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
         assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
+
+        File labelsDir = new File(targetReportDir, "resources/svg/labels");
+        assertFalse(labelsDir.exists(), "Labels directory should not exist for INITIAL_LICENSE_DOCUMENTATION");
     }
 
     @Test
@@ -125,10 +132,13 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile01 = new File(targetReportDir, "parts/map_test-license-documentation.ditamap");
+        File expectedFile01 = new File(targetReportDir, "parts/test/map_test.ditamap");
         assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
         assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
+
+        File labelsDir = new File(targetReportDir, "resources/svg/labels");
+        assertFalse(labelsDir.exists(), "Labels directory should not exist for LICENSE_DOCUMENTATION");
     }
 
     @Test
@@ -147,10 +157,13 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile01 = new File(targetReportDir, "parts/map_test-vulnerability-report.ditamap");
+        File expectedFile01 = new File(targetReportDir, "parts/test/map_test.ditamap");
         assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
         assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
+
+        File labelsDir = new File(targetReportDir, "resources/svg/labels");
+        assertTrue(labelsDir.exists(), "Labels directory should exist for VULNERABILITY_REPORT");
     }
 
     @Test
@@ -169,10 +182,13 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile01 = new File(targetReportDir, "parts/map_test-vulnerability-statistics-report.ditamap");
+        File expectedFile01 = new File(targetReportDir, "parts/test/map_test.ditamap");
         assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
         assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
+
+        File labelsDir = new File(targetReportDir, "resources/svg/labels");
+        assertTrue(labelsDir.exists(), "Labels directory should exist for VULNERABILITY_STATISTICS_REPORT");
     }
 
     @Test
@@ -191,10 +207,11 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile01 = new File(targetReportDir, "parts/map_test-vulnerability-summary-part.ditamap");
+        File expectedFile01 = new File(targetReportDir, "map_test-document.ditamap");
         assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
-        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
-        assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
+
+        File labelsDir = new File(targetReportDir, "resources/svg/labels");
+        assertTrue(labelsDir.exists(), "Labels directory should exist for VULNERABILITY_REPORT");
     }
 
     @Test
@@ -213,10 +230,13 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile01 = new File(targetReportDir, "parts/map_test-vulnerability-summary-report.ditamap");
+        File expectedFile01 = new File(targetReportDir, "parts/test/map_test.ditamap");
         assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
         assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
+
+        File labelsDir = new File(targetReportDir, "resources/svg/labels");
+        assertTrue(labelsDir.exists(), "Labels directory should exist for VULNERABILITY_SUMMARY_REPORT");
     }
 
 

@@ -72,6 +72,11 @@ public class DocumentPart {
         if (documentPartType == null) {
             throw new IllegalStateException("The part type must be specified.");
         }
+
+        if (inventoryContexts != null && inventoryContexts.size() > 1) {
+            throw new IllegalStateException("The part '" + documentPartType + "' currently does not support multiple input inventories.");
+        }
+
         // validate each inventoryContext
         for (InventoryContext context : inventoryContexts) {
             // check if each inventoryContext references an inventory
