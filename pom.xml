@@ -181,7 +181,7 @@
                         <propertyVersionMap>
                             <artifact.inventory.version>${artifact.inventory.version}</artifact.inventory.version>
                             <!--
-                                                        CentOSFileFilterTest<artifact.inventory.enabled>${artifact.inventory.enabled}</artifact.inventory.enabled>
+                                CentOSFileFilterTest<artifact.inventory.enabled>${artifact.inventory.enabled}</artifact.inventory.enabled>
                             -->
                             <ae.core.version>${ae.core.version}</ae.core.version>
                         </propertyVersionMap>
@@ -282,6 +282,7 @@
                 </plugins>
             </build>
         </profile>
+
         <profile>
             <id>generate-javadoc-jar</id>
             <activation>
