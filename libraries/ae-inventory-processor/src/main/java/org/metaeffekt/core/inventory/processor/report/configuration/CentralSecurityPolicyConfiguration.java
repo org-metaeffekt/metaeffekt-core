@@ -201,16 +201,16 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     /**
      * Filters vulnerabilities based on the provider of their security advisory.<br>
      * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
-     * The key "name" is mandatory and can optionally be combined with an "implementation" value.
-     * If the implementation is not specified, the name will be used as the implementation.<br>
-     * If a vulnerability does not have an advisory from one of the specified sources, it will be excluded from the reports.
+     * Each entry uses three keys: <code>src</code> (source/provider name), <code>impl</code> (implementation), and <code>st</code> (store: <code>sa</code> for security advisory).
+     * Use <code>*</code> for all three to match every source, or provide specific values to restrict matching.
+     * If a vulnerability does not have an advisory matching one of the specified entries, it will be excluded from the reports.
      * See {@code AdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
-     * Use <code>[{"name": "all", "implementation": "all"}]</code> to ignore this check.<p>
+     * Use <code>[{"src": "*", "impl": "*", "st": "*"}]</code> to ignore this check.<p>
      * Example:
      * <pre>
-     *     [{"name":"CERT_FR"},
-     *      {"name":"CERT_SEI"},
-     *      {"name":"RHSA","implementation":"CSAF"}]
+     *     [{"src":"CERT_FR","impl":"*","st":"sa"},
+     *      {"src":"CERT_SEI","impl":"*","st":"sa"},
+     *      {"src":"RHSA","impl":"CSAF","st":"sa"}]
      * </pre>
      */
     @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
@@ -219,11 +219,11 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     /**
      * Filters the Security Advisories displayed in the reports based on their provider.<br>
      * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
-     * The key "name" is mandatory and can optionally be combined with an "implementation" value.
-     * If the implementation is not specified, the name will be used as the implementation.<br>
-     * If an advisory is not of one of the specified sources, it will be excluded.
+     * Each entry uses three keys: <code>src</code> (source/provider name), <code>impl</code> (implementation), and <code>st</code> (store: <code>sa</code> for security advisory).
+     * Use <code>*</code> for all three to match every source, or provide specific values to restrict matching.
+     * If an advisory does not match one of the specified entries, it will be excluded.
      * See {@code AdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
-     * Use <code>[{"name": "all", "implementation": "all"}]</code> to ignore this check.<p>
+     * Use <code>[{"src": "*", "impl": "*", "st": "*"}]</code> to ignore this check.<p>
      */
     @Getter
     @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
@@ -233,14 +233,15 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Used by the <code>AbstractInventoryReportCreationMojo</code> in all the vulnerability PDF report generations.<br>
      * Triggers the generation of specific overview tables for the provided advisory sources.<br>
      * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
+     * Each entry uses three keys: <code>src</code> (source/provider name), <code>impl</code> (implementation), and <code>st</code> (store: <code>sa</code> for security advisory).
      * For every provider listed here, an additional overview table will be generated only evaluating the vulnerabilities referencing that provider via a security advisory or directly.
      * If left empty, no additional table will be created.<br>
      * See {@code AdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
      * Example:
      * <pre>
-     *     [{"name":"CERT_FR"},
-     *      {"name":"CERT_SEI"},
-     *      {"name":"RHSA","implementation":"CSAF"}]
+     *     [{"src":"CERT_FR","impl":"*","st":"sa"},
+     *      {"src":"CERT_SEI","impl":"*","st":"sa"},
+     *      {"src":"RHSA","impl":"CSAF","st":"sa"}]
      * </pre>
      */
     @Getter
