@@ -198,6 +198,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      */
     @Getter
     private final List<String> includeVulnerabilitiesWithAdvisoryReviewStatus = new ArrayList<>(Collections.singletonList("all"));
+
     /**
      * Filters vulnerabilities based on the provider of their security advisory.<br>
      * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
@@ -216,6 +217,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
     private String includeVulnerabilitiesWithAdvisoryProviders = new JSONArray()
             .put(new JSONObject().put("src", "*").put("impl", "*").put("st", "*")).toString();
+
     /**
      * Filters the Security Advisories displayed in the reports based on their provider.<br>
      * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
@@ -229,6 +231,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
     private String includeAdvisoryProviders = new JSONArray()
             .put(new JSONObject().put("src", "*").put("impl", "*").put("st", "*")).toString();
+
     /**
      * Used by the <code>AbstractInventoryReportCreationMojo</code> in all the vulnerability PDF report generations.<br>
      * Triggers the generation of specific overview tables for the provided advisory sources.<br>
@@ -247,6 +250,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @Getter
     @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
     private String generateOverviewTablesForAdvisories = new JSONArray().toString();
+
     /**
      * Filters advisories based on their specific type identifier (e.g. <code>alert</code>, <code>notice</code>, <code>news</code>).<br>
      * If the advisory type does not appear in this list, it will not be included.
