@@ -254,7 +254,7 @@
         #if($configParams.getCustomParams().get("document.context.threshold.enabled") == 'true')
         <section>
             <title>Insignificant Vulnerabilities Threshold</title>
-            <p>$configParams.getCustomParams().get("inventory-report-vulnerability.vulnerability-threshold")</p>
+            <p>$utils.getText("inventory-report-vulnerability.vulnerability-threshold")</p>
         </section>
         #end
 

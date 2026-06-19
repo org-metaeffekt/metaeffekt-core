@@ -26,47 +26,47 @@
                     <tbody>
                         <row>
                             <entry valign="middle">Component Name</entry>
-                            <entry valign="middle">\${product.name}</entry>
+                            <entry valign="middle">${product.name}</entry>
                         </row>
                         <row>
                             <entry valign="middle">Component Version</entry>
-                            <entry valign="middle">\${product.version}</entry>
+                            <entry valign="middle">${product.version}</entry>
                         </row>
                         #if($configParams.getCustomParams().get("document.purpose.subcomponent.enabled") == 'true')
                         <row>
                             <entry valign="middle">Subcomponent Name</entry>
-                            <entry valign="middle">\${asset.name}</entry>
+                            <entry valign="middle">${asset.name}</entry>
                         </row>
                         <row>
                             <entry valign="middle">Subcomponent Version</entry>
-                            <entry valign="middle">\${asset.version}</entry>
+                            <entry valign="middle">${asset.version}</entry>
                         </row>
                         #end
                         <row>
                             <entry valign="middle"><abbreviated-form keyref="report-date"/></entry>
-                            <entry valign="middle">\${document.date_en}</entry>
+                            <entry valign="middle">${document.date_en}</entry>
                         </row>
                         #if($configParams.getCustomParams().get("document.purpose.query.period.enabled") == 'true')
                         <row>
                             <entry valign="middle"><abbreviated-form keyref="report-query-period"/></entry>
-                            <entry valign="middle">\${ae.vulnerability.report.summary.period.from} - \${ae.vulnerability.report.summary.period.to}</entry>
+                            <entry valign="middle">${ae.vulnerability.report.summary.period.from} - ${ae.vulnerability.report.summary.period.to}</entry>
                         </row>
                         #end
                         <row>
                             <entry valign="middle"><abbreviated-form keyref="vulnerability-evaluation-period"/></entry>
-                            <entry valign="middle">\${ae.vulnerability.inventory.enrichment.advise.datetime.en}</entry>
+                            <entry valign="middle">${ae.vulnerability.inventory.enrichment.advise.datetime.en}</entry>
                         </row>
                         <row>
                             <entry valign="middle"><abbreviated-form keyref="vulnerability-correlation-period"/></entry>
-                            <entry valign="middle">\${ae.vulnerability.inventory.enrichment.correlate.datetime.en}</entry>
+                            <entry valign="middle">${ae.vulnerability.inventory.enrichment.correlate.datetime.en}</entry>
                         </row>
                         <row>
                             <entry valign="middle"><abbreviated-form keyref="vulnerability-mirror-update-period"/></entry>
-                            <entry valign="middle">\${ae.vulnerability.index.datetime.en}</entry>
+                            <entry valign="middle">${ae.vulnerability.index.datetime.en}</entry>
                         </row>
                         <row>
                             <entry valign="middle"><abbreviated-form keyref="bom-creation-period"/></entry>
-                            <entry valign="middle">\${ae.vulnerability.sbom.creation.datetime.en}</entry>
+                            <entry valign="middle">${ae.vulnerability.sbom.creation.datetime.en}</entry>
                         </row>
                     </tbody>
                 </tgroup>
@@ -75,7 +75,7 @@
 
         <p>
             This report is part of a series of documents to convey the vulnerability status on various levels.
-            \${document.purpose.note}
+            ${document.purpose.note}
         </p>
 
         <p>
@@ -86,7 +86,7 @@
             <title>Third-Party Component Vulnerabilities</title>
             <p id="vulnerabilities">
                 The vulnerabilities enlisted within this document are primarily vulnerabilities of third-party software
-                or hardware components that are included within or integrated with assets of \${organization.name}. The
+                or hardware components that are included within or integrated with assets of ${organization.name}. The
                 fact that such a component is affected by a known vulnerability must not necessarily imply that the
                 vulnerability can effectively be exploited. To determine the relevance and potential risks,
                 vulnerabilities are categorized and assessed within the context of the assets using or integrating the
@@ -99,10 +99,10 @@
             <title>External Vulnerability Materials</title>
             <p id="external-data">
                 Materials - including data, content, and references - covering vulnerability information from external
-                sources are presented in this documentation 'AS IS'. \${organization.name} does not claim any copyright
-                on the included external materials nor is \${organization.name} liable for the correctness and completeness
+                sources are presented in this documentation 'AS IS'. ${organization.name} does not claim any copyright
+                on the included external materials nor is ${organization.name} liable for the correctness and completeness
                 of the presented external materials. Materials from external sources are included herein for informational
-                purposes only. \${organization.name} is not responsible for the availability and content provided by
+                purposes only. ${organization.name} is not responsible for the availability and content provided by
                 external links.
             </p>
             <p>

@@ -70,6 +70,9 @@ public class InventoryReport {
 
     public static final String TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT = "labels-vulnerability-assessment";
 
+    public static final String TEMPLATE_GROUP_PURPOSE = "purpose";
+    public static final String TEMPLATE_GROUP_CONTEXT = "context";
+
     public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
 
@@ -541,7 +544,8 @@ public class InventoryReport {
         final boolean isVulnerabilityReport = configParams.isInventoryVulnerabilityReportEnabled() ||
                 configParams.isInventoryVulnerabilityReportSummaryEnabled() ||
                 configParams.isInventoryVulnerabilityStatisticsReportEnabled() ||
-                configParams.isAssessmentReportEnabled();
+                configParams.isAssessmentReportEnabled() ||
+                configParams.isDocumentContextEnabled();
 
         // build adapters
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
@@ -592,14 +596,14 @@ public class InventoryReport {
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
         }
 
-        if (configParams.isContextReportEnabled()) {
+        if (configParams.isDocumentContextEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_BASE_DIR, "context", reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_CONTEXT, reportContext);
         }
 
-        if (configParams.isPurposeReportEnabled()) {
+        if (configParams.isDocumentPurposeEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_BASE_DIR, "purpose", reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_PURPOSE, reportContext);
         }
 
         // evaluate licenses only for managed artifacts

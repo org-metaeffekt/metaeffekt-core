@@ -356,7 +356,7 @@ public class DocumentDescriptorReportGenerator {
                 builder.inventoryVulnerabilityStatisticsReportEnabled(true);
                 break;
             case CONTEXT:
-                builder.contextReportEnabled(true);
+                builder.documentContextEnabled(true);
                 if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT ||
                     documentDescriptor.getDocumentType() == DocumentType.PERIODIC_VULNERABILITY_REPORT) {
                     mergedParams.putIfAbsent("document.context.remediation.enabled", "true");
@@ -379,7 +379,7 @@ public class DocumentDescriptorReportGenerator {
                 }
                 break;
             case PURPOSE:
-                builder.purposeReportEnabled(true);
+                builder.documentPurposeEnabled(true);
                 if (documentDescriptor.getDocumentType() == DocumentType.PERIODIC_VULNERABILITY_REPORT) {
                     mergedParams.putIfAbsent("document.purpose.intro.key", "document.purpose.intro.periodic");
                     mergedParams.putIfAbsent("document.purpose.query.period.enabled", "true");

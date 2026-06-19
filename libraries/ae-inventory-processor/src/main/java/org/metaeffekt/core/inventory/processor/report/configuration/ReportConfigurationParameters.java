@@ -150,10 +150,10 @@ public class ReportConfigurationParameters {
     private boolean assessmentReportEnabled = false;
 
     @Builder.Default
-    private boolean contextReportEnabled = false;
+    private boolean documentContextEnabled = false;
 
     @Builder.Default
-    private boolean purposeReportEnabled = false;
+    private boolean documentPurposeEnabled = false;
 
     /**
      * Custom parameters passed from the document descriptor or parts.
