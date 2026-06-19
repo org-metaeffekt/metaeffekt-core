@@ -18,6 +18,8 @@ package org.metaeffekt.core.inventory.processor.report.configuration;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.Map;
+
 @Builder
 @Getter
 public class ReportConfigurationParameters {
@@ -146,6 +148,18 @@ public class ReportConfigurationParameters {
 
     @Builder.Default
     private boolean assessmentReportEnabled = false;
+
+    @Builder.Default
+    private boolean contextReportEnabled = false;
+
+    @Builder.Default
+    private boolean purposeReportEnabled = false;
+
+    /**
+     * Custom parameters passed from the document descriptor or parts.
+     */
+    @Builder.Default
+    private Map<String, String> customParams = new java.util.HashMap<>();
 
     public void setAllFailConditions(boolean shouldFail) {
         failOnError = shouldFail;

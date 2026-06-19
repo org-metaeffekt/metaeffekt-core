@@ -148,19 +148,44 @@ public class DocumentDescriptorReportGenerator {
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             documentPart.validate();
 
-            // for each inventory trigger according InventoryReport instances to produce
-            for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
-                // validate each inventoryContext before processing
-                inventoryContext.validate();
+            List<InventoryContext> contexts = documentPart.getInventoryContexts();
+            if (contexts == null || contexts.isEmpty()) {
+                // For parts like CONTEXT and PURPOSE that do not require an inventory
+                Map<String, String> mergedParams;
+
+                if (documentPart.getParams() != null && documentDescriptor.getParams() != null) {
+                    mergedParams = mergeParams(documentDescriptor.getParams(), documentPart.getParams());
+                } else if (documentPart.getParams() != null) {
+                    mergedParams = new HashMap<>(documentPart.getParams());
+                } else if (documentDescriptor.getParams() != null) {
+                    mergedParams = new HashMap<>(documentDescriptor.getParams());
+                } else {
+                    mergedParams = new HashMap<>();
+                }
+
+                ReportConfigurationParameters configParams = buildReportConfiguration(documentPart, documentDescriptor, mergedParams);
+
+                InventoryReport report = new InventoryReport(configParams);
+                report.setReportContext(new ReportContext(documentPart.getIdentifier(), null, null));
+                report.setTargetReportDir(new File(new File(documentDescriptor.getTargetDocumentDir(), "parts"), documentPart.getIdentifier()));
+
+                if (!report.createReport()) {
+                    throw new RuntimeException("Report creation failed for " + report);
+                }
+            } else {
+                // for each inventory trigger according InventoryReport instances to produce
+                for (InventoryContext inventoryContext : contexts) {
+                    // validate each inventoryContext before processing
+                    inventoryContext.validate();
 
                 Map<String, String> mergedParams;
 
                 if (documentPart.getParams() != null && documentDescriptor.getParams() != null) {
                     mergedParams = mergeParams(documentDescriptor.getParams(), documentPart.getParams());
                 } else if (documentPart.getParams() != null) {
-                    mergedParams = documentPart.getParams();
+                    mergedParams = new HashMap<>(documentPart.getParams());
                 } else if (documentDescriptor.getParams() != null) {
-                    mergedParams = documentDescriptor.getParams();
+                    mergedParams = new HashMap<>(documentDescriptor.getParams());
                 } else {
                     mergedParams = new HashMap<>();
                 }
@@ -222,10 +247,10 @@ public class DocumentDescriptorReportGenerator {
                 if (!report.createReport()) {
                     throw new RuntimeException("Report creation failed for " + report);
                 }
-
             }
         }
     }
+}
 
     private static void setPolicy(Map<String, String> params, InventoryReport report, DocumentDescriptor documentDescriptor) throws IOException {
 
@@ -330,6 +355,48 @@ public class DocumentDescriptorReportGenerator {
             case VULNERABILITY_STATISTICS_REPORT:
                 builder.inventoryVulnerabilityStatisticsReportEnabled(true);
                 break;
+            case CONTEXT:
+                builder.contextReportEnabled(true);
+                if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT ||
+                    documentDescriptor.getDocumentType() == DocumentType.PERIODIC_VULNERABILITY_REPORT) {
+                    mergedParams.putIfAbsent("document.context.remediation.enabled", "true");
+                    mergedParams.putIfAbsent("document.context.prioritization.enabled", "true");
+                    mergedParams.putIfAbsent("document.context.threshold.enabled", "true");
+                    mergedParams.putIfAbsent("document.context.metrics.epss.enabled", "true");
+                } else if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+                    mergedParams.putIfAbsent("document.context.remediation.enabled", "false");
+                    mergedParams.putIfAbsent("document.context.prioritization.enabled", "false");
+                    mergedParams.putIfAbsent("document.context.threshold.enabled", "false");
+                    mergedParams.putIfAbsent("document.context.metrics.epss.enabled", "false");
+                }
+
+                if (documentDescriptor.getDocumentType() == DocumentType.PERIODIC_VULNERABILITY_REPORT) {
+                    mergedParams.putIfAbsent("document.context.intro.key", "document.context.intro.periodic.report");
+                } else if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+                    mergedParams.putIfAbsent("document.context.intro.key", "document.context.intro.summary.report");
+                } else if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
+                    mergedParams.putIfAbsent("document.context.intro.key", "document.context.intro.vulnerability.report");
+                }
+                break;
+            case PURPOSE:
+                builder.purposeReportEnabled(true);
+                if (documentDescriptor.getDocumentType() == DocumentType.PERIODIC_VULNERABILITY_REPORT) {
+                    mergedParams.putIfAbsent("document.purpose.intro.key", "document.purpose.intro.periodic");
+                    mergedParams.putIfAbsent("document.purpose.query.period.enabled", "true");
+                    mergedParams.putIfAbsent("document.purpose.subcomponent.enabled", "false");
+                    mergedParams.putIfAbsent("document.purpose.external.data.enabled", "true");
+                } else if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+                    mergedParams.putIfAbsent("document.purpose.intro.key", "document.purpose.intro.summary");
+                    mergedParams.putIfAbsent("document.purpose.query.period.enabled", "false");
+                    mergedParams.putIfAbsent("document.purpose.subcomponent.enabled", "false");
+                    mergedParams.putIfAbsent("document.purpose.external.data.enabled", "false");
+                } else  if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT){
+                    mergedParams.putIfAbsent("document.purpose.intro.key", "document.purpose.intro.vulnerability");
+                    mergedParams.putIfAbsent("document.purpose.query.period.enabled", "false");
+                    mergedParams.putIfAbsent("document.purpose.subcomponent.enabled", "true");
+                    mergedParams.putIfAbsent("document.purpose.external.data.enabled", "true");
+                }
+                break;
             case VULNERABILITY_SUMMARY_PART:
                 builder.inventoryVulnerabilityReportSummaryEnabled(true);
                 break;
@@ -345,6 +412,7 @@ public class DocumentDescriptorReportGenerator {
         builder.hidePriorityInformation(Boolean.parseBoolean(mergedParams.get("hidePriorityInformation")));
         builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.get("filterVulnerabilitiesNotCoveredByArtifacts")));
         builder.failOnMissingVelocityRuntimeReferences(Boolean.parseBoolean(mergedParams.get("failOnMissingVelocityRuntimeReferences")));
+        builder.customParams(mergedParams);
 
         ReportConfigurationParameters configParams = builder.build();
         configParams.setAllFailConditions(false); // current default handling for all document types

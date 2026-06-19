@@ -592,6 +592,16 @@ public class InventoryReport {
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
         }
 
+        if (configParams.isContextReportEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_BASE_DIR, "context", reportContext);
+        }
+
+        if (configParams.isPurposeReportEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_BASE_DIR, "purpose", reportContext);
+        }
+
         // evaluate licenses only for managed artifacts
         final List<String> licenses = projectInventory.evaluateLicenses(false, true);
 
