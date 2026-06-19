@@ -69,6 +69,10 @@ public class ReportUtils {
         return StringUtils.isNotBlank(value);
     }
 
+    public boolean notEmpty(List<?> value) {
+        return value != null && !value.isEmpty();
+    }
+
     public String ratio(long part, long total) {
         return String.format("%.1f", ((double) part) / total);
     }
