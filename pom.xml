@@ -98,6 +98,8 @@
         <jaxen.version>1.1.6</jaxen.version>
         <jdom.version>2.0.2</jdom.version>
         <jsch.version>0.1.55</jsch.version>
+
+        <!-- FIXME: upgrade to 20260522 or newer -->
         <json.version>20231013</json.version>
         <junit.version>6.0.3</junit.version>
         <kubernetes.java.client.version>20.0.0</kubernetes.java.client.version>
@@ -142,14 +144,15 @@
         <!-- FIXME-KKL: review with KHA -->
         <maven.ae.version.plugin.version>${ae.core.version_last}</maven.ae.version.plugin.version>
 
-        <poi.version>5.2.4</poi.version>
+        <!-- FIXME: consider upgrading to 5.5.x version -->
+        <poi.version>5.2.5</poi.version>
         <snakeyaml.version>2.3</snakeyaml.version>
-        <slf4j.version>2.0.17</slf4j.version>
-        <spring.framework.version>7.0.7</spring.framework.version>
+        <slf4j.version>2.0.18</slf4j.version>
+        <spring.framework.version>7.0.8</spring.framework.version>
         <tukaani.xz.version>1.9</tukaani.xz.version>
         <velocity.version>2.4.1</velocity.version>
         <velocity.tools.generic.version>3.1</velocity.tools.generic.version>
-        <xalan.version>2.7.2</xalan.version>
+        <xalan.version>2.7.3</xalan.version>
     </properties>
 
     <build>
