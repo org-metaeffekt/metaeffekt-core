@@ -16,6 +16,11 @@
 package org.metaeffekt.core.document.report;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
 import org.metaeffekt.core.document.model.DocumentPartType;
@@ -30,11 +35,6 @@ import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.util.FileUtils;
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
-import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -178,79 +178,79 @@ public class DocumentDescriptorReportGenerator {
                     // validate each inventoryContext before processing
                     inventoryContext.validate();
 
-                Map<String, String> mergedParams;
+                    Map<String, String> mergedParams;
 
-                if (documentPart.getParams() != null && documentDescriptor.getParams() != null) {
-                    mergedParams = mergeParams(documentDescriptor.getParams(), documentPart.getParams());
-                } else if (documentPart.getParams() != null) {
-                    mergedParams = new HashMap<>(documentPart.getParams());
-                } else if (documentDescriptor.getParams() != null) {
-                    mergedParams = new HashMap<>(documentDescriptor.getParams());
-                } else {
-                    mergedParams = new HashMap<>();
-                }
+                    if (documentPart.getParams() != null && documentDescriptor.getParams() != null) {
+                        mergedParams = mergeParams(documentDescriptor.getParams(), documentPart.getParams());
+                    } else if (documentPart.getParams() != null) {
+                        mergedParams = new HashMap<>(documentPart.getParams());
+                    } else if (documentDescriptor.getParams() != null) {
+                        mergedParams = new HashMap<>(documentDescriptor.getParams());
+                    } else {
+                        mergedParams = new HashMap<>();
+                    }
 
-                ReportConfigurationParameters configParams = buildReportConfiguration(documentPart, documentDescriptor, mergedParams);
+                    ReportConfigurationParameters configParams = buildReportConfiguration(documentPart, documentDescriptor, mergedParams);
 
-                InventoryReport report = new InventoryReport(configParams);
-                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));
+                    InventoryReport report = new InventoryReport(configParams);
+                    report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));
 
-                setPolicy(mergedParams, report, documentDescriptor);
+                    setPolicy(mergedParams, report, documentDescriptor);
 
-                if (inventoryContext.getReferenceInventoryContext() != null) {
-                    report.setReferenceInventory(inventoryContext.getReferenceInventoryContext().getInventory());
-                    report.setReferenceComponentPath(inventoryContext.getReferenceInventoryContext().getComponentsPath());
-                    report.setReferenceLicensePath(inventoryContext.getReferenceInventoryContext().getLicensesPath());
+                    if (inventoryContext.getReferenceInventoryContext() != null) {
+                        report.setReferenceInventory(inventoryContext.getReferenceInventoryContext().getInventory());
+                        report.setReferenceComponentPath(inventoryContext.getReferenceInventoryContext().getComponentsPath());
+                        report.setReferenceLicensePath(inventoryContext.getReferenceInventoryContext().getLicensesPath());
 
-                } else {
-                    report.setReferenceInventory(inventoryContext.getInventory());
-                }
-                report.setInventory(inventoryContext.getInventory());
+                    } else {
+                        report.setReferenceInventory(inventoryContext.getInventory());
+                    }
+                    report.setInventory(inventoryContext.getInventory());
 
-                // these fields were originally part of DocumentDescriptorReportContext, however we decided that these seem
-                // to be default values that we do not need to change for different DocumentDescriptors, thus we set them here
-                report.setReferenceComponentPath("components");
-                report.setReferenceLicensePath("licenses");
+                    // these fields were originally part of DocumentDescriptorReportContext, however we decided that these seem
+                    // to be default values that we do not need to change for different DocumentDescriptors, thus we set them here
+                    report.setReferenceComponentPath("components");
+                    report.setReferenceLicensePath("licenses");
 
-                // the genPath specifies, where the SVGs are generated, it is relative to the targetDocumentDir of the document,
-                // the InventoryReport however requires this path to be relative to its local targetReportDir (e.g. <targetDocumentDir>/parts/<partName>)
-                if (mergedParams.get(GEN_PATH) != null) {
-                    String partSvgPath = String.format("../../%s/%s", mergedParams.get(GEN_PATH), documentPart.getIdentifier());
-                    report.setReportPartSvgPath(partSvgPath);
-                }
-                if (mergedParams.get("referenceLicensePath") != null) {
-                    report.setReferenceLicensePath(mergedParams.get("referenceLicensePath"));
-                }
-                if (mergedParams.get("referenceComponentPath") != null) {
-                    report.setReferenceComponentPath(mergedParams.get("referenceComponentPath"));
-                }
-                if (mergedParams.get("LicensesDir") == null) {
-                    report.setTargetLicenseDir(new File("license"));
-                    log.info("used default targetLicensesDir as 'license'");
-                } else {
-                    report.setTargetLicenseDir(new File(mergedParams.get("targetLicensesDir")));
-                }
-                if (mergedParams.get("targetComponentDir") == null) {
-                    report.setTargetComponentDir(new File("component"));
-                    log.info("used default targetComponentDir as 'component'");
-                } else {
-                    report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
-                }
+                    // the genPath specifies, where the SVGs are generated, it is relative to the targetDocumentDir of the document,
+                    // the InventoryReport however requires this path to be relative to its local targetReportDir (e.g. <targetDocumentDir>/parts/<partName>)
+                    if (mergedParams.get(GEN_PATH) != null) {
+                        String partSvgPath = String.format("../../%s/%s", mergedParams.get(GEN_PATH), documentPart.getIdentifier());
+                        report.setReportPartSvgPath(partSvgPath);
+                    }
+                    if (mergedParams.get("referenceLicensePath") != null) {
+                        report.setReferenceLicensePath(mergedParams.get("referenceLicensePath"));
+                    }
+                    if (mergedParams.get("referenceComponentPath") != null) {
+                        report.setReferenceComponentPath(mergedParams.get("referenceComponentPath"));
+                    }
+                    if (mergedParams.get("LicensesDir") == null) {
+                        report.setTargetLicenseDir(new File("license"));
+                        log.info("used default targetLicensesDir as 'license'");
+                    } else {
+                        report.setTargetLicenseDir(new File(mergedParams.get("targetLicensesDir")));
+                    }
+                    if (mergedParams.get("targetComponentDir") == null) {
+                        report.setTargetComponentDir(new File("component"));
+                        log.info("used default targetComponentDir as 'component'");
+                    } else {
+                        report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
+                    }
 
-                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));
+                    report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));
 
-                report.getReportContext().setReportInventoryName(inventoryContext.getAssetName());
+                    report.getReportContext().setReportInventoryName(inventoryContext.getAssetName());
 
-                report.setTargetReportDir(new File(new File(documentDescriptor.getTargetDocumentDir(), "parts"), documentPart.getIdentifier()));
-                report.getReportContext().setReportInventoryVersion(inventoryContext.getAssetVersion());
+                    report.setTargetReportDir(new File(new File(documentDescriptor.getTargetDocumentDir(), "parts"), documentPart.getIdentifier()));
+                    report.getReportContext().setReportInventoryVersion(inventoryContext.getAssetVersion());
 
-                if (!report.createReport()) {
-                    throw new RuntimeException("Report creation failed for " + report);
+                    if (!report.createReport()) {
+                        throw new RuntimeException("Report creation failed for " + report);
+                    }
                 }
             }
         }
     }
-}
 
     private static void setPolicy(Map<String, String> params, InventoryReport report, DocumentDescriptor documentDescriptor) throws IOException {
 
@@ -358,7 +358,7 @@ public class DocumentDescriptorReportGenerator {
             case CONTEXT:
                 builder.documentContextEnabled(true);
                 if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT ||
-                    documentDescriptor.getDocumentType() == DocumentType.PERIODIC_VULNERABILITY_REPORT) {
+                        documentDescriptor.getDocumentType() == DocumentType.PERIODIC_VULNERABILITY_REPORT) {
                     mergedParams.putIfAbsent("document.context.remediation.enabled", "true");
                     mergedParams.putIfAbsent("document.context.prioritization.enabled", "true");
                     mergedParams.putIfAbsent("document.context.threshold.enabled", "true");
@@ -390,7 +390,7 @@ public class DocumentDescriptorReportGenerator {
                     mergedParams.putIfAbsent("document.purpose.query.period.enabled", "false");
                     mergedParams.putIfAbsent("document.purpose.subcomponent.enabled", "false");
                     mergedParams.putIfAbsent("document.purpose.external.data.enabled", "false");
-                } else  if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT){
+                } else if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
                     mergedParams.putIfAbsent("document.purpose.intro.key", "document.purpose.intro.vulnerability");
                     mergedParams.putIfAbsent("document.purpose.query.period.enabled", "false");
                     mergedParams.putIfAbsent("document.purpose.subcomponent.enabled", "true");
