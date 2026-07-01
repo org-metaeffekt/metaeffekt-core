@@ -544,8 +544,7 @@ public class InventoryReport {
         final boolean isVulnerabilityReport = configParams.isInventoryVulnerabilityReportEnabled() ||
                 configParams.isInventoryVulnerabilityReportSummaryEnabled() ||
                 configParams.isInventoryVulnerabilityStatisticsReportEnabled() ||
-                configParams.isAssessmentReportEnabled() ||
-                configParams.isDocumentContextEnabled();
+                configParams.isAssessmentReportEnabled();
 
         // build adapters
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
