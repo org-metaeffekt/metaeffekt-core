@@ -52,9 +52,7 @@ public class DocumentPartTest {
 
         List<DocumentPart> parts = new ArrayList<>();
 
-        DocumentPart vulnerabilityReportPart = new DocumentPart("test", contexts, DocumentPartType.VULNERABILITY_REPORT, partParams);
         DocumentPart annexPart = new DocumentPart("test", contexts, DocumentPartType.ANNEX, partParams);
-        parts.add(vulnerabilityReportPart);
         parts.add(annexPart);
 
         Map<String, String> documentParams = new HashMap<>();
