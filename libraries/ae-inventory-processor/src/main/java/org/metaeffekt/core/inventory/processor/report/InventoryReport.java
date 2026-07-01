@@ -70,6 +70,9 @@ public class InventoryReport {
 
     public static final String TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT = "labels-vulnerability-assessment";
 
+    public static final String TEMPLATE_GROUP_PURPOSE = "purpose";
+    public static final String TEMPLATE_GROUP_CONTEXT = "context";
+
     public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
 
@@ -590,6 +593,16 @@ public class InventoryReport {
         if (configParams.isAssessmentReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
+        }
+
+        if (configParams.isDocumentContextEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_CONTEXT, reportContext);
+        }
+
+        if (configParams.isDocumentPurposeEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_PURPOSE, reportContext);
         }
 
         // evaluate licenses only for managed artifacts
