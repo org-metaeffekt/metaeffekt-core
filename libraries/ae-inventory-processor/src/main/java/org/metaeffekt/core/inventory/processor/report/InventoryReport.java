@@ -544,7 +544,8 @@ public class InventoryReport {
         final boolean isVulnerabilityReport = configParams.isInventoryVulnerabilityReportEnabled() ||
                 configParams.isInventoryVulnerabilityReportSummaryEnabled() ||
                 configParams.isInventoryVulnerabilityStatisticsReportEnabled() ||
-                configParams.isAssessmentReportEnabled();
+                configParams.isAssessmentReportEnabled() ||
+                configParams.isDocumentPurposeEnabled();
 
         // build adapters
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
@@ -717,6 +718,7 @@ public class InventoryReport {
         properties.put("resource.loader.class.class", ClasspathResourceLoader.class.getName());
         properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
         properties.put(Velocity.RUNTIME_REFERENCES_STRICT, configParams.isFailOnMissingVelocityRuntimeReferences());
+        properties.put("directive.set.null.allowed", true);
         //https://velocity.apache.org/engine/1.7/developer-guide.html#velocimacro
         properties.put("velocimacro.arguments.strict", "true");
 

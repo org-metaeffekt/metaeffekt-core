@@ -49,24 +49,25 @@
                         #if($configParams.getCustomParams().get("document.purpose.query.period.enabled") == 'true')
                         <row>
                             <entry valign="middle"><abbreviated-form keyref="report-query-period"/></entry>
-                            <entry valign="middle">${ae.vulnerability.report.summary.period.from} - ${ae.vulnerability.report.summary.period.to}</entry>
+                            #set($vulnerabilitySummary=$vulnerabilityAdapter.getVulnerabilitySummaryData())
+                            <entry valign="middle">$report.xmlEscapeDate($vulnerabilitySummary.getPeriodFrom()) - $report.xmlEscapeDate($vulnerabilitySummary.getPeriodTo())</entry>
                         </row>
                         #end
                         <row>
                             <entry valign="middle"><abbreviated-form keyref="vulnerability-evaluation-period"/></entry>
-                            <entry valign="middle">${ae.vulnerability.inventory.enrichment.advise.datetime.en}</entry>
+                            <entry valign="middle">$vulnerabilityAdapter.getProcessTimeTrackerProperty("ae.vulnerability.inventory.enrichment.advise.datetime.en")</entry>
                         </row>
                         <row>
                             <entry valign="middle"><abbreviated-form keyref="vulnerability-correlation-period"/></entry>
-                            <entry valign="middle">${ae.vulnerability.inventory.enrichment.correlate.datetime.en}</entry>
+                            <entry valign="middle">$vulnerabilityAdapter.getProcessTimeTrackerProperty("ae.vulnerability.inventory.enrichment.correlate.datetime.en")</entry>
                         </row>
                         <row>
                             <entry valign="middle"><abbreviated-form keyref="vulnerability-mirror-update-period"/></entry>
-                            <entry valign="middle">${ae.vulnerability.index.datetime.en}</entry>
+                            <entry valign="middle">$vulnerabilityAdapter.getProcessTimeTrackerProperty("ae.vulnerability.index.datetime.en")</entry>
                         </row>
                         <row>
                             <entry valign="middle"><abbreviated-form keyref="bom-creation-period"/></entry>
-                            <entry valign="middle">${ae.vulnerability.sbom.creation.datetime.en}</entry>
+                            <entry valign="middle">$vulnerabilityAdapter.getProcessTimeTrackerProperty("ae.vulnerability.sbom.creation.datetime.en")</entry>
                         </row>
                     </tbody>
                 </tgroup>
