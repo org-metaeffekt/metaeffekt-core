@@ -1,0 +1,16 @@
+properties:
+  host01: "maven.repository.redhat.com"
+  host02: "repo1.maven.org"
+
+exclude:
+  licenses:
+    - "GPL-2.0"
+  patterns:
+    - "/^org\\.apache\\.commons.*/"
+
+include:
+  licenses:
+    - "Apache-2.0"
+
+defaultImplicitInclusion: true
+excludeIfNoLicense: false

@@ -34,6 +34,8 @@
                             <failOnMissingSources>true</failOnMissingSources>
                             <inventoryPath>${project.basedir}/inventory/test-artifact-inventory.xls</inventoryPath>
 
+                            <sourceAggregationConfig>${project.basedir}/config.yaml</sourceAggregationConfig>
+
                             <!-- Source Repositories -->
                             <sourceRepositories>
 
@@ -62,7 +64,6 @@
                                         <pattern>^.*\.jar</pattern>
                                     </patterns>
                                     <fileServerMirror>
-                                        <propertyFilePath>${project.basedir}/.properties</propertyFilePath>
                                         <sourceUrls>
                                             <url>https://$[host02]/maven2/$[artifact.namespace]/$[artifact.namespace]/$[artifact.version]/$[artifact.id]</url>
                                         </sourceUrls>
