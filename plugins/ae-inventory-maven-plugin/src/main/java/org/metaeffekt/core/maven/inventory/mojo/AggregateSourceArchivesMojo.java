@@ -132,7 +132,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
     private boolean failOnMissingSources;
 
     /**
-     * Optional YAML configuration file for global source aggregation behavior.
+     * Optional YAML configuration file for source aggregation filtering and resolving.
      */
     @Parameter(property = "sourceAggregationConfig")
     private File sourceAggregationConfig;
@@ -157,7 +157,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
             throw new MojoExecutionException("Parameter 'inventoryPath' does not point to valid inventory file: " + inventoryPath);
         }
 
-        // parse global yaml config
+        // parse yaml config
         SourceAggregationConfig config = new SourceAggregationConfig();
         if (sourceAggregationConfig != null && sourceAggregationConfig.exists()) {
             LoaderOptions loaderOptions = new LoaderOptions();
@@ -429,9 +429,9 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
             }
         }
         if (effectiveLicense != null) {
-            for (String lic : effectiveLicense.split(",")) {
-                if (StringUtils.isNotBlank(lic)) {
-                    licenses.add(lic.trim());
+            for (String license : effectiveLicense.split(",")) {
+                if (StringUtils.isNotBlank(license)) {
+                    licenses.add(license.trim());
                 }
             }
         }
