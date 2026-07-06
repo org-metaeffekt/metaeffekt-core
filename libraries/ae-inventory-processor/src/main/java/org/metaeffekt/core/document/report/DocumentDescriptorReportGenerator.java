@@ -379,7 +379,7 @@ public class DocumentDescriptorReportGenerator {
         context.put("report", new InventoryReport());
 
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        final String labelTemplatePath = "/META-INF/templates/" + InventoryReport.TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT + "/svg/";
+        final String labelTemplatePath = InventoryReport.TEMPLATES_GENERIC_BASE_DIR + InventoryReport.TEMPLATE_GROUP_ASSESSMENT_LABELS + "/svg/";
         final Resource[] resources = resolver.getResources(labelTemplatePath + "*.svg.vt");
 
         for (Resource r : resources) {

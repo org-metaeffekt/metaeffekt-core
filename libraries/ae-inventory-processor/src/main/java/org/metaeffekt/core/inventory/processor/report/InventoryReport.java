@@ -59,23 +59,24 @@ public class InventoryReport {
     private static final String PATTERN_ANY_VT = "**/*.vt";
 
     private static final String TEMPLATES_BASE_DIR = "/META-INF/templates";
+    public static final String TEMPLATES_GENERIC_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "_generic";
+    private static final String TEMPLATES_REPORTS_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "reports";
 
-    private static final String TEMPLATES_TECHNICAL_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "technical";
+    private static final String TEMPLATES_TECHNICAL_BASE_DIR = "technical";
+    public static final String TEMPLATE_GROUP_ASSESSMENT_LABELS = "assessment-labels";
 
-    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_BOM = "inventory-report-bom";
-    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY = "inventory-report-vulnerability";
-    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY = "inventory-report-vulnerability-summary";
 
+    public static final String TEMPLATE_GROUP_ANNEX_REPORT = "annex-report";
+    public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT = "vulnerability-report";
+    public static final String TEMPLATE_GROUP_SUMMARY_REPORT = "summary-report";
     public static final String TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY = "inventory-statistics-vulnerability";
-
-    public static final String TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT = "labels-vulnerability-assessment";
+    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
+    public static final String TEMPLATE_GROUP_ASSET_REPORT_BOM = "asset-report-bom";
+    public static final String TEMPLATE_GROUP_ASSESSMENT_REPORT = "assessment-report";
 
     public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
-    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
 
-    public static final String TEMPLATE_GROUP_ASSET_REPORT_BOM = "asset-report-bom";
 
-    public static final String TEMPLATE_GROUP_ASSESSMENT_REPORT = "assessment-report";
 
     public static final String KEY_PREVIOUS_VERSION = "Previous Version";
 
@@ -554,7 +555,7 @@ public class InventoryReport {
         // write reports
         if (configParams.isInventoryBomReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_BOM, reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_ANNEX_REPORT, reportContext);
         }
 
         if (configParams.isInventoryDiffReportEnabled()) {
@@ -563,12 +564,12 @@ public class InventoryReport {
 
         if (configParams.isInventoryVulnerabilityReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_VULNERABILITY_REPORT, reportContext);
         }
 
         if (configParams.isInventoryVulnerabilityReportSummaryEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY, reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_SUMMARY_REPORT, reportContext);
         }
 
         if (configParams.isInventoryVulnerabilityStatisticsReportEnabled()) {
