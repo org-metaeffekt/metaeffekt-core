@@ -1,6 +1,6 @@
 ## load macros from other files
-#parse("META-INF/templates/labels-vulnerability-assessment/macros/labels.vm")
-#parse("META-INF/templates/assessment-report/macros/assessment-report.vm")
+#parse("META-INF/templates/_generic/assessment-labels/macros/labels.vm")
+#parse("META-INF/templates/reports/assessment-report/macros/assessment-report.vm")
 ##
 ## main template content
 <?xml version="1.0" encoding="utf-8"?>
