@@ -58,7 +58,7 @@ public class ReportLanguagePropertyTest {
 
     private Properties loadProperties(String resourceName) throws IOException {
         Properties props = new Properties();
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("META-INF/templates/_generic/Localization/" + resourceName)) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("META-INF/templates/_generic/localization/" + resourceName)) {
             if (is == null) {
                 throw new IOException("Resource not found: " + resourceName);
             }
