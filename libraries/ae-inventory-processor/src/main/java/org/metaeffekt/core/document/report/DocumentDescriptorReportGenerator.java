@@ -100,9 +100,11 @@ public class DocumentDescriptorReportGenerator {
                         // the inventory, but do not want to generate the content for each asset separately
                         inventoryContexts.add(inventoryContext);
                     } else {
+                        log.info("Splitting inventory for part: {}", documentPart.getDocumentPartType());
                         final List<Inventory> splitInventories = InventorySeparator.separate(inventoryContext.getInventory());
-                        for (Inventory inventory : splitInventories) {
-                            final Optional<AssetMetaData> primaryAsset = inventory.getAssetMetaData().stream()
+                        log.info("splitInventories size: {}", splitInventories.size());
+                        for (Inventory splitInv : splitInventories) {
+                            final Optional<AssetMetaData> primaryAsset = splitInv.getAssetMetaData().stream()
                                     .filter(AssetMetaData::isPrimary)
                                     .findFirst();
 
@@ -115,7 +117,7 @@ public class DocumentDescriptorReportGenerator {
                                     .orElseThrow(() -> new IllegalStateException("Missing asset version in primary asset for inventory [" + inventoryContext.getIdentifier() + "]. Please make sure that every primary asset has a specified version."));
 
                             final String encodedAssetName = Base64.getEncoder().encodeToString(assetName.getBytes());
-                            InventoryContext derivedContext = new InventoryContext(inventory, encodedAssetName, inventoryContext.getReportContext(), inventoryContext.getLicensesPath(), inventoryContext.getComponentsPath());
+                            InventoryContext derivedContext = new InventoryContext(splitInv, encodedAssetName, inventoryContext.getReportContext(), inventoryContext.getLicensesPath(), inventoryContext.getComponentsPath());
                             derivedContext.setAssetName(assetName);
                             derivedContext.setAssetVersion(assetVersion);
                             inventoryContexts.add(derivedContext);
@@ -379,7 +381,7 @@ public class DocumentDescriptorReportGenerator {
         context.put("report", new InventoryReport());
 
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        final String labelTemplatePath = InventoryReport.TEMPLATES_GENERIC_BASE_DIR + InventoryReport.TEMPLATE_GROUP_ASSESSMENT_LABELS + "/svg/";
+        final String labelTemplatePath = InventoryReport.TEMPLATES_GENERIC_BASE_DIR + "/" + InventoryReport.TEMPLATE_GROUP_ASSESSMENT_LABELS + "/svg/";
         final Resource[] resources = resolver.getResources(labelTemplatePath + "*.svg.vt");
 
         for (Resource r : resources) {

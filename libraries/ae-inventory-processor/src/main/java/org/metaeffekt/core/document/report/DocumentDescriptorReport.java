@@ -66,6 +66,7 @@ public class DocumentDescriptorReport {
     private static final String SEPARATOR_SLASH = "/";
     private static final String PATTERN_ANY_VT = "**/*.vt";
     private static final String TEMPLATES_BASE_DIR = "/META-INF/templates";
+    private static final String TEMPLATES_GENERIC_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "_generic";
     private static final String TEMPLATES_BOOKMAPS_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "bookmaps";
 
     public static final String TEMPLATE_GROUP_DOCUMENT_BOOKMAP = "document-bookmap";
@@ -73,15 +74,14 @@ public class DocumentDescriptorReport {
     public static final String TEMPLATE_GROUP_INITIAL_LICENSE_DOCUMENTATION_BOOKMAP = "initial-license-documentation-bookmap";
     public static final String TEMPLATE_GROUP_LICENSE_DOCUMENTATION_BOOKMAP = "license-documentation-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP = "vulnerability-report-bookmap";
-    public static final String TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP = "vulnerability-statistics-report-bookmap";
-    public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP = "vulnerability-summary-report-bookmap";
+    public static final String TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP = "vulnerability-statistics-bookmap";
+    public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP = "vulnerability-summary-bookmap";
 
     /**
      * Creates a report based on the given DocumentDescriptor. This method will generate a DITA BookMap and other reports
      * using the template specified in the report generation process.
      *
      * @param documentDescriptor the descriptor containing document-specific information for the report generation
-     *
      * @throws IOException if there is an error reading or writing report files
      */
     protected void createPartBookMap(DocumentDescriptor documentDescriptor) throws IOException {
@@ -120,12 +120,12 @@ public class DocumentDescriptorReport {
         // Collect the file names of the generated part bookmaps.
         List<String> partBookMaps = new ArrayList<>();
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
-                String bookMapFilename = "map_" + documentPart.getIdentifier() + ".ditamap";
-                partBookMaps.add("parts/" + documentPart.getIdentifier() + "/" + bookMapFilename);
+            String bookMapFilename = "map_" + documentPart.getIdentifier() + ".ditamap";
+            partBookMaps.add("parts/" + documentPart.getIdentifier() + "/" + bookMapFilename);
         }
 
         // Specify the overall document bookmap template and target file.
-        String templateResourcePath = TEMPLATES_BOOKMAPS_BASE_DIR + TEMPLATE_GROUP_DOCUMENT_BOOKMAP + SEPARATOR_SLASH + "map.document.ditamap.vt";
+        String templateResourcePath = TEMPLATES_BOOKMAPS_BASE_DIR + SEPARATOR_SLASH + TEMPLATE_GROUP_DOCUMENT_BOOKMAP + SEPARATOR_SLASH + "map_document.ditamap.vt";
         File targetFile = new File(this.targetReportDir, "map_" + documentDescriptor.getIdentifier() + "-document.ditamap");
 
         log.info("Producing Dita for template [{}]", templateResourcePath);
@@ -147,7 +147,7 @@ public class DocumentDescriptorReport {
 
         Map<String, TreeSet<String>> assetMap = createAssetNameToVersionMap(documentDescriptor);
 
-        String templateResourcePath = TEMPLATES_BASE_DIR + "/imprint/tpc_imprint.dita.vt";
+        String templateResourcePath = TEMPLATES_GENERIC_BASE_DIR + "/imprint/tpc_imprint.dita.vt";
         File targetFile = new File(this.targetReportDir + "/imprint", "tpc_imprint.dita");
 
         log.info("Producing Dita for template [{}]", templateResourcePath);
@@ -192,6 +192,7 @@ public class DocumentDescriptorReport {
 
     /**
      * Adapter class for holding properties related to document report generation.
+     * Adapter class for holding properties related to document report generation.
      * <p>This class acts as a container for properties associated with each inventory context. It allows dynamic
      * manipulation and management of properties during the report creation process.</p>
      */
@@ -211,49 +212,51 @@ public class DocumentDescriptorReport {
      * in DITA creation.
      *
      * @param documentDescriptor the document descriptor used to extract inventory contexts
-     * @param adapters the adapters object to which the properties will be added
+     * @param adapters           the adapters object to which the properties will be added
      */
-    private void addPropertiesToAdapter(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters){
+    private void addPropertiesToAdapter(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters) {
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
-            for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
-                String propertiesFilename = null;
-                switch (documentPart.getDocumentPartType()) {
-                    case INITIAL_LICENSE_DOCUMENTATION:
-                        propertiesFilename = "asset-report.properties";
-                        break;
+            if (documentPart.getInventoryContexts() == null || documentPart.getInventoryContexts().isEmpty()) {
+                continue;
+            }
 
-                    // ANNEX and LICENSE_DOCUMENTATION share the same part
-                    case ANNEX:
-                    case LICENSE_DOCUMENTATION:
-                        propertiesFilename = "inventory-report.properties";
-                        break;
+            String propertiesFilename = null;
+            switch (documentPart.getDocumentPartType()) {
+                case INITIAL_LICENSE_DOCUMENTATION:
+                    propertiesFilename = "asset-report.properties";
+                    break;
 
-                    case VULNERABILITY_REPORT:
-                        propertiesFilename = "vulnerability-report.properties";
-                        break;
+                // ANNEX and LICENSE_DOCUMENTATION share the same part
+                case ANNEX:
+                case LICENSE_DOCUMENTATION:
+                    propertiesFilename = "inventory-report.properties";
+                    break;
 
-                    case VULNERABILITY_SUMMARY_PART:
-                        propertiesFilename = "vulnerability-summary.properties";
-                        break;
+                case VULNERABILITY_REPORT:
+                    propertiesFilename = "vulnerability-report.properties";
+                    break;
 
-                    // these do not provide properties
-                    case VULNERABILITY_STATISTICS_REPORT:
-                        break;
+                case VULNERABILITY_SUMMARY_PART:
+                    propertiesFilename = "vulnerability-summary.properties";
+                    break;
 
-                    case VULNERABILITY_SUMMARY_REPORT:
-                        break;
+                // these do not provide properties
+                case VULNERABILITY_STATISTICS_REPORT:
+                    break;
 
-                    default:
-                        // enforce this list is completed for new part types
-                        throw new IllegalStateException("Unknown document part type. Cannot map properties.");
-                }
+                case VULNERABILITY_SUMMARY_REPORT:
+                    break;
 
-                if (propertiesFilename != null) {
-                    final File targetDir = new File(new File(targetReportDir, "parts"), documentPart.getIdentifier());
-                    final File propertiesFile = new File(targetDir, propertiesFilename);
-                    final Properties properties = PropertiesUtils.loadPropertiesFile(propertiesFile, true);
-                    adapters.getPropertiesMap().put(documentPart.getIdentifier(), properties);
-                }
+                default:
+                    // enforce this list is completed for new part types
+                    throw new IllegalStateException("Unknown document part type. Cannot map properties.");
+            }
+
+            if (propertiesFilename != null) {
+                final File targetDir = new File(new File(targetReportDir, "parts"), documentPart.getIdentifier());
+                final File propertiesFile = new File(targetDir, propertiesFilename);
+                final Properties properties = PropertiesUtils.loadPropertiesFile(propertiesFile, true);
+                adapters.getPropertiesMap().put(documentPart.getIdentifier(), properties);
             }
         }
     }
@@ -264,9 +267,9 @@ public class DocumentDescriptorReport {
      * directory. It iterates through all relevant templates and produces the final report output.</p>
      *
      * @param documentDescriptor the document descriptor containing the metadata for report generation
-     * @param adapters the adapters holding additional properties to be used in the templates
-     * @param templateGroup the group of templates to be applied for report generation
-     * @param documentPart the part of a document for which the report will be written
+     * @param adapters           the adapters holding additional properties to be used in the templates
+     * @param templateGroup      the group of templates to be applied for report generation
+     * @param documentPart       the part of a document for which the report will be written
      * @throws IOException if there is an error reading templates or writing reports
      */
     protected void writeReports(DocumentDescriptor documentDescriptor, DocumentPart documentPart,
@@ -305,11 +308,11 @@ public class DocumentDescriptorReport {
     /**
      * Produces a DITA report by applying a Velocity template to the given context data and writing the result to the target file.
      *
-     * @param documentDescriptor the document descriptor containing the metadata for report generation
-     * @param adapters the adapters containing properties to be used in the report
+     * @param documentDescriptor   the document descriptor containing the metadata for report generation
+     * @param adapters             the adapters containing properties to be used in the report
      * @param templateResourcePath the path to the Velocity template resource
-     * @param target the file where the generated report will be saved
-     * @param documentPart the part of the document for which the bookMap will be generated
+     * @param target               the file where the generated report will be saved
+     * @param documentPart         the part of the document for which the bookMap will be generated
      * @throws IOException if there is an error during the report generation process
      */
     private void produceDita(DocumentDescriptor documentDescriptor,
@@ -362,11 +365,11 @@ public class DocumentDescriptorReport {
     /**
      * Overloaded produceBookMapDita() for cases where no extra context is required.
      *
-     * @param documentDescriptor the document descriptor containing the metadata for report generation
-     * @param documentPart the part of the document for which the bookMap will be generated
-     * @param adapters the adapters containing properties to be used in the report
+     * @param documentDescriptor   the document descriptor containing the metadata for report generation
+     * @param documentPart         the part of the document for which the bookMap will be generated
+     * @param adapters             the adapters containing properties to be used in the report
      * @param templateResourcePath the path to the Velocity template resource
-     * @param target the file where the generated report will be saved
+     * @param target               the file where the generated report will be saved
      */
     private void produceDita(DocumentDescriptor documentDescriptor,
                              DocumentPart documentPart,

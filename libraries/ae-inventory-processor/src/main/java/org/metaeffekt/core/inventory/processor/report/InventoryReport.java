@@ -68,8 +68,8 @@ public class InventoryReport {
     public static final String TEMPLATE_GROUP_ANNEX_REPORT = "annex-report";
     public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT = "vulnerability-report";
     public static final String TEMPLATE_GROUP_SUMMARY_REPORT = "summary-report";
-    public static final String TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY = "inventory-statistics-vulnerability";
-    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
+    public static final String TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY = "statistics-report";
+    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "diff-report";
     public static final String TEMPLATE_GROUP_ASSET_REPORT = "asset-report";
     public static final String TEMPLATE_GROUP_ASSESSMENT_REPORT = "assessment-report";
 
@@ -955,7 +955,7 @@ public class InventoryReport {
                 null,
                 new InventoryReportAdapter(baseFilteredInventory));
 
-        writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
+        writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
     }
 
     /**
