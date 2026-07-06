@@ -28,7 +28,7 @@ public class SourceAggregationConfig {
     private ImplicitConfig include = new ImplicitConfig();
 
     private boolean defaultImplicitInclusion = false;
-    private boolean excludeIfNoLicense = true;
+    private boolean defaultNoLicenseExclusion = true;
 
     public Map<String, String> getProperties() {
         return properties;
@@ -62,12 +62,12 @@ public class SourceAggregationConfig {
         this.defaultImplicitInclusion = defaultImplicitInclusion;
     }
 
-    public boolean isExcludeIfNoLicense() {
-        return excludeIfNoLicense;
+    public boolean isDefaultNoLicenseExclusion() {
+        return defaultNoLicenseExclusion;
     }
 
-    public void setExcludeIfNoLicense(boolean excludeIfNoLicense) {
-        this.excludeIfNoLicense = excludeIfNoLicense;
+    public void setDefaultNoLicenseExclusion(boolean defaultNoLicenseExclusion) {
+        this.defaultNoLicenseExclusion = defaultNoLicenseExclusion;
     }
 
     public static class ImplicitConfig {
@@ -89,5 +89,20 @@ public class SourceAggregationConfig {
         public void setPatterns(List<String> patterns) {
             this.patterns = patterns;
         }
+    }
+
+    public static SourceAggregationConfig load(java.io.File sourceAggregationConfig) throws java.io.IOException {
+        SourceAggregationConfig config = new SourceAggregationConfig();
+        if (sourceAggregationConfig != null && sourceAggregationConfig.exists()) {
+            org.yaml.snakeyaml.LoaderOptions loaderOptions = new org.yaml.snakeyaml.LoaderOptions();
+            org.yaml.snakeyaml.Yaml yaml = new org.yaml.snakeyaml.Yaml(new org.yaml.snakeyaml.constructor.Constructor(SourceAggregationConfig.class, loaderOptions));
+            try (java.io.InputStream in = new java.io.FileInputStream(sourceAggregationConfig)) {
+                config = yaml.load(in);
+                if (config == null) {
+                    config = new SourceAggregationConfig();
+                }
+            }
+        }
+        return config;
     }
 }

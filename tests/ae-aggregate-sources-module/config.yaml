@@ -13,4 +13,4 @@ include:
     - "Apache-2.0"
 
 defaultImplicitInclusion: true
-excludeIfNoLicense: false
+defaultNoLicenseExclusion: false

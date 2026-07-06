@@ -83,7 +83,7 @@ public class AggregateSourceArchivesMojoTest {
 
         SourceAggregationConfig config = new SourceAggregationConfig();
         // Set config so everything is implicitly excluded by default
-        config.setExcludeIfNoLicense(true);
+        config.setDefaultNoLicenseExclusion(true);
 
         Inventory inventory = new Inventory();
 
