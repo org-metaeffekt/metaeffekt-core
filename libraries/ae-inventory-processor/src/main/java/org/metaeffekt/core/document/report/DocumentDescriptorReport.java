@@ -66,8 +66,9 @@ public class DocumentDescriptorReport {
     private static final String SEPARATOR_SLASH = "/";
     private static final String PATTERN_ANY_VT = "**/*.vt";
     private static final String TEMPLATES_BASE_DIR = "/META-INF/templates";
+    private static final String TEMPLATES_BOOKMAPS_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "bookmaps";
 
-    // FIXME-RTU: divide into documentType based template groups and documentPartType based template groups
+    public static final String TEMPLATE_GROUP_DOCUMENT_BOOKMAP = "document-bookmap";
     public static final String TEMPLATE_GROUP_ANNEX_BOOKMAP = "annex-bookmap";
     public static final String TEMPLATE_GROUP_INITIAL_LICENSE_DOCUMENTATION_BOOKMAP = "initial-license-documentation-bookmap";
     public static final String TEMPLATE_GROUP_LICENSE_DOCUMENTATION_BOOKMAP = "license-documentation-bookmap";
@@ -124,7 +125,7 @@ public class DocumentDescriptorReport {
         }
 
         // Specify the overall document bookmap template and target file.
-        String templateResourcePath = TEMPLATES_BASE_DIR + "/document-bookmap/map_document.ditamap.vt";
+        String templateResourcePath = TEMPLATES_BOOKMAPS_BASE_DIR + TEMPLATE_GROUP_DOCUMENT_BOOKMAP + SEPARATOR_SLASH + "map.document.ditamap.vt";
         File targetFile = new File(this.targetReportDir, "map_" + documentDescriptor.getIdentifier() + "-document.ditamap");
 
         log.info("Producing Dita for template [{}]", templateResourcePath);
@@ -275,15 +276,15 @@ public class DocumentDescriptorReport {
         addPropertiesToAdapter(documentDescriptor, adapters);
 
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        final String vtClasspathResourcePattern = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
+        final String vtClasspathResourcePattern = TEMPLATES_BOOKMAPS_BASE_DIR + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
         final Resource[] resources = resolver.getResources(vtClasspathResourcePattern);
-        final Resource parentResource = resolver.getResource(TEMPLATES_BASE_DIR);
+        final Resource parentResource = resolver.getResource(TEMPLATES_BOOKMAPS_BASE_DIR);
         final String parentPath = parentResource.getURI().toASCIIString();
 
         for (Resource r : resources) {
             String filePath = r.getURI().toASCIIString();
             String path = filePath.replace(parentPath, "");
-            filePath = TEMPLATES_BASE_DIR + path;
+            filePath = TEMPLATES_BOOKMAPS_BASE_DIR + path;
             String originalFileName = Objects.requireNonNull(r.getFilename()).replace(".vt", "");
 
             // Modify filename only if it starts with "map_"
