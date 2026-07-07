@@ -20,8 +20,8 @@ import org.apache.velocity.tools.generic.EscapeTool;
 import org.assertj.core.api.Assertions;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
@@ -167,7 +167,7 @@ public class RegExUtilsTest {
         return string.replaceAll("\r*\n", "\r\n");
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void _dumpJiraExportFormattingIntoHtmlFile() throws IOException {
         final File jiraExportFile = new File("<path-to-jira-export>");

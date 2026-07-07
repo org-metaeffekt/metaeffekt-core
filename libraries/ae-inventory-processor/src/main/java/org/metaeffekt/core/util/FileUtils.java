@@ -15,13 +15,12 @@
  */
 package org.metaeffekt.core.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Checksum;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +35,8 @@ import java.util.regex.Pattern;
 /**
  * FileUtils extension.
  */
+@Slf4j
 public class FileUtils extends org.apache.commons.io.FileUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class);
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
@@ -372,19 +370,26 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         // NOTE: could be moved to FileSystemMap; current impl may be more efficient
         final String[] files = FileUtils.scanDirectoryForFiles(baseDir, new String[]{"**/*"}, new String[]{"**/.DS_Store*"});
         // FIXME: we can save the normalizePathToLinux operation when the FileSystemMap could produce FileRef; revise
-        Arrays.stream(files).map(FileUtils::normalizePathToLinux).sorted(String::compareTo).forEach(fileName -> {
-            final File file = new File(baseDir, fileName);
+
+        // iterate over the sorted list of files (may still be platform-specific)
+        Arrays.stream(files).map(FileUtils::normalizePathToLinux).sorted(String::compareTo).forEach(path -> {
+            final File file = new File(baseDir, path);
             try {
                 final String fileChecksum = FileUtils.computeChecksum(file);
-                if (checksumSequence.length() > 0) {
+                if (!checksumSequence.isEmpty()) {
+                    // use 0 as separator
                     checksumSequence.append(0);
                 }
+
+                // append <path->-<checksum> to file (structural factor apart from sorting)
+                checksumSequence.append(path);
+                checksumSequence.append("-");
                 checksumSequence.append(fileChecksum);
             } catch (Exception e) {
                 if (FileUtils.isSymlink(file)) {
-                    LOG.warn("Cannot compute checksum for symbolic link file [{}].", file);
+                    log.warn("Cannot compute checksum for symbolic link file [{}].", file);
                 } else {
-                    LOG.warn("Cannot compute checksum for file [{}].", file);
+                    log.warn("Cannot compute checksum for file [{}].", file);
                 }
             }
         });
@@ -418,14 +423,13 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         Throwable t = null;
         while (dir.exists() && maxIteration-- > 0) {
             try {
-                System.out.println("Deleting " + dir);
                 FileUtils.forceDelete(dir);
             } catch (IOException e) {
                 t = e;
             }
         }
         if (dir.exists()) {
-            LOG.error("Failed to delete tmp folder: {}", dir.getAbsolutePath(), t);
+            log.error("Failed to delete tmp folder: {}", dir.getAbsolutePath(), t);
         }
 
         // recreate empty folder

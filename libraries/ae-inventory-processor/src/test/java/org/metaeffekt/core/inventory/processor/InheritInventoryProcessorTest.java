@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
@@ -38,17 +38,17 @@ public class InheritInventoryProcessorTest {
         inventory.getArtifacts().add(artifact11);
 
         // validate precondition
-        Assert.assertNotNull(inputInventory.findArtifact("test-1.0.jar"));
-        Assert.assertNull(inputInventory.findArtifact("test-1.1.jar"));
-        Assert.assertNull(inventory.findArtifact("test-1.0.jar"));
-        Assert.assertNotNull(inventory.findArtifact("test-1.1.jar"));
+        Assertions.assertNotNull(inputInventory.findArtifact("test-1.0.jar"));
+        Assertions.assertNull(inputInventory.findArtifact("test-1.1.jar"));
+        Assertions.assertNull(inventory.findArtifact("test-1.0.jar"));
+        Assertions.assertNotNull(inventory.findArtifact("test-1.1.jar"));
 
         final InheritInventoryProcessor processor = createInheritInventoryProcessor(inputInventory);
         processor.process(inventory);
 
         // validate post-condition
-        Assert.assertNotNull(inventory.findArtifact("test-1.0.jar"));
-        Assert.assertNotNull(inventory.findArtifact("test-1.1.jar"));
+        Assertions.assertNotNull(inventory.findArtifact("test-1.0.jar"));
+        Assertions.assertNotNull(inventory.findArtifact("test-1.1.jar"));
     }
 
     @Test
@@ -64,17 +64,17 @@ public class InheritInventoryProcessorTest {
         inventory.getArtifacts().add(artifact10Overwrite);
 
         // validate precondition
-        Assert.assertNotNull(inputInventory.findArtifact("test-1.0.jar"));
-        Assert.assertEquals("Apache License 2.0", inputInventory.findArtifact("test-1.0.jar").getLicense());
-        Assert.assertNotNull(inventory.findArtifact("test-1.0.jar"));
-        Assert.assertEquals("MIT License", inventory.findArtifact("test-1.0.jar").getLicense());
+        Assertions.assertNotNull(inputInventory.findArtifact("test-1.0.jar"));
+        Assertions.assertEquals("Apache License 2.0", inputInventory.findArtifact("test-1.0.jar").getLicense());
+        Assertions.assertNotNull(inventory.findArtifact("test-1.0.jar"));
+        Assertions.assertEquals("MIT License", inventory.findArtifact("test-1.0.jar").getLicense());
 
         final InheritInventoryProcessor processor = createInheritInventoryProcessor(inputInventory);
         processor.process(inventory);
 
         // validate post-condition
-        Assert.assertNotNull(inventory.findArtifact("test-1.0.jar"));
-        Assert.assertEquals("MIT License", inventory.findArtifact("test-1.0.jar").getLicense());
+        Assertions.assertNotNull(inventory.findArtifact("test-1.0.jar"));
+        Assertions.assertEquals("MIT License", inventory.findArtifact("test-1.0.jar").getLicense());
     }
 
     @Test
@@ -89,17 +89,17 @@ public class InheritInventoryProcessorTest {
         inventory.getLicenseMetaData().add(licenseMetaData11);
 
         // validate precondition
-        Assert.assertNotNull(inputInventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
-        Assert.assertNull(inputInventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.1"));
-        Assert.assertNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
-        Assert.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.1"));
+        Assertions.assertNotNull(inputInventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
+        Assertions.assertNull(inputInventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.1"));
+        Assertions.assertNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
+        Assertions.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.1"));
 
         final InheritInventoryProcessor processor = createInheritInventoryProcessor(inputInventory);
         processor.process(inventory);
 
         // validate post-condition
-        Assert.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
-        Assert.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.1"));
+        Assertions.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
+        Assertions.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.1"));
     }
 
     @Test
@@ -115,17 +115,17 @@ public class InheritInventoryProcessorTest {
         inventory.getLicenseMetaData().add(licenseMetaData10Overwrite);
 
         // validate precondition
-        Assert.assertNotNull(inputInventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
-        Assert.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
-        Assert.assertEquals("Test support license notices.", inputInventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getNotice());
-        Assert.assertEquals("Overwritten", inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getNotice());
+        Assertions.assertNotNull(inputInventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
+        Assertions.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
+        Assertions.assertEquals("Test support license notices.", inputInventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getNotice());
+        Assertions.assertEquals("Overwritten", inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getNotice());
 
         final InheritInventoryProcessor processor = createInheritInventoryProcessor(inputInventory);
         processor.process(inventory);
 
         // validate post-condition
-        Assert.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
-        Assert.assertEquals("Overwritten", inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getNotice());
+        Assertions.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
+        Assertions.assertEquals("Overwritten", inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getNotice());
     }
 
     private InheritInventoryProcessor createInheritInventoryProcessor(final Inventory inputInventory) {

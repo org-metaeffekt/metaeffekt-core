@@ -16,6 +16,8 @@
 package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.InventoryScanReport;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
@@ -24,49 +26,40 @@ import java.io.File;
 
 /**
  * Creates a report by scanning a folder in the file system.
- *
- * @goal create-directory-report
  */
+@Mojo(name = "create-directory-report")
 public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCreationMojo {
 
     /**
      * Change: 12/2022: not mandatory anymore; when no input directory is provided the mojo anticipated the scanDirectory
      * is managed in advance to an invocation. The other attributes (scanIncludes, scanExcludes) are ignored in this case.
-     *
-     * @parameter
      */
+    @Parameter
     private File inputDirectory;
 
-    /**
-     * @parameter expression="${project.build.directory}/scan"
-     */
+    @Parameter(defaultValue = "${project.build.directory}/scan")
     private File scanDirectory;
 
-    /**
-     * @parameter
-     */
+    // TODO-KHA: Should the following parameter have a default value?
+    @Parameter
     private String[] scanIncludes = new String[]{"**/*"};
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private String[] scanExcludes;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     private boolean enableImplicitUnpack = true;
 
     /**
      * For backward compatibility reasons the default value is false. The feature requires explicit activation.
-     * @parameter
      */
+    @Parameter
     private boolean includeEmbedded = false;
 
     /**
      * For backward compatibility reasons the default value is false. The feature requires explicit activation.
-     * @parameter
      */
+    @Parameter
     private boolean enableDetectComponentPatterns = false;
 
     @Override

@@ -15,11 +15,10 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -29,9 +28,8 @@ import java.util.stream.Collectors;
 /**
  * Model class that supports to aggregate data around assets.
  */
+@Slf4j
 public class AssetMetaData extends AbstractModelBase {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AssetMetaData.class);
 
     // Maximize compatibility with serialized inventories
     private static final long serialVersionUID = 1L;
@@ -167,7 +165,7 @@ public class AssetMetaData extends AbstractModelBase {
 
                     return seededRandomUniqueAssessmentSuffix(assessmentFilesSeed.toString());
                 } catch (Exception e) {
-                    LOG.warn("Failed to parse inventory enrichment steps from inventory info [inventory-enrichment] --> [Steps]: " + inventoryEnrichmentStepsString, e);
+                    log.warn("Failed to parse inventory enrichment steps from inventory info [inventory-enrichment] --> [Steps]: " + inventoryEnrichmentStepsString, e);
                 }
             }
         }
@@ -195,7 +193,7 @@ public class AssetMetaData extends AbstractModelBase {
 
                     return seededRandomUniqueAssessmentSuffix(assessmentEntrySeed.toString());
                 } catch (Exception e) {
-                    LOG.warn("Failed to parse status files from inventory info [vulnerability-status] --> [statusFiles]: " + statusFilesString, e);
+                    log.warn("Failed to parse status files from inventory info [vulnerability-status] --> [statusFiles]: " + statusFilesString, e);
                 }
             }
         }

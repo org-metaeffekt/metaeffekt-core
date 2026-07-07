@@ -17,8 +17,8 @@ package org.metaeffekt.core.inventory.processor.writer;
 
 import org.apache.poi.util.DefaultTempFileCreationStrategy;
 import org.apache.poi.util.TempFile;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.util.FileUtils;
@@ -39,7 +39,7 @@ public class InventoryWriterTest {
         new InventoryWriter().writeInventory(new Inventory(), new File(testOutputDir, "emtpy.ser"));
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testReadWrite() throws IOException {
         final File inputInventoryFile = new File("<path-to-input-inventory>");

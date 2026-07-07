@@ -16,11 +16,10 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -33,9 +32,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+@Slf4j
 public class GoLangComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(GoLangComponentPatternContributor.class);
     private static final String GOLANG_PACKAGE_TYPE = "golang";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("go.mod");
@@ -52,14 +50,14 @@ public class GoLangComponentPatternContributor extends ComponentPatternContribut
         List<ComponentPatternData> components = new ArrayList<>();
 
         if (!goModFile.exists()) {
-            LOG.warn("GoLang module file does not exist: {}", goModFile.getAbsolutePath());
+            log.warn("GoLang module file does not exist: {}", goModFile.getAbsolutePath());
             return Collections.emptyList();
         }
 
         try (Stream<String> lines = Files.lines(goModFile.toPath(), StandardCharsets.UTF_8)) {
             processGoModFile(lines, components, relativeAnchorPath, anchorChecksum);
         } catch (Exception e) {
-            LOG.warn("Error processing GoLang module file", e);
+            log.warn("Error processing GoLang module file", e);
         }
 
         return components;

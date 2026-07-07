@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.processor.filepatterns;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class FileComponentPatternProcessorTest {
 

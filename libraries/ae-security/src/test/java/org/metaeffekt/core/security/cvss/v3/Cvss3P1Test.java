@@ -15,9 +15,9 @@
  */
 package org.metaeffekt.core.security.cvss.v3;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,13 +118,13 @@ public class Cvss3P1Test {
             checkCvssScores(vector,
                     5.5, 3.6, 1.8, Double.NaN, 4.2, 3.6, 4.2);
 
-            Assert.assertEquals("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H/MAV:L/MPR:H", vector.toString());
+            Assertions.assertEquals("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H/MAV:L/MPR:H", vector.toString());
 
             vector.applyVector("CR:X/IR:X/AR:X/MAC:X/MUI:X/MS:X/MC:X/MI:X/MA:X/MAV:X/MPR:X");
             checkCvssScores(vector,
                     5.5, 3.6, 1.8, Double.NaN, Double.NaN, Double.NaN, 5.5);
 
-            Assert.assertEquals("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H", vector.toString());
+            Assertions.assertEquals("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H", vector.toString());
         }
 
         {
@@ -136,13 +136,13 @@ public class Cvss3P1Test {
             checkCvssScores(vector,
                     9.8, 5.9, 3.9, 8.5, 5.7, 4.7, 5.7);
 
-            Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:P/RL:T/RC:R/CR:X/IR:M/AR:X/MAV:A/MAC:H/MPR:L/MUI:N/MS:C/MC:L/MI:N/MA:X", vector.toString(false));
-            Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:P/RL:T/RC:R/IR:M/MAV:A/MAC:H/MPR:L/MUI:N/MS:C/MC:L/MI:N", vector.toString());
+            Assertions.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:P/RL:T/RC:R/CR:X/IR:M/AR:X/MAV:A/MAC:H/MPR:L/MUI:N/MS:C/MC:L/MI:N/MA:X", vector.toString(false));
+            Assertions.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:P/RL:T/RC:R/IR:M/MAV:A/MAC:H/MPR:L/MUI:N/MS:C/MC:L/MI:N", vector.toString());
         }
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void customTest() {
         // checkCvssScores(new Cvss3P1("CVSS:3.1/AV:P/AC:H/PR:H/UI:N/S:C/C:N/I:N/A:N"),
         //         6.1, 2.7, 3.4, Double.NaN, Double.NaN, Double.NaN, 6.1);
@@ -171,28 +171,28 @@ public class Cvss3P1Test {
     public void changeVectorPartsOnlyIfTest() {
         {
             Cvss3P1 vector = new Cvss3P1("AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:L/A:N");
-            Assert.assertEquals(4.4, vector.getBaseScore(), 0.0);
+            Assertions.assertEquals(4.4, vector.getBaseScore(), 0.0);
 
             vector.applyVectorPartsIfLower(new Cvss3P1("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
 
-            Assert.assertEquals("CVSS:3.1/AV:N/AC:H/PR:H/UI:R/S:U/C:L/I:L/A:N", vector.toString());
-            Assert.assertEquals(3.1, vector.getBaseScore(), 0.0);
+            Assertions.assertEquals("CVSS:3.1/AV:N/AC:H/PR:H/UI:R/S:U/C:L/I:L/A:N", vector.toString());
+            Assertions.assertEquals(3.1, vector.getBaseScore(), 0.0);
 
             vector.applyVectorPartsIfLower(new Cvss3P1("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
-            Assert.assertEquals("CVSS:3.1/AV:N/AC:H/PR:H/UI:R/S:U/C:L/I:L/A:N", vector.toString());
+            Assertions.assertEquals("CVSS:3.1/AV:N/AC:H/PR:H/UI:R/S:U/C:L/I:L/A:N", vector.toString());
         }
 
         {
             Cvss3P1 vector = new Cvss3P1("AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:L/A:N");
-            Assert.assertEquals(4.4, vector.getBaseScore(), 0.0);
+            Assertions.assertEquals(4.4, vector.getBaseScore(), 0.0);
 
             vector.applyVectorPartsIfHigher(new Cvss3P1("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
 
-            Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H", vector.toString());
-            Assert.assertEquals(9.0, vector.getBaseScore(), 0.0);
+            Assertions.assertEquals("CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H", vector.toString());
+            Assertions.assertEquals(9.0, vector.getBaseScore(), 0.0);
 
             vector.applyVectorPartsIfHigher(new Cvss3P1("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
-            Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H", vector.toString());
+            Assertions.assertEquals("CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H", vector.toString());
         }
     }
 
@@ -226,38 +226,38 @@ public class Cvss3P1Test {
         LOG.info("                  Link: {}", vector.getWebEditorLink());
         LOG.info("\n");
 
-        Assert.assertEquals(base, vector.getBaseScore(), 0.01);
-        Assert.assertEquals(impact, vector.getImpactScore(), 0.01);
-        Assert.assertEquals(exploitability, vector.getExploitabilityScore(), 0.01);
-        Assert.assertEquals(temporal, vector.getTemporalScore(), 0.01);
-        Assert.assertEquals(environmental, vector.getEnvironmentalScore(), 0.01);
-        Assert.assertEquals(adjImpact, vector.getAdjustedImpactScore(), 0.01);
-        Assert.assertEquals(overall, vector.getOverallScore(), 0.01);
+        Assertions.assertEquals(base, vector.getBaseScore(), 0.01);
+        Assertions.assertEquals(impact, vector.getImpactScore(), 0.01);
+        Assertions.assertEquals(exploitability, vector.getExploitabilityScore(), 0.01);
+        Assertions.assertEquals(temporal, vector.getTemporalScore(), 0.01);
+        Assertions.assertEquals(environmental, vector.getEnvironmentalScore(), 0.01);
+        Assertions.assertEquals(adjImpact, vector.getAdjustedImpactScore(), 0.01);
+        Assertions.assertEquals(overall, vector.getOverallScore(), 0.01);
     }
 
     @Test
     public void toStringAllPropertiesDefinedTest() {
         final String input = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:H/IR:L/AR:H/MAV:A/MAC:H/MPR:L/MUI:N/MS:C/MC:N/MI:L/MA:N";
         final Cvss3P1 cvss = new Cvss3P1(input);
-        Assert.assertEquals(input, cvss.toString());
-        Assert.assertEquals(input, cvss.toString(true));
-        Assert.assertEquals(input, cvss.toString(false));
+        Assertions.assertEquals(input, cvss.toString());
+        Assertions.assertEquals(input, cvss.toString(true));
+        Assertions.assertEquals(input, cvss.toString(false));
     }
 
     @Test
     public void toStringSomePropertiesUndefinedTest() {
         final String input = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:H/MAV:A/MAC:H/MS:C/MC:N/MI:L/MA:N";
         final Cvss3P1 cvss = new Cvss3P1(input);
-        Assert.assertEquals(input, cvss.toString());
-        Assert.assertEquals(input, cvss.toString(true));
-        Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:H/IR:X/AR:X/MAV:A/MAC:H/MPR:X/MUI:X/MS:C/MC:N/MI:L/MA:N", cvss.toString(false));
+        Assertions.assertEquals(input, cvss.toString());
+        Assertions.assertEquals(input, cvss.toString(true));
+        Assertions.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:H/IR:X/AR:X/MAV:A/MAC:H/MPR:X/MUI:X/MS:C/MC:N/MI:L/MA:N", cvss.toString(false));
     }
 
     @Test
     public void rearrangeMetricsOrderTest() {
         final String input = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/MAV:A/MAC:H/MS:C/MC:N/MI:L/MA:N/CR:H";
         final Cvss3P1 cvss = new Cvss3P1(input);
-        Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:H/IR:X/AR:X/MAV:A/MAC:H/MPR:X/MUI:X/MS:C/MC:N/MI:L/MA:N", cvss.toString(false));
-        Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:H/MAV:A/MAC:H/MS:C/MC:N/MI:L/MA:N", cvss.toString(true));
+        Assertions.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:H/IR:X/AR:X/MAV:A/MAC:H/MPR:X/MUI:X/MS:C/MC:N/MI:L/MA:N", cvss.toString(false));
+        Assertions.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:H/MAV:A/MAC:H/MS:C/MC:N/MI:L/MA:N", cvss.toString(true));
     }
 }

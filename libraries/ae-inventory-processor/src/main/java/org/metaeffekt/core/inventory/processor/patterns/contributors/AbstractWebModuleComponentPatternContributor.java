@@ -40,8 +40,7 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
 
     @Override
     public boolean applies(String pathInContext) {
-        // FIXME-KKL: replace suffixes by regexp patterns
-        return getSuffixes().stream().map(pathInContext::endsWith).findFirst().isPresent();
+        return getSuffixes().stream().anyMatch(pathInContext::endsWith);
     }
 
     @Override

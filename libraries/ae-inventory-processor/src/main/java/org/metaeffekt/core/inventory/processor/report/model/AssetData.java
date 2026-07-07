@@ -288,4 +288,29 @@ public class AssetData {
         return String.format("<xref href=\"%s#%s\" type=\"topic\">%s</xref>", topicId, xmlEscapeId(id), xmlEscapeString(name));
     }
 
+    public int countComponentsForRepresentedLicense(String license, boolean onlyCountAssets) {
+        List<String> singleEffectiveLicenses = inventory.getLicensesRepresentedBy(license);
+        int count = 0;
+
+        for (String singleEffectiveLicense : singleEffectiveLicenses) {
+            count += countComponentsForSingleOrRepresentedLicense(singleEffectiveLicense, onlyCountAssets, true);
+        }
+        return count;
+    }
+
+    public int countComponentsForSingleLicense(String license, boolean onlyCountAssets) {
+        return countComponentsForSingleOrRepresentedLicense(license, onlyCountAssets, false);
+    }
+
+    private int countComponentsForSingleOrRepresentedLicense(String license, boolean onlyCountAssets, boolean handleSubstructure) {
+        if (onlyCountAssets) {
+            return countAssetsWithRepresentedAssociatedLicense(license, handleSubstructure);
+        } else {
+            final Set<String> componentQualifiers = new HashSet<>();
+            inventory.evaluateComponents(license).stream()
+                    .forEach(ald -> componentQualifiers.add(ald.deriveComponentQualifierForCounting()));
+            return componentQualifiers.size();
+        }
+    }
+
 }

@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -35,9 +34,8 @@ import java.util.StringJoiner;
 
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 
+@Slf4j
 public class XWikiExtensionComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(XWikiExtensionComponentPatternContributor.class);
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add(".xed");
@@ -106,7 +104,7 @@ public class XWikiExtensionComponentPatternContributor extends ComponentPatternC
 
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
-            LOG.warn("Error parsing XWiki Extension component from file: {}", relativeAnchorPath, e);
+            log.warn("Error parsing XWiki Extension component from file: {}", relativeAnchorPath, e);
             return Collections.emptyList();
         }
     }

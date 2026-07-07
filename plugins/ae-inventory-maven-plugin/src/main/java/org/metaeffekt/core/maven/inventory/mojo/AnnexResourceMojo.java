@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -25,7 +24,6 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.AnnexResourceProcessor;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,9 +57,6 @@ public class AnnexResourceMojo extends AbstractProjectAwareConfiguredMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        // adapt maven logging to underlying logging facade
-        MavenLogAdapter.initialize(getLog());
-
         // validate mandatory inputs
         if (inventoryFile == null || !inventoryFile.exists()) {
             throw new MojoExecutionException("Inventory file is missing or invalid: " + inventoryFile);

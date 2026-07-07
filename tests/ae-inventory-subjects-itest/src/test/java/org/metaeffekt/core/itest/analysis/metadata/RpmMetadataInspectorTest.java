@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.itest.analysis.metadata;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.inspector.RpmMetadataInspector;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -31,13 +31,13 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RpmMetadataInspectorTest extends AbstractCompositionAnalysisTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://vault.centos.org/8.4.2105/BaseOS/x86_64/os/Packages/krb5-libs-1.18.2-8.3.el8_4.x86_64.rpm")
@@ -45,10 +45,10 @@ public class RpmMetadataInspectorTest extends AbstractCompositionAnalysisTest {
                 .setName(RpmMetadataInspectorTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertTrue(testSetup.clear());
     }
 
     @Test

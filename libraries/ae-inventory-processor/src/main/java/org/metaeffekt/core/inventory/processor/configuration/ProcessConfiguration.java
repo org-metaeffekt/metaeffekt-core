@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.configuration;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.metaeffekt.core.inventory.processor.configuration.converter.FieldConverter;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.reflect.*;
@@ -56,9 +55,8 @@ import java.util.stream.IntStream;
  *     </li>
  * </ul>
  */
+@Slf4j
 public abstract class ProcessConfiguration {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ProcessConfiguration.class);
 
     private boolean active = true;
     private String id = buildInitialId();
@@ -90,8 +88,8 @@ public abstract class ProcessConfiguration {
         final Map<String, Object> configuration = getProperties();
 
         if (!configuration.isEmpty()) {
-            LOG.debug("Configuration [{}]:", getId());
-            logConfiguration(configuration, 1, LOG::debug);
+            log.debug("Configuration [{}]:", getId());
+            logConfiguration(configuration, 1, log::debug);
         }
     }
 
@@ -99,8 +97,8 @@ public abstract class ProcessConfiguration {
         final Map<String, Object> configuration = getProperties();
 
         if (!configuration.isEmpty()) {
-            LOG.info("Configuration [{}]:", getId());
-            logConfiguration(configuration, 1, LOG::info);
+            log.info("Configuration [{}]:", getId());
+            logConfiguration(configuration, 1, log::info);
         }
     }
 

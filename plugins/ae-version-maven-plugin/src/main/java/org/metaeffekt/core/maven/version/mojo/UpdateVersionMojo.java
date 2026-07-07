@@ -17,73 +17,50 @@ package org.metaeffekt.core.maven.version.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.common.kernel.util.ParameterConversionUtil;
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
 import java.util.Map;
 
 /**
  * Updates the versions in a maven project and all included POMs.
- *
- * @goal update
  */
+@Mojo(name = "update")
 public class UpdateVersionMojo extends AbstractProjectAwareConfiguredMojo {
 
-    /**
-     * @parameter default-value="${project.basedir}"
-     * @required
-     */
+    @Parameter(required = true, property = "project.basedir")
     private File projectPath;
 
-    /**
-     * @parameter default-value="${ae.version.update.includes}"
-     * @required
-     */
+    @Parameter(required = true, property = "ae.version.update.includes")
     private String includes;
 
-    /**
-     * @parameter default-value="${ae.version.update.excludes}"
-     */
+    @Parameter(property = "ae.version.update.excludes")
     private String excludes;
 
-    /**
-     * @parameter default-value="${ae.version.update.project.version}"
-     * @required
-     */
+    @Parameter(required = true, property = "ae.version.update.project.version")
     private String projectVersion;
 
-    /**
-     * @parameter
-     * @required
-     */
+    @Parameter(required = true)
     private Map<String, String> propertyVersionMap;
 
-    /**
-     * @parameter
-     * @required
-     */
+    @Parameter(required = true)
     private Map<String, String> groupIdVersionMap;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        // adapt maven logging to underlying logging facade
-        MavenLogAdapter.initialize(getLog());
-        try {
-            UpdateVersionTask task = new UpdateVersionTask();
+        UpdateVersionTask task = new UpdateVersionTask();
 
-            task.setProjectPath(projectPath);
-            task.setIncludes(ParameterConversionUtil.convertStringToStringArray(includes, ","));
-            task.setExcludes(ParameterConversionUtil.convertStringToStringArray(excludes, ","));
+        task.setProjectPath(projectPath);
+        task.setIncludes(ParameterConversionUtil.convertStringToStringArray(includes, ","));
+        task.setExcludes(ParameterConversionUtil.convertStringToStringArray(excludes, ","));
 
-            task.setProjectVersion(projectVersion);
-            task.setGroupIdVersionMap(groupIdVersionMap);
-            task.setPropertyVersionMap(propertyVersionMap);
+        task.setProjectVersion(projectVersion);
+        task.setGroupIdVersionMap(groupIdVersionMap);
+        task.setPropertyVersionMap(propertyVersionMap);
 
-            task.updateVersions();
-        } finally {
-            MavenLogAdapter.release();
-        }
+        task.updateVersions();
     }
 
 }

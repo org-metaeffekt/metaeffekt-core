@@ -89,7 +89,7 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
                 cpd.set(VERSION_ANCHOR, contextRelativePath);
                 cpd.set(VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-                final String coveredFiled = getSuffixes().stream().collect(Collectors.joining(", "));
+                final String coveredFiled = String.join(", ", getSuffixes());
                 cpd.set(INCLUDE_PATTERN, coveredFiled);
 
                 // also include to shared includes

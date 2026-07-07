@@ -15,19 +15,17 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile.Class_Win32_VideoController;
 
+@Slf4j
 public class WindowsPartExtractorVideoController extends WindowsPartExtractorBase {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WindowsPartExtractorVideoController.class);
 
     public void parse(Inventory inventory, JSONArray videoControllerJson) {
         for (int i = 0; i < videoControllerJson.length(); i++) {

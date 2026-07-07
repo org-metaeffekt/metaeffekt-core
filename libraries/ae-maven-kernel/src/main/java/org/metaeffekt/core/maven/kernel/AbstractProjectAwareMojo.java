@@ -29,12 +29,42 @@ import org.apache.maven.project.MavenProject;
  */
 public abstract class AbstractProjectAwareMojo extends AbstractMojo {
 
+    /**
+     * Override default constructor to make javadoc tool happy.
+     * <p>
+     * <B>Only needed for builds with jdk 21.</B>
+     * </p>
+     */
+    public AbstractProjectAwareMojo() {}
+
+    /**
+     * Get the current project in which context the mojo is executed.
+     * Implementation should look like
+     * <pre>
+     * {@code
+     * @Getter
+     * @Parameter(defaultValue = "${project}", required = true, readonly = true)
+     * private MavenProject project;
+     * }
+     * </pre>
+     *
+     * @return current maven project
+     */
     public abstract MavenProject getProject();
 
+    /**
+     * Delegates to {@link MavenProjectUtil#isPomPackagingProject(MavenProject)}.
+     * @return {@code} true if packaging is 'pom'.
+     */
     protected boolean isPomPackagingProject() {
         return MavenProjectUtil.isPomPackagingProject(getProject());
     }
 
+    /**
+     * Delegates to {@link MavenProjectUtil#isJarPackagingProject(MavenProject)}.
+     *
+     * @return {@code} true if packaging is 'jar'.
+     */
     protected boolean isJarPackagingProject() {
         return MavenProjectUtil.isJarPackagingProject(getProject());
     }

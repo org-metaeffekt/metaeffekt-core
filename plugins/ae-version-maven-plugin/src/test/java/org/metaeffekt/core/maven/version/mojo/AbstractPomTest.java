@@ -19,9 +19,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.common.kernel.ant.log.LoggingProjectAdapter;
 
 import java.io.File;
@@ -32,7 +32,7 @@ import java.util.Map;
 
 public abstract class AbstractPomTest {
 
-    @Before
+    @BeforeEach
     public void preparePoms() {
         Project p = new LoggingProjectAdapter();
         Copy copy = new Copy();
@@ -73,7 +73,7 @@ public abstract class AbstractPomTest {
         String expected = FileUtils.readFileToString(new File(getSourcePath(), "pom.xml_expected"));
         String actual = FileUtils.readFileToString(new File(getTargetPath(), "pom.xml"));
 
-        Assert.assertEquals(expected, actual);
+        Assertions.assertEquals(expected, actual);
     }
 
     public abstract String getSourcePath();

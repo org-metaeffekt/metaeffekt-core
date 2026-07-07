@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.commons.annotation;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 
 /**
@@ -29,7 +29,7 @@ public class PublicTest {
 
     @Test
     public void testPublicAnnotationOnTestClass() {
-        Assert.assertNotNull(PublicTest.class.getAnnotation(Public.class));
+        Assertions.assertNotNull(PublicTest.class.getAnnotation(Public.class));
     }
 
 }

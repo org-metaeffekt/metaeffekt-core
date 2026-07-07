@@ -15,13 +15,12 @@
  */
 package org.metaeffekt.core.security.cvss.processor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.KnownCvssEntities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,9 +34,8 @@ import java.util.zip.GZIPOutputStream;
  * Accepts optionally named {@link org.metaeffekt.core.security.cvss.CvssVector} instances to generate a link to the
  * <a href="https://metaeffekt.com/security/cvss/calculator">Universal CVSS Calculator</a>.
  */
+@Slf4j
 public class UniversalCvssCalculatorLinkGenerator {
-
-    private final static Logger LOG = LoggerFactory.getLogger(UniversalCvssCalculatorLinkGenerator.class);
 
     private String baseUrl = "https://metaeffekt.com/security/cvss/calculator";
 
@@ -251,7 +249,7 @@ public class UniversalCvssCalculatorLinkGenerator {
             try (final GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
                 gzipOutputStream.write(dataToBeGZipped.getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
-                LOG.error("Failed to compress data: {}", dataToBeGZipped, e);
+                log.error("Failed to compress data: {}", dataToBeGZipped, e);
                 return generateLink();
             }
 
@@ -260,7 +258,7 @@ public class UniversalCvssCalculatorLinkGenerator {
             try {
                 urlEncoded = URLEncoder.encode(base64Encoded, "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                LOG.error("Failed encode parameter value, resuming with default platform encoding: {}", base64Encoded, e);
+                log.error("Failed encode parameter value, resuming with default platform encoding: {}", base64Encoded, e);
                 urlEncoded = URLEncoder.encode(base64Encoded);
             }
             linkBuilder.append(urlEncoded);
@@ -298,7 +296,7 @@ public class UniversalCvssCalculatorLinkGenerator {
                 try {
                     entry.setValue(URLEncoder.encode(entry.getValue(), "UTF-8"));
                 } catch (UnsupportedEncodingException e) {
-                    LOG.error("Failed encode parameter value, resuming with default platform encoding: {}", entry.getValue(), e);
+                    log.error("Failed encode parameter value, resuming with default platform encoding: {}", entry.getValue(), e);
                     entry.setValue(URLEncoder.encode(entry.getValue()));
                 }
             }

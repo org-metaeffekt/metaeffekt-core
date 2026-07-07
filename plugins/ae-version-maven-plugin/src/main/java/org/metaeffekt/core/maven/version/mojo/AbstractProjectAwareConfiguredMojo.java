@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.version.mojo;
 
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 
@@ -23,11 +24,8 @@ public abstract class AbstractProjectAwareConfiguredMojo extends AbstractProject
 
     /**
      * The project to be checked: the current project (readonly)
-     *
-     * @parameter default-value="${project}"
-     * @required
-     * @readonly
      */
+    @Parameter(required = true, readonly = true, property = "project")
     private MavenProject project;
 
     @Override

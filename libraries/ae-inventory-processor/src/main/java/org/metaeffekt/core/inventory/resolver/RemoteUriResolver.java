@@ -15,19 +15,17 @@
  */
 package org.metaeffekt.core.inventory.resolver;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Properties;
 
+@Slf4j
 public class RemoteUriResolver extends AbstractRemoteAccess implements UriResolver {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RemoteUriResolver.class);
 
     public RemoteUriResolver(Properties properties) {
         super(properties);
@@ -49,10 +47,10 @@ public class RemoteUriResolver extends AbstractRemoteAccess implements UriResolv
                     FileUtils.copyInputStreamToFile(response.getEntity().getContent(), destinationFile);
                 }
             } catch (Exception e) {
-                LOG.debug("Cannot download uri. Request timed out.", e);
+                log.debug("Cannot download uri. Request timed out.", e);
             }
         } catch (Exception e) {
-            LOG.debug("Cannot remote uri {}.", uri, e);
+            log.debug("Cannot remote uri {}.", uri, e);
         }
     }
 

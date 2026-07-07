@@ -15,11 +15,12 @@
  */
 package org.metaeffekt.core.security.cvss;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.util.ColorScheme;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
+
 
 public class CvssSeverityRangesTest {
 
@@ -76,32 +77,32 @@ public class CvssSeverityRangesTest {
 
     @Test
     public void scoreTest() {
-        Assert.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(-10.0).getName());
-        Assert.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(-0.1).getName());
-        Assert.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(0.0).getName());
-        Assert.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(3.9).getName());
-        Assert.assertEquals("Medium", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(4.0).getName());
-        Assert.assertEquals("Medium", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(5.0).getName());
-        Assert.assertEquals("Medium", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(6.9).getName());
-        Assert.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(7.0).getName());
-        Assert.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(8.2).getName());
-        Assert.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(10.0).getName());
-        Assert.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(12020.0).getName());
+        Assertions.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(-10.0).getName());
+        Assertions.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(-0.1).getName());
+        Assertions.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(0.0).getName());
+        Assertions.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(3.9).getName());
+        Assertions.assertEquals("Medium", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(4.0).getName());
+        Assertions.assertEquals("Medium", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(5.0).getName());
+        Assertions.assertEquals("Medium", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(6.9).getName());
+        Assertions.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(7.0).getName());
+        Assertions.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(8.2).getName());
+        Assertions.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(10.0).getName());
+        Assertions.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(12020.0).getName());
 
-        Assert.assertEquals("None", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(-10.0).getName());
-        Assert.assertEquals("None", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(-0.1).getName());
-        Assert.assertEquals("None", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(0.0).getName());
-        Assert.assertEquals("Low", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(0.1).getName());
-        Assert.assertEquals("Low", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(3.9).getName());
-        Assert.assertEquals("Medium", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(4.0).getName());
-        Assert.assertEquals("Medium", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(5.0).getName());
-        Assert.assertEquals("Medium", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(6.9).getName());
-        Assert.assertEquals("High", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(7.0).getName());
-        Assert.assertEquals("High", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(8.2).getName());
-        Assert.assertEquals("High", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(8.9).getName());
-        Assert.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(9.0).getName());
-        Assert.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(9.5).getName());
-        Assert.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(10.0).getName());
-        Assert.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(12020.0).getName());
+        Assertions.assertEquals("None", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(-10.0).getName());
+        Assertions.assertEquals("None", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(-0.1).getName());
+        Assertions.assertEquals("None", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(0.0).getName());
+        Assertions.assertEquals("Low", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(0.1).getName());
+        Assertions.assertEquals("Low", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(3.9).getName());
+        Assertions.assertEquals("Medium", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(4.0).getName());
+        Assertions.assertEquals("Medium", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(5.0).getName());
+        Assertions.assertEquals("Medium", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(6.9).getName());
+        Assertions.assertEquals("High", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(7.0).getName());
+        Assertions.assertEquals("High", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(8.2).getName());
+        Assertions.assertEquals("High", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(8.9).getName());
+        Assertions.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(9.0).getName());
+        Assertions.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(9.5).getName());
+        Assertions.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(10.0).getName());
+        Assertions.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(12020.0).getName());
     }
 }

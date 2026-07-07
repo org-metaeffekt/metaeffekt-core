@@ -17,14 +17,13 @@ package org.metaeffekt.core.inventory;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,9 +31,8 @@ import java.util.*;
 
 @Getter
 @Setter
+@Slf4j
 public class InventoryMergeUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(InventoryMergeUtils.class);
 
     private boolean addDefaultArtifactExcludedAttributes = true;
 

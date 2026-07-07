@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.maven.kernel;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.common.kernel.util.ParameterConversionUtil;
 
 import java.util.List;
@@ -34,23 +34,23 @@ public class ParameterConversionUtilTest {
     public void testEmtpyStringsNotIncluded() {
         String string = STR_HELLO + STR_DELIMITER + STR_DELIMITER + STR_WORLD;
         List<String> splitList = ParameterConversionUtil.convertStringToStringList(string, ",");
-        Assert.assertEquals(2, splitList.size());
+        Assertions.assertEquals(2, splitList.size());
     }
 
     @Test
     public void testCanHandleNull() {
         List<String> splitList = ParameterConversionUtil.convertStringToStringList(null, ",");
-        Assert.assertEquals(0, splitList.size());
+        Assertions.assertEquals(0, splitList.size());
     }
 
     @Test
     public void testMultilineTime() {
         String string = STR_HELLO + STR_DELIMITER + SEP_LINE + STR_BEAUTIFUL + STR_DELIMITER + SEP_LINE + STR_WORLD;
         String[] splitArray = ParameterConversionUtil.convertStringToStringArray(string, ",");
-        Assert.assertEquals(3, splitArray.length);
-        Assert.assertEquals(STR_HELLO, splitArray[0]);
-        Assert.assertEquals(STR_BEAUTIFUL, splitArray[1]);
-        Assert.assertEquals(STR_WORLD, splitArray[2]);
+        Assertions.assertEquals(3, splitArray.length);
+        Assertions.assertEquals(STR_HELLO, splitArray[0]);
+        Assertions.assertEquals(STR_BEAUTIFUL, splitArray[1]);
+        Assertions.assertEquals(STR_WORLD, splitArray[2]);
     }
 
 }

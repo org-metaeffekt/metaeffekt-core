@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.itest.common.download;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.http.HttpEntity;
@@ -29,8 +30,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,9 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class WebAccess {
-
-    private final static Logger LOG = LoggerFactory.getLogger(WebAccess.class);
 
     private HttpHost proxy;
 
@@ -60,7 +58,7 @@ public class WebAccess {
      * @param password Proxy password (if authentication is required).
      */
     public void setDownloaderProxyCredentials(String scheme, String host, int port, String username, String password) {
-        LOG.debug("Set up proxy credentials for Downloader");
+        log.debug("Set up proxy credentials for Downloader");
         this.proxy = new HttpHost(host, port, scheme);
         this.credentialsProvider = new BasicCredentialsProvider();
         this.credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
@@ -95,7 +93,7 @@ public class WebAccess {
     }
 
     public InputStream fetchResponseBodyFromUrlAsInputStream(URL url, Map<String, String> requestHeaders) {
-        LOG.info("Performing request to {}", url);
+        log.info("Performing request to {}", url);
 
         return new Retry<>(() -> {
             try (CloseableHttpClient httpClient = createHttpClient()) {

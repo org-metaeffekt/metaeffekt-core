@@ -20,15 +20,58 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.json.JSONArray;
 import org.metaeffekt.core.inventory.processor.configuration.converter.JsonArrayConverter;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaContentIdentifierStore;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @NoArgsConstructor
 public class DemoConfiguration extends ProcessConfiguration {
+
+    public static class CustomAdvisoryTypeIdentifier {
+        private final String identifier;
+
+        public CustomAdvisoryTypeIdentifier(String identifier) {
+            this.identifier = identifier;
+        }
+
+        public String toJson() {
+            return this.identifier;
+        }
+
+        public static List<CustomAdvisoryTypeIdentifier> parseAdvisoryProviders(String json) {
+            final JSONArray array = new JSONArray(json);
+            final List<CustomAdvisoryTypeIdentifier> result = new ArrayList<>();
+            for (int i = 0; i < array.length(); i++) {
+                result.add(new CustomAdvisoryTypeIdentifier(array.getString(i)));
+            }
+            return result;
+        }
+
+        public static JSONArray toJsonArray(List<CustomAdvisoryTypeIdentifier> list) {
+            final JSONArray array = new JSONArray();
+            for (CustomAdvisoryTypeIdentifier id : list) {
+                array.put(id.toJson());
+            }
+            return array;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || this.getClass() != o.getClass()) return false;
+            final CustomAdvisoryTypeIdentifier that = (CustomAdvisoryTypeIdentifier) o;
+            return this.identifier.equals(that.identifier);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.identifier.hashCode();
+        }
+    }
+
+    public static final CustomAdvisoryTypeIdentifier OSV_GENERIC_IDENTIFIER = new CustomAdvisoryTypeIdentifier("OSV");
+    public static final CustomAdvisoryTypeIdentifier CSAF_GENERIC_IDENTIFIER = new CustomAdvisoryTypeIdentifier("CSAF");
 
     @Getter
     @Setter
@@ -36,7 +79,7 @@ public class DemoConfiguration extends ProcessConfiguration {
 
     @ProcessConfigurationProperty(alternativeNames = {"Deprecated Field Name"}, converter = JsonArrayConverter.class)
     private String advisoryTypes = new JSONArray()
-            .put(AeaaAdvisoryTypeStore.OSV_GENERIC_IDENTIFIER.toJson()).toString();
+            .put(OSV_GENERIC_IDENTIFIER.toJson()).toString();
 
     @ExcludeProcessConfigurationProperty
     private String ignoreProperty = "ignored";
@@ -48,12 +91,12 @@ public class DemoConfiguration extends ProcessConfiguration {
     @Getter
     private final SubDemoConfiguration subDemoConfiguration = new SubDemoConfiguration();
 
-    public List<AeaaAdvisoryTypeIdentifier<?>> getAdvisoryTypes() {
-        return accessCachedProperty("custom", advisoryTypes, (s) -> Collections.unmodifiableList(AeaaAdvisoryTypeStore.parseAdvisoryProviders(s)));
+    public List<CustomAdvisoryTypeIdentifier> getAdvisoryTypes() {
+        return this.accessCachedProperty("custom", this.advisoryTypes, (s) -> Collections.unmodifiableList(CustomAdvisoryTypeIdentifier.parseAdvisoryProviders(s)));
     }
 
-    public void setAdvisoryTypes(List<AeaaAdvisoryTypeIdentifier<?>> advisoryTypes) {
-        this.advisoryTypes = AeaaContentIdentifierStore.AeaaContentIdentifier.toJsonArray(advisoryTypes).toString();
+    public void setAdvisoryTypes(List<CustomAdvisoryTypeIdentifier> advisoryTypes) {
+        this.advisoryTypes = CustomAdvisoryTypeIdentifier.toJsonArray(advisoryTypes).toString();
     }
 
     @Override
@@ -66,22 +109,21 @@ public class DemoConfiguration extends ProcessConfiguration {
     }
 
     public static class SubDemoConfiguration extends ProcessConfiguration {
-
         @Getter
         @Setter
         private int config1 = -1;
 
         @ProcessConfigurationProperty(customName = "custom")
         private String advisoryTypes = new JSONArray()
-                .put(AeaaAdvisoryTypeStore.OSV_GENERIC_IDENTIFIER.toJson()).toString();
+                .put(OSV_GENERIC_IDENTIFIER.toJson()).toString();
 
-        public List<AeaaAdvisoryTypeIdentifier<?>> getAdvisoryTypes() {
-            return accessCachedProperty("custom", advisoryTypes, (s) -> Collections.unmodifiableList(AeaaAdvisoryTypeStore.parseAdvisoryProviders(s)));
+        public List<CustomAdvisoryTypeIdentifier> getAdvisoryTypes() {
+            return this.accessCachedProperty("custom", this.advisoryTypes, (s) -> Collections.unmodifiableList(CustomAdvisoryTypeIdentifier.parseAdvisoryProviders(s)));
         }
 
-        public void setAdvisoryTypes(List<AeaaAdvisoryTypeIdentifier<?>> advisoryTypes) {
-            JSONArray json = new JSONArray();
-            for(AeaaAdvisoryTypeIdentifier<?> advisoryTypeIdentifier : advisoryTypes) {
+        public void setAdvisoryTypes(List<CustomAdvisoryTypeIdentifier> advisoryTypes) {
+            final JSONArray json = new JSONArray();
+            for(CustomAdvisoryTypeIdentifier advisoryTypeIdentifier : advisoryTypes) {
                 json.put(advisoryTypeIdentifier.toJson());
             }
 

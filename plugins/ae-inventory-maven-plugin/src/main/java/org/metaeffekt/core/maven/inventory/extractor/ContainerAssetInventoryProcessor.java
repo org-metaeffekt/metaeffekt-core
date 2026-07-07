@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -24,8 +25,6 @@ import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.reader.inspect.image.ImageInspectReader;
 import org.metaeffekt.reader.inspect.image.model.ImageInspectData;
 import org.metaeffekt.reader.inspect.image.model.ImageInspectElement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,9 +32,8 @@ import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_ISSUE;
 
+@Slf4j
 public class ContainerAssetInventoryProcessor extends BaseInventoryProcessor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ContainerAssetInventoryProcessor.class);
 
     private File analysisDir;
     private File containerInspectionFile;
@@ -116,7 +114,7 @@ public class ContainerAssetInventoryProcessor extends BaseInventoryProcessor {
             assetMetaData.set(KEY_ISSUE, issue);
 
         } catch (Exception e) {
-            LOG.error("Cannot inspect issue of container image {}:{}.", repo, tag, e);
+            log.error("Cannot inspect issue of container image {}:{}.", repo, tag, e);
         }
     }
 
@@ -161,7 +159,7 @@ public class ContainerAssetInventoryProcessor extends BaseInventoryProcessor {
                 }
             }
         } catch (Exception e) {
-            LOG.error("Cannot parse container inspection file {} for {}:{}.", containerInspectionFile, repo, tag, e);
+            log.error("Cannot parse container inspection file {} for {}:{}.", containerInspectionFile, repo, tag, e);
         }
     }
 

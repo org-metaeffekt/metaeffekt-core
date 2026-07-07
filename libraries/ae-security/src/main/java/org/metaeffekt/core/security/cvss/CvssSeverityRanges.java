@@ -15,10 +15,9 @@
  */
 package org.metaeffekt.core.security.cvss;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.util.ColorScheme;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.StringJoiner;
@@ -34,9 +33,8 @@ import java.util.stream.Collectors;
  * In most cases, the {@link CvssSeverityRanges#CVSS_3_SEVERITY_RANGES} should be used, which is also the default value
  * for all operations.
  */
+@Slf4j
 public class CvssSeverityRanges {
-
-    private static final Logger LOG = LoggerFactory.getLogger(CvssSeverityRanges.class);
 
     private final SeverityRange[] ranges;
 
@@ -46,7 +44,7 @@ public class CvssSeverityRanges {
 
     public CvssSeverityRanges(String input) {
         if (StringUtils.isEmpty(input)) {
-            LOG.warn("No severity ranges defined. Using default (v3) ranges.");
+            log.warn("No severity ranges defined. Using default (v3) ranges.");
             this.ranges = CVSS_3_SEVERITY_RANGES.ranges;
             return;
         }

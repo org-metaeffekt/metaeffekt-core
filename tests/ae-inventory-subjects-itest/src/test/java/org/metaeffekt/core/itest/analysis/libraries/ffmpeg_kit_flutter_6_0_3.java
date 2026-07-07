@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.itest.analysis.libraries;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
@@ -27,7 +27,7 @@ import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attribu
 
 public class ffmpeg_kit_flutter_6_0_3 extends AbstractCompositionAnalysisTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://pub.dev/api/archives/ffmpeg_kit_flutter-6.0.3.tar.gz")
@@ -36,16 +36,16 @@ public class ffmpeg_kit_flutter_6_0_3 extends AbstractCompositionAnalysisTest {
     }
 
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertTrue(testSetup.clear());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test

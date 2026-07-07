@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpException;
@@ -28,17 +29,14 @@ import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
+@Slf4j
 public class MavenCentralVersionProcessor extends AbstractMavenCentralProcessor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(MavenCentralVersionProcessor.class);
 
     public static final String GROUPID_EXCLUDE_PATTERNS = "groupid.exclude.patterns";
     public static final String OVERWRITE_EXISTING_VERSION = "overwrite.existing.version";
@@ -124,7 +122,7 @@ public class MavenCentralVersionProcessor extends AbstractMavenCentralProcessor 
                 replacedUri = replacedUri.
                         replaceAll("\\$\\{groupId\\}", groupIds[i].replace(" ", ""));
 
-                LOG.info("Querying: {}", replacedUri);
+                log.info("Querying: {}", replacedUri);
                 String latestVersion = (String) queryCache.get(replacedUri);
                 String latestVersionMethod1 = null;
                 if (latestVersion == null) {
@@ -222,7 +220,7 @@ public class MavenCentralVersionProcessor extends AbstractMavenCentralProcessor 
                     latestVersions = latestVersion;
                 }
             }
-            LOG.info("Latest version: {}", latestVersions);
+            log.info("Latest version: {}", latestVersions);
             artifact.setLatestVersion(latestVersions);
         }
     }

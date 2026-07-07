@@ -15,41 +15,41 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class InventoryReportTest {
 
     @Test
     public void testNormalCase() {
-        Assert.assertEquals("normalId", InventoryReport.xmlEscapeStringAttribute("normalId"));
+        Assertions.assertEquals("normalId", InventoryReport.xmlEscapeStringAttribute("normalId"));
     }
 
     @Test
     public void testBlankInput() {
-        Assert.assertTrue(InventoryReport.xmlEscapeStringAttribute(" ").startsWith("defaultId"));
+        Assertions.assertTrue(InventoryReport.xmlEscapeStringAttribute(" ").startsWith("defaultId"));
     }
 
     @Test
     public void testInvalidCharacters() {
-        Assert.assertEquals("invalid_Id", InventoryReport.xmlEscapeStringAttribute("invalid!Id"));
-        Assert.assertEquals("invalid_Id", InventoryReport.xmlEscapeStringAttribute("invalid Id"));
+        Assertions.assertEquals("invalid_Id", InventoryReport.xmlEscapeStringAttribute("invalid!Id"));
+        Assertions.assertEquals("invalid_Id", InventoryReport.xmlEscapeStringAttribute("invalid Id"));
     }
 
     @Test
     public void testStartsWithDigit() {
-        Assert.assertEquals("_1invalidId", InventoryReport.xmlEscapeStringAttribute("1invalidId"));
+        Assertions.assertEquals("_1invalidId", InventoryReport.xmlEscapeStringAttribute("1invalidId"));
     }
 
     @Test
     public void testLongString() {
         String longString = "longStringWithInvalidCharacters!@#$%^&*()\"'";
         String expected = "longStringWithInvalidCharacters____________";
-        Assert.assertEquals(expected, InventoryReport.xmlEscapeStringAttribute(longString));
+        Assertions.assertEquals(expected, InventoryReport.xmlEscapeStringAttribute(longString));
     }
 
     @Test
     public void testNullInput() {
-        Assert.assertTrue(InventoryReport.xmlEscapeStringAttribute(null).startsWith("defaultId"));
+        Assertions.assertTrue(InventoryReport.xmlEscapeStringAttribute(null).startsWith("defaultId"));
     }
 }

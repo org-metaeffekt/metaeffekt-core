@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,9 +27,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 public class ContainerComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ContainerComponentPatternContributor.class);
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String> (){{
         add("/json");
@@ -73,7 +71,7 @@ public class ContainerComponentPatternContributor extends ComponentPatternContri
 
             return Collections.singletonList(componentPatternData);
         } catch (IOException e) {
-            LOG.warn("Error reading container metadata file: {}", anchorFile.getAbsolutePath(), e);
+            log.warn("Error reading container metadata file: {}", anchorFile.getAbsolutePath(), e);
             return Collections.emptyList();
         }
     }

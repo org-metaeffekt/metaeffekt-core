@@ -73,7 +73,6 @@ public class DocumentDescriptorReport {
     public static final String TEMPLATE_GROUP_LICENSE_DOCUMENTATION_BOOKMAP = "license-documentation-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP = "vulnerability-report-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP = "vulnerability-statistics-report-bookmap";
-    public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_PART_BOOKMAP = "vulnerability-summary-part-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP = "vulnerability-summary-report-bookmap";
 
     /**
@@ -96,7 +95,7 @@ public class DocumentDescriptorReport {
                 writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
             }
             if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_PART) {
-                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_PART_BOOKMAP);
+                continue;
             }
             if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
                 writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
@@ -120,25 +119,8 @@ public class DocumentDescriptorReport {
         // Collect the file names of the generated part bookmaps.
         List<String> partBookMaps = new ArrayList<>();
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
-            String bookMapFilename = null;
-            if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-annex.ditamap";
-            } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-report.ditamap";
-            } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-statistics-report.ditamap";
-            } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_PART) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-summary-part.ditamap";
-            }else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-summary-report.ditamap";
-            } else if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-initial-license-documentation.ditamap";
-            } else if (documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-license-documentation.ditamap";
-            }
-            if (bookMapFilename != null) {
-                partBookMaps.add(bookMapFilename);
-            }
+                String bookMapFilename = "map_" + documentPart.getIdentifier() + ".ditamap";
+                partBookMaps.add("parts/" + documentPart.getIdentifier() + "/" + bookMapFilename);
         }
 
         // Specify the overall document bookmap template and target file.
@@ -266,10 +248,10 @@ public class DocumentDescriptorReport {
                 }
 
                 if (propertiesFilename != null) {
-                    final File targetDir = new File(targetReportDir, inventoryContext.getIdentifier());
+                    final File targetDir = new File(new File(targetReportDir, "parts"), documentPart.getIdentifier());
                     final File propertiesFile = new File(targetDir, propertiesFilename);
                     final Properties properties = PropertiesUtils.loadPropertiesFile(propertiesFile, true);
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+                    adapters.getPropertiesMap().put(documentPart.getIdentifier(), properties);
                 }
             }
         }
@@ -307,14 +289,13 @@ public class DocumentDescriptorReport {
             // Modify filename only if it starts with "map_"
             String targetFileName;
             if (originalFileName.startsWith("map_")) {
-                int splitIndex = originalFileName.indexOf("_") + 1; // Position after "map_"
-                targetFileName = "map_" + documentPart.getIdentifier() + "-" + originalFileName.substring(splitIndex);
+                targetFileName = "map_" + documentPart.getIdentifier() + ".ditamap";
             } else {
                 targetFileName = originalFileName;
             }
 
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
-            final File targetReportPath = new File(this.targetReportDir + "/parts", new File(relPath, targetFileName).toString());
+            final File targetReportPath = new File(new File(new File(this.targetReportDir, "parts"), documentPart.getIdentifier()), new File(relPath, targetFileName).toString());
 
             produceDita(documentDescriptor, documentPart, adapters, filePath, targetReportPath);
         }
@@ -339,11 +320,9 @@ public class DocumentDescriptorReport {
 
         log.info("Producing Dita for template [{}]", templateResourcePath);
         final Properties properties = new Properties();
-        properties.put(Velocity.RESOURCE_LOADER, "class, file");
-        properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
+        properties.put(Velocity.RESOURCE_LOADERS, "class, file");
+        properties.put("resource.loader.class.class", ClasspathResourceLoader.class.getName());
         properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.OUTPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.SET_NULL_ALLOWED, true);
 
         final VelocityEngine velocityEngine = new VelocityEngine(properties);
         final Template template = velocityEngine.getTemplate(templateResourcePath);
@@ -355,7 +334,6 @@ public class DocumentDescriptorReport {
 
         // Add common context entries.
         context.put("targetReportDir", this.targetReportDir);
-        context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
         context.put("utils", reportUtils);
         context.put("Double", Double.class);

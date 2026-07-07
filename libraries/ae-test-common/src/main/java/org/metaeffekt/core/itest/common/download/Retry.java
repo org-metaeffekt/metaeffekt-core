@@ -15,16 +15,14 @@
  */
 package org.metaeffekt.core.itest.common.download;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+@Slf4j
 public class Retry<T> {
-
-    private final static Logger LOG = LoggerFactory.getLogger(Retry.class);
 
     private final RetrySupplier<T> supplier;
 
@@ -99,9 +97,9 @@ public class Retry<T> {
                 return result;
             } catch (Throwable throwable) {
                 if (i == retryCount - 1) {
-                    LOG.error("failed last attempt [{}] due to invalid run result: {}", retryCount, throwable.getMessage());
+                    log.error("failed last attempt [{}] due to invalid run result: {}", retryCount, throwable.getMessage());
                 } else {
-                    LOG.warn("retrying next attempt [{} / {}] due to invalid run result: {}", i + 2, retryCount, throwable.getMessage());
+                    log.warn("retrying next attempt [{} / {}] due to invalid run result: {}", i + 2, retryCount, throwable.getMessage());
                 }
                 if (isThrowableContained(throwable)) {
                     caughtException = throwable;

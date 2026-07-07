@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.maven.jira.template;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -47,12 +46,10 @@ public class TemplateProcessor {
      */
     public TemplateProcessor(String templateResourcePath) {
         Properties properties = new Properties();
-        properties.put(Velocity.RESOURCE_LOADER, RESOURCE_LOADING);
+        properties.put(Velocity.RESOURCE_LOADERS, RESOURCE_LOADING);
         properties.put(Velocity.FILE_RESOURCE_LOADER_PATH, templateResourcePath);
         properties.put(Velocity.FILE_RESOURCE_LOADER_CACHE, false);
         properties.put(Velocity.INPUT_ENCODING, ENCODING_UTF_8);
-        properties.put(Velocity.OUTPUT_ENCODING, ENCODING_UTF_8);
-        properties.put(Velocity.SET_NULL_ALLOWED, true);
 
         ve = new VelocityEngine(properties);
     }
@@ -89,8 +86,6 @@ public class TemplateProcessor {
         context.put("esc", new EscapeTool());
 
         context.put("templateProcessor", this);
-
-        context.put("StringEscapeUtils", StringEscapeUtils.class);
 
         context.put("RegExUtils", RegExUtils.class);
 

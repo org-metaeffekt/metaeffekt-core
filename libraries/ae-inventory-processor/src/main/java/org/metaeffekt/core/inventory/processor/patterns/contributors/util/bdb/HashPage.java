@@ -16,8 +16,7 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors.util.bdb;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -29,8 +28,8 @@ import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.patterns.contributors.util.bdb.HashOffPageEntry.parseHashOffPageEntry;
 
+@Slf4j
 public class HashPage {
-    private static final Logger LOG = LoggerFactory.getLogger(HashPage.class);
     private byte[] LSN = new byte[8]; // 00-07: LSN.
     private long pageNo; // 08-11: Current page number.
     private long previousPageNo; // 12-15: Previous page number.

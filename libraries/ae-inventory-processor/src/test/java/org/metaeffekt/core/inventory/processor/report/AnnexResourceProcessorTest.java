@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;

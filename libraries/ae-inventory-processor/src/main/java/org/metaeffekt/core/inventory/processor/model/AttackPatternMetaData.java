@@ -30,6 +30,15 @@ public class AttackPatternMetaData extends AbstractModelBase {
 
     public enum Attribute implements AbstractModelBase.Attribute {
         ID("Id"),
+        NAME("Name"),
+        DESCRIPTION("Description"),
+        DEPRECATED("Deprecated"),
+        ALTERNATE_TERMS("Alternate Terms"),
+        RELATED_ATTACK_PATTERNS("Related Attack Pattern"),
+        REFERENCES("References"),
+        URL("Url"),
+        MITIGATIONS("Mitigations"),
+        DETECTION_METHODS("Detection Methods"),
         CONTENT("Content"),
 
         REFERENCED_VULNERABILITIES("Referenced Vulnerabilities"),

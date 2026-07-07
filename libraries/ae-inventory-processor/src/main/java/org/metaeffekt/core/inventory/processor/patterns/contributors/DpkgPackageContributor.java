@@ -15,14 +15,13 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,8 +33,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+@Slf4j
 public class DpkgPackageContributor extends ComponentPatternContributor {
-    private static final Logger LOG = LoggerFactory.getLogger(DpkgPackageContributor.class);
 
     protected static final Pattern hexStringPattern = Pattern.compile("^[a-fA-F0-9]+$");
 
@@ -49,9 +48,9 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         add("usr/lib/");
     }};
 
+    @Slf4j
     @SuppressWarnings("unused")
     public static class DpkgStatusFileEntry {
-        private static final Logger LOG = LoggerFactory.getLogger(DpkgStatusFileEntry.class);
 
         /**
          * Static mapping from dpkg keys to our field names. Used for setting fields via reflection.
@@ -115,7 +114,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                     try {
                         DpkgStatusFileEntry.class.getDeclaredField(value);
                     } catch (NoSuchFieldException e) {
-                        LOG.warn("Self-check inconsistency: Field [{}] exists in map, not in class.", value);
+                        log.warn("Self-check inconsistency: Field [{}] exists in map, not in class.", value);
                     }
                 }
             }
@@ -181,7 +180,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             String fieldName = dpkgToKey.get(dpkgKey);
 
             if (fieldName == null) {
-                LOG.warn("Passed unknown or invalid dpkgKey [{}] (missing field in class).", dpkgKey);
+                log.warn("Passed unknown or invalid dpkgKey [{}] (missing field in class).", dpkgKey);
                 // set it as an overflow key and continue
                 overflowDpkgKeyToValue.putIfAbsent(dpkgKey, value);
                 return;
@@ -253,7 +252,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 if (line.startsWith(" ")) {
                     // ensure this is not the beginning of a package
                     if (expectNewPackage) {
-                        LOG.error("Expected beginning of new package block, found value continuation.");
+                        log.error("Expected beginning of new package block, found value continuation.");
                         continue;
                     }
 
@@ -269,7 +268,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                     // didn't find a colon
                     if (colonIndex == -1) {
                         // possibly an invalid "description" line
-                        LOG.error("No colon in supposed key-value pair [{}].", line);
+                        log.error("No colon in supposed key-value pair [{}].", line);
                     }
 
                     // split key and value, cut off ": " to get value
@@ -278,13 +277,13 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
                     if (StringUtils.isBlank(key)) {
                         // this indicates bad splitting behaviour or broken info
-                        LOG.error("Unexpected blank key while parsing lines after [{}].", lastFoundPackageName);
+                        log.error("Unexpected blank key while parsing lines after [{}].", lastFoundPackageName);
                         continue;
                     }
 
                     if (expectNewPackage && !"Package".equals(key)) {
                         // continue to try to parse other packages anyway
-                        LOG.error("Expected key 'Package' but got [{}]. Data corruption imminent.", key);
+                        log.error("Expected key 'Package' but got [{}]. Data corruption imminent.", key);
                     }
 
                     // set package name for debugging purposes
@@ -305,17 +304,16 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             entries.add(statusFileEntry);
 
             if (unexpectedBlankLine) {
-                LOG.warn("Odd blank line while parsing [{}]. Bad status file or parsing error?", lastFoundPackageName);
+                log.warn("Odd blank line while parsing [{}]. Bad status file or parsing error?", lastFoundPackageName);
             }
         }
 
         return entries;
     }
 
-    public ComponentPatternData createComponentPattern(String versionAnchor,
-                                                       DpkgStatusFileEntry entry,
-                                                       String checksum,
-                                                       String includePatterns, LinuxDistributionUtil.LinuxDistro distro) {
+    public ComponentPatternData createComponentPattern(String versionAnchor, DpkgStatusFileEntry entry,
+           String checksum, String includePatterns, LinuxDistributionUtil.LinuxDistro distro) {
+
         ComponentPatternData componentPatternData = new ComponentPatternData();
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, entry.packageName);
         // add list of comma-separated paths
@@ -324,8 +322,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         // FIXME: we need a post-processing step to clear the inventory by known individual components (e.g. if package 2 is fully a subset of package 1, remove package 2)
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
 
-        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt, **/__pycache__/**/*, /var/lib/dpkg/info/*.postinst, **/var/lib/dpkg/info/*.preinst, **/var/lib/dpkg/info/*.list, **/var/lib/dpkg/info/*.md5sums, **/var/lib/dpkg/info/*.postrm");
-
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, null);
+        // NOTE: these were the initial include patterns; unfortunately it wa not documented, why these were derived.
+        //       excluded for clarity
+        // **/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt, **/__pycache__/**/*, /var/lib/dpkg/info/*.postinst,
+        // **/var/lib/dpkg/info/*.preinst, **/var/lib/dpkg/info/*.list, **/var/lib/dpkg/info/*.md5sums,
+        // **/var/lib/dpkg/info/*.postrm"
 
         // get version from the entry
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, entry.version);
@@ -343,7 +345,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             componentPatternData.set(Artifact.Attribute.PURL.getKey(),
                     buildPurl(distro, entry.packageName, entry.version, entry.architecture));
         } catch (Exception e) {
-            LOG.error("Could not create PURL for package [{}].", entry.packageName);
+            log.error("Could not create PURL for package [{}].", entry.packageName);
         }
 
         return componentPatternData;
@@ -368,7 +370,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 // streamlines so we don't need to preload to memory
                 lineStream.forEachOrdered(line -> append(correspondingMd5sumsFile, line, fileJoiner));
             } catch (Exception e) {
-                LOG.info("Could not read file list for entry with name [{}]: {}", entry.packageName, e.getMessage());
+                log.info("Could not read file list for entry with name [{}]: {}", entry.packageName, e.getMessage());
             }
         }
 
@@ -415,7 +417,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             // err out if the md5sum isn't a md5sum
             if (!hexStringPattern.matcher(hash).matches()) {
                 // this was not a real hash. should never happen. means splitting failed miserably.
-                LOG.error("Splitting failed while reading line of dpkg md5sums at [{}].",
+                log.error("Splitting failed while reading line of dpkg md5sums at [{}].",
                         correspondingMd5sumsFile.getAbsolutePath());
                 return;
             }
@@ -455,22 +457,20 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             }
 
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
     }
 
-    public List<ComponentPatternData> contributeStatusFileBased(File baseDir,
-                                                                String relativeAnchorFilePath,
-                                                                String checksum) {
+    public List<ComponentPatternData> contributeStatusFileBased(File baseDir, String relativeAnchorFilePath, String checksum) {
         final File anchorFile = new File(baseDir, relativeAnchorFilePath);
 
-        String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
+        final String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
 
         List<DpkgStatusFileEntry> entries;
         try {
             entries = readCompleteStatusFile(anchorFile);
         } catch (IOException e) {
-            LOG.error("Unable to parse status file [{}].", anchorFile);
+            log.warn("Unable to parse presumed status file [{}].", anchorFile);
             return Collections.emptyList();
         }
 
@@ -481,7 +481,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         for (DpkgStatusFileEntry entry : entries) {
             if (StringUtils.isBlank(entry.packageName)) {
                 // skip useless incomplete entry
-                LOG.info("Skipping entry with empty name.");
+                log.info("Skipping entry with empty name.");
                 continue;
             }
 
@@ -501,7 +501,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             if (fileWithoutArch.exists()) {
                 correspondingMd5sumsFile = fileWithoutArch;
                 if (fileWithArch.exists()) {
-                    LOG.warn("Oddity: multiple md5sums files found for package [{}].", entry.packageName);
+                    log.warn("Oddity: multiple md5sums files found for package [{}].", entry.packageName);
                 }
 
                 // check with the original way of figuring out which filename is correct:
@@ -509,14 +509,14 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 //	    format == PKG_INFODB_FORMAT_MULTIARCH)
                 // with this we can match behaviour of dpkg(-query). assume the newer multiarch db format
                 if ("same".equals(entry.multiArch)) {
-                    LOG.warn("Possible mismatch: using non-arch md5sums when dpkg would use :arch suffix");
+                    log.warn("Possible mismatch: using non-arch md5sums when dpkg would use :arch suffix");
                 }
             } else {
                 // use the filename with arch as the corresponding filename
                 correspondingMd5sumsFile = fileWithArch;
 
                 if (!fileWithoutArch.exists()) {
-                    LOG.debug("No md5sums file found for package [{}].", entry.packageName);
+                    log.debug("No md5sums file found for package [{}].", entry.packageName);
                 }
             }
 
@@ -589,7 +589,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         }
 
         if (entries.size() != 1) {
-            LOG.warn("Skipping potential status.d anchor with multiple entries: expected 1 but got [{}] from [{}].",
+            log.warn("Skipping potential status.d anchor with multiple entries: expected 1 but got [{}] from [{}].",
                 entries.size(), fileWithoutMd5sums.getAbsoluteFile());
         }
 
@@ -601,7 +601,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         final File virtualRoot = md5sumsFile.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
         // create patterns
         if (!virtualRoot.exists()) {
-            LOG.warn("Computed virtual root [{}] does not exist", virtualRoot.getAbsolutePath());
+            log.warn("Computed virtual root [{}] does not exist", virtualRoot.getAbsolutePath());
             return Collections.emptyList();
         }
 
@@ -624,13 +624,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorFilePath, String checksum) {
         String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
-        if (relativeAnchorFilePath.endsWith("status")) {
-            return contributeStatusFileBased(baseDir, relativeAnchorFilePath, checksum);
-        } else if (relativeAnchorFilePath.endsWith(".md5sums")) {
+        if (relativeAnchorFilePath.endsWith(".md5sums")) {
             return contributeStatusDirectoryBased(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
         } else {
-            LOG.warn("Skipping unknown dpkg file [{}].", relativeAnchorFilePath);
-            return Collections.emptyList();
+            // always try to parse
+            return contributeStatusFileBased(baseDir, relativeAnchorFilePath, checksum);
         }
     }
 

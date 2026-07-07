@@ -16,12 +16,12 @@
 package org.metaeffekt.core.maven.jira.mojo;
 
 import org.apache.maven.plugin.MojoFailureException;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
-@Ignore // This test requires to be online; it accesses the metaeffekt atlassian project.
+@Disabled // This test requires to be online; it accesses the metaeffekt atlassian project.
 public class ExtractFromJiraTest {
 
     @Test

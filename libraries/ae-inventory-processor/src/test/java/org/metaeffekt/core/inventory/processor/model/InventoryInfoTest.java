@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
@@ -34,8 +34,8 @@ public class InventoryInfoTest {
         final InventoryInfo info = inventory.findOrCreateInventoryInfo("test-id");
         info.set("test-key", "test-value");
 
-        Assert.assertTrue(inventory.getInventoryInfo().contains(info));
-        Assert.assertEquals("test-id", info.get(InventoryInfo.Attribute.ID));
+        Assertions.assertTrue(inventory.getInventoryInfo().contains(info));
+        Assertions.assertEquals("test-id", info.get(InventoryInfo.Attribute.ID));
 
         final File file = new File(TARGET_DIRECTORY, "test-inventory/info/info-inventory.xls");
         file.getParentFile().mkdirs();
@@ -43,8 +43,8 @@ public class InventoryInfoTest {
 
         final Inventory read = new InventoryReader().readInventory(file);
 
-        Assert.assertEquals(1, read.getInventoryInfo().size());
-        Assert.assertEquals("test-id", read.getInventoryInfo().get(0).get(InventoryInfo.Attribute.ID));
+        Assertions.assertEquals(1, read.getInventoryInfo().size());
+        Assertions.assertEquals("test-id", read.getInventoryInfo().get(0).get(InventoryInfo.Attribute.ID));
 
         final File inventoryXlsxFile = new File(TARGET_DIRECTORY, "test-inventory/info/info-inventory.xlsx");
         inventoryXlsxFile.getParentFile().mkdirs();

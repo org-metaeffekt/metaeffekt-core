@@ -16,17 +16,15 @@
 
 package org.metaeffekt.core.itest.common.fluent;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class DuplicateList {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DuplicateList.class);
 
     private final Map<File, List<String>> fileToQualifierMap = new HashMap<>();
 
@@ -52,7 +50,7 @@ public class DuplicateList {
                     .anyMatch(value -> filters.stream().anyMatch(value::contains));
 
             if (entry.getValue().size() > 1 && !containsFilter) {
-                LOG.warn("Component pattern file [{}] is STILL associated with multiple qualifiers {}.", entry.getKey(), entry.getValue());
+                log.warn("Component pattern file [{}] is STILL associated with multiple qualifiers {}.", entry.getKey(), entry.getValue());
                 remainingDuplicates.put(entry.getKey(), entry.getValue());
             } else if (entry.getValue().size() == 1 && !containsFilter) {
                 fileWithoutDuplicates.put(entry.getKey(), entry.getValue().get(0));
@@ -71,7 +69,7 @@ public class DuplicateList {
                     .anyMatch(filter -> entry.getKey().getName().contains(filter));
 
             if (entry.getValue().size() > 1 && !containsFilter) {
-                LOG.warn("Component pattern file [{}] is STILL associated with multiple qualifiers {}.",
+                log.warn("Component pattern file [{}] is STILL associated with multiple qualifiers {}.",
                         entry.getKey(), entry.getValue());
                 remainingDuplicates.put(entry.getKey(), entry.getValue());
             } else if (entry.getValue().size() == 1 && !containsFilter) {

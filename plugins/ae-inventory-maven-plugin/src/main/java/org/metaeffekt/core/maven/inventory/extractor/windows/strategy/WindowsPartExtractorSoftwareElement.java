@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,14 +23,11 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+@Slf4j
 public class WindowsPartExtractorSoftwareElement extends WindowsPartExtractorBase {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WindowsPartExtractorSoftwareElement.class);
 
     private final static JSONObject NO_MATCHING_FEATURE = new JSONObject();
 
@@ -72,7 +70,7 @@ public class WindowsPartExtractorSoftwareElement extends WindowsPartExtractorBas
             }
 
             if (featureArtifact.getId() == null) {
-                LOG.warn("No ID found for software feature: {}", softwareFeature);
+                log.warn("No ID found for software feature: {}", softwareFeature);
                 featureArtifact.setId(UUID.randomUUID().toString());
             }
 
@@ -112,7 +110,7 @@ public class WindowsPartExtractorSoftwareElement extends WindowsPartExtractorBas
             final String featureName = getJsonFieldValue(softwareFeature, "IdentifyingNumber") + getJsonFieldValue(softwareFeature, "Name");
 
             if (!featuresFound.contains(featureName)) {
-                LOG.warn("Missing feature: {}", featureName);
+                log.warn("Missing feature: {}", featureName);
             }
         }
     }
@@ -130,7 +128,7 @@ public class WindowsPartExtractorSoftwareElement extends WindowsPartExtractorBas
 
             if (!found) {
                 final String elementName = getJsonFieldValue(softwareElement, "SoftwareElementID") + getJsonFieldValue(softwareElement, "Name");
-                LOG.warn("Missing element: {}", elementName);
+                log.warn("Missing element: {}", elementName);
             }
         }
     }
@@ -189,13 +187,13 @@ public class WindowsPartExtractorSoftwareElement extends WindowsPartExtractorBas
             if (groupComponentSoftwareFeature != null && partComponentSoftwareElement != null) {
                 mapping.computeIfAbsent(groupComponentSoftwareFeature, k -> new ArrayList<>(1)).add(partComponentSoftwareElement);
             } else if (groupComponentSoftwareFeature != null) {
-                LOG.warn("No matching software element found for mapping: {}", mappingJson);
+                log.warn("No matching software element found for mapping: {}", mappingJson);
                 mapping.computeIfAbsent(groupComponentSoftwareFeature, k -> new ArrayList<>());
             } else if (partComponentSoftwareElement != null) {
-                LOG.warn("No matching software feature found for mapping: {}", mappingJson);
+                log.warn("No matching software feature found for mapping: {}", mappingJson);
                 mapping.computeIfAbsent(NO_MATCHING_FEATURE, k -> new ArrayList<>(1)).add(partComponentSoftwareElement);
             } else {
-                LOG.warn("No matching software feature or software element found for mapping: {}", mappingJson);
+                log.warn("No matching software feature or software element found for mapping: {}", mappingJson);
             }
         }
 

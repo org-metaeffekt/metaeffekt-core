@@ -36,7 +36,7 @@
                         #foreach($asset in $assets)
                                     <row>
                                         <entry>
-                                            #if($report.isAssetBomReportEnabled())
+                                            #if($configParams.isAssetBomReportEnabled())
                                                 <xref href="tpc_asset-contained-components.dita#asset-$report.xmlEscapeStringAttribute($asset)" type="topic">
                                                     $report.xmlEscapeString($asset.get("Name"))
                                                 </xref>

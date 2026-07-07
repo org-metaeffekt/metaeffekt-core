@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.security.cvss;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
@@ -26,8 +27,6 @@ import org.metaeffekt.core.security.cvss.v3.Cvss3;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P0;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
@@ -53,9 +52,8 @@ import java.util.regex.Pattern;
  * It also provides the option to cache the calculated CVSS scores in a {@link BakedCvssVectorScores} instance to reduce the amount of times a score has to be recalculated if it is known that the scores will have to be calculated multiple times.<br>
  * Note that you have to recalculate these values yourself if you changed the CVSS vector components via the individual setters. Using the {@link CvssVector#applyVector(String)} (and related) methods will clear the cache automatically.
  */
+@Slf4j
 public abstract class CvssVector {
-
-    private final static Logger LOG = LoggerFactory.getLogger(CvssVector.class);
 
     protected final List<CvssSource> sources = new ArrayList<>();
     protected final JSONObject applicabilityCondition;
@@ -237,7 +235,7 @@ public abstract class CvssVector {
             } else {
                 end = mid;
                 while (end < length && normalizedVector.charAt(end) != '/') end++;
-                LOG.debug("Unknown vector argument: [{}]", normalizedVector.substring(start, end));
+                log.debug("Unknown vector argument: [{}]", normalizedVector.substring(start, end));
             }
             start = end;
         }
@@ -285,7 +283,7 @@ public abstract class CvssVector {
                     }
                 }
             } else {
-                LOG.debug("Unknown vector argument: [{}]", argument);
+                log.debug("Unknown vector argument: [{}]", argument);
             }
         }
 
@@ -332,7 +330,7 @@ public abstract class CvssVector {
                     this.applyVectorArgument(parts[0], currentAttribute.getShortIdentifier());
                 }
             } else {
-                LOG.debug("Unknown vector argument: [{}]", argument);
+                log.debug("Unknown vector argument: [{}]", argument);
             }
         }
 
@@ -360,13 +358,22 @@ public abstract class CvssVector {
 
     protected Pair<Integer, Integer> findOldNewSeverityOrder(CvssVectorAttribute unmodifiedAttribute, CvssVectorAttribute modifiedAttribute, CvssVectorAttribute newAttribute, boolean isNewAttributeModified) {
         // compare either the modified or the unmodified attribute with the new attribute
-        final boolean isModifiedAttributeSet = modifiedAttribute != null && modifiedAttribute.isSet();
-        final CvssVectorAttribute oldAttribute = isModifiedAttributeSet && isNewAttributeModified ? modifiedAttribute : unmodifiedAttribute;
+        final boolean isModifiedAttributeSet = modifiedAttribute != null &&
+                modifiedAttribute.isSet() &&
+                !VALUE_NOT_DEFINED.equals(modifiedAttribute.getIdentifier()) &&
+                !VALUE_NULL.equals(modifiedAttribute.getIdentifier()) &&
+                !"X".equals(modifiedAttribute.getShortIdentifier());
 
-        final int oldSeverity = determineAttributeSeverityOrder(oldAttribute);
-        final int newSeverity = determineAttributeSeverityOrder(newAttribute);
+        // if applying a new modified attribute, evaluate against the existing modified attribute (if set) or fallback to base.
+        // if applying a new base attribute, evaluate only against the existing base attribute.
+        final CvssVectorAttribute oldAttribute = isNewAttributeModified && isModifiedAttributeSet ? modifiedAttribute : unmodifiedAttribute;
 
-        // LOG.info("Comparing old [{} {}] with new [{} {}]", oldAttribute, oldSeverity, newAttribute, newSeverity);
+        final int oldSeverity = this.determineAttributeSeverityOrder(oldAttribute);
+        final int newSeverity = this.determineAttributeSeverityOrder(newAttribute);
+
+        // LOG.info("Comparing old [{} {} {}] with new [{} {} {}]",
+        //         oldAttribute.getClass().getSimpleName(), oldAttribute, oldSeverity,
+        //         newAttribute.getClass().getSimpleName(), newAttribute, newSeverity);
 
         return Pair.of(oldSeverity, newSeverity);
     }
@@ -390,7 +397,7 @@ public abstract class CvssVector {
             return Cvss3.ATTRIBUTE_SEVERITY_ORDER.indexOf(attribute);
         }
 
-        LOG.warn("Unknown attribute type: {}", attribute);
+        log.warn("Unknown attribute type: {}", attribute);
         return -1;
     }
 
@@ -539,9 +546,9 @@ public abstract class CvssVector {
             }
 
             if (vector.startsWith("CVSS:")) {
-                LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
-            } else if (LOG.isDebugEnabled()) {
-                LOG.debug("Unable to parse non-CVSS vector string [{}]", vector);
+                log.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            } else if (log.isDebugEnabled()) {
+                log.debug("Unable to parse non-CVSS vector string [{}]", vector);
             }
 
             return null;

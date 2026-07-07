@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -28,9 +27,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
+@Slf4j
 public class AlpmPackageContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AlpmPackageContributor.class);
 
     private static final String ALPM_PACKAGE_TYPE = "alpm";
 
@@ -49,7 +47,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
         final File packageDir = new File(baseDir, relativeAnchorPath).getParentFile();
 
         if (!packageDir.exists() || !packageDir.isDirectory()) {
-            LOG.warn("ALPM package directory does not exist: {}", packageDir.getAbsolutePath());
+            log.warn("ALPM package directory does not exist: {}", packageDir.getAbsolutePath());
             return Collections.emptyList();
         }
 
@@ -142,7 +140,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
             }
 
             if (includePatterns.length() == 0) {
-                LOG.warn("No include patterns found for package: [{}]-[{}]-[{}]", packageName, version, architecture);
+                log.warn("No include patterns found for package: [{}]-[{}]-[{}]", packageName, version, architecture);
                 includePatterns.add(relativeAnchorPath);
             }
 
@@ -151,7 +149,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
             }
             return components;
         } catch (Exception e) {
-            LOG.warn("Failure processing ALPM package directory [{}]: [{}]", packageDir.getAbsolutePath(), e.getMessage());
+            log.warn("Failure processing ALPM package directory [{}]: [{}]", packageDir.getAbsolutePath(), e.getMessage());
             return Collections.emptyList();
         }
     }

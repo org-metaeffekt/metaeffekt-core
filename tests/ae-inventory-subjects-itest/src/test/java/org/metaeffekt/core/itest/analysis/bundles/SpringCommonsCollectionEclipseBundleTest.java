@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.itest.analysis.bundles;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
@@ -31,7 +31,7 @@ import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attribu
 
 public class SpringCommonsCollectionEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://archive.apache.org/dist/commons/collections/binaries/commons-collections-3.2.1-bin.zip")
@@ -39,16 +39,16 @@ public class SpringCommonsCollectionEclipseBundleTest extends AbstractCompositio
                 .setName(SpringCommonsCollectionEclipseBundleTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception{
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertTrue(testSetup.clear());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventorize() throws Exception{
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test

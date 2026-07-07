@@ -88,11 +88,13 @@ public class ComponentPatternData extends AbstractModelBase {
         COMPONENT_SOURCE_TYPE("Component Source Type"),
 
         // files covered by a component pattern may be shared with other component patterns; this attribute allows
-        // to specify files which are known to be shared, but should remain included, when the files are collected
+        // to specify files which are known to be shared, but should remain included, when the files are collected.
+        // the process will not complain about these files, when they appear in different aggregated components.
         SHARED_INCLUDE_PATTERN("Shared Include Pattern"),
 
         // files covered by a component pattern may be shared with other component patterns; this attribute allows
-        // to specify files which are known to be shared, and should not be collected for the component
+        // to specify files which are known to be shared, and should not be collected for the component.
+        // the process will effectively exclude the covered files from being aggregated.
         SHARED_EXCLUDE_PATTERN("Shared Exclude Pattern");
 
         private final String key;

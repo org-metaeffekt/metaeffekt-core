@@ -32,7 +32,7 @@
                         <configuration>
                             <includeAllSources>true</includeAllSources>
                             <failOnMissingSources>true</failOnMissingSources>
-                            <inventoryPath>${project.basedir}/artifact-inventory.xls</inventoryPath>
+                            <inventoryPath>${project.basedir}/inventory/test-artifact-inventory.xls</inventoryPath>
 
                             <!-- Source Repositories -->
                             <sourceRepositories>
@@ -53,6 +53,20 @@
                                         <!-- patterns: "artifact:component:version:effectiveLicense"; Regular expressions start with '^' -->
                                         <pattern>^ignore-me-.*\.jar</pattern>
                                     </patterns>
+                                </sourceRepository>
+
+                                <sourceRepository>
+                                    <id>Public FileServer Mirrors</id>
+                                    <targetFolder>Test-OSS</targetFolder>
+                                    <patterns>
+                                        <pattern>^.*\.jar</pattern>
+                                    </patterns>
+                                    <fileServerMirror>
+                                        <propertyFilePath>${project.basedir}/.properties</propertyFilePath>
+                                        <sourceUrls>
+                                            <url>https://$[host02]/maven2/$[artifact.namespace]/$[artifact.namespace]/$[artifact.version]/$[artifact.id]</url>
+                                        </sourceUrls>
+                                    </fileServerMirror>
                                 </sourceRepository>
 
                                 <sourceRepository>

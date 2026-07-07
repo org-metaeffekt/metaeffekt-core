@@ -15,11 +15,10 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor.windows;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+@Slf4j
 public enum WindowsExtractorAnalysisFile {
     Class_CIM_SoftwareElement("CIM_SoftwareElement", "json", true),
     Class_Win32_BaseBoard("Win32_BaseBoard", "json", true),
@@ -88,8 +88,6 @@ public enum WindowsExtractorAnalysisFile {
     systeminfo("systeminfo", "json", false),
     Get_ComputerInfo("Get-ComputerInfo", "json", false),
     ;
-
-    private static final Logger LOG = LoggerFactory.getLogger(WindowsExtractorAnalysisFile.class);
 
     private final String typeName;
     private final String fileType;
@@ -181,7 +179,7 @@ public enum WindowsExtractorAnalysisFile {
                 final String content = FileUtils.readFileToString(file, charset);
                 return conversionFunction.apply(content);
             } catch (Exception e) {
-                LOG.debug("Failed to parse file {} using charset {}", file, charset, e);
+                log.debug("Failed to parse file {} using charset {}", file, charset, e);
                 lastException = e;
             }
         }
@@ -201,7 +199,7 @@ public enum WindowsExtractorAnalysisFile {
                 final List<String> content = FileUtils.readLines(file, charset);
                 return conversionFunction.apply(content);
             } catch (Exception e) {
-                LOG.debug("Failed to parse file {} using charset {}", file, charset, e);
+                log.debug("Failed to parse file {} using charset {}", file, charset, e);
                 lastException = e;
             }
         }

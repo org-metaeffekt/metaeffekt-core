@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.security.cvss.processor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
@@ -36,9 +35,8 @@ import java.util.function.Function;
  * The versioned vectors will be displayed in radar charts, tables and more, while the selected vectors will be used as
  * basis for the related scoring operations, such as vulnerability severity calculation and other overview charts.
  */
+@Slf4j
 public class CvssSelectionResult {
-
-    private final static Logger LOG = LoggerFactory.getLogger(CvssSelectionResult.class);
 
     private final CvssVectorSet allVectors;
 
@@ -182,7 +180,7 @@ public class CvssSelectionResult {
             }
         }
 
-        LOG.warn("No matching CVSS version found for selection policy, consider adding a non-fixed version selector (like [{}] or [{}]) to the end of your versionSelectionPolicy: {}",
+        log.warn("No matching CVSS version found for selection policy, consider adding a non-fixed version selector (like [{}] or [{}]) to the end of your versionSelectionPolicy: {}",
                 CvssScoreVersionSelectionPolicy.LATEST, CvssScoreVersionSelectionPolicy.HIGHEST, versionSelectionPolicy);
 
         return null;

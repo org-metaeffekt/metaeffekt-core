@@ -15,14 +15,13 @@
  */
 package org.metaeffekt.core.security.cvss.v4P0;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -107,9 +106,8 @@ import java.util.stream.Stream;
  *     </li>
  * </ul>
  */
+@Slf4j
 public final class Cvss4P0 extends CvssVector {
-
-    private final static Logger LOG = LoggerFactory.getLogger(Cvss4P0.class);
 
     private final static MathContext ROUNDING_MATH_CONTEXT = new MathContext(17, RoundingMode.HALF_UP);
     private final static double ROUNDING_EPSILON = Math.pow(10, -6);
@@ -322,7 +320,7 @@ public final class Cvss4P0 extends CvssVector {
                 break;
 
             default:
-                LOG.debug("Unknown CVSS 4.0 vector argument: [{}] [{}]", identifier, value);
+                log.debug("Unknown CVSS 4.0 vector argument: [{}] [{}]", identifier, value);
                 return false;
         }
 
@@ -621,7 +619,7 @@ public final class Cvss4P0 extends CvssVector {
         final EqOperations[] eqOperations = EqOperations.getEqImplementations();
 
         if (!(thisMacroVector.getEq3().getLevel() + thisMacroVector.getEq6().getLevel()).equalsIgnoreCase(thisMacroVector.getJointEq3AndEq6().getLevel())) {
-            LOG.warn("CVSS 4.0: Joint Eq3 and Eq6 level [{}] does not match Eq3 [{}] and Eq6 [{}]", thisMacroVector.getJointEq3AndEq6().getLevel(), thisMacroVector.getEq3().getLevel(), thisMacroVector.getEq6().getLevel());
+            log.warn("CVSS 4.0: Joint Eq3 and Eq6 level [{}] does not match Eq3 [{}] and Eq6 [{}]", thisMacroVector.getJointEq3AndEq6().getLevel(), thisMacroVector.getEq3().getLevel(), thisMacroVector.getEq6().getLevel());
         }
 
         final List<List<Consumer<Cvss4P0>>> allHighestSeverityVectors = Arrays.stream(eqOperations)
@@ -631,7 +629,7 @@ public final class Cvss4P0 extends CvssVector {
         final List<Cvss4P0> highestSeverityVectorCombinations = generateCvssPermutationsFn(allHighestSeverityVectors.get(0), allHighestSeverityVectors.get(1), allHighestSeverityVectors.get(2), allHighestSeverityVectors.get(3), allHighestSeverityVectors.get(4));
 
         if (highestSeverityVectorCombinations.isEmpty()) {
-            LOG.warn("No max vectors found for {}", thisMacroVector);
+            log.warn("No max vectors found for {}", thisMacroVector);
             return 0.0;
         }
 
@@ -759,10 +757,10 @@ public final class Cvss4P0 extends CvssVector {
         }
 
         if (severityDistances.isEmpty()) {
-            LOG.warn("No severity distances found for [{}]: {}", comparisonVector.getMacroVector(), comparisonVector);
-            LOG.info("Max vectors:");
+            log.warn("No severity distances found for [{}]: {}", comparisonVector.getMacroVector(), comparisonVector);
+            log.info("Max vectors:");
             for (Cvss4P0 maxVector : highestSeverityVectors) {
-                LOG.info(" {}", toString(new Cvss4P0[]{maxVector}, "AV", "PR", "UI", "AC", "AT", "VC", "VI", "VA", "CR", "IR", "AR", "SC", "SI", "SA", "E"));
+                log.info(" {}", toString(new Cvss4P0[]{maxVector}, "AV", "PR", "UI", "AC", "AT", "VC", "VI", "VA", "CR", "IR", "AR", "SC", "SI", "SA", "E"));
             }
         }
 
@@ -811,7 +809,7 @@ public final class Cvss4P0 extends CvssVector {
         final Class<?> clazz2 = worseCaseAttribute2.getClass();
 
         if (!clazz1.isEnum() || !clazz2.isEnum()) {
-            LOG.warn("Cannot compute severity distance for [{}] and [{}], assuming distance is 0", worseCaseAttribute1, worseCaseAttribute2);
+            log.warn("Cannot compute severity distance for [{}] and [{}], assuming distance is 0", worseCaseAttribute1, worseCaseAttribute2);
             return 0;
         }
 
@@ -848,7 +846,7 @@ public final class Cvss4P0 extends CvssVector {
                 effectiveAttribute2 = worseCaseAttribute2;
 
             } else {
-                LOG.warn("Cannot compute severity distance for [{}] and [{}], assuming distance is 0", worseCaseAttribute1, worseCaseAttribute2);
+                log.warn("Cannot compute severity distance for [{}] and [{}], assuming distance is 0", worseCaseAttribute1, worseCaseAttribute2);
                 return 0;
             }
 

@@ -15,19 +15,18 @@
  */
 package org.metaeffekt.core.security.cvss.v3;
 
-import org.junit.Assert;
-import org.junit.Test;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
 
 
+@Slf4j
 public class Cvss3P0Test {
-    private final static Logger LOG = LoggerFactory.getLogger(Cvss3P0Test.class);
 
     //CVSS 3.0 specific edgecases, the rest of tests in Cvss3P1Test should still apply for Cvss3P0
     @Test
@@ -159,19 +158,19 @@ public class Cvss3P0Test {
             double temporal = Double.parseDouble(split[2]);
             double enviromental = Double.parseDouble(split[3]);
             Cvss3P0 cvss3P0 = new Cvss3P0(split[0]);
-            LOG.info(String.format("CVSS3P0: %.2f  %.2f  %.2f", cvss3P0.getBaseScore(), cvss3P0.getTemporalScore(), cvss3P0.getEnvironmentalScore()));
-            LOG.info(String.format("ACTUAL: %.2f  %.2f  %.2f", base, temporal, enviromental));
+            log.info(String.format("CVSS3P0: %.2f  %.2f  %.2f", cvss3P0.getBaseScore(), cvss3P0.getTemporalScore(), cvss3P0.getEnvironmentalScore()));
+            log.info(String.format("ACTUAL: %.2f  %.2f  %.2f", base, temporal, enviromental));
 
-            Assert.assertEquals(cvss3P0.getBaseScore(), base, 0.01);
-            Assert.assertEquals(cvss3P0.getTemporalScore(), temporal, 0.01);
-            Assert.assertEquals(cvss3P0.getEnvironmentalScore(), enviromental, 0.01);
+            Assertions.assertEquals(cvss3P0.getBaseScore(), base, 0.01);
+            Assertions.assertEquals(cvss3P0.getTemporalScore(), temporal, 0.01);
+            Assertions.assertEquals(cvss3P0.getEnvironmentalScore(), enviromental, 0.01);
 
             MultiScoreCvssVector reParsed = (MultiScoreCvssVector) CvssVector.parseVector(cvss3P0.toString());
-            Assert.assertEquals(reParsed.toString(), cvss3P0.toString());
-            Assert.assertTrue(reParsed + " " + cvss3P0, reParsed.toString().startsWith("CVSS:3.0/"));
-            Assert.assertEquals(reParsed.getBaseScore(), base, 0.01);
-            Assert.assertEquals(reParsed.getTemporalScore(), temporal, 0.01);
-            Assert.assertEquals(reParsed.getEnvironmentalScore(), enviromental, 0.01);
+            Assertions.assertEquals(reParsed.toString(), cvss3P0.toString());
+            Assertions.assertTrue(reParsed.toString().startsWith("CVSS:3.0/"), reParsed + " " + cvss3P0);
+            Assertions.assertEquals(reParsed.getBaseScore(), base, 0.01);
+            Assertions.assertEquals(reParsed.getTemporalScore(), temporal, 0.01);
+            Assertions.assertEquals(reParsed.getEnvironmentalScore(), enviromental, 0.01);
         }
     }
 }

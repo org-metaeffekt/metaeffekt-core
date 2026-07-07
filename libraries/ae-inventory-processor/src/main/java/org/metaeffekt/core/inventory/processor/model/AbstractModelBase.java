@@ -15,9 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
@@ -28,9 +27,8 @@ import java.util.stream.Collectors;
  * Abstract model base class. Support associating key and values as generic concept. Keys can be bound to enums specified
  * by the subclass.
  */
+@Slf4j
 public abstract class AbstractModelBase implements Serializable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractModelBase.class);
 
     private static final Pattern PATH_DELIMITER_REGEXP = Pattern.compile("\\|\n");
 
@@ -324,7 +322,7 @@ public abstract class AbstractModelBase implements Serializable {
 
     protected void logModelAttributesVertical(int keyIndent, int valueIndent) {
         for (String attribute : this.getAttributes()) {
-            LOG.info("| {} | {}", StringUtils.rightPad(attribute, keyIndent), valueIndent == -1 ? get(attribute) : StringUtils.rightPad(get(attribute), valueIndent) + " |");
+            log.info("| {} | {}", StringUtils.rightPad(attribute, keyIndent), valueIndent == -1 ? get(attribute) : StringUtils.rightPad(get(attribute), valueIndent) + " |");
         }
     }
 

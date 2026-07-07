@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,16 +23,13 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class WindowsPartExtractorRegUninstall extends WindowsPartExtractorBase {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WindowsPartExtractorRegUninstall.class);
 
     public void parse(Inventory inventory, JSONArray regUninstallJson) {
         for (int i = 0; i < regUninstallJson.length(); i++) {
@@ -42,13 +40,13 @@ public class WindowsPartExtractorRegUninstall extends WindowsPartExtractorBase {
     public void parse(Inventory inventory, JSONObject regUninstallJson) {
         final JSONObject properties = regUninstallJson.optJSONObject("Properties", null);
         if (properties == null || properties.isEmpty()) {
-            LOG.warn("Empty registry uninstall entry found: {}", regUninstallJson);
+            log.warn("Empty registry uninstall entry found: {}", regUninstallJson);
             return;
         }
 
         final String key = regUninstallJson.optString("Key", null);
         if (key == null) {
-            LOG.warn("Registry uninstall entry does not have a key: {}", regUninstallJson);
+            log.warn("Registry uninstall entry does not have a key: {}", regUninstallJson);
             return;
         }
 
@@ -72,7 +70,7 @@ public class WindowsPartExtractorRegUninstall extends WindowsPartExtractorBase {
         mapJsonFieldToInventory(properties, productArtifact, Constants.KEY_ORGANIZATION, "Publisher");
 
         if (productArtifact.get(Artifact.Attribute.ID) == null) {
-            LOG.warn("Failed to extract artifact Id for registry uninstall entry: {}", regUninstallJson);
+            log.warn("Failed to extract artifact Id for registry uninstall entry: {}", regUninstallJson);
             inventory.getArtifacts().remove(productArtifact);
         }
 

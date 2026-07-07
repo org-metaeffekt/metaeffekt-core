@@ -15,11 +15,11 @@
  */
 package org.metaeffekt.core.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;
 
 import static java.lang.Boolean.FALSE;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LicenseDataTest {
 

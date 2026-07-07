@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
@@ -29,8 +30,6 @@ import org.apache.tools.ant.taskdefs.GUnzip;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.metaeffekt.bundle.sevenzip.SevenZipExecutableUtils;
 import org.metaeffekt.core.util.ExecUtils.ExecMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -45,9 +44,8 @@ import static org.metaeffekt.core.util.ExecUtils.executeCommand;
 /**
  * ArchiveUtils for dealing with different archives on core-level.
  */
+@Slf4j
 public class ArchiveUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ArchiveUtils.class);
 
     private static final long EXTRACT_DURATION = 1;
     private static final TimeUnit EXTRACT_DURATION_TIMEOUT_UNIT = TimeUnit.HOURS;
@@ -87,6 +85,9 @@ public class ArchiveUtils {
         zipExtensions.add("nupkg");
         // whl: python / pip wheel files (used for distribution binary dependencies like libraries)
         zipExtensions.add("whl");
+
+        // python eggs are also just zips
+        zipExtensions.add("egg");
 
         // gzip: gzip compressed file, less commonly used extention than ".gz"
         gzipExtensions.add("gzip");
@@ -169,7 +170,7 @@ public class ArchiveUtils {
         final String fileName = file.getName().toLowerCase();
 
         if (!file.exists()) {
-            LOG.warn("Requested to untar path [{}] but file doesn't even exist.", file.getAbsolutePath());
+            log.warn("Requested to untar path [{}] but file doesn't even exist.", file.getAbsolutePath());
         }
 
         final List<File> intermediateFiles = new ArrayList<>();
@@ -231,10 +232,10 @@ public class ArchiveUtils {
             }
 
         } catch (Exception e) {
-            LOG.warn(e.getMessage());
+            log.warn(e.getMessage());
             for (File intermediateFile : intermediateFiles) {
                 if (intermediateFile.exists()) {
-                    LOG.trace("Deleting intermediate [{}]", intermediateFile.getAbsolutePath());
+                    log.trace("Deleting intermediate [{}]", intermediateFile.getAbsolutePath());
                     FileUtils.forceDelete(intermediateFile);
                 }
             }
@@ -247,12 +248,12 @@ public class ArchiveUtils {
                 // untar internal is the preferred approach
                 untarInternal(file, targetDir);
             } catch (Exception e) {
-                LOG.warn("Cannot untar [{}]. Attempting 7zip untar to compensate [{}].", file.getAbsolutePath(), e.getMessage());
+                log.warn("Cannot untar [{}]. Attempting 7zip untar to compensate [{}].", file.getAbsolutePath(), e.getMessage());
                 try {
                     FileUtils.forceMkdir(targetDir);
                     extractFileWithSevenZip(file, targetDir, true);
                 } catch (Exception ex) {
-                    LOG.warn("Cannot untar [{}]. Attempting native untar to compensate [{}].", file.getAbsolutePath(), ex.getMessage());
+                    log.warn("Cannot untar [{}]. Attempting native untar to compensate [{}].", file.getAbsolutePath(), ex.getMessage());
                     try {
                         nativeUntar(file, targetDir);
                     } catch(Exception exc) {
@@ -261,7 +262,7 @@ public class ArchiveUtils {
                 }
             } finally {
                 for (File intermediateFile : intermediateFiles) {
-                    LOG.trace("Deleting intermediate [{}]", intermediateFile.getAbsolutePath());
+                    log.trace("Deleting intermediate [{}]", intermediateFile.getAbsolutePath());
                     FileUtils.forceDelete(intermediateFile);
                 }
             }
@@ -350,7 +351,7 @@ public class ArchiveUtils {
                         entry.setUserId(uid);
                         entry.setGroupId(gid);
                     } catch (UnsupportedOperationException e) {
-                        LOG.warn("Unix file attributes not supported on this platform.");
+                        log.warn("Unix file attributes not supported on this platform.");
                     }
                 }
 
@@ -373,7 +374,7 @@ public class ArchiveUtils {
                         try {
                             Files.createSymbolicLink(targetFile.toPath(), linkTarget);
                         } catch (UnsupportedOperationException | IOException e) {
-                            LOG.warn("Symbolic links not supported or insufficient permissions. Skipping symbolic link creation.");
+                            log.warn("Symbolic links not supported or insufficient permissions. Skipping symbolic link creation.");
                         }
                     } else {
                         final File parentFile = targetFile.getParentFile();
@@ -393,7 +394,7 @@ public class ArchiveUtils {
 
     public static boolean unpackIfPossible(File archiveFile, File targetDir, List<String> issues) {
         if (!archiveFile.exists() || !archiveFile.getParentFile().exists()) {
-            LOG.warn("Trying to unpack a file, which does not exists (anymore): {}", archiveFile);
+            log.warn("Trying to unpack a file, which does not exists (anymore): {}", archiveFile);
             return false;
         }
 
@@ -457,7 +458,7 @@ public class ArchiveUtils {
                 return true;
             }
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
             issues.add("Cannot untar: " + archiveFile.getAbsolutePath());
             return false;
@@ -519,7 +520,7 @@ public class ArchiveUtils {
             final String[] commandParts = new String[] { jmodExecutable.getAbsolutePath(), "extract", file.getAbsolutePath() };
             executeExtraction(commandParts, file, targetFile, true, false);
         } else {
-            LOG.error("Cannot unpack jmod executable: " + jmodExecutable +
+            log.error("Cannot unpack jmod executable: " + jmodExecutable +
                     ". Ensure property jdk.path is set and points to a JDK with version > 11.0.");
         }
     }
@@ -541,7 +542,7 @@ public class ArchiveUtils {
             final String[] commandParts = new String[] { jImageExecutable.getAbsolutePath(), "extract", file.getAbsolutePath() };
             executeExtraction(commandParts, file, targetFile, true, false);
         } else {
-            LOG.error("Cannot unpack jimage executable: " + jImageExecutable +
+            log.error("Cannot unpack jimage executable: " + jImageExecutable +
                     ". Ensure property jdk.path is set and points to a JDK with version > 11.0.");
         }
     }
@@ -554,7 +555,7 @@ public class ArchiveUtils {
                     file.getAbsolutePath(), "-aoa", "-o" + targetFile.getAbsolutePath() };
             return executeExtraction(commandParts, file, targetFile, throwExceptionOnError, true);
         } else {
-            LOG.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
+            log.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
             throw new IOException("Could not execute command due to missing binary.");
         }
     }
@@ -620,7 +621,7 @@ public class ArchiveUtils {
                 }
             }
         } catch (Exception e) {
-            LOG.error("Cannot unpack intermediate archives in: " + targetFile, e);
+            log.error("Cannot unpack intermediate archives in: " + targetFile, e);
         }
     }
 

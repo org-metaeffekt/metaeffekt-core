@@ -16,8 +16,14 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.inventory.processor.model.*;
-import org.metaeffekt.core.inventory.relationship.*;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.relationship.Relationship;
+import org.metaeffekt.core.inventory.relationship.RelationshipEntity;
+import org.metaeffekt.core.inventory.relationship.RelationshipRegistry;
+import org.metaeffekt.core.inventory.relationship.RelationshipType;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -3,7 +3,7 @@
 <topic id="tpc_asset-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
 
     <!-- FIXME: streamline title generation with tpc_inventory-asset.dita.vt -->
-    <title>$reportContext.combinedTitle($utils.getText("inventory-report-bom.short.asset"), false) - $reportContext.getReportInventoryVersion()</title>
+    <title>$reportContext.combinedTitle($utils.getText("inventory-report-bom.short.asset"), false)#if($reportContext && $reportContext.getReportInventoryVersion()) - $report.xmlEscapeString($reportContext.getReportInventoryVersion())#end</title>
     <body>
     <p>
         $utils.getText("inventory-report-bom.asset")

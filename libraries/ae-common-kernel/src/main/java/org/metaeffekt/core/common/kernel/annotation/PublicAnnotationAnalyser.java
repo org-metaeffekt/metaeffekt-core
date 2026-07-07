@@ -22,6 +22,9 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Scans java source files for annotations.
+ */
 public class PublicAnnotationAnalyser {
 
     private static final String CLASS_SUFFIX = ".class";
@@ -30,16 +33,29 @@ public class PublicAnnotationAnalyser {
 
     private final Class<? extends Annotation> annotationClass;
 
+    /**
+     * Constructor.
+     *
+     * @param classLoader Classloader to use. If {@code null}, {@code ClassLoader.getSystemClassLoader()} is used.
+     * @param annotationClass Annotation to search for.
+     */
     public PublicAnnotationAnalyser(ClassLoader classLoader, Class<? extends Annotation> annotationClass) {
         this.classLoader = classLoader;
         this.annotationClass = annotationClass;
     }
 
+    /**
+     * Traverses down the {@code classpathRoot} and collects the source file names of all classes that are annotated
+     * with {@code annotationClass}. Collected class source files are added to {@code list}.
+     * @param classpathRoot source root path
+     * @param list collected source file names (Caution: in/out parameter)
+     * @return the list passed into the method enriched by the collected source file names
+     */
     public List<String> collectPublicTypes(File classpathRoot, List<String> list) {
         return collectPublicTypes(classpathRoot, classpathRoot, list);
     }
 
-    protected List<String> collectPublicTypes(File classpathRoot, File file, List<String> list) {
+    List<String> collectPublicTypes(File classpathRoot, File file, List<String> list) {
 
         if (file.isDirectory()) {
             for (File innerFile : file.listFiles(new FileFilter() {
@@ -128,7 +144,7 @@ public class PublicAnnotationAnalyser {
         return classNames;
     }
 
-    public class AdditionalFileFilter implements FilenameFilter {
+    private class AdditionalFileFilter implements FilenameFilter {
 
         private String basename;
 

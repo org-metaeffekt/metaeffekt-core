@@ -15,21 +15,19 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.adapter.MavenPomAdapter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 public class MavenProjectSourcesComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(MavenProjectSourcesComponentPatternContributor.class);
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("pom.xml");
     }});
@@ -82,7 +80,7 @@ public class MavenProjectSourcesComponentPatternContributor extends ComponentPat
             //   more likely.
 
         } catch (Exception e) {
-            LOG.warn("Unable to parse maven project model [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
+            log.warn("Unable to parse maven project model [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
         }
 
         return components;

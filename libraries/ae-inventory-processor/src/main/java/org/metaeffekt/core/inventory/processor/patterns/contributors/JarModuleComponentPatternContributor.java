@@ -69,11 +69,20 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         final JarInspector jarInspector = new JarInspector();
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);
-        final File anchorParentDir = anchorFile.getParentFile();
+        File anchorParentDir = anchorFile.getParentFile();
 
-        final String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, ROOT_SUFFIXES);
-        final File contextBaseDir = new File(baseDir, virtualRootPath);
-        final String folderName = contextBaseDir.getName();
+        boolean isJibApp = checkForJibApp(anchorParentDir);
+
+        String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, ROOT_SUFFIXES);
+        File contextBaseDir = new File(baseDir, virtualRootPath);
+        String folderName = contextBaseDir.getName();
+
+        if (isJibApp) {
+            // modulate the values (extending the context to the parent folder)
+            virtualRootPath = new File(virtualRootPath).getParent();
+            contextBaseDir = contextBaseDir.getParentFile();
+            folderName = "resources/META-INF";
+        }
 
         String contextSemaphore = getClass().getCanonicalName() + "-" + virtualRootPath;
 
@@ -177,6 +186,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
 
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                "**/application.cdx.json" + ", " +
                 "**/package-lock.json" + ", " +
                 "**/package.json" + ", " +
                 "**/node_modules/**/*" + ", " +
@@ -199,6 +209,22 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         return Collections.singletonList(componentPatternData);
     }
 
+    private boolean checkForJibApp(File anchorParentDir) {
+        boolean isJibApp = false;
+        if ("META-INF".equals(anchorParentDir.getName())) {
+            // maybe we have a jib-based container layout here; explore
+            final File resourcesDir = anchorParentDir.getParentFile();
+            if (resourcesDir != null && "resources".equals(resourcesDir.getName())) {
+                final File jibRootDir = resourcesDir.getParentFile();
+                final File jibMainClassFile = new File(jibRootDir, "jib-main-class-file");
+                final File jibClasspathFile = new File(jibRootDir, "jib-classpath-file");
+                if (jibMainClassFile.exists() || jibClasspathFile.exists()) {
+                    isJibApp = true;
+                }
+            }
+        }
+        return isJibApp;
+    }
 
     private Artifact getArtifactFromBuildInfoProperties(Artifact artifact, InputStream in) throws IOException {
         final Properties p = new Properties();

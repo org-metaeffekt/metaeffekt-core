@@ -15,22 +15,20 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.reader.inspect.image.ImageInspectReader;
 import org.metaeffekt.reader.inspect.image.model.ImageInspectData;
 import org.metaeffekt.reader.inspect.image.model.ImageInspectElement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class ContainerImageInspectAdapter {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ContainerImageInspectAdapter.class);
 
     public static final String KEY_IMAGE_ID = "Image Id";
 
@@ -68,16 +66,16 @@ public class ContainerImageInspectAdapter {
 
                     return assetMetaData;
                 } else {
-                    LOG.info("Skipping asset identification on [{}]. Appears not to be a container manifest.", containerInspectionFile);
+                    log.info("Skipping asset identification on [{}]. Appears not to be a container manifest.", containerInspectionFile);
                 }
             } else {
-                LOG.debug("Container image inspect file at [{}] shows unexpected content.", containerInspectionFile);
+                log.debug("Container image inspect file at [{}] shows unexpected content.", containerInspectionFile);
             }
         } catch (IllegalArgumentException e) {
             // we must expect that other .json files are found. Therefore, only log problems in parsing to debug.
-            LOG.debug("Cannot parse container inspection file [{}]. Assuming not a inspect file?", containerInspectionFile);
+            log.debug("Cannot parse container inspection file [{}]. Assuming not a inspect file?", containerInspectionFile);
         } catch (Exception e) {
-            LOG.error("Cannot parse container inspection file [{}].", containerInspectionFile, e);
+            log.error("Cannot parse container inspection file [{}].", containerInspectionFile, e);
         }
 
         return null;

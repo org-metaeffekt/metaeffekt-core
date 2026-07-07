@@ -19,7 +19,10 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
-public abstract class AbstractLoggingMojo extends AbstractMojo {
+/**
+ * @deprecated No implementors.
+ */
+abstract class AbstractLoggingMojo extends AbstractMojo {
 
     /**
      * Execute mojo logic.

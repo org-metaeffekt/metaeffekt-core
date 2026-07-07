@@ -159,6 +159,9 @@ public final class Constants {
 
     public static final String KEY_CARGO_SOURCE_ID = "Cargo Source Id";
 
+    public static final String KEY_RELEASE = "Release";
+    public static final String KEY_SOURCE_PACKAGE = "Source Package";
+
     private Constants() {
     }
 }

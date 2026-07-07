@@ -16,10 +16,10 @@
 
 package org.metaeffekt.core.itest.container;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -51,7 +51,7 @@ public class CryptpadTest extends AbstractCompositionAnalysisTest {
         }
     };
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("http://ae-scanner/images/CID-cryptpad%40f4d20d5c38c87b11ed1a1b46ef6a3633d32c6758ebdff8556458f040318fa5e2-export.tar")
@@ -59,16 +59,16 @@ public class CryptpadTest extends AbstractCompositionAnalysisTest {
                 .setName(CryptpadTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void analyse() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class CryptpadTest extends AbstractCompositionAnalysisTest {
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
 
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
-        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
+        Assertions.assertEquals(0, duplicateList.getRemainingDuplicates().size());
     }
 
     @Test

@@ -21,10 +21,11 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,16 +64,12 @@ public class PomReportCreationNewMojo extends AbstractProjectAwareConfiguredMojo
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        // adapt maven logging to underlying logging facade
-        MavenLogAdapter.initialize(getLog());
         try {
             Inventory inventory = createInventoryFromPom();
 
             new InventoryWriter().writeInventory(inventory, targetInventoryFile);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot write inventory.", e);
-        } finally {
-            MavenLogAdapter.release();
         }
     }
 

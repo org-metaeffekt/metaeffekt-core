@@ -100,6 +100,9 @@ public class NamespaceHandle implements AutoCloseable {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close() {
         if (!closed.getAndSet(true)) {
@@ -118,6 +121,14 @@ public class NamespaceHandle implements AutoCloseable {
         return namespace;
     }
 
+    /**
+     * Returns whether this object has already been closed or not.
+     * <p>
+     * Please do note that reliance on this to ensure openness will likely be faulty and can lead to race conditions.
+     * </p>
+     *
+     * @return true if this class has already been closed
+     */
     public synchronized boolean getClosed() {
         return closed.get();
     }

@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.inspector;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
@@ -30,8 +31,6 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,9 +50,8 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
  * General JAR-level {@link ArtifactInspector}. The inspector uses common resources (maven poms, osgi manifests,
  * java manifests) to parse information for identifying the artifact.
  */
+@Slf4j
 public class JarInspector extends AbstractJarInspector {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JarInspector.class);
 
     public static final String ATTRIBUTE_KEY_ARTIFACT_ID = "ARTIFACT_ID";
     public static final String ATTRIBUTE_KEY_EMBEDDED_PATH = Constants.KEY_PATH_IN_ASSET;
@@ -572,7 +570,7 @@ public class JarInspector extends AbstractJarInspector {
                 // log error and carry on
                 addError(artifact, "Error while running " + this.getClass().getSimpleName());
 
-                LOG.error("Failure while running [{}] on artifact [{}]: {}",
+                log.error("Failure while running [{}] on artifact [{}]: {}",
                         this.getClass().getSimpleName(), artifact.deriveQualifier(), e.getMessage());
             }
         }
@@ -711,7 +709,7 @@ public class JarInspector extends AbstractJarInspector {
                 // check for artifactId and placeholders
                 if (embeddedArtifactId != null && embeddedArtifactId.contains("${")) {
                     if (!alreadyReported.contains(embeddedArtifactId)) {
-                        LOG.warn("Skipping embedded artifact without fully qualified artifact id: {}", embeddedArtifactId);
+                        log.warn("Skipping embedded artifact without fully qualified artifact id: {}", embeddedArtifactId);
                         alreadyReported.add(embeddedArtifactId);
                     }
                     continue;

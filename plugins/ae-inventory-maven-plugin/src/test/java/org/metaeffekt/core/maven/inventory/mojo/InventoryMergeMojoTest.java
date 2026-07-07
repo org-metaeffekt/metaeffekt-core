@@ -17,14 +17,14 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
 public class InventoryMergeMojoTest {
 
-    @Ignore
+    @Disabled
     @Test
     public void testMerge() throws MojoExecutionException, MojoFailureException {
 

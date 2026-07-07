@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -33,9 +32,8 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 public class ApkPackageContributor extends ComponentPatternContributor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ApkPackageContributor.class);
 
     private static final String APK_PACKAGE_TYPE = "apk";
 
@@ -52,7 +50,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
         final File apkDbFile = new File(baseDir, relativeAnchorPath);
 
         if (!apkDbFile.exists()) {
-            LOG.warn("APK database file does not exist: [{}]", apkDbFile.getAbsolutePath());
+            log.warn("APK database file does not exist: [{}]", apkDbFile.getAbsolutePath());
             return Collections.emptyList();
         }
 
@@ -144,7 +142,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                             processCollectedData(components, packageName, version, architecture, includePatterns.toString(), modulatedAnchorPath, anchorChecksum, license);
                             includePatterns = new StringJoiner(", ");
                         } else {
-                            LOG.warn("No include patterns found for package: [{}-{}-{}]", packageName, version, architecture);
+                            log.warn("No include patterns found for package: [{}-{}-{}]", packageName, version, architecture);
                             // FIXME: collect only package-specific folders
                             // FIXME: check names of folder (distribution-specific)
                             includePatterns.add("usr/share/doc/" + packageName + "/**/*");
@@ -162,7 +160,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
             }
             return components;
         } catch (Exception e) {
-            LOG.warn("Could not process APK database file [{}]", apkDbFile.getAbsolutePath());
+            log.warn("Could not process APK database file [{}]", apkDbFile.getAbsolutePath());
             return Collections.emptyList();
         }
     }
