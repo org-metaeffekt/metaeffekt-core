@@ -44,7 +44,7 @@ public class SourceRepository extends IdentifiableComponent {
 
     private boolean ignoreMatches;
 
-    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate(final RepositorySystem repositorySystem, final RepositorySystemSession repositorySystemSession, final List<RemoteRepository> remoteProjectRepositories) {
+    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate(final RepositorySystem repositorySystem, final RepositorySystemSession repositorySystemSession, final List<RemoteRepository> remoteProjectRepositories, final org.eclipse.aether.spi.connector.transport.TransporterProvider transporterProvider) {
 
         ArtifactSourceRepository artifactSourceRepository = new ArtifactSourceRepository();
         artifactSourceRepository.setId(getId());
@@ -88,7 +88,7 @@ public class SourceRepository extends IdentifiableComponent {
         }
 
         if (fileServerMirror != null) {
-            artifactSourceRepository.setSourceArchiveResolver(fileServerMirror.createResolver(p));
+            artifactSourceRepository.setSourceArchiveResolver(fileServerMirror.createResolver(p, repositorySystemSession, remoteProjectRepositories, transporterProvider));
         }
 
         return artifactSourceRepository;

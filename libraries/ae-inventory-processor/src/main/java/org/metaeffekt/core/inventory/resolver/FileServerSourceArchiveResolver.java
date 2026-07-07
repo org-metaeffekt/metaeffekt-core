@@ -18,9 +18,6 @@ package org.metaeffekt.core.inventory.resolver;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.report.model.types.AeaaInventoryAttribute;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -121,7 +118,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
         return false;
     }
 
-    private boolean downloadFile(String url, File targetDir, SourceArchiveResolverResult result) {
+    protected boolean downloadFile(String url, File targetDir, SourceArchiveResolverResult result) {
         String fileName = url.substring(url.lastIndexOf('/') + 1);
         if (fileName.contains("?")) {
             fileName = fileName.substring(0, fileName.indexOf("?"));
@@ -139,7 +136,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
                 result.addAttemptedResourceLocation(url);
             }
         } catch (Exception e) {
-            log.debug("Failed to download source from {}: {}", url, e.getMessage());
+            log.debug("Failed to download source from [{}]: [{}]", url, e.getMessage());
             result.addAttemptedResourceLocation(url);
         }
         return false;
@@ -152,7 +149,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
                 try (FileInputStream inputStream = new FileInputStream(file)) {
                     properties.load(inputStream);
                 } catch (IOException e) {
-                    log.error("Failed to load properties from file {}: {}", propertyFilePath, e.getMessage());
+                    log.error("Failed to load properties from file [{}]: [{}]", propertyFilePath, e.getMessage());
                 }
             }
         }

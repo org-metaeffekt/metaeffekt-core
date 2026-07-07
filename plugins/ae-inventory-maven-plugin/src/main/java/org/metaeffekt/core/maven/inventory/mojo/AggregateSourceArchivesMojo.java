@@ -124,6 +124,9 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
     @Inject
     private RepositorySystem repositorySystem;
 
+    @Inject
+    private org.eclipse.aether.spi.connector.transport.TransporterProvider transporterProvider;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         // skip execution for POM packaged projects
@@ -145,7 +148,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
         final List<ArtifactSourceRepository> delegateArtifactSourceRepositories = new ArrayList<>();
         for (SourceRepository sourceRepository : sourceRepositories) {
             sourceRepository.dumpConfig(getLog(), "");
-            delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate(repositorySystem, repositorySystemSession, remoteProjectRepositories));
+            delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate(repositorySystem, repositorySystemSession, remoteProjectRepositories, transporterProvider));
         }
 
         final ExecutionStatus executionStatus = new ExecutionStatus();

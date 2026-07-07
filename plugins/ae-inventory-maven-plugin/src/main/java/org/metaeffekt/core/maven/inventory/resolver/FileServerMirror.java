@@ -21,6 +21,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.inventory.resolver.FileServerSourceArchiveResolver;
 import org.metaeffekt.core.inventory.resolver.RemoteUriResolver;
 
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.spi.connector.transport.TransporterProvider;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -35,8 +39,8 @@ public class FileServerMirror extends AbstractMirror {
     @Parameter
     private List<String> sourceUrls = new ArrayList<>();
 
-    public FileServerSourceArchiveResolver createResolver(Properties properties) {
-        final FileServerSourceArchiveResolver resolver = new FileServerSourceArchiveResolver();
+    public FileServerSourceArchiveResolver createResolver(Properties properties, RepositorySystemSession repositorySystemSession, List<RemoteRepository> remoteProjectRepositories, TransporterProvider transporterProvider) {
+        final FileServerSourceArchiveResolver resolver = new MavenAwareFileServerSourceArchiveResolver(repositorySystemSession, remoteProjectRepositories, transporterProvider);
 
         // pass the plugin configuration properties
         resolver.setProperties(properties);
