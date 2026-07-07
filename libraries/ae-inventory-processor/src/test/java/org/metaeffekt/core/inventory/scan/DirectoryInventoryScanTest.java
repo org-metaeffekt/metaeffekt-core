@@ -236,7 +236,7 @@ public class DirectoryInventoryScanTest {
         final File projectBaseDir = new File("../../.examples");
 
         // select case
-        String caseString = "case-005";
+        String caseString = "case-2026-07-02_001";
 
         final File scanInputDir = new File(projectBaseDir, caseString);
         final File scanDir = new File(projectBaseDir, caseString + "-scan");
