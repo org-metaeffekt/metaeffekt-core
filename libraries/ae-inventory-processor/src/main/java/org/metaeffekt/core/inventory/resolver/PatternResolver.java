@@ -102,6 +102,9 @@ public class PatternResolver {
             } else if (field.equalsIgnoreCase("id")) {
                 String id = artifact.getId();
                 return id != null ? id : "";
+            } else if (field.equalsIgnoreCase("extension") || field.equalsIgnoreCase("type")) {
+                String type = artifact.getType();
+                return type != null ? type : "";
             }
 
             // fallback for any other artifact attributes requested
