@@ -24,6 +24,8 @@ public class SourceAggregationConfig {
 
     private Map<String, String> properties = new HashMap<>();
 
+    private List<String> sourceUrls = new ArrayList<>();
+
     private ImplicitConfig exclude = new ImplicitConfig();
     private ImplicitConfig include = new ImplicitConfig();
 
@@ -36,6 +38,14 @@ public class SourceAggregationConfig {
 
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
+    }
+
+    public List<String> getSourceUrls() {
+        return sourceUrls;
+    }
+
+    public void setSourceUrls(List<String> sourceUrls) {
+        this.sourceUrls = sourceUrls;
     }
 
     public ImplicitConfig getExclude() {

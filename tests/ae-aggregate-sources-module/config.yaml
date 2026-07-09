@@ -2,6 +2,9 @@ properties:
   host01: "maven.repository.redhat.com"
   host02: "repo1.maven.org"
 
+sourceUrls:
+  - "https://$[host02]/maven2/$[artifact.namespace]/$[artifact.namespace]/$[artifact.version]/$[artifact.id]"
+
 exclude:
   licenses:
     - "GPL-2.0"

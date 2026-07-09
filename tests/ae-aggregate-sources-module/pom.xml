@@ -64,9 +64,6 @@
                                         <pattern>^.*\.jar</pattern>
                                     </patterns>
                                     <fileServerMirror>
-                                        <sourceUrls>
-                                            <url>https://$[host02]/maven2/$[artifact.namespace]/$[artifact.namespace]/$[artifact.version]/$[artifact.id]</url>
-                                        </sourceUrls>
                                     </fileServerMirror>
                                 </sourceRepository>
 

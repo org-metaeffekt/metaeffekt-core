@@ -171,6 +171,15 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
             } else {
                 sourceRepository.getProperties().putAll(globalProps);
             }
+
+            if (sourceRepository.getFileServerMirror() != null) {
+                if (sourceRepository.getFileServerMirror().getSourceUrls() == null || sourceRepository.getFileServerMirror().getSourceUrls().isEmpty()) {
+                    if (config.getSourceUrls() != null && !config.getSourceUrls().isEmpty()) {
+                        sourceRepository.getFileServerMirror().setSourceUrls(config.getSourceUrls());
+                    }
+                }
+            }
+
             sourceRepository.dumpConfig(getLog(), "");
             delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate(repositorySystem, repositorySystemSession, remoteProjectRepositories));
         }
