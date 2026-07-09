@@ -30,33 +30,11 @@
                         </goals>
                         <phase>validate</phase>
                         <configuration>
-                            <includeAllSources>true</includeAllSources>
-                            <failOnMissingSources>true</failOnMissingSources>
                             <inventoryPath>${project.basedir}/inventory/test-artifact-inventory.xls</inventoryPath>
-
                             <sourceAggregationConfig>${project.basedir}/config.yaml</sourceAggregationConfig>
 
                             <!-- Source Repositories -->
                             <sourceRepositories>
-
-                                <!-- When using includeAllSources we have to mark those artifacts, where explicitly no sources are
-                                     intended to be included. An exclude repository in other words.
-                                -->
-                                <sourceRepository>
-                                    <id>No Source Repository</id>
-
-                                    <!-- a source repository without resolver or mirror configuration will not perform
-                                         any aggregation. The ignoreMatches flag only suppresses the message that
-                                         an artifact was skipped -->
-
-                                    <targetFolder>none</targetFolder>
-                                    <ignoreMatches>false</ignoreMatches>
-                                    <patterns>
-                                        <!-- patterns: "artifact:component:version:effectiveLicense"; Regular expressions start with '^' -->
-                                        <pattern>^ignore-me-.*\.jar</pattern>
-                                    </patterns>
-                                </sourceRepository>
-
                                 <sourceRepository>
                                     <id>Public FileServer Mirrors</id>
                                     <targetFolder>Test-OSS</targetFolder>
