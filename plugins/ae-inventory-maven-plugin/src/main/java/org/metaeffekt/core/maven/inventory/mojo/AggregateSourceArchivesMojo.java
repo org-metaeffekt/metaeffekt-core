@@ -88,7 +88,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
     /**
      * Boolean indicating whether all sources need to be included (except retained).
      */
-    @Parameter(defaultValue = "false")
+    @Parameter(defaultValue = "true")
     private boolean includeAllSources;
 
     /**
