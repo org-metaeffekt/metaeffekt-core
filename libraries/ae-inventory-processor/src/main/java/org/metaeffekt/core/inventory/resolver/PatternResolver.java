@@ -99,6 +99,9 @@ public class PatternResolver {
             } else if (field.equalsIgnoreCase("groupId")) {
                 String groupId = artifact.getGroupId();
                 return groupId != null ? groupId : "";
+            } else if (field.equalsIgnoreCase("artifactId")) {
+                String id = artifact.deriveArtifactId();
+                return id != null ? id : "";
             } else if (field.equalsIgnoreCase("id")) {
                 String id = artifact.getId();
                 return id != null ? id : "";
