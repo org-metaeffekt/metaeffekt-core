@@ -35,7 +35,7 @@ public abstract class AbstractLockAdapter {
     protected abstract String buildPurl(ResolvedModule module);
 
     /**
-     * Collects all known direct DependencyTuples-
+     * Collects all known direct DependencyTuples.
      *
      * @param packageLockParser The packageLockParser used.
      * @param processedModules The collected processed modules.
@@ -158,8 +158,6 @@ public abstract class AbstractLockAdapter {
         while (!stack.isEmpty()) {
             final ResolvedModule module = stack.pop();
             processSingleModule(webModule, packageLockParser, stack, npmModuleArtifactMap, qualifierArtifactMap, inventory, module, processedModules);
-
-
         }
         return processedModules;
     }

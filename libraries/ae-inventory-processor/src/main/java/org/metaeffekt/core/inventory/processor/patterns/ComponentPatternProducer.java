@@ -228,17 +228,17 @@ public class ComponentPatternProducer {
                         if (!managedAssetId) {
                             artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
 
-                            if (assetId != null) {
+                            // set the asset id, only if the key is defined and we would not overwrite an
+                            // existing value (which may be more precise than a 'c' for contains
+                            if (assetId != null && artifact.get(assetId) == null) {
                                 artifact.set(assetId, Constants.MARKER_CONTAINS);
                             }
                         }
                         fileSystemScanContext.contribute(artifact);
                     }
-
                     consumedObjects.add(expansionInventorySupplier);
                 }
             }
-
         }
     }
 
@@ -619,6 +619,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new VersionFileComponentPatternContributor());
         contributorRunnerBuilder.add(new VersionedFolderComponentPatternContributor());
         contributorRunnerBuilder.add(new VersionFolderComponentPatternContributor());
+        contributorRunnerBuilder.add(new PyProjectComponentPatternContributor());
 
         return contributorRunnerBuilder.build();
     }
