@@ -49,34 +49,6 @@
                                 </sourceRepository>
 
                                 <sourceRepository>
-                                    <id>Internal / External Eclipse Mirrors</id>
-                                    <targetFolder>Original OSS</targetFolder>
-                                    <patterns>
-                                        <!-- patterns: "artifact:component:version:effectiveLicense"; Regular expressions start with '^' -->
-                                        <pattern>^org\.eclipse\..*_.*\.jar:^.*:^.*:^.*</pattern>
-                                    </patterns>
-                                    <eclipseMirror>
-                                        <mirrorUrls>
-                                            <url>https://builds.gradle.org:8001/eclipse/update-site/mirror/releases-rolling/features/</url>
-                                        </mirrorUrls>
-                                    </eclipseMirror>
-                                </sourceRepository>
-
-                                <sourceRepository>
-                                    <id>Internal / External Eclipse Mirrors</id>
-                                    <targetFolder>Original OSS</targetFolder>
-                                    <patterns>
-                                        <!-- patterns: "artifact:component:version:effectiveLicense"; Regular expressions start with '^' -->
-                                        <pattern>^.*?_.*\.jar</pattern>
-                                    </patterns>
-                                    <eclipseMirror>
-                                        <mirrorUrls>
-                                            <url>https://builds.gradle.org:8001/eclipse/update-site/mirror/releases-rolling/plugins/</url>
-                                        </mirrorUrls>
-                                    </eclipseMirror>
-                                </sourceRepository>
-
-                                <sourceRepository>
 
                                     <!-- this variant shows how arbitrary (yet complete gav) artifacts can be mapped -->
 
@@ -87,7 +59,6 @@
                                     </patterns>
                                     <mavenMirror />
                                 </sourceRepository>
-
                             </sourceRepositories>
                         </configuration>
 
