@@ -130,6 +130,12 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
     @Parameter(property = "sourceAggregationConfig")
     private File sourceAggregationConfig;
 
+    /**
+     * Optional file path to write a protocol/log of the aggregation execution.
+     */
+    @Parameter(property = "aggregationProtocolFile")
+    private File aggregationProtocolFile;
+
     @Inject
     private RepositorySystem repositorySystem;
 
@@ -185,6 +191,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
         }
 
         final ExecutionStatus executionStatus = new ExecutionStatus();
+        final AggregationProtocol protocol = new AggregationProtocol(aggregationProtocolFile);
 
         try {
             log.info("Loading inventory: {}", inventoryPath);
@@ -195,7 +202,11 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
             // filtered.
             for (org.metaeffekt.core.inventory.processor.model.Artifact artifact : inventory.getArtifacts()) {
                 
-                if (!shouldIncludeArtifact(artifact, inventory, config)) {
+                ArtifactProtocolEntry protocolEntry = new ArtifactProtocolEntry();
+                protocolEntry.setArtifactRepresentation(String.valueOf(createArtifactRepresentation(artifact, inventory)));
+                protocol.addEntry(protocolEntry);
+
+                if (!shouldIncludeArtifact(artifact, inventory, config, protocolEntry)) {
                     continue;
                 }
 
@@ -210,11 +221,11 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                     switch (sourceCategory) {
                         case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
                         case LicenseMetaData.SOURCE_CATEGORY_RETAINED:
-                            downloadArtifact(artifact, inventory, retainedSourcesSourcePath, delegateArtifactSourceRepositories, executionStatus, isAcceptMissing);
+                            downloadArtifact(artifact, inventory, retainedSourcesSourcePath, delegateArtifactSourceRepositories, executionStatus, isAcceptMissing, protocolEntry);
                             break;
                         case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
                         case LicenseMetaData.SOURCE_CATEGORY_ANNEX:
-                            downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus, isAcceptMissing);
+                            downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus, isAcceptMissing, protocolEntry);
                             break;
                         default:
                             throw new MojoExecutionException(format("Source category of license meta data for %s unknown: '%s'",
@@ -223,7 +234,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                 } else {
                     // if license metadata or no source category annotation is given, we evaluate includeAllSources
                     if (includeAllSources) {
-                        downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus, isAcceptMissing);
+                        downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus, isAcceptMissing, protocolEntry);
                     } else {
                         // in this case we skip the source download
                     }
@@ -237,7 +248,14 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                         log.error(entry.getMessage());
                     }
                 }
+                if (aggregationProtocolFile != null) {
+                    protocol.writeToFile();
+                }
                 throw new MojoExecutionException("Aggregation of source artifacts failed. At least one source artifact was not retrieved.");
+            }
+
+            if (aggregationProtocolFile != null) {
+                protocol.writeToFile();
             }
 
         } catch (IOException e) {
@@ -246,7 +264,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
     }
 
     private void downloadArtifact(Artifact artifact, Inventory inventory, File targetPath,
-                                  List<ArtifactSourceRepository> sourceRepositories, ExecutionStatus executionStatus, boolean isAcceptMissing) throws IOException {
+                                  List<ArtifactSourceRepository> sourceRepositories, ExecutionStatus executionStatus, boolean isAcceptMissing, ArtifactProtocolEntry protocolEntry) throws IOException {
 
         // otherwise apply matching repos
         final List<ArtifactSourceRepository> matchingSourceRepositories =
@@ -280,9 +298,19 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                 if (result.isEmpty()) {
                     if (!result.getAttemptedResourceLocations().isEmpty()) {
                         attemptedSourceLocations.addAll(result.getAttemptedResourceLocations());
+                        for (String location : result.getAttemptedResourceLocations()) {
+                            protocolEntry.addAttemptedLocation(location);
+                        }
                     }
                     attemptedSourceRepositories.add(matchingSourceRepository.getId());
                 } else {
+                    if (!result.getAttemptedResourceLocations().isEmpty()) {
+                        for (String location : result.getAttemptedResourceLocations()) {
+                            protocolEntry.addAttemptedLocation(location);
+                        }
+                        protocolEntry.setDownloadedLocation(result.getAttemptedResourceLocations().get(result.getAttemptedResourceLocations().size() - 1));
+                    }
+                    protocolEntry.setDownloadStatus("SUCCESS");
                     for (File file : result.getFiles()) {
                         // copy file to target folder if necessary
                         File destFile = new File(targetPath, matchingSourceRepository.getTargetFolder() + "/" + file.getName());
@@ -302,9 +330,19 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                     logOrFailOn(s, false, executionStatus, artifact, isAcceptMissing);
                 }
             }
+            if (isAcceptMissing) {
+                protocolEntry.setDownloadStatus("ACCEPTED MISSING");
+            } else {
+                protocolEntry.setDownloadStatus("FAILED");
+            }
             logOrFailOn(format("No sources resolved for artifact [%s], while matching source repositories were: %s",
                     artifactRepresentation, attemptedSourceRepositories), true, executionStatus, artifact, isAcceptMissing);
         } else {
+            if (isAcceptMissing) {
+                protocolEntry.setDownloadStatus("ACCEPTED MISSING");
+            } else {
+                protocolEntry.setDownloadStatus("FAILED");
+            }
             logOrFailOn(format("No sources resolved for artifact [%s], no matching source repository identified.",
                     artifactRepresentation), true, executionStatus, artifact, isAcceptMissing);
         }
@@ -374,7 +412,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
         }
     }
 
-    boolean shouldIncludeArtifact(Artifact artifact, Inventory inventory, SourceAggregationConfig config) throws MojoExecutionException {
+    boolean shouldIncludeArtifact(Artifact artifact, Inventory inventory, SourceAggregationConfig config, ArtifactProtocolEntry protocolEntry) throws MojoExecutionException {
         String aggregationMode = artifact.get(SOURCE_AGGREGATION_MODE);
         boolean isExclude = "exclude".equalsIgnoreCase(aggregationMode);
         boolean isInclude = "include".equalsIgnoreCase(aggregationMode);
@@ -382,32 +420,51 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
 
         if (isExclude) {
             log.info("Skipping artifact [{}] due to explicit exclude mode.", createArtifactRepresentation(artifact, inventory));
+            protocolEntry.setIncludeStatus("EXCLUDED");
+            protocolEntry.setIncludeReason("Explicitly excluded via 'Source Aggregation Mode' = 'exclude'");
             return false;
         }
 
-        if (!isInclude && !isAcceptMissing) {
-            boolean implicitlyIncluded = matchesImplicitRules(artifact, inventory, config.getInclude());
-            boolean implicitlyExcluded = matchesImplicitRules(artifact, inventory, config.getExclude());
+        if (isInclude) {
+            protocolEntry.setIncludeStatus("INCLUDED");
+            protocolEntry.setIncludeReason("Explicitly included via 'Source Aggregation Mode' = 'include'");
+        } else if (isAcceptMissing) {
+            protocolEntry.setIncludeStatus("INCLUDED");
+            protocolEntry.setIncludeReason("Accept missing via 'Source Aggregation Mode' = 'accept missing'");
+        } else {
+            String includeReason = matchImplicitRulesReason(artifact, inventory, config.getInclude());
+            String excludeReason = matchImplicitRulesReason(artifact, inventory, config.getExclude());
 
-            if (implicitlyIncluded && implicitlyExcluded) {
+            if (includeReason != null && excludeReason != null) {
                 throw new MojoExecutionException(format("Ambiguous implicit inclusion/exclusion for artifact [%s]. Both rules matched.", createArtifactRepresentation(artifact, inventory)));
             }
 
-            if (implicitlyExcluded) {
+            if (excludeReason != null) {
                 log.info("Skipping artifact [{}] due to implicit exclude rules.", createArtifactRepresentation(artifact, inventory));
+                protocolEntry.setIncludeStatus("EXCLUDED");
+                protocolEntry.setIncludeReason("Implicitly excluded (" + excludeReason + ")");
                 return false;
             }
 
-            if (!implicitlyIncluded) {
+            if (includeReason == null) {
                 if (!hasLicense(artifact, inventory)) {
                     if (config.isDefaultNoLicenseExclusion()) {
                         log.info("Skipping artifact [{}] because it has no license and excludeIfNoLicense is true.", createArtifactRepresentation(artifact, inventory));
+                        protocolEntry.setIncludeStatus("EXCLUDED");
+                        protocolEntry.setIncludeReason("Implicitly excluded (No license and excludeIfNoLicense is true)");
                         return false;
                     }
                 } else if (!config.isDefaultImplicitInclusion()) {
                     log.info("Skipping artifact [{}] because defaultImplicitInclusion is false.", createArtifactRepresentation(artifact, inventory));
+                    protocolEntry.setIncludeStatus("EXCLUDED");
+                    protocolEntry.setIncludeReason("Implicitly excluded (defaultImplicitInclusion is false)");
                     return false;
                 }
+                protocolEntry.setIncludeStatus("INCLUDED");
+                protocolEntry.setIncludeReason("Default implicit inclusion");
+            } else {
+                protocolEntry.setIncludeStatus("INCLUDED");
+                protocolEntry.setIncludeReason("Implicitly included (" + includeReason + ")");
             }
         }
         return true;
@@ -425,16 +482,18 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
         return org.metaeffekt.core.inventory.InventoryUtils.tokenizeLicense(license, false, false);
     }
 
-    boolean matchesImplicitRules(Artifact artifact, Inventory inventory, SourceAggregationConfig.ImplicitConfig config) {
+    String matchImplicitRulesReason(Artifact artifact, Inventory inventory, SourceAggregationConfig.ImplicitConfig config) {
         if (config == null) {
-            return false;
+            return null;
         }
 
         // Check licenses
         List<String> licenses = getEffectiveLicenses(artifact, inventory);
         if (config.getLicenses() != null && !config.getLicenses().isEmpty() && licenses != null && !licenses.isEmpty()) {
-            if (!java.util.Collections.disjoint(licenses, config.getLicenses())) {
-                return true;
+            for (String license : licenses) {
+                if (config.getLicenses().contains(license)) {
+                    return "Matched license: " + license;
+                }
             }
         }
 
@@ -445,23 +504,24 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
         }
         if (groupId != null && config.getPatterns() != null && !config.getPatterns().isEmpty()) {
             for (String patternStr : config.getPatterns()) {
+                String originalPattern = patternStr;
                 patternStr = patternStr.trim();
                 if (patternStr.startsWith("/") && patternStr.endsWith("/") && patternStr.length() > 2) {
                     // Regex pattern
                     String regex = patternStr.substring(1, patternStr.length() - 1);
                     if (Pattern.compile(regex).matcher(groupId).matches()) {
-                        return true;
+                        return "Matched pattern: " + originalPattern;
                     }
                 } else {
                     // Literal pattern
                     if (groupId.equals(patternStr)) {
-                        return true;
+                        return "Matched pattern: " + originalPattern;
                     }
                 }
             }
         }
 
-        return false;
+        return null;
     }
 
     @Override

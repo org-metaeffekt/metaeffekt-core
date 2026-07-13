@@ -42,38 +42,82 @@ public class AggregateSourceArchivesMojoTest {
         // 1. Match license exactly
         Artifact artifact1 = new Artifact();
         artifact1.setLicense("Apache-2.0");
-        assertTrue(mojo.matchesImplicitRules(artifact1, inventory, includeConfig));
+        assertTrue(mojo.matchImplicitRulesReason(artifact1, inventory, includeConfig) != null);
 
         // 2. Match multiple licenses (comma separated)
         Artifact artifact2 = new Artifact();
         artifact2.setLicense("Unknown, MIT, Another");
-        assertTrue(mojo.matchesImplicitRules(artifact2, inventory, includeConfig));
+        assertTrue(mojo.matchImplicitRulesReason(artifact2, inventory, includeConfig) != null);
 
         // 3. Match regex pattern
         Artifact artifactRegex = new Artifact();
         artifactRegex.setGroupId("org.include.module");
-        assertTrue(mojo.matchesImplicitRules(artifactRegex, inventory, includeConfig));
+        assertTrue(mojo.matchImplicitRulesReason(artifactRegex, inventory, includeConfig) != null);
 
         // 4. Match literal pattern
         Artifact artifactLiteral = new Artifact();
         artifactLiteral.setGroupId("exact.match");
-        assertTrue(mojo.matchesImplicitRules(artifactLiteral, inventory, includeConfig));
+        assertTrue(mojo.matchImplicitRulesReason(artifactLiteral, inventory, includeConfig) != null);
 
         // 5. No match
         Artifact noMatch = new Artifact();
         noMatch.setLicense("BSD-3-Clause");
         noMatch.setGroupId("com.example.module");
-        assertFalse(mojo.matchesImplicitRules(noMatch, inventory, includeConfig));
-        assertFalse(mojo.matchesImplicitRules(noMatch, inventory, excludeConfig));
+        assertFalse(mojo.matchImplicitRulesReason(noMatch, inventory, includeConfig) != null);
+        assertFalse(mojo.matchImplicitRulesReason(noMatch, inventory, excludeConfig) != null);
 
         // 6. Exclude match license
         Artifact excludeMatch = new Artifact();
         excludeMatch.setLicense("GPL-3.0, SomeOther");
-        assertTrue(mojo.matchesImplicitRules(excludeMatch, inventory, excludeConfig));
+        assertTrue(mojo.matchImplicitRulesReason(excludeMatch, inventory, excludeConfig) != null);
         
         // 7. Test missing license logic
         assertTrue(mojo.hasLicense(artifact1, inventory));
         assertFalse(mojo.hasLicense(new Artifact(), inventory));
+    }
+
+    @Test
+    public void testMatchesImplicitRules_NoMatch() {
+        AggregateSourceArchivesMojo mojo = new AggregateSourceArchivesMojo();
+        SourceAggregationConfig.ImplicitConfig config = new SourceAggregationConfig.ImplicitConfig();
+        config.setLicenses(Arrays.asList("Apache-2.0"));
+        config.setPatterns(Arrays.asList("org.springframework"));
+
+        Artifact artifact = new Artifact();
+        artifact.setLicense("MIT");
+        artifact.setGroupId("org.apache");
+
+        Inventory inventory = new Inventory();
+
+        assertFalse(mojo.matchImplicitRulesReason(artifact, inventory, config) != null);
+    }
+
+    @Test
+    public void testMatchesImplicitRules_PatternMatchRegex() {
+        AggregateSourceArchivesMojo mojo = new AggregateSourceArchivesMojo();
+        SourceAggregationConfig.ImplicitConfig config = new SourceAggregationConfig.ImplicitConfig();
+        config.setPatterns(Arrays.asList("/org\\.apache\\..*/"));
+
+        Artifact artifact = new Artifact();
+        artifact.setGroupId("org.apache.commons");
+
+        Inventory inventory = new Inventory();
+
+        assertTrue(mojo.matchImplicitRulesReason(artifact, inventory, config) != null);
+    }
+
+    @Test
+    public void testMatchesImplicitRules_PatternMatchLiteral() {
+        AggregateSourceArchivesMojo mojo = new AggregateSourceArchivesMojo();
+        SourceAggregationConfig.ImplicitConfig config = new SourceAggregationConfig.ImplicitConfig();
+        config.setPatterns(Arrays.asList("org.apache.commons"));
+
+        Artifact artifact = new Artifact();
+        artifact.setGroupId("org.apache.commons");
+
+        Inventory inventory = new Inventory();
+
+        assertTrue(mojo.matchImplicitRulesReason(artifact, inventory, config) != null);
     }
 
     @Test
@@ -98,9 +142,12 @@ public class AggregateSourceArchivesMojoTest {
         Artifact acceptMissingArtifact = new Artifact();
         acceptMissingArtifact.set(Artifact.Attribute.SOURCE_AGGREGATION_MODE, "accept missing");
 
-        assertFalse(mojo.shouldIncludeArtifact(excludeArtifact, inventory, config), "Exclude mode should skip artifact");
-        assertTrue(mojo.shouldIncludeArtifact(includeArtifact, inventory, config), "Include mode should process artifact despite implicit excludes");
-        assertTrue(mojo.shouldIncludeArtifact(acceptMissingArtifact, inventory, config), "Accept missing mode should process artifact");
+        ArtifactProtocolEntry entry1 = new ArtifactProtocolEntry();
+        assertFalse(mojo.shouldIncludeArtifact(excludeArtifact, inventory, config, entry1), "Exclude mode should skip artifact");
+        ArtifactProtocolEntry entry2 = new ArtifactProtocolEntry();
+        assertTrue(mojo.shouldIncludeArtifact(includeArtifact, inventory, config, entry2), "Include mode should process artifact despite implicit excludes");
+        ArtifactProtocolEntry entry3 = new ArtifactProtocolEntry();
+        assertTrue(mojo.shouldIncludeArtifact(acceptMissingArtifact, inventory, config, entry3), "Accept missing mode should process artifact");
     }
 
     @Test
@@ -127,7 +174,7 @@ public class AggregateSourceArchivesMojoTest {
         // The artifact matches both include and exclude rules, which should trigger a MojoExecutionException
         org.apache.maven.plugin.MojoExecutionException exception = assertThrows(
                 org.apache.maven.plugin.MojoExecutionException.class,
-                () -> mojo.shouldIncludeArtifact(ambiguousArtifact, inventory, config)
+                () -> mojo.shouldIncludeArtifact(ambiguousArtifact, inventory, config, new ArtifactProtocolEntry())
         );
 
         assertTrue(exception.getMessage().contains("Ambiguous implicit inclusion/exclusion for artifact"), 

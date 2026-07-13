@@ -35,6 +35,8 @@
                             <inventoryPath>${project.basedir}/inventory/test-artifact-inventory.xls</inventoryPath>
 
                             <sourceAggregationConfig>${project.basedir}/config.yaml</sourceAggregationConfig>
+                            <aggregationProtocolFile>${project.build.directory}/aggregation-protocol.log</aggregationProtocolFile>
+
 
                             <!-- Source Repositories -->
                             <sourceRepositories>
