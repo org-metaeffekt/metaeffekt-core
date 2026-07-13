@@ -113,6 +113,12 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
             sb.append(resolvedUrl.substring(lastEnd));
             resolvedUrl = sb.toString();
 
+            if (PROPERTY_PATTERN.matcher(resolvedUrl).find()) {
+                log.debug("URL still contains unresolved placeholders, skipping: {}", resolvedUrl);
+                result.addAttemptedResourceLocation(resolvedUrl);
+                return false;
+            }
+
             return downloadFile(resolvedUrl, targetDir, result);
         }
         return false;

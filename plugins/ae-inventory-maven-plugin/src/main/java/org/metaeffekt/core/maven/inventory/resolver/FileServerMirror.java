@@ -34,9 +34,6 @@ import java.util.Properties;
 public class FileServerMirror extends AbstractMirror {
 
     @Parameter
-    private String propertyFilePath;
-
-    @Parameter
     private List<String> sourceUrls = new ArrayList<>();
 
     public FileServerSourceArchiveResolver createResolver(Properties properties, RepositorySystemSession repositorySystemSession, List<RemoteRepository> remoteProjectRepositories, TransporterProvider transporterProvider) {
@@ -44,7 +41,7 @@ public class FileServerMirror extends AbstractMirror {
 
         // pass the plugin configuration properties
         resolver.setProperties(properties);
-        resolver.setPropertyFilePath(propertyFilePath);
+        
         resolver.setSourceUrls(sourceUrls);
 
         // initialize the URI resolver

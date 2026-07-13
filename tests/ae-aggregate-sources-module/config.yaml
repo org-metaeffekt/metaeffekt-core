@@ -1,0 +1,29 @@
+properties:
+  host01: "maven.repository.redhat.com"
+  host02: "repo1.maven.org"
+  host03: ""
+  folder01: "Original OSS"
+  folder02: "Changed OSS"
+  folder03: "Test OSS"
+
+sourceUrls:
+  - "https://$[host02]/maven2/$[artifact.namespace]/$[artifact.namespace]/$[artifact.version]/$[artifact.id]"
+  - "https://$[host02]/$[folder01]/$[artifact.artifactId]_$[artifact.version]-sources.$[artifact.extension]"
+  - "https://$[host02]/$[folder01]/$[artifact.groupId]/$[artifact.artifactId]-$[artifact.version]-sources.$[artifact.extension]"
+  - "https://$[host02]/$[folder02]/$[artifact.artifactId]_$[artifact.version]-sources.$[artifact.extension]"
+  - "https://$[host02]/$[folder02]/$[artifact.groupId]/$[artifact.artifactId]-$[artifact.version]-sources.$[artifact.extension]"
+  - "https://$[host02]/$[folder03]/$[artifact.artifactId]_$[artifact.version]-sources.$[artifact.extension]"
+  - "https://$[host02]/$[folder03]/$[artifact.groupId]/$[artifact.artifactId]-$[artifact.version]-sources.$[artifact.extension]"
+
+exclude:
+  licenses:
+    - "GPL-2.0"
+  patterns:
+    - "/^org\\.apache\\.commons.*/"
+
+include:
+  licenses:
+    - "Apache-2.0"
+
+defaultImplicitInclusion: true
+defaultNoLicenseExclusion: false

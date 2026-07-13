@@ -134,7 +134,8 @@ public class Artifact extends AbstractModelBase {
         STRUCTURED("Structured"),
         EXECUTABLE("Executable"),
         SOURCE_ARCHIVE_URL("Source Archive - URL"),
-        SOURCE_ARTIFACT_URL("Source Archive - URL");
+        SOURCE_ARTIFACT_URL("Source Archive - URL"),
+        SOURCE_AGGREGATION_MODE("Source Aggregation Mode");
 
         private String key;
 

@@ -102,6 +102,10 @@ public class SourceRepository extends IdentifiableComponent {
         return patterns;
     }
 
+    public FileServerMirror getFileServerMirror() {
+        return fileServerMirror;
+    }
+
     public void dumpConfig(Log log, String prefix) {
         super.dumpConfig(log, prefix);
         log.debug(prefix + "  targetFolder: " + getTargetFolder());
