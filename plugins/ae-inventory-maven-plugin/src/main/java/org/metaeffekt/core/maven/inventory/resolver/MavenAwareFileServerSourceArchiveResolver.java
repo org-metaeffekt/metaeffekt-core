@@ -60,9 +60,13 @@ public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceA
                     }
                     File destinationFile = new File(targetDir, fileName);
 
+                    if (destinationFile.exists()) {
+                        result.addFile(destinationFile, url);
+                        return true;
+                    }
+
                     try {
-                        Transporter transporter = transporterProvider.newTransporter(repositorySystemSession, repo);
-                        try {
+                        try (Transporter transporter = transporterProvider.newTransporter(repositorySystemSession, repo)) {
                             GetTask task = new GetTask(URI.create(relativePath));
                             task.setDataFile(destinationFile);
                             transporter.get(task);
@@ -103,8 +107,6 @@ public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceA
                                 result.addFile(destinationFile, url);
                                 return true;
                             }
-                        } finally {
-                            transporter.close();
                         }
                     } catch (Exception e) {
                         log.debug("Failed to download [{}] using Aether transporter from [{}]: [{}]", url, repoUrl, e.getMessage());
