@@ -15,6 +15,10 @@ sourceUrls:
   - "https://$[host02]/$[folder03]/$[artifact.artifactId]_$[artifact.version]-sources.$[artifact.extension]"
   - "https://$[host02]/$[folder03]/$[artifact.groupId]/$[artifact.artifactId]-$[artifact.version]-sources.$[artifact.extension]"
 
+targetFolderMappings:
+  - urlPattern: ".*Original OSS.*"
+    targetFolder: "Original OSS"
+
 exclude:
   licenses:
     - "GPL-2.0"

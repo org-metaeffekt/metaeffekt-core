@@ -70,9 +70,6 @@ public class AggregationProtocol {
 
                 if ("SUCCESS".equals(entry.getDownloadStatus())) {
                     downloadSuccess++;
-                    if (entry.getDownloadedLocation() != null) {
-                        writer.println("Location:  " + entry.getDownloadedLocation());
-                    }
                 } else if ("FAILED".equals(entry.getDownloadStatus())) {
                     downloadFailed++;
                 }
@@ -80,7 +77,11 @@ public class AggregationProtocol {
                 if (!entry.getAttemptedLocations().isEmpty()) {
                     writer.println("Attempted:");
                     for (String loc : entry.getAttemptedLocations()) {
-                        writer.println("  - " + loc);
+                        if ("SUCCESS".equals(entry.getDownloadStatus()) && loc.equals(entry.getDownloadedLocation())) {
+                            writer.println("  * " + loc + " [SUCCESS]");
+                        } else {
+                            writer.println("  - " + loc);
+                        }
                     }
                 }
 

@@ -32,31 +32,18 @@
                         <configuration>
                             <inventoryPath>${project.basedir}/inventory/test-artifact-inventory.xls</inventoryPath>
                             <sourceAggregationConfig>${project.basedir}/config.yaml</sourceAggregationConfig>
-                            <aggregationProtocolFile>${project.build.directory}/aggregation-protocol.log</aggregationProtocolFile>
+                            <aggregationProtocolFile>${project.build.directory}/aggregation-protocol.log
+                            </aggregationProtocolFile>
 
-
-                            <!-- Source Repositories -->
                             <sourceRepositories>
                                 <sourceRepository>
                                     <id>Public FileServer Mirrors</id>
-                                    <targetFolder>Test-OSS</targetFolder>
-                                    <patterns>
-                                        <pattern>^.*\.jar</pattern>
-                                    </patterns>
-                                    <fileServerMirror>
-                                    </fileServerMirror>
+                                    <fileServerMirror/>
                                 </sourceRepository>
 
                                 <sourceRepository>
-
-                                    <!-- this variant shows how arbitrary (yet complete gav) artifacts can be mapped -->
-
                                     <id>Maven Repo (Fallback)</id>
-                                    <targetFolder>Original OSS</targetFolder>
-                                    <patterns>
-                                        <pattern>^.*\.jar</pattern>
-                                    </patterns>
-                                    <mavenMirror />
+                                    <mavenMirror/>
                                 </sourceRepository>
                             </sourceRepositories>
                         </configuration>

@@ -15,70 +15,29 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 
+@Setter
+@Getter
 public class SourceAggregationConfig {
 
     private Map<String, String> properties = new HashMap<>();
 
     private List<String> sourceUrls = new ArrayList<>();
 
+    private List<TargetFolderMapping> targetFolderMappings = new ArrayList<>();
+
     private ImplicitConfig exclude = new ImplicitConfig();
     private ImplicitConfig include = new ImplicitConfig();
 
     private boolean defaultImplicitInclusion = false;
     private boolean defaultNoLicenseExclusion = true;
-
-    public Map<String, String> getProperties() {
-        return properties;
-    }
-
-    public void setProperties(Map<String, String> properties) {
-        this.properties = properties;
-    }
-
-    public List<String> getSourceUrls() {
-        return sourceUrls;
-    }
-
-    public void setSourceUrls(List<String> sourceUrls) {
-        this.sourceUrls = sourceUrls;
-    }
-
-    public ImplicitConfig getExclude() {
-        return exclude;
-    }
-
-    public void setExclude(ImplicitConfig exclude) {
-        this.exclude = exclude;
-    }
-
-    public ImplicitConfig getInclude() {
-        return include;
-    }
-
-    public void setInclude(ImplicitConfig include) {
-        this.include = include;
-    }
-
-    public boolean isDefaultImplicitInclusion() {
-        return defaultImplicitInclusion;
-    }
-
-    public void setDefaultImplicitInclusion(boolean defaultImplicitInclusion) {
-        this.defaultImplicitInclusion = defaultImplicitInclusion;
-    }
-
-    public boolean isDefaultNoLicenseExclusion() {
-        return defaultNoLicenseExclusion;
-    }
-
-    public void setDefaultNoLicenseExclusion(boolean defaultNoLicenseExclusion) {
-        this.defaultNoLicenseExclusion = defaultNoLicenseExclusion;
-    }
 
     public static class ImplicitConfig {
         private List<String> licenses = new ArrayList<>();
@@ -99,6 +58,14 @@ public class SourceAggregationConfig {
         public void setPatterns(List<String> patterns) {
             this.patterns = patterns;
         }
+    }
+
+    @Setter
+    @Getter
+    public static class TargetFolderMapping {
+        private String urlPattern;
+        private String targetFolder;
+
     }
 
     public static SourceAggregationConfig load(java.io.File sourceAggregationConfig) throws java.io.IOException {

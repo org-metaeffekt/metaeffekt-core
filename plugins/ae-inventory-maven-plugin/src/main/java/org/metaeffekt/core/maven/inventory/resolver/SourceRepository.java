@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.resolver;
 
+import lombok.Getter;
 import org.apache.maven.plugin.logging.Log;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -30,16 +31,16 @@ import java.util.Properties;
  */
 public class SourceRepository extends IdentifiableComponent {
 
-    private String targetFolder;
-
     private EclipseMirror eclipseMirror;
 
     private ComponentMirror componentMirror;
 
     private MavenMirror mavenMirror;
 
+    @Getter
     private FileServerMirror fileServerMirror;
 
+    @Getter
     private List<String> patterns;
 
     private boolean ignoreMatches;
@@ -48,14 +49,12 @@ public class SourceRepository extends IdentifiableComponent {
 
         ArtifactSourceRepository artifactSourceRepository = new ArtifactSourceRepository();
         artifactSourceRepository.setId(getId());
-        artifactSourceRepository.setTargetFolder(targetFolder);
         artifactSourceRepository.setIgnoreMatches(ignoreMatches);
 
         if (getPatterns() != null) {
             for (String pattern : patterns) {
                 String[] split = pattern.split(":");
-                artifactSourceRepository.register(new ArtifactPattern(extractPattern(0, split),
-                        extractPattern(1, split), extractPattern(2, split), extractPattern(3, split)));
+                artifactSourceRepository.register(new ArtifactPattern(extractPattern(0, split), extractPattern(1, split), extractPattern(2, split), extractPattern(3, split)));
             }
         }
 
@@ -66,8 +65,7 @@ public class SourceRepository extends IdentifiableComponent {
         mirrorCount += fileServerMirror == null ? 0 : 1;
 
         if (mirrorCount > 1) {
-            throw new IllegalStateException(String.format(
-                    "Cannot configure source repository with id %s. Only one mirror can be configured.", getId()));
+            throw new IllegalStateException(String.format("Cannot configure source repository with id %s. Only one mirror can be configured.", getId()));
         }
 
         final Properties p = new Properties();
@@ -94,21 +92,8 @@ public class SourceRepository extends IdentifiableComponent {
         return artifactSourceRepository;
     }
 
-    public String getTargetFolder() {
-        return targetFolder;
-    }
-
-    public List<String> getPatterns() {
-        return patterns;
-    }
-
-    public FileServerMirror getFileServerMirror() {
-        return fileServerMirror;
-    }
-
     public void dumpConfig(Log log, String prefix) {
         super.dumpConfig(log, prefix);
-        log.debug(prefix + "  targetFolder: " + getTargetFolder());
         log.debug(prefix + "  patterns: " + getPatterns());
 
         if (eclipseMirror != null) eclipseMirror.dumpConfig(log, prefix + "  ");
