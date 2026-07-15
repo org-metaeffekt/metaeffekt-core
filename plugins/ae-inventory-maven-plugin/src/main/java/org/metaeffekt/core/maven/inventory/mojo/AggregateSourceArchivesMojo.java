@@ -187,6 +187,11 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                         sourceRepository.getFileServerMirror().setSourceUrls(config.getSourceUrls());
                     }
                 }
+                if (sourceRepository.getFileServerMirror().getCredentials() == null || sourceRepository.getFileServerMirror().getCredentials().isEmpty()) {
+                    if (config.getCredentials() != null && !config.getCredentials().isEmpty()) {
+                        sourceRepository.getFileServerMirror().setCredentials(config.getCredentials());
+                    }
+                }
             }
 
             sourceRepository.dumpConfig(getLog(), "");

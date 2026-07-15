@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.metaeffekt.core.inventory.resolver.ServerCredential;
 
 @Setter
 @Getter
@@ -30,6 +31,8 @@ public class SourceAggregationConfig {
     private Map<String, String> properties = new HashMap<>();
 
     private List<String> sourceUrls = new ArrayList<>();
+
+    private List<ServerCredential> credentials = new ArrayList<>();
 
     private List<TargetFolderMapping> targetFolderMappings = new ArrayList<>();
 

@@ -36,6 +36,9 @@ public class FileServerMirror extends AbstractMirror {
     @Parameter
     private List<String> sourceUrls = new ArrayList<>();
 
+    @Parameter
+    private List<org.metaeffekt.core.inventory.resolver.ServerCredential> credentials = new ArrayList<>();
+
     public FileServerSourceArchiveResolver createResolver(Properties properties, RepositorySystemSession repositorySystemSession, List<RemoteRepository> remoteProjectRepositories, TransporterProvider transporterProvider) {
         final FileServerSourceArchiveResolver resolver = new MavenAwareFileServerSourceArchiveResolver(repositorySystemSession, remoteProjectRepositories, transporterProvider);
 
@@ -43,9 +46,12 @@ public class FileServerMirror extends AbstractMirror {
         resolver.setProperties(properties);
         
         resolver.setSourceUrls(sourceUrls);
+        resolver.setCredentials(credentials);
 
         // initialize the URI resolver
-        resolver.setUriResolver(new RemoteUriResolver(properties));
+        RemoteUriResolver uriResolver = new RemoteUriResolver(properties);
+        uriResolver.setCredentials(credentials);
+        resolver.setUriResolver(uriResolver);
 
         return resolver;
     }

@@ -40,6 +40,7 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
     private Properties properties;
     private String propertyFilePath;
     private List<String> sourceUrls = new ArrayList<>();
+    private List<ServerCredential> credentials = new ArrayList<>();
 
     private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\[([^\\]]+)\\]");
 
