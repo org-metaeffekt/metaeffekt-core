@@ -414,17 +414,17 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
         final HSSFRow headerRow = sheet.createRow(0);
 
-        // create columns for key / value map content
-        final Set<String> attributes = new HashSet<>();
-        for (ReportData rd : inventory.getReportData()) {
-            attributes.addAll(rd.getAttributes());
-        }
-
-        // remove core attributes
-        final List<String> finalOrder = deriveOrder(attributes, ReportData.CORE_ATTRIBUTES);
+        final List<String> orderedList = determineOrder(inventory, inventory::getReportData,
+                CONTEXT_REPORT_DATA_COLUMN_LIST, ReportData.MIN_ATTRIBUTES, ReportData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleColumnNameAssetId,
+
+                stylers.headerStyleBinaryArtifact,
+                stylers.headerStyleSourceArtifact,
+                stylers.headerStyleSourceArchive,
+                stylers.headerStyleDescriptor,
+
                 stylers.headerStyleDefault,
         };
 
@@ -433,7 +433,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getReportData(), finalOrder,
+                inventory.getReportData(), orderedList,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 
