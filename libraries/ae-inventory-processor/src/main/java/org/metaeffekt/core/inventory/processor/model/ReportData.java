@@ -65,7 +65,7 @@ public class ReportData extends AbstractModelBase {
     /**
      * Defines the core attributes. Used for logging and ordering.
      */
-    public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
+    public static final ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
     static {
         CORE_ATTRIBUTES.add(Attribute.ID.getKey());
         CORE_ATTRIBUTES.add(Attribute.TYPE.getKey());
@@ -73,6 +73,8 @@ public class ReportData extends AbstractModelBase {
         CORE_ATTRIBUTES.add(Attribute.SEVERITY.getKey());
         CORE_ATTRIBUTES.add(Attribute.POLICY.getKey());
     }
+
+    public static final ArrayList<String> MIN_ATTRIBUTES = CORE_ATTRIBUTES;
 
     /**
      * Validates that the mandatory attributes of a component are set.

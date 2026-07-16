@@ -214,7 +214,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
             Artifact artifact = nameToArtifactMap.get(resolvedModule.getName());
             if (artifact == null) {
                 artifact = new Artifact();
-                artifact.setId(name);
+                artifact.setId(name + "-" + version);
                 artifact.setVersion(version);
                 artifact.setComponent(name);
 
