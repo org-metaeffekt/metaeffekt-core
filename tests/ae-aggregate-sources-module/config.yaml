@@ -14,6 +14,7 @@ credentials:
 sourceUrls:
   - "http://127.0.0.1:8080/$[artifact.artifactId]-$[artifact.version]-sources.$[artifact.extension]"
   - "https://$[host02]/maven2/$[artifact.namespace]/$[artifact.namespace]/$[artifact.version]/$[artifact.id]"
+
 #  - "https://$[host02]/$[folder01]/$[artifact.artifactId]_$[artifact.version]-sources.$[artifact.extension]"
 #  - "https://$[host02]/$[folder01]/$[artifact.groupId]/$[artifact.artifactId]-$[artifact.version]-sources.$[artifact.extension]"
 #  - "https://$[host02]/$[folder02]/$[artifact.artifactId]_$[artifact.version]-sources.$[artifact.extension]"
