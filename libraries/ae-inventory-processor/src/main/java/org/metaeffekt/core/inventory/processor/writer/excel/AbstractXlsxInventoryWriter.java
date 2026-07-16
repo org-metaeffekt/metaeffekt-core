@@ -28,6 +28,7 @@ import java.util.function.Function;
 
 public abstract class AbstractXlsxInventoryWriter extends AbstractInventoryWriter {
 
+    // FIXME: adjust to SpreadsheetVersion.EXCEL2007
     /**
      * Excel 97 limits the maximum cell content length to <code>32767</code> characters. To ensure that the contents are
      * safe, 7 is subtracted from that value to set the max length to <code>32760</code>.
