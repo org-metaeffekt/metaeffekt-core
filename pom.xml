@@ -7,7 +7,7 @@
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>ae-core</artifactId>
     <name>metaeffekt-core</name>
-    <version>HEAD-SNAPSHOT</version>
+    <version>0.156.5</version>
     <packaging>pom</packaging>
 
     <description>Core project with fundamental runtime and build support.</description>
@@ -46,7 +46,7 @@
     <inceptionYear>2016</inceptionYear>
 
     <properties>
-        <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
+        <ae.core.version>0.156.5</ae.core.version>
         <ae.core.version_last>${ae.core.version}</ae.core.version_last>
         <ae.7zip.bundle.version>0.4.0</ae.7zip.bundle.version>
 
