@@ -76,11 +76,11 @@ public class AggregationProtocol {
 
                 if (!entry.getAttemptedLocations().isEmpty()) {
                     writer.println("Attempted:");
-                    for (String loc : entry.getAttemptedLocations()) {
-                        if ("SUCCESS".equals(entry.getDownloadStatus()) && loc.equals(entry.getDownloadedLocation())) {
-                            writer.println("  * " + loc + " [SUCCESS]");
+                    for (String location : entry.getAttemptedLocations()) {
+                        if ("SUCCESS".equals(entry.getDownloadStatus()) && location.equals(entry.getDownloadedLocation())) {
+                            writer.println("  * " + location + " [SUCCESS]");
                         } else {
-                            writer.println("  - " + loc);
+                            writer.println("  - " + location);
                         }
                     }
                 }

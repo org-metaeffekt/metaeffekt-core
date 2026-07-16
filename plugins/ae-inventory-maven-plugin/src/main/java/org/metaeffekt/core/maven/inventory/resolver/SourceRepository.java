@@ -20,6 +20,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.spi.connector.transport.TransporterProvider;
 import org.metaeffekt.core.inventory.resolver.ArtifactPattern;
 import org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository;
 
@@ -45,7 +46,7 @@ public class SourceRepository extends IdentifiableComponent {
 
     private boolean ignoreMatches;
 
-    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate(final RepositorySystem repositorySystem, final RepositorySystemSession repositorySystemSession, final List<RemoteRepository> remoteProjectRepositories, final org.eclipse.aether.spi.connector.transport.TransporterProvider transporterProvider) {
+    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate(final RepositorySystem repositorySystem, final RepositorySystemSession repositorySystemSession, final List<RemoteRepository> remoteProjectRepositories, final TransporterProvider transporterProvider) {
 
         ArtifactSourceRepository artifactSourceRepository = new ArtifactSourceRepository();
         artifactSourceRepository.setId(getId());
@@ -65,7 +66,7 @@ public class SourceRepository extends IdentifiableComponent {
         mirrorCount += fileServerMirror == null ? 0 : 1;
 
         if (mirrorCount > 1) {
-            throw new IllegalStateException(String.format("Cannot configure source repository with id %s. Only one mirror can be configured.", getId()));
+            throw new IllegalStateException(String.format("Cannot configure source repository with id [%s]. Only one mirror can be configured.", getId()));
         }
 
         final Properties p = new Properties();

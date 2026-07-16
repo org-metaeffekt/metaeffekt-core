@@ -27,6 +27,8 @@ import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.spi.connector.transport.TransporterProvider;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
@@ -140,7 +142,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
     private RepositorySystem repositorySystem;
 
     @Inject
-    private org.eclipse.aether.spi.connector.transport.TransporterProvider transporterProvider;
+    private TransporterProvider transporterProvider;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -167,18 +169,18 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
             throw new MojoExecutionException("Failed to read source aggregation config: " + sourceAggregationConfig, e);
         }
 
-        java.util.Map<String, Object> globalProps = new java.util.HashMap<>();
+        java.util.Map<String, Object> sharedProperties = new java.util.HashMap<>();
         if (config.getProperties() != null) {
-            globalProps.putAll(config.getProperties());
+            sharedProperties.putAll(config.getProperties());
         }
 
         // materialize configuration
         final List<ArtifactSourceRepository> delegateArtifactSourceRepositories = new ArrayList<>();
         for (SourceRepository sourceRepository : sourceRepositories) {
             if (sourceRepository.getProperties() == null) {
-                sourceRepository.setProperties(new java.util.HashMap<>(globalProps));
+                sourceRepository.setProperties(new java.util.HashMap<>(sharedProperties));
             } else {
-                sourceRepository.getProperties().putAll(globalProps);
+                sourceRepository.getProperties().putAll(sharedProperties);
             }
 
             if (sourceRepository.getFileServerMirror() != null) {
@@ -202,13 +204,13 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
         final AggregationProtocol protocol = new AggregationProtocol(aggregationProtocolFile);
 
         try {
-            log.info("Loading inventory: {}", inventoryPath);
+            log.info("Loading inventory: [{}]", inventoryPath);
 
             final Inventory inventory = new InventoryReader().readInventory(inventoryPath);
 
             // iterate the license metadata and evaluate source category; we assume the license metadata was
             // filtered.
-            for (org.metaeffekt.core.inventory.processor.model.Artifact artifact : inventory.getArtifacts()) {
+            for (Artifact artifact : inventory.getArtifacts()) {
 
                 ArtifactProtocolEntry protocolEntry = new ArtifactProtocolEntry();
                 protocolEntry.setArtifactRepresentation(String.valueOf(createArtifactRepresentation(artifact, inventory)));
@@ -508,7 +510,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
         if (license == null) {
             return new ArrayList<>();
         }
-        return org.metaeffekt.core.inventory.InventoryUtils.tokenizeLicense(license, false, false);
+        return InventoryUtils.tokenizeLicense(license, false, false);
     }
 
     String matchImplicitRulesReason(Artifact artifact, Inventory inventory, SourceAggregationConfig.ImplicitConfig config) {

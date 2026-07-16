@@ -30,7 +30,9 @@ public class ServerCredential {
     private String password;
     private String token;
 
-    public String getUsername() {return resolveEnvVariables(username);}
+    public String getUsername() {
+        return resolveEnvVariables(username);
+    }
 
     public String getPassword() {
         return resolveEnvVariables(password);

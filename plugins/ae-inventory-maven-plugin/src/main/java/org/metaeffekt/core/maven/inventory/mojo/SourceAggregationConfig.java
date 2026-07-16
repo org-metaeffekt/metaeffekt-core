@@ -17,12 +17,16 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.metaeffekt.core.inventory.resolver.ServerCredential;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.metaeffekt.core.inventory.resolver.ServerCredential;
 
 @Setter
 @Getter
@@ -42,25 +46,12 @@ public class SourceAggregationConfig {
     private boolean defaultImplicitInclusion = false;
     private boolean defaultNoLicenseExclusion = true;
 
+    @Setter
+    @Getter
     public static class ImplicitConfig {
         private List<String> licenses = new ArrayList<>();
         private List<String> patterns = new ArrayList<>();
 
-        public List<String> getLicenses() {
-            return licenses;
-        }
-
-        public void setLicenses(List<String> licenses) {
-            this.licenses = licenses;
-        }
-
-        public List<String> getPatterns() {
-            return patterns;
-        }
-
-        public void setPatterns(List<String> patterns) {
-            this.patterns = patterns;
-        }
     }
 
     @Setter
@@ -74,9 +65,9 @@ public class SourceAggregationConfig {
     public static SourceAggregationConfig load(java.io.File sourceAggregationConfig) throws java.io.IOException {
         SourceAggregationConfig config = new SourceAggregationConfig();
         if (sourceAggregationConfig != null && sourceAggregationConfig.exists()) {
-            org.yaml.snakeyaml.LoaderOptions loaderOptions = new org.yaml.snakeyaml.LoaderOptions();
-            org.yaml.snakeyaml.Yaml yaml = new org.yaml.snakeyaml.Yaml(new org.yaml.snakeyaml.constructor.Constructor(SourceAggregationConfig.class, loaderOptions));
-            try (java.io.InputStream in = new java.io.FileInputStream(sourceAggregationConfig)) {
+            LoaderOptions loaderOptions = new LoaderOptions();
+            Yaml yaml = new Yaml(new Constructor(SourceAggregationConfig.class, loaderOptions));
+            try (InputStream in = new java.io.FileInputStream(sourceAggregationConfig)) {
                 config = yaml.load(in);
                 if (config == null) {
                     config = new SourceAggregationConfig();
