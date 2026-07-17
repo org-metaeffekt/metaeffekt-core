@@ -22,6 +22,8 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,12 +64,12 @@ public class SourceAggregationConfig {
 
     }
 
-    public static SourceAggregationConfig load(java.io.File sourceAggregationConfig) throws java.io.IOException {
+    public static SourceAggregationConfig load(File sourceAggregationConfig) throws java.io.IOException {
         SourceAggregationConfig config = new SourceAggregationConfig();
         if (sourceAggregationConfig != null && sourceAggregationConfig.exists()) {
             LoaderOptions loaderOptions = new LoaderOptions();
             Yaml yaml = new Yaml(new Constructor(SourceAggregationConfig.class, loaderOptions));
-            try (InputStream in = new java.io.FileInputStream(sourceAggregationConfig)) {
+            try (InputStream in = new FileInputStream(sourceAggregationConfig)) {
                 config = yaml.load(in);
                 if (config == null) {
                     config = new SourceAggregationConfig();

@@ -87,11 +87,6 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
     @Parameter(defaultValue = "false")
     private boolean skip;
 
-    /**
-     * Boolean indicating whether all sources need to be included (except retained).
-     */
-    @Parameter(defaultValue = "true")
-    private boolean includeAllSources;
 
     /**
      * The inventory path points to the filtered artifact inventory. Usually this is the output from a previous scan
@@ -255,12 +250,8 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                                     licenseMetaData.deriveQualifier(), licenseMetaData.getSourceCategory()));
                     }
                 } else {
-                    // if license metadata or no source category annotation is given, we evaluate includeAllSources
-                    if (includeAllSources) {
-                        downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus, isAcceptMissing, protocolEntry, config);
-                    } else {
-                        // in this case we skip the source download
-                    }
+                    // if license metadata or no source category annotation is given, we download the source
+                    downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus, isAcceptMissing, protocolEntry, config);
                 }
             }
 

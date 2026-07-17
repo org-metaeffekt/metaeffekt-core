@@ -25,11 +25,12 @@ import org.metaeffekt.core.inventory.resolver.SourceArchiveResolverResult;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
-import java.security.MessageDigest;
 import java.util.List;
+
+import org.metaeffekt.core.util.FileUtils;
+
 
 @Slf4j
 public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceArchiveResolver {
@@ -84,7 +85,7 @@ public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceA
                                     expectedMd5 = expectedMd5.split(" ")[0];
                                 }
 
-                                String actualMd5 = calculateMd5(destinationFile);
+                                String actualMd5 = FileUtils.computeMD5Checksum(destinationFile);
                                 if (!expectedMd5.equalsIgnoreCase(actualMd5)) {
                                     log.error("MD5 mismatch for [{}]. Expected [{}], got [{}]", url, expectedMd5, actualMd5);
                                     if (destinationFile.exists()) {
@@ -120,22 +121,5 @@ public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceA
 
         // Fallback to default mechanism
         return super.downloadFile(url, targetDir, result);
-    }
-
-    private String calculateMd5(File file) throws Exception {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        try (InputStream is = Files.newInputStream(file.toPath())) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = is.read(buffer)) != -1) {
-                md.update(buffer, 0, read);
-            }
-        }
-        byte[] hashBytes = md.digest();
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hashBytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
     }
 }
