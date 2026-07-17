@@ -38,16 +38,16 @@ other tools including Syft and (future work) ExtractCode as part of the ScanCode
 | 30   | PHP (composer)                                    | ✓           | ✓      |             |
 | 31   | PWA (manifest.json)                               | ✓           | ✗      |             |
 | 32   | Python (wheel)                                    | ✓           | ✓      |             |
-| 33   | Python (egg)                                      | ✗           | ✓      |             |
-| 34   | Python (poetry)                                   | ✗           | ✓      |             |
+| 33   | Python (egg)                                      | ✓ (initial) | ✓      |             |
+| 34   | Python (poetry)                                   | ✓ (initial) | ✓      |             |
 | 35   | Python (requirements.txt)                         | ✗           | ✓      |             |
 | 36   | Red Hat (rpm)                                     | ✓           | ✓      |             |
 | 37   | RPM Metadata                                      | ✓           | ✗      |             |
 | 38   | Ruby (gem)                                        | ✓           | ✓      |             |
-| 39   | Rust (cargo.lock)                                 | ✗ (planned) | ✓      |             |
+| 39   | Rust (cargo.lock)                                 | ✓           | ✓      |             |
 | 40   | Swift (cocoapods, swift-package-manager)          | ✗           | ✓      |             |
 | 41   | Web Application (web.xml)                         | ✓           | ✗      |             |
 | 42   | Wordpress plugins                                 | ✗           | ✓      |             |
 | 43   | XWikiExtension (.xed)                             | ✓           | ✗      |             |
-|      | **Total included**                                | **33**      | **29** | TBD         |
-|      | **Total missing**                                 | **10**      | **14** | TBD         |
+|      | **Total included**                                | **36**      | **29** | TBD         |
+|      | **Total missing**                                 | **7**       | **14** | TBD         |
