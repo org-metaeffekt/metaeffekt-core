@@ -101,15 +101,21 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
     private File inventoryPath;
 
     /**
+     * The base target directory where the aggregation subdirectories will be created.
+     */
+    @Parameter(defaultValue = "${project.build.directory}")
+    private File targetDirectory;
+
+    /**
      * Sources for selected artifacts are downloaded to this folder as part of the distribution annex.
      */
-    @Parameter(defaultValue = "${project.build.directory}/annex/sources")
+    @Parameter
     private File softwareDistributionAnnexSourcePath;
 
     /**
      * Sources for selected artifacts are downloaded to this folder as part of the retained sources.
      */
-    @Parameter(defaultValue = "${project.build.directory}/retained-sources/sources")
+    @Parameter
     private File retainedSourcesSourcePath;
 
     /**
@@ -149,6 +155,13 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
         // skip execution for POM packaged projects
         if (isPomPackagingProject()) {
             return;
+        }
+
+        if (softwareDistributionAnnexSourcePath == null) {
+            softwareDistributionAnnexSourcePath = new File(targetDirectory, "annex/sources");
+        }
+        if (retainedSourcesSourcePath == null) {
+            retainedSourcesSourcePath = new File(targetDirectory, "retained-sources/sources");
         }
 
         if (skip) {
