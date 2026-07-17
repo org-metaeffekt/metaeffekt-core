@@ -59,23 +59,23 @@ public class InventoryReport {
     private static final String PATTERN_ANY_VT = "**/*.vt";
 
     private static final String TEMPLATES_BASE_DIR = "/META-INF/templates";
+    public static final String TEMPLATES_GENERIC_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "_generic";
+    private static final String TEMPLATES_REPORTS_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "reports";
 
-    private static final String TEMPLATES_TECHNICAL_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "technical";
+    private static final String TEMPLATES_TECHNICAL_BASE_DIR = "technical";
+    public static final String TEMPLATE_GROUP_ASSESSMENT_LABELS = "assessment-labels";
 
-    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_BOM = "inventory-report-bom";
-    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY = "inventory-report-vulnerability";
-    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY = "inventory-report-vulnerability-summary";
-
-    public static final String TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY = "inventory-statistics-vulnerability";
-
-    public static final String TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT = "labels-vulnerability-assessment";
+    public static final String TEMPLATE_GROUP_ANNEX_REPORT = "annex-report";
+    public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT = "vulnerability-report";
+    public static final String TEMPLATE_GROUP_SUMMARY_REPORT = "summary-report";
+    public static final String TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY = "statistics-report";
+    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "diff-report";
+    public static final String TEMPLATE_GROUP_ASSET_REPORT = "asset-report";
+    public static final String TEMPLATE_GROUP_ASSESSMENT_REPORT = "assessment-report";
 
     public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
-    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
 
-    public static final String TEMPLATE_GROUP_ASSET_REPORT_BOM = "asset-report-bom";
 
-    public static final String TEMPLATE_GROUP_ASSESSMENT_REPORT = "assessment-report";
 
     public static final String KEY_PREVIOUS_VERSION = "Previous Version";
 
@@ -550,46 +550,44 @@ public class InventoryReport {
                 isVulnerabilityReport ? ReportAdapterLoader.getAdapterOrThrow(IAssessmentReportAdapter.class).setup(projectInventory, securityPolicy) : null,
                 new InventoryReportAdapter(filteredInventory));
 
-
         // write reports
         if (configParams.isInventoryBomReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_BOM, reportContext);
+                    TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_ANNEX_REPORT, reportContext);
+        }
+
+        if (configParams.isInventoryVulnerabilityReportEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_VULNERABILITY_REPORT, reportContext);
+        }
+
+        if (configParams.isInventoryVulnerabilityReportSummaryEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_SUMMARY_REPORT, reportContext);
+        }
+
+        if (configParams.isInventoryVulnerabilityStatisticsReportEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY, reportContext);
+        }
+
+        if (configParams.isAssetBomReportEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_ASSET_REPORT, reportContext);
+        }
+
+        if (configParams.isAssessmentReportEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
         }
 
         if (configParams.isInventoryDiffReportEnabled()) {
             writeDiffReport(diffInventory, projectInventory, reportContext);
         }
 
-        if (configParams.isInventoryVulnerabilityReportEnabled()) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
-        }
-
-        if (configParams.isInventoryVulnerabilityReportSummaryEnabled()) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY, reportContext);
-        }
-
-        if (configParams.isInventoryVulnerabilityStatisticsReportEnabled()) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY, reportContext);
-        }
-
-
         if (configParams.isInventoryPomEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_TECHNICAL_BASE_DIR, TEMPLATE_GROUP_INVENTORY_POM, reportContext);
-        }
-
-        if (configParams.isAssetBomReportEnabled()) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_ASSET_REPORT_BOM, reportContext);
-        }
-
-        if (configParams.isAssessmentReportEnabled()) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
         }
 
         // evaluate licenses only for managed artifacts
@@ -957,7 +955,7 @@ public class InventoryReport {
                 null,
                 new InventoryReportAdapter(baseFilteredInventory));
 
-        writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
+        writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
     }
 
     /**
