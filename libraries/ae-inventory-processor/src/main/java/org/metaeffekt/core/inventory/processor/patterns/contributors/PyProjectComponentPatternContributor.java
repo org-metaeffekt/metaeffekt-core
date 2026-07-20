@@ -21,10 +21,7 @@ import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +33,6 @@ import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 @Slf4j
 public class PyProjectComponentPatternContributor extends ComponentPatternContributor {
-
-    protected record Source(String type, String url, String reference) {
-    }
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<>() {{
         add("pyproject.toml");
@@ -93,8 +87,8 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                     final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
                     resolvedModule.setVersion(packageNode.get("version").textValue());
 
-                    final Source source = getSourceIfExists(packageNode.path("source"));
-                    resolvedModule.setSourceArchiveUrl(source.url());
+                    final PyProjectPackageSource source = getSourceIfExists(packageNode.path("source"));
+                    resolvedModule.setPyProjectPackageSource(source);
 
                     final JsonNode packageDependenciesNode = packageNode.path("dependencies");
                     final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
@@ -215,7 +209,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
             }
 
             final String version = resolvedModule.getVersion();
-            final String url = resolvedModule.getSourceArchiveUrl();
+            final PyProjectPackageSource pyProjectPackageSource = resolvedModule.getPyProjectPackageSource();
 
             Artifact artifact = nameToArtifactMap.get(resolvedModule.getName());
             if (artifact == null) {
@@ -224,8 +218,9 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 artifact.setVersion(version);
                 artifact.setComponent(name);
 
-                if (url != null) {
-                    artifact.set(Constants.KEY_SOURCE_PACKAGE, url);
+                if (pyProjectPackageSource != null) {
+                    artifact.set(KEY_PACKAGE_SOURCE, pyProjectPackageSource.reference());
+                    artifact.set(KEY_PACKAGE_SOURCE_URL, pyProjectPackageSource.url());
                 }
                 artifact.set(Constants.KEY_PATH_IN_ASSET, relativePath + "[" + name + "]");
 
@@ -260,7 +255,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
         return value.isTextual() ? value.textValue() : value.get("version").textValue();
     }
 
-    private Source getSourceIfExists(JsonNode source) {
+    private PyProjectPackageSource getSourceIfExists(JsonNode source) {
         if (!source.isMissingNode()) {
             JsonNode typeNode = source.path("type");
             JsonNode urlNode = source.path("url");
@@ -270,9 +265,9 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
             String url = !urlNode.isMissingNode() ? urlNode.asText() : null;
             String reference = !referenceNode.isMissingNode() ? referenceNode.asText() : null;
 
-            return new Source(type, url, reference);
+            return new PyProjectPackageSource(type, url, reference);
         }
-        return new Source(null, null, "PyPI");
+        return new PyProjectPackageSource(null, null, "PyPI");
     }
 
     private String buildPurl(String name, String version) {

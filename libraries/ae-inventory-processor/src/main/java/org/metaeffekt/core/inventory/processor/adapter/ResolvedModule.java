@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.adapter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.metaeffekt.core.inventory.processor.model.PyProjectPackageSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +49,12 @@ public class ResolvedModule {
 
     @Setter
     String sourceArchiveUrl;
+
+    /**
+     * Package source for py projects
+     */
+    @Setter
+    PyProjectPackageSource pyProjectPackageSource;
 
     /**
      * Flag indicating that the module was actively resolved by the package manager.
