@@ -34,6 +34,9 @@ public class ArtifactPatternMatcher {
     }
 
     public ArtifactPattern findMatchingArtifactGroup(String artifact, String component, String version, String effectiveLicense) {
+        if (artifactPatterns.isEmpty()) {
+            return new ArtifactPattern("^.*", "^.*", "^.*", "^.*");
+        }
         for (ArtifactPattern candidate : artifactPatterns) {
             boolean matches = matches(artifact, candidate.getArtifactPattern());
             matches &= matches(component, candidate.getComponentPattern());
