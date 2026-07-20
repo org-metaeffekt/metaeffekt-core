@@ -30,13 +30,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 @Slf4j
 public class PyProjectComponentPatternContributor extends ComponentPatternContributor {
+
+    protected record Source(String type, String url, String reference) {
+    }
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<>() {{
         add("pyproject.toml");
@@ -78,8 +80,8 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 ResolvedModule projectModule = new ResolvedModule(projectNode.get("name").asText(), null);
                 projectModule.setVersion(projectNode.get("version").asText());
 
-                final List<UnresolvedModule> directRuntimeDependencies = extractDirectDependencies(pyProjectRootNode, "/tool/poetry/dependencies");
-                final List<UnresolvedModule> directDevelopmentDependencies = extractDirectDependencies(pyProjectRootNode, "/tool/poetry/group/dev/dependencies");
+                final List<UnresolvedModule> directRuntimeDependencies = extractDirectDependencies(projectNode, "/dependencies");
+                final List<UnresolvedModule> directDevelopmentDependencies = extractDirectDependencies(projectNode, "/group/dev/dependencies");
 
                 final File poetryLockFile = new File(pyProjectToml.getParentFile(), "poetry.lock");
                 final ObjectMapper lockObjectMapper = new TomlMapper();
@@ -90,6 +92,9 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 lockNode.path("package").valueStream().forEach(packageNode -> {
                     final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
                     resolvedModule.setVersion(packageNode.get("version").textValue());
+
+                    final Source source = getSourceIfExists(packageNode.path("source"));
+                    resolvedModule.setSourceArchiveUrl(source.url());
 
                     final JsonNode packageDependenciesNode = packageNode.path("dependencies");
                     final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
@@ -210,6 +215,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
             }
 
             final String version = resolvedModule.getVersion();
+            final String url = resolvedModule.getSourceArchiveUrl();
 
             Artifact artifact = nameToArtifactMap.get(resolvedModule.getName());
             if (artifact == null) {
@@ -218,6 +224,9 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 artifact.setVersion(version);
                 artifact.setComponent(name);
 
+                if (url != null) {
+                    artifact.set(Constants.KEY_SOURCE_PACKAGE, url);
+                }
                 artifact.set(Constants.KEY_PATH_IN_ASSET, relativePath + "[" + name + "]");
 
                 // we cannot add a root path; there is no physical file that is part of the module
@@ -239,12 +248,31 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
         JsonNode dependencyNode = pyProjectRootNode.at(fullQualifiedPath);
         if (!dependencyNode.isMissingNode()) {
             dependencyNode.propertyStream().forEach(entry -> {
-                // FIXME-KKL: the versionRange here is more that a version range; it may contain more details encoded as Json
-                UnresolvedModule unresolvedModule = new UnresolvedModule(entry.getKey(), null, entry.getValue().toString());
+                String versionRange = deriveVersionRange(entry.getValue());
+                UnresolvedModule unresolvedModule = new UnresolvedModule(entry.getKey(), null, versionRange);
                 modules.add(unresolvedModule);
             });
         }
         return modules;
+    }
+
+    private String deriveVersionRange(JsonNode value) {
+        return value.isTextual() ? value.textValue() : value.get("version").textValue();
+    }
+
+    private Source getSourceIfExists(JsonNode source) {
+        if (!source.isMissingNode()) {
+            JsonNode typeNode = source.path("type");
+            JsonNode urlNode = source.path("url");
+            JsonNode referenceNode = source.path("reference");
+
+            String type = !typeNode.isMissingNode() ? typeNode.asText() : null;
+            String url = !urlNode.isMissingNode() ? urlNode.asText() : null;
+            String reference = !referenceNode.isMissingNode() ? referenceNode.asText() : null;
+
+            return new Source(type, url, reference);
+        }
+        return new Source(null, null, "PyPI");
     }
 
     private String buildPurl(String name, String version) {
