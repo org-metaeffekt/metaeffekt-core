@@ -71,6 +71,7 @@
         <ant.version>1.10.17</ant.version>
         <asm.version>5.2</asm.version>
         <assertj.version>3.27.7</assertj.version>
+        <bouncycastle.jdk18on.version>1.85</bouncycastle.jdk18on.version>
         <commons.codec.version>1.22.0</commons.codec.version>
         <commons.collections3.version>3.2.2</commons.collections3.version>
         <commons.collections4.version>4.5.0</commons.collections4.version>
