@@ -296,7 +296,10 @@
                                             org.metaeffekt.core:ae-api-publish-maven-plugin,
                                             org.metaeffekt.core:ae-artifact-publish-maven-plugin,
                                             com.metaeffekt.artifact.analysis:ae-asset-descriptor-maven-plugin,
-                                            com.metaeffekt.artifact.analysis:ae-inventory-conversion-plugin
+                                            com.metaeffekt.artifact.analysis:ae-inventory-conversion-plugin,
+                                            com.metaeffekt.artifact.analysis:ae-kotlin-scripting-maven-plugin,
+                                            com.metaeffekt.artifact.analysis:ae-inventory-overview-html-report,
+                                            org.metaeffekt.dita:ae-dita-maven-plugin
                                         </unCheckedPluginList>
                                     </requirePluginVersions>
                                 </rules>
