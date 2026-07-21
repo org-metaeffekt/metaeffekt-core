@@ -42,7 +42,7 @@ import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 @Slf4j
 public class PyProjectComponentPatternContributor extends ComponentPatternContributor {
 
-    private final List<PyProjectParser> parsers = List.of(new PoetryParser(), new PdmParser());
+    private static final List<PyProjectParser> PY_PROJECT_PARSERS = List.of(new PoetryParser(), new PdmParser());
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<>() {{
         add("pyproject.toml");
@@ -73,16 +73,13 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
 
             // the main anchor
             if (relativeAnchorPath.endsWith(".toml")) {
-
                 final List<ComponentPatternData> list = new ArrayList<>();
 
                 final File pyProjectToml = new File(baseDir, relativeAnchorPath);
+                final ObjectMapper objectMapper = new TomlMapper();
+                final JsonNode pyProjectRootNode = objectMapper.readTree(pyProjectToml);
 
-                ObjectMapper objectMapper = new TomlMapper();
-                JsonNode pyProjectRootNode = objectMapper.readTree(pyProjectToml);
-
-                PyProjectParser parser = findParser(pyProjectRootNode);
-
+                final PyProjectParser parser = findParser(pyProjectRootNode);
                 if (parser == null) {
                     log.info("Unsupported pyproject.toml format: {}", pyProjectToml.getAbsolutePath());
                     return null;
@@ -159,7 +156,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
     }
 
     private PyProjectParser findParser(JsonNode root) {
-        return parsers.stream().filter(parser -> parser.supports(root)).findFirst().orElse(null);
+        return PY_PROJECT_PARSERS.stream().filter(parser -> parser.supports(root)).findFirst().orElse(null);
     }
 
     private List<UnresolvedModule> extractIndirectDependencies(List<UnresolvedModule> seedDependencies, Map<String, ResolvedModule> resolvedModules, Function<ResolvedModule, Map<String, UnresolvedModule>> supplier) {

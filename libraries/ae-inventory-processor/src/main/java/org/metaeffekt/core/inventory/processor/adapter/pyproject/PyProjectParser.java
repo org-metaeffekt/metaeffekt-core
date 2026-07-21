@@ -16,17 +16,36 @@
 package org.metaeffekt.core.inventory.processor.adapter.pyproject;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.toml.TomlMapper;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public interface PyProjectParser {
+@Getter
+@AllArgsConstructor
+public abstract class PyProjectParser {
+    protected String projectNode;
+    protected String dependencyPath;
+    protected String devDependencyPath;
+    protected String lockFileName;
+
     /**
      * Checks whether this specific parser supports toml files.
      */
-    boolean supports(JsonNode root);
+    public abstract boolean supports(JsonNode root);
+
+    /**
+     * Defines the include pattern for a py project implementation subclass.
+     *
+     * @return the include pattern for this py project subclass
+     */
+    public abstract String getIncludePattern();
 
     /**
      * Parses the toml and lock files extracting the dependencies.
@@ -36,7 +55,34 @@ public interface PyProjectParser {
      * @return a {@link PyProjectData} object containing the parsed data
      * @throws IOException if an I/O error occurs
      */
-    PyProjectData parse(File pyProjectToml, JsonNode root) throws IOException;
+    public PyProjectData parse(File pyProjectToml, JsonNode root) throws IOException {
+        PyProjectData pyProjectData = new PyProjectData();
+
+        // parse toml file
+        JsonNode projectNode = root.at(getProjectNode());
+        ResolvedModule projectModule = new ResolvedModule(projectNode.get("name").asText(), null);
+        projectModule.setVersion(projectNode.get("version").asText());
+
+        pyProjectData.setProjectModule(projectModule);
+        pyProjectData.setDirectRuntimeDependencies(extractDirectDependencies(projectNode, getDependencyPath()));
+        pyProjectData.setDirectDevelopmentDependencies(extractDirectDependencies(projectNode, getDevDependencyPath()));
+
+        // parse lock file
+        final File lockFile = new File(pyProjectToml.getParentFile(), getLockFileName());
+        final ObjectMapper lockObjectMapper = new TomlMapper();
+        final JsonNode lockNode = lockObjectMapper.readTree(lockFile);
+
+        pyProjectData.setResolvedModulesFromLockFile(getResolvedModulesFromLockFile(lockNode));
+        return pyProjectData;
+    }
+
+    /**
+     * Method for resolving modules from lock files.
+     *
+     * @param lockNode the lock file node
+     * @return list of resolved modules
+     */
+    protected abstract List<ResolvedModule> getResolvedModulesFromLockFile(JsonNode lockNode);
 
     /**
      * Extracts the direct dependencies in a toml file
@@ -45,7 +91,6 @@ public interface PyProjectParser {
      * @param fullQualifiedPath the path to a node in the root project node
      * @return list of unresolved dependencies (modules)
      */
-    List<UnresolvedModule> extractDirectDependencies(JsonNode projectNode, String fullQualifiedPath);
+    protected abstract List<UnresolvedModule> extractDirectDependencies(JsonNode projectNode, String fullQualifiedPath);
 
-    String getIncludePattern();
 }
