@@ -117,7 +117,7 @@
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
-        <maven.dependency.plugin.version>3.10.0</maven.dependency.plugin.version>
+        <maven.dependency.plugin.version>3.11.0</maven.dependency.plugin.version>
         <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
         <maven.enforcer.plugin.version>1.4.1</maven.enforcer.plugin.version>
         <maven.frontend.plugin.version>1.12.1</maven.frontend.plugin.version>
@@ -134,8 +134,9 @@
         <maven.plugin.testing.harness.version>2.1</maven.plugin.testing.harness.version>
         <maven.project.info.reports.plugin.version>3.9.0</maven.project.info.reports.plugin.version>
         <maven.protobuf.plugin.version>0.6.1</maven.protobuf.plugin.version>
+        <maven.release.plugin.version>3.3.1</maven.release.plugin.version>
         <maven.resources.plugin.version>3.5.0</maven.resources.plugin.version>
-        <maven.site.plugin.version>3.21.0</maven.site.plugin.version>
+        <maven.site.plugin.version>3.22.0</maven.site.plugin.version>
         <maven.source.plugin.version>3.4.0</maven.source.plugin.version>
         <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
         <maven.typescript.generator.plugin.version>2.37.1128</maven.typescript.generator.plugin.version>
@@ -167,37 +168,6 @@
                         <target>${maven.compiler.target}</target>
                         <release>${maven.compiler.jdk}</release>
                     </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.metaeffekt.core</groupId>
-                    <!-- FIXME: rename plugin -->
-                    <artifactId>ae-version-maven-plugin</artifactId>
-                    <version>${ae.core.version_last}</version>
-                    <configuration>
-                        <includes>**/pom.xml</includes>
-                        <excludes>**/src/test/resources/**</excludes>
-                        <projectVersion>${ae.core.version}</projectVersion>
-                        <groupIdVersionMap>
-                            <org.metaeffekt.core>${ae.core.version}</org.metaeffekt.core>
-                        </groupIdVersionMap>
-                        <propertyVersionMap>
-                            <artifact.inventory.version>${artifact.inventory.version}</artifact.inventory.version>
-                            <!--
-                                CentOSFileFilterTest<artifact.inventory.enabled>${artifact.inventory.enabled}</artifact.inventory.enabled>
-                            -->
-                            <ae.core.version>${ae.core.version}</ae.core.version>
-                        </propertyVersionMap>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>update-versions</id>
-                            <phase>pre-clean</phase>
-                            <goals>
-                                <goal>update</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
 
                 <plugin>
@@ -235,6 +205,62 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>${maven.project.info.reports.plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>${maven.site.plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>${maven.antrun.plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>${maven.assembly.plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${maven.dependency.plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${maven.release.plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.metaeffekt.core</groupId>
+                    <!-- FIXME: rename plugin -->
+                    <artifactId>ae-version-maven-plugin</artifactId>
+                    <version>${ae.core.version_last}</version>
+                    <configuration>
+                        <includes>**/pom.xml</includes>
+                        <excludes>**/src/test/resources/**</excludes>
+                        <projectVersion>${ae.core.version}</projectVersion>
+                        <groupIdVersionMap>
+                            <org.metaeffekt.core>${ae.core.version}</org.metaeffekt.core>
+                        </groupIdVersionMap>
+                        <propertyVersionMap>
+                            <artifact.inventory.version>${artifact.inventory.version}</artifact.inventory.version>
+                            <!--
+                                CentOSFileFilterTest<artifact.inventory.enabled>${artifact.inventory.enabled}</artifact.inventory.enabled>
+                            -->
+                            <ae.core.version>${ae.core.version}</ae.core.version>
+                        </propertyVersionMap>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>update-versions</id>
+                            <phase>pre-clean</phase>
+                            <goals>
+                                <goal>update</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
