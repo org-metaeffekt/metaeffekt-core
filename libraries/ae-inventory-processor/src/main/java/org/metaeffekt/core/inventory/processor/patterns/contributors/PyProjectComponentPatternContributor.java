@@ -21,6 +21,14 @@ import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.PdmParser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.PoetryParser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectParser;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.*;
 
 import java.io.File;
@@ -33,6 +41,8 @@ import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 @Slf4j
 public class PyProjectComponentPatternContributor extends ComponentPatternContributor {
+
+    private final List<PyProjectParser> parsers = List.of(new PoetryParser(), new PdmParser());
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<>() {{
         add("pyproject.toml");
@@ -63,6 +73,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
 
             // the main anchor
             if (relativeAnchorPath.endsWith(".toml")) {
+
                 final List<ComponentPatternData> list = new ArrayList<>();
 
                 final File pyProjectToml = new File(baseDir, relativeAnchorPath);
@@ -70,38 +81,19 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 ObjectMapper objectMapper = new TomlMapper();
                 JsonNode pyProjectRootNode = objectMapper.readTree(pyProjectToml);
 
-                JsonNode projectNode = pyProjectRootNode.at("/tool/poetry");
-                ResolvedModule projectModule = new ResolvedModule(projectNode.get("name").asText(), null);
-                projectModule.setVersion(projectNode.get("version").asText());
+                PyProjectParser parser = findParser(pyProjectRootNode);
 
-                final List<UnresolvedModule> directRuntimeDependencies = extractDirectDependencies(projectNode, "/dependencies");
-                final List<UnresolvedModule> directDevelopmentDependencies = extractDirectDependencies(projectNode, "/group/dev/dependencies");
+                if (parser == null) {
+                    log.info("Unsupported pyproject.toml format: {}", pyProjectToml.getAbsolutePath());
+                    return null;
+                }
 
-                final File poetryLockFile = new File(pyProjectToml.getParentFile(), "poetry.lock");
-                final ObjectMapper lockObjectMapper = new TomlMapper();
-                final JsonNode lockNode = lockObjectMapper.readTree(poetryLockFile);
+                final PyProjectData pyProjectData = parser.parse(pyProjectToml, pyProjectRootNode);
+                final ResolvedModule projectModule = pyProjectData.getProjectModule();
+                final List<UnresolvedModule> directDevelopmentDependencies = pyProjectData.getDirectDevelopmentDependencies();
+                final List<UnresolvedModule> directRuntimeDependencies = pyProjectData.getDirectRuntimeDependencies();
+                final List<ResolvedModule> resolvedModules = pyProjectData.getResolvedModulesFromLockFile();
 
-                // read the packages
-                final List<ResolvedModule> resolvedModules = new ArrayList<>();
-                lockNode.path("package").valueStream().forEach(packageNode -> {
-                    final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
-                    resolvedModule.setVersion(packageNode.get("version").textValue());
-
-                    final PyProjectPackageSource source = getSourceIfExists(packageNode.path("source"));
-                    resolvedModule.setPyProjectPackageSource(source);
-
-                    final JsonNode packageDependenciesNode = packageNode.path("dependencies");
-                    final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
-                    if (!packageDependenciesNode.isMissingNode()) {
-                        packageDependenciesNode.propertyStream().forEach(dependency -> {
-                            final UnresolvedModule unresolvedModule = new UnresolvedModule(dependency.getKey(), null, dependency.getValue().toString());
-                            unresolvedModuleMap.put(dependency.getKey(), unresolvedModule);
-                        });
-                    }
-                    resolvedModule.setRuntimeDependencies(unresolvedModuleMap);
-
-                    resolvedModules.add(resolvedModule);
-                });
 
                 // here we have the
                 // - a resolve project level-module
@@ -150,7 +142,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 cpd.set(ComponentPatternData.Attribute.TYPE, ARTIFACT_TYPE_APPLICATION);
                 cpd.set(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "python-application");
 
-                cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "pyproject.toml, poetry.lock");
+                cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, parser.getIncludePattern());
 
                 cpd.setExpansionInventorySupplier(() -> inventory);
 
@@ -164,6 +156,10 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
 
         return Collections.emptyList();
 
+    }
+
+    private PyProjectParser findParser(JsonNode root) {
+        return parsers.stream().filter(parser -> parser.supports(root)).findFirst().orElse(null);
     }
 
     private List<UnresolvedModule> extractIndirectDependencies(List<UnresolvedModule> seedDependencies, Map<String, ResolvedModule> resolvedModules, Function<ResolvedModule, Map<String, UnresolvedModule>> supplier) {
