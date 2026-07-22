@@ -92,5 +92,4 @@ public abstract class PyProjectParser {
      * @return list of unresolved dependencies (modules)
      */
     protected abstract List<UnresolvedModule> extractDirectDependencies(JsonNode projectNode, String fullQualifiedPath);
-
 }
