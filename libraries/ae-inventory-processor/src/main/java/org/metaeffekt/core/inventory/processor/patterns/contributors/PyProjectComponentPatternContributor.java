@@ -87,7 +87,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                     final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
                     resolvedModule.setVersion(packageNode.get("version").textValue());
 
-                    final PyProjectPackageSource source = parseSource(packageNode.path("source"));
+                    final PyProjectPackageSource source = parseSource(packageNode);
                     resolvedModule.setPyProjectPackageSource(source);
 
                     final JsonNode packageDependenciesNode = packageNode.path("dependencies");
@@ -255,14 +255,45 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
         return value.isTextual() ? value.textValue() : value.get("version").textValue();
     }
 
-    private PyProjectPackageSource parseSource(JsonNode source) {
+    private PyProjectPackageSource parseSource(JsonNode packageNode) {
+        final JsonNode source = packageNode.path("source");
         if (source.isMissingNode()) {
             return new PyProjectPackageSource(null, null, "PyPI");
         }
-        final JsonNode typeNode = source.path("type");
-        final JsonNode urlNode = source.path("url");
-        final JsonNode referenceNode = source.path("reference");
-        return new PyProjectPackageSource(typeNode.asText(null), urlNode.asText(null), referenceNode.asText(null));
+        final String type = source.path("type").asText(null);
+        final String url = source.path("url").asText(null);
+        final String reference = source.path("reference").asText(null);
+        String finalUrlCollection = buildPackageSourceUrls(packageNode, url);
+
+        return new PyProjectPackageSource(type, finalUrlCollection, reference);
+    }
+
+    private String buildPackageSourceUrls(JsonNode packageNode, String url) {
+        if (url == null || url.isBlank()) {
+            return null;
+        }
+
+        final JsonNode files = packageNode.path("files");
+        if (files.isMissingNode() || !files.isArray()) {
+            return url;
+        }
+
+        final List<String> urls = new ArrayList<>();
+        for (JsonNode file : files) {
+            if (file.isObject()) {
+                String finalUrl = url;
+                finalUrl += "/" + file.get("file").asText();
+                String hash = file.get("hash").asText(null);
+                List<String> hashComponents = hash != null ? Arrays.stream(hash.split(":")).toList() : List.of();
+                if (!hashComponents.isEmpty()) {
+                    finalUrl += "#" + hashComponents.get(0) + "=" + hashComponents.get(1);
+                }
+                List<String> splitUrlOnPoint = Arrays.stream(finalUrl.split("\\.", 2)).toList();
+                finalUrl = splitUrlOnPoint.get(0) + "-r2." + splitUrlOnPoint.get(1);
+                urls.add(finalUrl);
+            }
+        }
+        return urls.isEmpty() ? url : String.join(", ", urls);
     }
 
     private String buildPurl(String name, String version) {
