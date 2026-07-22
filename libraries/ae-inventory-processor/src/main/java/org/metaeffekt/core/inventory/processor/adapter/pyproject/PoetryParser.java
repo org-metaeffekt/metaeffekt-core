@@ -27,7 +27,7 @@ import java.util.*;
  */
 public class PoetryParser extends PyProjectParser {
     public PoetryParser() {
-        super("/tool/poetry", "/dependencies", "/group/dev/dependencies", "poetry.lock");
+        super("/tool/poetry", "/tool/poetry/dependencies", "/tool/poetry/group/dev/dependencies", "poetry.lock");
     }
 
     @Override
@@ -36,9 +36,9 @@ public class PoetryParser extends PyProjectParser {
     }
 
     @Override
-    public List<UnresolvedModule> extractDirectDependencies(JsonNode projectNode, String fullQualifiedPath) {
+    public List<UnresolvedModule> extractDirectDependencies(JsonNode rootNode, String fullQualifiedPath) {
         final List<UnresolvedModule> modules = new ArrayList<>();
-        final JsonNode dependencyNode = projectNode.at(fullQualifiedPath);
+        final JsonNode dependencyNode = rootNode.at(fullQualifiedPath);
         if (!dependencyNode.isMissingNode()) {
             dependencyNode.propertyStream().forEach(entry -> {
                 String versionRange = deriveVersionRange(entry.getValue());

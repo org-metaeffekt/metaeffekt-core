@@ -39,7 +39,7 @@ public class PdmParser extends PyProjectParser {
             );
 
     public PdmParser() {
-        super("/project", "/dependencies", "/optional-dependencies/dev", "pdm.lock");
+        super("/project", "/project/dependencies", "/tool/pdm/dev-dependencies/dev", "pdm.lock");
     }
 
     @Override
@@ -48,9 +48,9 @@ public class PdmParser extends PyProjectParser {
     }
 
     @Override
-    public List<UnresolvedModule> extractDirectDependencies(JsonNode projectNode, String fullQualifiedPath) {
+    public List<UnresolvedModule> extractDirectDependencies(JsonNode rootNode, String fullQualifiedPath) {
         final List<UnresolvedModule> modules = new ArrayList<>();
-        final JsonNode dependencyNode = projectNode.at(fullQualifiedPath);
+        final JsonNode dependencyNode = rootNode.at(fullQualifiedPath);
         if (!dependencyNode.isMissingNode() && dependencyNode.isArray()) {
             dependencyNode.valueStream().forEach(dependency -> {
                 UnresolvedModule unresolvedModule = parseRequirement(dependency.asText());

@@ -61,11 +61,11 @@ public abstract class PyProjectParser {
         // parse toml file
         JsonNode projectNode = root.at(getProjectNode());
         ResolvedModule projectModule = new ResolvedModule(projectNode.get("name").asText(), null);
-        projectModule.setVersion(projectNode.get("version").asText());
+        projectModule.setVersion(projectNode.path("version").asText(null));
 
         pyProjectData.setProjectModule(projectModule);
-        pyProjectData.setDirectRuntimeDependencies(extractDirectDependencies(projectNode, getDependencyPath()));
-        pyProjectData.setDirectDevelopmentDependencies(extractDirectDependencies(projectNode, getDevDependencyPath()));
+        pyProjectData.setDirectRuntimeDependencies(extractDirectDependencies(root, getDependencyPath()));
+        pyProjectData.setDirectDevelopmentDependencies(extractDirectDependencies(root, getDevDependencyPath()));
 
         // parse lock file
         final File lockFile = new File(pyProjectToml.getParentFile(), getLockFileName());
