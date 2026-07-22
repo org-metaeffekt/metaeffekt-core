@@ -61,7 +61,7 @@ public class PoetryParser extends PyProjectParser {
             final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
             resolvedModule.setVersion(packageNode.get("version").textValue());
 
-            final PyProjectPackageSource source = parseSource(packageNode.path("source"));
+            final PyProjectPackageSource source = parseSource(packageNode);
             resolvedModule.setPyProjectPackageSource(source);
 
             final JsonNode packageDependenciesNode = packageNode.path("dependencies");
