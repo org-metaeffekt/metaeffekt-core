@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 import org.metaeffekt.core.inventory.processor.model.*;
@@ -87,8 +89,8 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                     final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
                     resolvedModule.setVersion(packageNode.get("version").textValue());
 
-                    final PyProjectPackageSource source = parseSource(packageNode);
-                    resolvedModule.setPyProjectPackageSource(source);
+                    resolvedModule.setPyProjectPackageSource(parseSource(packageNode));
+                    resolvedModule.setPyProjectPackageFiles(collectPackageFileData(packageNode));
 
                     final JsonNode packageDependenciesNode = packageNode.path("dependencies");
                     final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
@@ -219,9 +221,9 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 artifact.setComponent(name);
 
                 if (pyProjectPackageSource != null) {
-                    artifact.set(KEY_PACKAGE_SOURCE, pyProjectPackageSource.reference());
                     artifact.set(KEY_PACKAGE_SOURCE_URL, pyProjectPackageSource.url());
                 }
+                artifact.set(KEY_PACKAGE_FILES, String.valueOf(resolvedModule.getPyProjectPackageFiles()));
                 artifact.set(Constants.KEY_PATH_IN_ASSET, relativePath + "[" + name + "]");
 
                 // we cannot add a root path; there is no physical file that is part of the module
@@ -258,42 +260,31 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
     private PyProjectPackageSource parseSource(JsonNode packageNode) {
         final JsonNode source = packageNode.path("source");
         if (source.isMissingNode()) {
-            return new PyProjectPackageSource(null, null, "PyPI");
+            return null;
         }
         final String type = source.path("type").asText(null);
         final String url = source.path("url").asText(null);
         final String reference = source.path("reference").asText(null);
-        String finalUrlCollection = buildPackageSourceUrls(packageNode, url);
 
-        return new PyProjectPackageSource(type, finalUrlCollection, reference);
+        return new PyProjectPackageSource(type, url, reference);
     }
 
-    private String buildPackageSourceUrls(JsonNode packageNode, String url) {
-        if (url == null || url.isBlank()) {
+    private JSONArray collectPackageFileData(JsonNode packageNode) {
+        final JsonNode files = packageNode.path("files");
+        if (files.isMissingNode() || !files.isArray()) {
             return null;
         }
 
-        final JsonNode files = packageNode.path("files");
-        if (files.isMissingNode() || !files.isArray()) {
-            return url;
-        }
-
-        final List<String> urls = new ArrayList<>();
+        final JSONArray fileData = new JSONArray();
         for (JsonNode file : files) {
             if (file.isObject()) {
-                String finalUrl = url;
-                finalUrl += "/" + file.get("file").asText();
-                String hash = file.get("hash").asText(null);
-                List<String> hashComponents = hash != null ? Arrays.stream(hash.split(":")).toList() : List.of();
-                if (!hashComponents.isEmpty()) {
-                    finalUrl += "#" + hashComponents.get(0) + "=" + hashComponents.get(1);
-                }
-                List<String> splitUrlOnPoint = Arrays.stream(finalUrl.split("\\.", 2)).toList();
-                finalUrl = splitUrlOnPoint.get(0) + "-r2." + splitUrlOnPoint.get(1);
-                urls.add(finalUrl);
+                final JSONObject fileDataObject = new JSONObject();
+                fileDataObject.put("file", file.path("file").asText(null));
+                fileDataObject.put("hash", file.path("hash").asText(null));
+                fileData.put(fileDataObject);
             }
         }
-        return urls.isEmpty() ? url : String.join(", ", urls);
+        return fileData.isEmpty() ? null : fileData;
     }
 
     private String buildPurl(String name, String version) {

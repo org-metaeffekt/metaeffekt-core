@@ -162,8 +162,8 @@ public final class Constants {
     public static final String KEY_RELEASE = "Release";
     public static final String KEY_SOURCE_PACKAGE = "Source Package";
 
-    public static final String KEY_PACKAGE_SOURCE = "Package Source";
-    public static final String KEY_PACKAGE_SOURCE_URL = "Package Source URL";
+    public static final String KEY_PACKAGE_SOURCE_URL = "Package Source";
+    public static final String KEY_PACKAGE_FILES = "Package Files";
 
     private Constants() {
     }
