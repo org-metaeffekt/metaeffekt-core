@@ -44,7 +44,7 @@
             <plugins>
                 <plugin>
                     <artifactId>maven-invoker-plugin</artifactId>
-                    <version>${maven.invoker.plugin.version}</version>
+
                     <configuration>
                         <projectsDirectory>src/it</projectsDirectory>
                         <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>

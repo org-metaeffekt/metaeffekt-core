@@ -121,12 +121,10 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>${maven.clean.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>${maven.resources.plugin.version}</version>
                     <executions>
                         <execution>
                             <id>apply-license-to-javadoc</id>
@@ -149,7 +147,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>${maven.checkstyle.plugin.version}</version>
                 </plugin>
 
                 <plugin>
@@ -358,7 +355,6 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-resources-plugin</artifactId>
-                            <version>${maven.resources.plugin.version}</version>
                             <executions>
                                 <execution>
                                     <id>apply-license-to-test</id>
@@ -398,7 +394,6 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-resources-plugin</artifactId>
-                            <version>${maven.resources.plugin.version}</version>
                             <executions>
                                 <execution>
                                     <id>apply-license-to-main</id>
