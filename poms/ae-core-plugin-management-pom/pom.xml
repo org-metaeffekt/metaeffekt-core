@@ -103,7 +103,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>jaxb2-maven-plugin</artifactId>
-                    <version>${maven.jaxb2.plugin.version}</version>
+                    <version>${codehaus.jaxb2.plugin.version}</version>
                 </plugin>
 
                 <plugin>
@@ -179,7 +179,7 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>${maven.license.plugin.version}</version>
+                    <version>${mycila.license.plugin.version}</version>
                     <configuration>
                         <licenseSets>
                             <licenseSet>
