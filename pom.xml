@@ -276,7 +276,7 @@
                             <configuration>
                                 <rules>
                                     <requireMavenVersion>
-                                        <version>${maven.version}</version>
+                                        <version>3.9.10</version> <!-- First release in 2025 -->
                                     </requireMavenVersion>
                                     <requireJavaVersion>
                                         <version>17</version>
