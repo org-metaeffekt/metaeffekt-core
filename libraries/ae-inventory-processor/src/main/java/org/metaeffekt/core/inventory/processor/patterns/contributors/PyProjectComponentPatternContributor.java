@@ -87,7 +87,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                     final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
                     resolvedModule.setVersion(packageNode.get("version").textValue());
 
-                    final PyProjectPackageSource source = getSourceIfExists(packageNode.path("source"));
+                    final PyProjectPackageSource source = parseSource(packageNode.path("source"));
                     resolvedModule.setPyProjectPackageSource(source);
 
                     final JsonNode packageDependenciesNode = packageNode.path("dependencies");
@@ -255,19 +255,14 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
         return value.isTextual() ? value.textValue() : value.get("version").textValue();
     }
 
-    private PyProjectPackageSource getSourceIfExists(JsonNode source) {
-        if (!source.isMissingNode()) {
-            JsonNode typeNode = source.path("type");
-            JsonNode urlNode = source.path("url");
-            JsonNode referenceNode = source.path("reference");
-
-            String type = !typeNode.isMissingNode() ? typeNode.asText() : null;
-            String url = !urlNode.isMissingNode() ? urlNode.asText() : null;
-            String reference = !referenceNode.isMissingNode() ? referenceNode.asText() : null;
-
-            return new PyProjectPackageSource(type, url, reference);
+    private PyProjectPackageSource parseSource(JsonNode source) {
+        if (source.isMissingNode()) {
+            return new PyProjectPackageSource(null, null, "PyPI");
         }
-        return new PyProjectPackageSource(null, null, "PyPI");
+        final JsonNode typeNode = source.path("type");
+        final JsonNode urlNode = source.path("url");
+        final JsonNode referenceNode = source.path("reference");
+        return new PyProjectPackageSource(typeNode.asText(null), urlNode.asText(null), referenceNode.asText(null));
     }
 
     private String buildPurl(String name, String version) {
