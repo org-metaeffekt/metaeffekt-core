@@ -30,8 +30,7 @@ import java.util.regex.Pattern;
  * Class for parsing pdm toml and pdm.lock files.
  */
 public class PdmParser extends PyProjectParser {
-    private static final Pattern REQUIREMENT_PATTERN =
-            Pattern.compile(
+    private static final Pattern REQUIREMENT_PATTERN = Pattern.compile(
                     "^([A-Za-z0-9][A-Za-z0-9._-]*)" + // package name
                             "(?:\\[[^]]+\\])?" +               // ignore extras
                             "(.*)$"                            // version range
@@ -64,6 +63,31 @@ public class PdmParser extends PyProjectParser {
         return "pyproject.toml, pdm.lock";
     }
 
+    @Override
+    public List<ResolvedModule> getResolvedModulesFromLockFile(JsonNode lockNode) {
+        final List<ResolvedModule> resolvedModules = new ArrayList<>();
+
+        lockNode.path("package").valueStream().forEach(packageNode -> {
+            final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
+            resolvedModule.setVersion(packageNode.get("version").textValue());
+
+            resolvedModule.setPyProjectPackageSource(parseSource(packageNode, "index"));
+            resolvedModule.setPyProjectPackageFiles(collectPackageFileData(packageNode));
+
+            final JsonNode packageDependenciesNode = packageNode.path("dependencies");
+            final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
+            if (!packageDependenciesNode.isMissingNode()) {
+                packageDependenciesNode.valueStream().forEach(dependency -> {
+                    final UnresolvedModule unresolvedModule = parseRequirement(dependency.asText());
+                    unresolvedModuleMap.put(unresolvedModule.getName(), unresolvedModule);
+                });
+            }
+            resolvedModule.setRuntimeDependencies(unresolvedModuleMap);
+            resolvedModules.add(resolvedModule);
+        });
+        return resolvedModules;
+    }
+
     private UnresolvedModule parseRequirement(String requirement) {
         final String cleanedRequirement = removeMarker(requirement);
         final Matcher matcher = REQUIREMENT_PATTERN.matcher(cleanedRequirement);
@@ -88,30 +112,5 @@ public class PdmParser extends PyProjectParser {
             return requirement.substring(0, markerIndex).trim();
         }
         return requirement.trim();
-    }
-
-    @Override
-    public List<ResolvedModule> getResolvedModulesFromLockFile(JsonNode lockNode) {
-        final List<ResolvedModule> resolvedModules = new ArrayList<>();
-
-        lockNode.path("package").valueStream().forEach(packageNode -> {
-            final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
-            resolvedModule.setVersion(packageNode.get("version").textValue());
-
-            resolvedModule.setPyProjectPackageSource(parseSource(packageNode, "index"));
-            resolvedModule.setPyProjectPackageFiles(collectPackageFileData(packageNode));
-
-            final JsonNode packageDependenciesNode = packageNode.path("dependencies");
-            final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
-            if (!packageDependenciesNode.isMissingNode()) {
-                packageDependenciesNode.valueStream().forEach(dependency -> {
-                    final UnresolvedModule unresolvedModule = parseRequirement(dependency.asText());
-                    unresolvedModuleMap.put(unresolvedModule.getName(), unresolvedModule);
-                });
-            }
-            resolvedModule.setRuntimeDependencies(unresolvedModuleMap);
-            resolvedModules.add(resolvedModule);
-        });
-        return resolvedModules;
     }
 }

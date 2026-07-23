@@ -188,8 +188,8 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
     }
 
     private void contributeDependencies(List<UnresolvedModule> dependencies, String dependencyType,
-            String projectAssetId, Map<String, Artifact> nameToArtifactMap, Map<String, ResolvedModule> nameToResolvedModuleMap,
-            String relativePath) {
+                                        String projectAssetId, Map<String, Artifact> nameToArtifactMap,
+                                        Map<String, ResolvedModule> nameToResolvedModuleMap, String relativePath) {
 
         for (UnresolvedModule module : dependencies) {
             final String name = module.getName();
