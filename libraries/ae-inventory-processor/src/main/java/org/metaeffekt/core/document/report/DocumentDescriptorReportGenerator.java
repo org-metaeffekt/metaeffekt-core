@@ -345,6 +345,16 @@ public class DocumentDescriptorReportGenerator {
         builder.failOnMissingVelocityRuntimeReferences(Boolean.parseBoolean(mergedParams.get("failOnMissingVelocityRuntimeReferences")));
         builder.inventoryAssetPrefix(mergedParams.get("inventoryAssetPrefix"));
 
+        if (mergedParams.get("inventoryBomComponentColumnWidth") != null) {
+            builder.inventoryBomComponentColumnWidth(mergedParams.get("inventoryBomComponentColumnWidth"));
+        }
+        if (mergedParams.get("inventoryBomArtifactColumnWidth") != null) {
+            builder.inventoryBomArtifactColumnWidth(mergedParams.get("inventoryBomArtifactColumnWidth"));
+        }
+        if (mergedParams.get("inventoryBomLicenseColumnWidth") != null) {
+            builder.inventoryBomLicenseColumnWidth(mergedParams.get("inventoryBomLicenseColumnWidth"));
+        }
+
         ReportConfigurationParameters configParams = builder.build();
 
         configParams.setAllFailConditions(false); // current default handling for all document types
