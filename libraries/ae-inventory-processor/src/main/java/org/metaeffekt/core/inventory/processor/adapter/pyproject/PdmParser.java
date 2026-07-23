@@ -18,7 +18,6 @@ package org.metaeffekt.core.inventory.processor.adapter.pyproject;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
-import org.metaeffekt.core.inventory.processor.model.PyProjectPackageSource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,8 +98,8 @@ public class PdmParser extends PyProjectParser {
             final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
             resolvedModule.setVersion(packageNode.get("version").textValue());
 
-            final PyProjectPackageSource source = parseSource(packageNode.path("index"));
-            resolvedModule.setPyProjectPackageSource(source);
+            resolvedModule.setPyProjectPackageSource(parseSource(packageNode, "index"));
+            resolvedModule.setPyProjectPackageFiles(collectPackageFileData(packageNode));
 
             final JsonNode packageDependenciesNode = packageNode.path("dependencies");
             final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
@@ -114,13 +113,5 @@ public class PdmParser extends PyProjectParser {
             resolvedModules.add(resolvedModule);
         });
         return resolvedModules;
-    }
-
-    private PyProjectPackageSource parseSource(JsonNode source) {
-        if (source.isMissingNode()) {
-            return null;
-        }
-        final JsonNode urlNode = source.path("url");
-        return new PyProjectPackageSource(null, urlNode.asText(null), null);
     }
 }
