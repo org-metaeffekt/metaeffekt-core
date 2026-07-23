@@ -64,7 +64,9 @@ public class ReportContext {
      */
     public String combinedTitle(String topic, boolean prepend) {
         if (title == null || StringUtils.isEmpty(title)) {
-            return topic;
+            return topic != null ? topic : "";
+        } else if (topic == null || StringUtils.isEmpty(topic)) {
+            return title;
         } else {
             return prepend ? title + " " + topic : topic + " " + title;
         }

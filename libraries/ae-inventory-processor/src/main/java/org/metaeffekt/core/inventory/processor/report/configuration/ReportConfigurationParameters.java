@@ -147,6 +147,18 @@ public class ReportConfigurationParameters {
     @Builder.Default
     private boolean assessmentReportEnabled = false;
 
+    @Builder.Default
+    private String inventoryAssetPrefix = null;
+
+    @Builder.Default
+    private String inventoryBomComponentColumnWidth = "20*";
+
+    @Builder.Default
+    private String inventoryBomArtifactColumnWidth = "45*";
+
+    @Builder.Default
+    private String inventoryBomLicenseColumnWidth = "35*";
+
     public void setAllFailConditions(boolean shouldFail) {
         failOnError = shouldFail;
         failOnBanned = shouldFail;

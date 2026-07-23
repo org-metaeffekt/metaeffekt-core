@@ -92,9 +92,11 @@ public class DocumentDescriptorReportGenerator {
             final List<InventoryContext> inventoryContexts = new ArrayList<>();
 
             for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
-                if (inventoryContext.getAssetName() != null && inventoryContext.getAssetVersion() != null) {
+                if (inventoryContext.getAssetName() != null) {
                     inventoryContexts.add(inventoryContext);
-                } else if (inventoryContext.getAssetName() == null && inventoryContext.getAssetVersion() == null) {
+                } else if (inventoryContext.getAssetVersion() != null) {
+                    throw new IllegalStateException("The field 'assetVersion' for inventoryContext [" + inventoryContext.getIdentifier() + "] is set, but no 'assetName' is specified, please set an 'assetName' as well or remove the field 'assetVersion'.");
+                } else {
                     if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
                         // separate handling for initial license documentation, since we want to report on all assets in
                         // the inventory, but do not want to generate the content for each asset separately
@@ -112,7 +114,7 @@ public class DocumentDescriptorReportGenerator {
 
                             String assetVersion = primaryAsset
                                     .map(a -> a.get(AssetMetaData.Attribute.VERSION))
-                                    .orElseThrow(() -> new IllegalStateException("Missing asset version in primary asset for inventory [" + inventoryContext.getIdentifier() + "]. Please make sure that every primary asset has a specified version."));
+                                    .orElse(null);
 
                             final String encodedAssetName = Base64.getEncoder().encodeToString(assetName.getBytes());
                             InventoryContext derivedContext = new InventoryContext(inventory, encodedAssetName, inventoryContext.getReportContext(), inventoryContext.getLicensesPath(), inventoryContext.getComponentsPath());
@@ -121,10 +123,6 @@ public class DocumentDescriptorReportGenerator {
                             inventoryContexts.add(derivedContext);
                         }
                     }
-                } else if (inventoryContext.getAssetName() == null) {
-                    throw new IllegalStateException("The field 'assetVersion' for inventoryContext [" + inventoryContext.getIdentifier() + "] is set, but no 'assetName' is specified, please set an 'assetName' as well or remove the field 'assetName'.");
-                } else {
-                    throw new IllegalStateException("The field 'assetName' for inventoryContext [" + inventoryContext.getIdentifier() + "] is set, but no 'assetVersion' is specified, please set an 'assetVersion' as well or remove the field 'assetName'.");
                 }
             }
             documentPart.setInventoryContexts(inventoryContexts);
@@ -347,8 +345,20 @@ public class DocumentDescriptorReportGenerator {
         builder.hidePriorityInformation(Boolean.parseBoolean(mergedParams.get("hidePriorityInformation")));
         builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.get("filterVulnerabilitiesNotCoveredByArtifacts")));
         builder.failOnMissingVelocityRuntimeReferences(Boolean.parseBoolean(mergedParams.get("failOnMissingVelocityRuntimeReferences")));
+        builder.inventoryAssetPrefix(mergedParams.get("inventoryAssetPrefix"));
+
+        if (mergedParams.get("inventoryBomComponentColumnWidth") != null) {
+            builder.inventoryBomComponentColumnWidth(mergedParams.get("inventoryBomComponentColumnWidth"));
+        }
+        if (mergedParams.get("inventoryBomArtifactColumnWidth") != null) {
+            builder.inventoryBomArtifactColumnWidth(mergedParams.get("inventoryBomArtifactColumnWidth"));
+        }
+        if (mergedParams.get("inventoryBomLicenseColumnWidth") != null) {
+            builder.inventoryBomLicenseColumnWidth(mergedParams.get("inventoryBomLicenseColumnWidth"));
+        }
 
         ReportConfigurationParameters configParams = builder.build();
+
         configParams.setAllFailConditions(false); // current default handling for all document types
 
         return configParams;
