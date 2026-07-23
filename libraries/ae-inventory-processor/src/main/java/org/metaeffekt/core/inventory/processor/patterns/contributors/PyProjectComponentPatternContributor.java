@@ -21,22 +21,28 @@ import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.PdmParser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.PoetryParser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectParser;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 @Slf4j
 public class PyProjectComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final List<PyProjectParser> PY_PROJECT_PARSERS = List.of(new PoetryParser(), new PdmParser());
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<>() {{
         add("pyproject.toml");
@@ -70,39 +76,20 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 final List<ComponentPatternData> list = new ArrayList<>();
 
                 final File pyProjectToml = new File(baseDir, relativeAnchorPath);
+                final ObjectMapper objectMapper = new TomlMapper();
+                final JsonNode pyProjectRootNode = objectMapper.readTree(pyProjectToml);
 
-                ObjectMapper objectMapper = new TomlMapper();
-                JsonNode pyProjectRootNode = objectMapper.readTree(pyProjectToml);
+                final PyProjectParser parser = findParser(pyProjectRootNode);
+                if (parser == null) {
+                    log.info("Unsupported pyproject.toml format: {}", pyProjectToml.getAbsolutePath());
+                    return null;
+                }
 
-                JsonNode projectNode = pyProjectRootNode.at("/tool/poetry");
-                ResolvedModule projectModule = new ResolvedModule(projectNode.get("name").asText(), null);
-                projectModule.setVersion(projectNode.get("version").asText());
-
-                final List<UnresolvedModule> directRuntimeDependencies = extractDirectDependencies(pyProjectRootNode, "/tool/poetry/dependencies");
-                final List<UnresolvedModule> directDevelopmentDependencies = extractDirectDependencies(pyProjectRootNode, "/tool/poetry/group/dev/dependencies");
-
-                final File poetryLockFile = new File(pyProjectToml.getParentFile(), "poetry.lock");
-                final ObjectMapper lockObjectMapper = new TomlMapper();
-                final JsonNode lockNode = lockObjectMapper.readTree(poetryLockFile);
-
-                // read the packages
-                final List<ResolvedModule> resolvedModules = new ArrayList<>();
-                lockNode.path("package").valueStream().forEach(packageNode -> {
-                    final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
-                    resolvedModule.setVersion(packageNode.get("version").textValue());
-
-                    final JsonNode packageDependenciesNode = packageNode.path("dependencies");
-                    final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
-                    if (!packageDependenciesNode.isMissingNode()) {
-                        packageDependenciesNode.propertyStream().forEach(dependency -> {
-                            final UnresolvedModule unresolvedModule = new UnresolvedModule(dependency.getKey(), null, dependency.getValue().toString());
-                            unresolvedModuleMap.put(dependency.getKey(), unresolvedModule);
-                        });
-                    }
-                    resolvedModule.setRuntimeDependencies(unresolvedModuleMap);
-
-                    resolvedModules.add(resolvedModule);
-                });
+                final PyProjectData pyProjectData = parser.parse(pyProjectToml, pyProjectRootNode);
+                final ResolvedModule projectModule = pyProjectData.getProjectModule();
+                final List<UnresolvedModule> directDevelopmentDependencies = pyProjectData.getDirectDevelopmentDependencies();
+                final List<UnresolvedModule> directRuntimeDependencies = pyProjectData.getDirectRuntimeDependencies();
+                final List<ResolvedModule> resolvedModules = pyProjectData.getResolvedModulesFromLockFile();
 
                 // here we have the
                 // - a resolve project level-module
@@ -151,7 +138,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 cpd.set(ComponentPatternData.Attribute.TYPE, ARTIFACT_TYPE_APPLICATION);
                 cpd.set(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "python-application");
 
-                cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "pyproject.toml, poetry.lock");
+                cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, parser.getIncludePattern());
 
                 cpd.setExpansionInventorySupplier(() -> inventory);
 
@@ -165,6 +152,10 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
 
         return Collections.emptyList();
 
+    }
+
+    private PyProjectParser findParser(JsonNode root) {
+        return PY_PROJECT_PARSERS.stream().filter(parser -> parser.supports(root)).findFirst().orElse(null);
     }
 
     private List<UnresolvedModule> extractIndirectDependencies(List<UnresolvedModule> seedDependencies, Map<String, ResolvedModule> resolvedModules, Function<ResolvedModule, Map<String, UnresolvedModule>> supplier) {
@@ -197,8 +188,8 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
     }
 
     private void contributeDependencies(List<UnresolvedModule> dependencies, String dependencyType,
-            String projectAssetId, Map<String, Artifact> nameToArtifactMap, Map<String, ResolvedModule> nameToResolvedModuleMap,
-            String relativePath) {
+                                        String projectAssetId, Map<String, Artifact> nameToArtifactMap,
+                                        Map<String, ResolvedModule> nameToResolvedModuleMap, String relativePath) {
 
         for (UnresolvedModule module : dependencies) {
             final String name = module.getName();
@@ -210,6 +201,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
             }
 
             final String version = resolvedModule.getVersion();
+            final PyProjectPackageSource pyProjectPackageSource = resolvedModule.getPyProjectPackageSource();
 
             Artifact artifact = nameToArtifactMap.get(resolvedModule.getName());
             if (artifact == null) {
@@ -218,6 +210,10 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 artifact.setVersion(version);
                 artifact.setComponent(name);
 
+                if (pyProjectPackageSource != null) {
+                    artifact.set(KEY_PACKAGE_SOURCE_URL, pyProjectPackageSource.url());
+                }
+                artifact.set(KEY_PACKAGE_FILES, String.valueOf(resolvedModule.getPyProjectPackageFiles()));
                 artifact.set(Constants.KEY_PATH_IN_ASSET, relativePath + "[" + name + "]");
 
                 // we cannot add a root path; there is no physical file that is part of the module
@@ -232,19 +228,6 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
             }
             artifact.set(projectAssetId, dependencyType);
         }
-    }
-
-    private List<UnresolvedModule> extractDirectDependencies(JsonNode pyProjectRootNode, String fullQualifiedPath) {
-        final List<UnresolvedModule> modules = new ArrayList<>();
-        JsonNode dependencyNode = pyProjectRootNode.at(fullQualifiedPath);
-        if (!dependencyNode.isMissingNode()) {
-            dependencyNode.propertyStream().forEach(entry -> {
-                // FIXME-KKL: the versionRange here is more that a version range; it may contain more details encoded as Json
-                UnresolvedModule unresolvedModule = new UnresolvedModule(entry.getKey(), null, entry.getValue().toString());
-                modules.add(unresolvedModule);
-            });
-        }
-        return modules;
     }
 
     private String buildPurl(String name, String version) {
