@@ -338,6 +338,8 @@ public class DocumentDescriptorReportGenerator {
 
         builder.reportLanguage(documentDescriptor.getLanguage());
 
+        // FIXME: we should not need to list all parameters; these should automatically propagate
+        builder.enableOpenCodeStatus(Boolean.parseBoolean(mergedParams.get("enableOpenCodeStatus")));
         builder.includeInofficialOsiStatus(Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus")));
         builder.filterAdvisorySummary(Boolean.parseBoolean(mergedParams.get("filterAdvisorySummary")));
         builder.hidePriorityInformation(Boolean.parseBoolean(mergedParams.get("hidePriorityInformation")));
