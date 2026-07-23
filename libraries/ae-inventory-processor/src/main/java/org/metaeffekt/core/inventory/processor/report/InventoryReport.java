@@ -70,6 +70,9 @@ public class InventoryReport {
 
     public static final String TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT = "labels-vulnerability-assessment";
 
+    public static final String TEMPLATE_GROUP_PURPOSE = "purpose";
+    public static final String TEMPLATE_GROUP_CONTEXT = "context";
+
     public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
 
@@ -541,7 +544,8 @@ public class InventoryReport {
         final boolean isVulnerabilityReport = configParams.isInventoryVulnerabilityReportEnabled() ||
                 configParams.isInventoryVulnerabilityReportSummaryEnabled() ||
                 configParams.isInventoryVulnerabilityStatisticsReportEnabled() ||
-                configParams.isAssessmentReportEnabled();
+                configParams.isAssessmentReportEnabled() ||
+                configParams.isDocumentPurposeEnabled();
 
         // build adapters
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
@@ -590,6 +594,16 @@ public class InventoryReport {
         if (configParams.isAssessmentReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
+        }
+
+        if (configParams.isDocumentContextEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_CONTEXT, reportContext);
+        }
+
+        if (configParams.isDocumentPurposeEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_PURPOSE, reportContext);
         }
 
         // evaluate licenses only for managed artifacts
@@ -704,6 +718,7 @@ public class InventoryReport {
         properties.put("resource.loader.class.class", ClasspathResourceLoader.class.getName());
         properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
         properties.put(Velocity.RUNTIME_REFERENCES_STRICT, configParams.isFailOnMissingVelocityRuntimeReferences());
+        properties.put("directive.set.null.allowed", true);
         //https://velocity.apache.org/engine/1.7/developer-guide.html#velocimacro
         properties.put("velocimacro.arguments.strict", "true");
 
