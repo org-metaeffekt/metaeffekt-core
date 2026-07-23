@@ -36,9 +36,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PACKAGE_SOURCE;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PACKAGE_SOURCE_URL;
 
 @Slf4j
 public class DirectoryInventoryScanTest {
@@ -273,53 +270,6 @@ public class DirectoryInventoryScanTest {
         // aggregate (based on filtered)
         if (executeAggregation) {
             aggregateArchives(scanDir, filteredTargetScanInventoryFile, referenceInventoryDir, targetAggregationInventoryFile, targetAggregationDir);
-        }
-    }
-
-    /**
-     * Test to scan a pyproject directory and check for package source attributes.
-     *
-     * @throws IOException if an error occurs during directory handling
-     */
-    @Disabled
-    @Test
-    public void testScanExternalFolder_PyProject_PackageSource() throws IOException {
-        // input
-        final File projectBaseDir = new File("../../.examples");
-
-        // select case
-        String caseString = "case-2026-07-17_001";
-
-        final File scanInputDir = new File(projectBaseDir, caseString);
-        final File scanDir = new File(projectBaseDir, caseString + "-scan");
-
-        // other sources
-        final File referenceInventoryDir = new File(projectBaseDir, "reference/inventory");
-
-        // scan
-        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
-
-        // check artifacts and collect their attributes
-        final Set<String> artifactAttributes = new HashSet<>();
-        List<Artifact> artifacts = inventory.getArtifacts();
-        artifacts.forEach(artifact -> artifactAttributes.addAll(artifact.getAttributes()));
-
-        // if minimum one dependency exists for the module (other than the module itself), it must have a package source attribute
-        assertTrue(artifactAttributes.contains(KEY_PACKAGE_SOURCE));
-
-        // get artifacts with package sources other than PyPI and check for package source url
-        List<Artifact> nonPyPIArtifacts = artifacts.stream().filter(a -> a.get(KEY_PACKAGE_SOURCE) != null && !a.get(KEY_PACKAGE_SOURCE).equals("PyPI")).toList();
-        if (!nonPyPIArtifacts.isEmpty()) {
-            for (Artifact artifact : nonPyPIArtifacts) {
-                assertNotNull(artifact.get(KEY_PACKAGE_SOURCE_URL));
-            }
-        } else {
-            // artifacts with default PyPI package source do not have a package source URL
-            for (Artifact artifact : artifacts) {
-                if (artifact.get(KEY_PACKAGE_SOURCE) != null) {
-                    assertNull(artifact.get(KEY_PACKAGE_SOURCE_URL));
-                }
-            }
         }
     }
 

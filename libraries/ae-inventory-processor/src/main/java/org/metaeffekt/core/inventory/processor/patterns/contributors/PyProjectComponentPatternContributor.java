@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PdmParser;
@@ -211,9 +213,9 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 artifact.setComponent(name);
 
                 if (pyProjectPackageSource != null) {
-                    artifact.set(KEY_PACKAGE_SOURCE, pyProjectPackageSource.reference());
                     artifact.set(KEY_PACKAGE_SOURCE_URL, pyProjectPackageSource.url());
                 }
+                artifact.set(KEY_PACKAGE_FILES, String.valueOf(resolvedModule.getPyProjectPackageFiles()));
                 artifact.set(Constants.KEY_PATH_IN_ASSET, relativePath + "[" + name + "]");
 
                 // we cannot add a root path; there is no physical file that is part of the module
@@ -228,6 +230,53 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
             }
             artifact.set(projectAssetId, dependencyType);
         }
+    }
+
+    private List<UnresolvedModule> extractDirectDependencies(JsonNode pyProjectRootNode, String fullQualifiedPath) {
+        final List<UnresolvedModule> modules = new ArrayList<>();
+        JsonNode dependencyNode = pyProjectRootNode.at(fullQualifiedPath);
+        if (!dependencyNode.isMissingNode()) {
+            dependencyNode.propertyStream().forEach(entry -> {
+                String versionRange = deriveVersionRange(entry.getValue());
+                UnresolvedModule unresolvedModule = new UnresolvedModule(entry.getKey(), null, versionRange);
+                modules.add(unresolvedModule);
+            });
+        }
+        return modules;
+    }
+
+    private String deriveVersionRange(JsonNode value) {
+        return value.isTextual() ? value.textValue() : value.get("version").textValue();
+    }
+
+    private PyProjectPackageSource parseSource(JsonNode packageNode) {
+        final JsonNode source = packageNode.path("source");
+        if (source.isMissingNode()) {
+            return null;
+        }
+        final String type = source.path("type").asText(null);
+        final String url = source.path("url").asText(null);
+        final String reference = source.path("reference").asText(null);
+
+        return new PyProjectPackageSource(type, url, reference);
+    }
+
+    private JSONArray collectPackageFileData(JsonNode packageNode) {
+        final JsonNode files = packageNode.path("files");
+        if (files.isMissingNode() || !files.isArray()) {
+            return null;
+        }
+
+        final JSONArray fileData = new JSONArray();
+        for (JsonNode file : files) {
+            if (file.isObject()) {
+                final JSONObject fileDataObject = new JSONObject();
+                fileDataObject.put("file", file.path("file").asText(null));
+                fileDataObject.put("hash", file.path("hash").asText(null));
+                fileData.put(fileDataObject);
+            }
+        }
+        return fileData.isEmpty() ? null : fileData;
     }
 
     private String buildPurl(String name, String version) {
