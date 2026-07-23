@@ -44,7 +44,7 @@
             <plugins>
                 <plugin>
                     <artifactId>maven-invoker-plugin</artifactId>
-                    <version>${maven.invoker.plugin.version}</version>
+
                     <configuration>
                         <projectsDirectory>src/it</projectsDirectory>
                         <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
@@ -68,10 +68,6 @@
                             <phase>installX</phase>
                         </execution>
                     </executions>
-                </plugin>
-                <plugin>
-                    <groupId>com.mycila</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
                 </plugin>
             </plugins>
         </pluginManagement>
