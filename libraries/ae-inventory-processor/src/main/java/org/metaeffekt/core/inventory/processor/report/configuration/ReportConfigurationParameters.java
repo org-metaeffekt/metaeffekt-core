@@ -147,6 +147,9 @@ public class ReportConfigurationParameters {
     @Builder.Default
     private boolean assessmentReportEnabled = false;
 
+    @Builder.Default
+    private String inventoryAssetPrefix = null;
+
     public void setAllFailConditions(boolean shouldFail) {
         failOnError = shouldFail;
         failOnBanned = shouldFail;

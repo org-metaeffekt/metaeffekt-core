@@ -345,8 +345,10 @@ public class DocumentDescriptorReportGenerator {
         builder.hidePriorityInformation(Boolean.parseBoolean(mergedParams.get("hidePriorityInformation")));
         builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.get("filterVulnerabilitiesNotCoveredByArtifacts")));
         builder.failOnMissingVelocityRuntimeReferences(Boolean.parseBoolean(mergedParams.get("failOnMissingVelocityRuntimeReferences")));
+        builder.inventoryAssetPrefix(mergedParams.get("inventoryAssetPrefix"));
 
         ReportConfigurationParameters configParams = builder.build();
+
         configParams.setAllFailConditions(false); // current default handling for all document types
 
         return configParams;
