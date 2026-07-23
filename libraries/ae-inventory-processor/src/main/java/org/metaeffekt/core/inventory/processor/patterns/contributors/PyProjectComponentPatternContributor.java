@@ -19,18 +19,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
@@ -78,8 +76,8 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 ResolvedModule projectModule = new ResolvedModule(projectNode.get("name").asText(), null);
                 projectModule.setVersion(projectNode.get("version").asText());
 
-                final List<UnresolvedModule> directRuntimeDependencies = extractDirectDependencies(pyProjectRootNode, "/tool/poetry/dependencies");
-                final List<UnresolvedModule> directDevelopmentDependencies = extractDirectDependencies(pyProjectRootNode, "/tool/poetry/group/dev/dependencies");
+                final List<UnresolvedModule> directRuntimeDependencies = extractDirectDependencies(projectNode, "/dependencies");
+                final List<UnresolvedModule> directDevelopmentDependencies = extractDirectDependencies(projectNode, "/group/dev/dependencies");
 
                 final File poetryLockFile = new File(pyProjectToml.getParentFile(), "poetry.lock");
                 final ObjectMapper lockObjectMapper = new TomlMapper();
@@ -90,6 +88,9 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 lockNode.path("package").valueStream().forEach(packageNode -> {
                     final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
                     resolvedModule.setVersion(packageNode.get("version").textValue());
+
+                    resolvedModule.setPyProjectPackageSource(parseSource(packageNode));
+                    resolvedModule.setPyProjectPackageFiles(collectPackageFileData(packageNode));
 
                     final JsonNode packageDependenciesNode = packageNode.path("dependencies");
                     final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
@@ -210,6 +211,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
             }
 
             final String version = resolvedModule.getVersion();
+            final PyProjectPackageSource pyProjectPackageSource = resolvedModule.getPyProjectPackageSource();
 
             Artifact artifact = nameToArtifactMap.get(resolvedModule.getName());
             if (artifact == null) {
@@ -218,6 +220,10 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 artifact.setVersion(version);
                 artifact.setComponent(name);
 
+                if (pyProjectPackageSource != null) {
+                    artifact.set(KEY_PACKAGE_SOURCE_URL, pyProjectPackageSource.url());
+                }
+                artifact.set(KEY_PACKAGE_FILES, String.valueOf(resolvedModule.getPyProjectPackageFiles()));
                 artifact.set(Constants.KEY_PATH_IN_ASSET, relativePath + "[" + name + "]");
 
                 // we cannot add a root path; there is no physical file that is part of the module
@@ -239,12 +245,46 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
         JsonNode dependencyNode = pyProjectRootNode.at(fullQualifiedPath);
         if (!dependencyNode.isMissingNode()) {
             dependencyNode.propertyStream().forEach(entry -> {
-                // FIXME-KKL: the versionRange here is more that a version range; it may contain more details encoded as Json
-                UnresolvedModule unresolvedModule = new UnresolvedModule(entry.getKey(), null, entry.getValue().toString());
+                String versionRange = deriveVersionRange(entry.getValue());
+                UnresolvedModule unresolvedModule = new UnresolvedModule(entry.getKey(), null, versionRange);
                 modules.add(unresolvedModule);
             });
         }
         return modules;
+    }
+
+    private String deriveVersionRange(JsonNode value) {
+        return value.isTextual() ? value.textValue() : value.get("version").textValue();
+    }
+
+    private PyProjectPackageSource parseSource(JsonNode packageNode) {
+        final JsonNode source = packageNode.path("source");
+        if (source.isMissingNode()) {
+            return null;
+        }
+        final String type = source.path("type").asText(null);
+        final String url = source.path("url").asText(null);
+        final String reference = source.path("reference").asText(null);
+
+        return new PyProjectPackageSource(type, url, reference);
+    }
+
+    private JSONArray collectPackageFileData(JsonNode packageNode) {
+        final JsonNode files = packageNode.path("files");
+        if (files.isMissingNode() || !files.isArray()) {
+            return null;
+        }
+
+        final JSONArray fileData = new JSONArray();
+        for (JsonNode file : files) {
+            if (file.isObject()) {
+                final JSONObject fileDataObject = new JSONObject();
+                fileDataObject.put("file", file.path("file").asText(null));
+                fileDataObject.put("hash", file.path("hash").asText(null));
+                fileData.put(fileDataObject);
+            }
+        }
+        return fileData.isEmpty() ? null : fileData;
     }
 
     private String buildPurl(String name, String version) {
