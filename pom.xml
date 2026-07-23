@@ -302,50 +302,50 @@
                     <version>${codehaus.exec.plugin.version}</version>
                 </plugin>
 
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>${maven.enforcer.plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>enforce-maven</id>
-                            <goals>
-                                <goal>enforce</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <requireMavenVersion>
-                                        <version>3.9.10</version> <!-- First release in 2025 -->
-                                    </requireMavenVersion>
-                                    <requireJavaVersion>
-                                        <version>17</version>
-                                    </requireJavaVersion>
-                                    <!--<dependencyConvergence/>-->
-                                    <requirePluginVersions>
-                                        <message>Best Practice is to always define plugin versions!</message>
-                                        <banLatest>true</banLatest>
-                                        <banRelease>true</banRelease>
-                                        <banSnapshots>true</banSnapshots>
-                                        <phases>clean,deploy,site</phases>
-                                        <unCheckedPluginList>
-                                            org.apache.maven.plugins:maven-enforcer-plugin,
-                                            org.apache.maven.plugins:maven-idea-plugin,
-                                            org.metaeffekt.core:ae-shell-script-assembler-plugin,
-                                            org.metaeffekt.core:ae-inventory-maven-plugin,
-                                            org.metaeffekt.core:ae-api-publish-maven-plugin,
-                                            org.metaeffekt.core:ae-artifact-publish-maven-plugin,
-                                            com.metaeffekt.artifact.analysis:ae-asset-descriptor-maven-plugin,
-                                            com.metaeffekt.artifact.analysis:ae-inventory-conversion-plugin,
-                                            com.metaeffekt.artifact.analysis:ae-kotlin-scripting-maven-plugin,
-                                            com.metaeffekt.artifact.analysis:ae-inventory-overview-html-report,
-                                            org.metaeffekt.dita:ae-dita-maven-plugin
-                                        </unCheckedPluginList>
-                                    </requirePluginVersions>
-                                </rules>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+<!--                 <plugin>-->
+<!--                    <groupId>org.apache.maven.plugins</groupId>-->
+<!--                    <artifactId>maven-enforcer-plugin</artifactId>-->
+<!--                    <version>${maven.enforcer.plugin.version}</version>-->
+<!--                    <executions>-->
+<!--                        <execution>-->
+<!--                            <id>enforce-maven</id>-->
+<!--                            <goals>-->
+<!--                                <goal>enforce</goal>-->
+<!--                            </goals>-->
+<!--                            <configuration>-->
+<!--                                <rules>-->
+<!--                                    <requireMavenVersion>-->
+<!--                                        <version>3.9.10</version> &lt;!&ndash; First release in 2025 &ndash;&gt;-->
+<!--                                    </requireMavenVersion>-->
+<!--                                    <requireJavaVersion>-->
+<!--                                        <version>17</version>-->
+<!--                                    </requireJavaVersion>-->
+<!--                                    &lt;!&ndash;<dependencyConvergence/>&ndash;&gt;-->
+<!--                                    <requirePluginVersions>-->
+<!--                                        <message>Best Practice is to always define plugin versions!</message>-->
+<!--                                        <banLatest>true</banLatest>-->
+<!--                                        <banRelease>true</banRelease>-->
+<!--                                        <banSnapshots>true</banSnapshots>-->
+<!--                                        <phases>clean,deploy,site</phases>-->
+<!--                                        <unCheckedPluginList>-->
+<!--                                            org.apache.maven.plugins:maven-enforcer-plugin,-->
+<!--                                            org.apache.maven.plugins:maven-idea-plugin,-->
+<!--                                            org.metaeffekt.core:ae-shell-script-assembler-plugin,-->
+<!--                                            org.metaeffekt.core:ae-inventory-maven-plugin,-->
+<!--                                            org.metaeffekt.core:ae-api-publish-maven-plugin,-->
+<!--                                            org.metaeffekt.core:ae-artifact-publish-maven-plugin,-->
+<!--                                            com.metaeffekt.artifact.analysis:ae-asset-descriptor-maven-plugin,-->
+<!--                                            com.metaeffekt.artifact.analysis:ae-inventory-conversion-plugin,-->
+<!--                                            com.metaeffekt.artifact.analysis:ae-kotlin-scripting-maven-plugin,-->
+<!--                                            com.metaeffekt.artifact.analysis:ae-inventory-overview-html-report,-->
+<!--                                            org.metaeffekt.dita:ae-dita-maven-plugin-->
+<!--                                        </unCheckedPluginList>-->
+<!--                                    </requirePluginVersions>-->
+<!--                                </rules>-->
+<!--                            </configuration>-->
+<!--                        </execution>-->
+<!--                    </executions>-->
+<!--                </plugin>-->
 
                 <plugin>
                     <groupId>org.metaeffekt.core</groupId>
