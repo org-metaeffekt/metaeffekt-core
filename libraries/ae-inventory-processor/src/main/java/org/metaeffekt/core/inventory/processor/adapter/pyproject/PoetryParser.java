@@ -73,7 +73,6 @@ public class PoetryParser extends PyProjectParser {
                 });
             }
             resolvedModule.setRuntimeDependencies(unresolvedModuleMap);
-
             resolvedModules.add(resolvedModule);
         });
         return resolvedModules;

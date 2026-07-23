@@ -111,7 +111,6 @@ public class PdmParser extends PyProjectParser {
                 });
             }
             resolvedModule.setRuntimeDependencies(unresolvedModuleMap);
-
             resolvedModules.add(resolvedModule);
         });
         return resolvedModules;
@@ -119,7 +118,7 @@ public class PdmParser extends PyProjectParser {
 
     private PyProjectPackageSource parseSource(JsonNode source) {
         if (source.isMissingNode()) {
-            return new PyProjectPackageSource(null, null, null);
+            return null;
         }
         final JsonNode urlNode = source.path("url");
         return new PyProjectPackageSource(null, urlNode.asText(null), null);
