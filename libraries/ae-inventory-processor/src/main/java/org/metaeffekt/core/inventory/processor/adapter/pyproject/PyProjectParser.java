@@ -28,7 +28,10 @@ import org.metaeffekt.core.inventory.processor.model.PyProjectPackageSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @AllArgsConstructor
@@ -51,12 +54,20 @@ public abstract class PyProjectParser {
     public abstract String getIncludePattern();
 
     /**
-     * Method for resolving modules from lock files.
+     * Parses the dependencies from packages in the lock file and creates {@link UnresolvedModule} objects from them.
      *
-     * @param lockNode the lock file node
-     * @return list of resolved modules
+     * @param packageDependenciesNode the dependencies node in the package
+     * @param unresolvedModuleMap     a map consisting of the name of the dependency and its unresolved module representation
      */
-    protected abstract List<ResolvedModule> getResolvedModulesFromLockFile(JsonNode lockNode);
+    protected abstract void extractAndFillUnresolvedModules(JsonNode packageDependenciesNode, Map<String, UnresolvedModule> unresolvedModuleMap);
+
+    /**
+     * Parses information of the package source attribute of the lock file.
+     *
+     * @param packageNode the package node
+     * @return the extracted source data
+     */
+    protected abstract PyProjectPackageSource parseSource(JsonNode packageNode);
 
     /**
      * Extracts the direct dependencies in a toml file
@@ -76,13 +87,13 @@ public abstract class PyProjectParser {
      * @throws IOException if an I/O error occurs
      */
     public PyProjectData parse(File pyProjectToml, JsonNode root) throws IOException {
-        PyProjectData pyProjectData = new PyProjectData();
+        final PyProjectData pyProjectData = new PyProjectData();
 
         // parse toml file
-        JsonNode projectNode = root.at(getProjectNode());
-        ResolvedModule projectModule = new ResolvedModule(projectNode.get("name").asText(), null);
-        projectModule.setVersion(projectNode.path("version").asText(null));
+        final JsonNode projectNode = root.at(getProjectNode());
+        final ResolvedModule projectModule = new ResolvedModule(projectNode.get("name").asText(), null);
 
+        projectModule.setVersion(projectNode.path("version").asText(null));
         pyProjectData.setProjectModule(projectModule);
         pyProjectData.setDirectRuntimeDependencies(extractDirectDependencies(root, getDependencyPath()));
         pyProjectData.setDirectDevelopmentDependencies(extractDirectDependencies(root, getDevDependencyPath()));
@@ -97,22 +108,29 @@ public abstract class PyProjectParser {
     }
 
     /**
-     * Parses information of the package source attribute of the lock file.
+     * Method for resolving modules from lock files.
      *
-     * @param packageNode the package node
-     * @param sourceNode  the source node
-     * @return the extracted source data
+     * @param lockNode the lock file node
+     * @return list of resolved modules
+     *
      */
-    protected PyProjectPackageSource parseSource(JsonNode packageNode, String sourceNode) {
-        final JsonNode source = packageNode.path(sourceNode);
-        if (source.isMissingNode()) {
-            return null;
-        }
-        final String type = source.path("type").asText(null);
-        final String url = source.path("url").asText(null);
-        final String reference = source.path("reference").asText(null);
+    private List<ResolvedModule> getResolvedModulesFromLockFile(JsonNode lockNode) {
+        final List<ResolvedModule> resolvedModules = new ArrayList<>();
 
-        return new PyProjectPackageSource(type, url, reference);
+        lockNode.path("package").valueStream().forEach(packageNode -> {
+            final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
+            final JsonNode packageDependenciesNode = packageNode.path("dependencies");
+            final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
+
+            extractAndFillUnresolvedModules(packageDependenciesNode, unresolvedModuleMap);
+
+            resolvedModule.setVersion(packageNode.get("version").textValue());
+            resolvedModule.setPyProjectPackageFiles(collectPackageFileData(packageNode));
+            resolvedModule.setPyProjectPackageSource(parseSource(packageNode));
+            resolvedModule.setRuntimeDependencies(unresolvedModuleMap);
+            resolvedModules.add(resolvedModule);
+        });
+        return resolvedModules;
     }
 
     /**
@@ -121,7 +139,7 @@ public abstract class PyProjectParser {
      * @param packageNode the package node
      * @return JSON array containing the files and the hashes
      */
-    protected JSONArray collectPackageFileData(JsonNode packageNode) {
+    private JSONArray collectPackageFileData(JsonNode packageNode) {
         final JsonNode files = packageNode.path("files");
         if (files.isMissingNode() || !files.isArray()) {
             return null;

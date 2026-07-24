@@ -16,8 +16,8 @@
 package org.metaeffekt.core.inventory.processor.adapter.pyproject;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
+import org.metaeffekt.core.inventory.processor.model.PyProjectPackageSource;
 
 import java.util.*;
 
@@ -35,49 +35,60 @@ public class PoetryParser extends PyProjectParser {
     }
 
     @Override
-    public List<UnresolvedModule> extractDirectDependencies(JsonNode rootNode, String fullQualifiedPath) {
-        final List<UnresolvedModule> modules = new ArrayList<>();
-        final JsonNode dependencyNode = rootNode.at(fullQualifiedPath);
-        if (!dependencyNode.isMissingNode()) {
-            dependencyNode.propertyStream().forEach(entry -> {
-                String versionRange = deriveVersionRange(entry.getValue());
-                UnresolvedModule unresolvedModule = new UnresolvedModule(entry.getKey(), null, versionRange);
-                modules.add(unresolvedModule);
-            });
-        }
-        return modules;
-    }
-
-    @Override
     public String getIncludePattern() {
         return "pyproject.toml, poetry.lock";
     }
 
     @Override
-    public List<ResolvedModule> getResolvedModulesFromLockFile(JsonNode lockNode) {
-        final List<ResolvedModule> resolvedModules = new ArrayList<>();
-        lockNode.path("package").valueStream().forEach(packageNode -> {
-            final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
-            resolvedModule.setVersion(packageNode.get("version").textValue());
-
-            resolvedModule.setPyProjectPackageSource(parseSource(packageNode, "source"));
-            resolvedModule.setPyProjectPackageFiles(collectPackageFileData(packageNode));
-
-            final JsonNode packageDependenciesNode = packageNode.path("dependencies");
-            final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
-            if (!packageDependenciesNode.isMissingNode()) {
-                packageDependenciesNode.propertyStream().forEach(dependency -> {
-                    final UnresolvedModule unresolvedModule = new UnresolvedModule(dependency.getKey(), null, dependency.getValue().toString());
-                    unresolvedModuleMap.put(dependency.getKey(), unresolvedModule);
-                });
-            }
-            resolvedModule.setRuntimeDependencies(unresolvedModuleMap);
-            resolvedModules.add(resolvedModule);
-        });
-        return resolvedModules;
+    protected List<UnresolvedModule> extractDirectDependencies(JsonNode rootNode, String fullQualifiedPath) {
+        final List<UnresolvedModule> unresolvedModules = new ArrayList<>();
+        final JsonNode dependencyNode = rootNode.at(fullQualifiedPath);
+        if (!dependencyNode.isMissingNode()) {
+            dependencyNode.propertyStream().forEach(entry -> {
+                final String versionRange = deriveVersionRange(entry.getValue());
+                final UnresolvedModule unresolvedModule = new UnresolvedModule(entry.getKey(), null, versionRange);
+                unresolvedModules.add(unresolvedModule);
+            });
+        }
+        return unresolvedModules;
     }
 
-    private String deriveVersionRange(JsonNode value) {
-        return value.isTextual() ? value.textValue() : value.get("version").textValue();
+    @Override
+    protected void extractAndFillUnresolvedModules(JsonNode packageDependenciesNode, Map<String, UnresolvedModule> unresolvedModuleMap) {
+        if (!packageDependenciesNode.isMissingNode()) {
+            packageDependenciesNode.propertyStream().forEach(dependency -> {
+                final String versionRange = deriveVersionRange(dependency.getValue());
+                final UnresolvedModule unresolvedModule = new UnresolvedModule(dependency.getKey(), null, versionRange);
+                unresolvedModuleMap.put(dependency.getKey(), unresolvedModule);
+            });
+        }
+    }
+
+    @Override
+    protected PyProjectPackageSource parseSource(JsonNode packageNode) {
+        final JsonNode source = packageNode.path("source");
+        if (source.isMissingNode()) {
+            return null;
+        }
+        final String type = source.path("type").asText(null);
+        final String url = source.path("url").asText(null);
+        final String reference = source.path("reference").asText(null);
+
+        return new PyProjectPackageSource(type, url, reference);
+    }
+
+    /**
+     * The dependency value containing the version information can either be a JSON object, a JSON array or a string.
+     *
+     * @param dependencyValue the value of the dependency containing the version
+     * @return the version
+     */
+    private String deriveVersionRange(JsonNode dependencyValue) {
+        if (dependencyValue.isObject()) {
+            return dependencyValue.get("version").textValue();
+        } else if (dependencyValue.isArray()) {
+            dependencyValue.get(1).get("version").textValue();
+        }
+        return dependencyValue.textValue();
     }
 }

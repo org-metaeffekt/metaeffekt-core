@@ -79,7 +79,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 final ObjectMapper objectMapper = new TomlMapper();
                 final JsonNode pyProjectRootNode = objectMapper.readTree(pyProjectToml);
 
-                final PyProjectParser parser = findParser(pyProjectRootNode);
+                final PyProjectParser parser = determineParser(pyProjectRootNode);
                 if (parser == null) {
                     log.info("Unsupported pyproject.toml format: {}", pyProjectToml.getAbsolutePath());
                     return null;
@@ -103,7 +103,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 // - direct runtime dependencies are marked with 'r' for project-level module
                 // - indirect runtime dependencies are marked with '(r)' for project-level module
 
-                Map<String, ResolvedModule> nameToResolvedModuleMap = new HashMap<>();
+                final Map<String, ResolvedModule> nameToResolvedModuleMap = new HashMap<>();
                 for (ResolvedModule resolvedModule : resolvedModules) {
                     nameToResolvedModuleMap.put(resolvedModule.getName(), resolvedModule);
                 }
@@ -120,28 +120,9 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 contributeDependencies(indirectRuntimeDependencies, "(r)", projectAssetId, nameToArtifactMap, nameToResolvedModuleMap, relativeAnchorPath);
                 contributeDependencies(directRuntimeDependencies, "r", projectAssetId, nameToArtifactMap, nameToResolvedModuleMap, relativeAnchorPath);
 
-                Inventory inventory = new Inventory();
+                final Inventory inventory = new Inventory();
                 inventory.getArtifacts().addAll(nameToArtifactMap.values());
-
-//                resolvedModules.forEach(System.out::println);
-
-                ComponentPatternData cpd = new ComponentPatternData();
-
-                cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, anchorRelPath);
-                cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-
-                cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, projectModule.getName());
-                cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, projectModule.getVersion());
-                cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, projectModule.deriveQualifier());
-                cpd.set(ComponentPatternData.Attribute.COMPONENT_PART_PATH, anchorRelPath);
-
-                cpd.set(ComponentPatternData.Attribute.TYPE, ARTIFACT_TYPE_APPLICATION);
-                cpd.set(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "python-application");
-
-                cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, parser.getIncludePattern());
-
-                cpd.setExpansionInventorySupplier(() -> inventory);
-
+                ComponentPatternData cpd = createComponentPatternData(inventory, projectModule, anchorRelPath, anchorChecksum, parser.getIncludePattern());
                 list.add(cpd);
 
                 return list;
@@ -154,7 +135,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
 
     }
 
-    private PyProjectParser findParser(JsonNode root) {
+    private PyProjectParser determineParser(JsonNode root) {
         return PY_PROJECT_PARSERS.stream().filter(parser -> parser.supports(root)).findFirst().orElse(null);
     }
 
@@ -190,7 +171,6 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
     private void contributeDependencies(List<UnresolvedModule> dependencies, String dependencyType,
                                         String projectAssetId, Map<String, Artifact> nameToArtifactMap,
                                         Map<String, ResolvedModule> nameToResolvedModuleMap, String relativePath) {
-
         for (UnresolvedModule module : dependencies) {
             final String name = module.getName();
             final ResolvedModule resolvedModule = nameToResolvedModuleMap.get(name);
@@ -200,34 +180,58 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 continue;
             }
 
-            final String version = resolvedModule.getVersion();
-            final PyProjectPackageSource pyProjectPackageSource = resolvedModule.getPyProjectPackageSource();
-
             Artifact artifact = nameToArtifactMap.get(resolvedModule.getName());
             if (artifact == null) {
-                artifact = new Artifact();
-                artifact.setId(name + "-" + version);
-                artifact.setVersion(version);
-                artifact.setComponent(name);
-
-                if (pyProjectPackageSource != null) {
-                    artifact.set(KEY_PACKAGE_SOURCE_URL, pyProjectPackageSource.url());
-                }
-                artifact.set(KEY_PACKAGE_FILES, String.valueOf(resolvedModule.getPyProjectPackageFiles()));
-                artifact.set(Constants.KEY_PATH_IN_ASSET, relativePath + "[" + name + "]");
-
-                // we cannot add a root path; there is no physical file that is part of the module
-                // artifact.set(KEY_ROOT_PATHS, relativePath);
-
-                artifact.set(KEY_TYPE, ARTIFACT_TYPE_MODULE);
-                artifact.set(KEY_COMPONENT_SOURCE_TYPE, "python-module");
-
-                artifact.set(KEY_PURL, buildPurl(name, version));
-
+                artifact = createArtifact(resolvedModule, relativePath, name);
                 nameToArtifactMap.put(name, artifact);
             }
             artifact.set(projectAssetId, dependencyType);
         }
+    }
+
+    private Artifact createArtifact(ResolvedModule resolvedModule, String relativePath, String name) {
+        final Artifact artifact = new Artifact();
+        final String version = resolvedModule.getVersion();
+        final PyProjectPackageSource pyProjectPackageSource = resolvedModule.getPyProjectPackageSource();
+
+        artifact.setId(name + "-" + version);
+        artifact.setVersion(version);
+        artifact.setComponent(name);
+
+        if (pyProjectPackageSource != null) {
+            artifact.set(KEY_PACKAGE_SOURCE_URL, pyProjectPackageSource.url());
+        }
+        artifact.set(KEY_PACKAGE_FILES, String.valueOf(resolvedModule.getPyProjectPackageFiles()));
+        artifact.set(Constants.KEY_PATH_IN_ASSET, relativePath + "[" + name + "]");
+
+        // we cannot add a root path; there is no physical file that is part of the module
+        // artifact.set(KEY_ROOT_PATHS, relativePath);
+
+        artifact.set(KEY_TYPE, ARTIFACT_TYPE_MODULE);
+        artifact.set(KEY_COMPONENT_SOURCE_TYPE, "python-module");
+
+        artifact.set(KEY_PURL, buildPurl(name, version));
+        return artifact;
+    }
+
+    private ComponentPatternData createComponentPatternData(Inventory inventory, ResolvedModule projectModule, String anchorRelPath, String anchorChecksum, String includePattern) {
+        final ComponentPatternData cpd = new ComponentPatternData();
+
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, anchorRelPath);
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
+
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, projectModule.getName());
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, projectModule.getVersion());
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, projectModule.deriveQualifier());
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART_PATH, anchorRelPath);
+
+        cpd.set(ComponentPatternData.Attribute.TYPE, ARTIFACT_TYPE_APPLICATION);
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "python-application");
+
+        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
+
+        cpd.setExpansionInventorySupplier(() -> inventory);
+        return cpd;
     }
 
     private String buildPurl(String name, String version) {
