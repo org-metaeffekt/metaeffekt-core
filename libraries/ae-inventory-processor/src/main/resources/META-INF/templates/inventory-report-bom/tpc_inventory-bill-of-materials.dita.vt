@@ -4,6 +4,11 @@
 
     <title>$utils.getText("inventory-report-bom.short.bill-of-materials")</title>
     <body>
+        #set($licensesInEffect=$inventory.evaluateLicenses(false))
+        #if ($inventory.isFootnoteRequired($licensesInEffect, $inventory.getRepresentedLicenses($licensesInEffect)))
+            <fn id="represented-licenses-fn">$utils.getText("general.represented-licenses-footnote")</fn>
+        #end
+
         <p>
             $utils.getText("inventory-report-bom.bill-of-materials")
         </p>

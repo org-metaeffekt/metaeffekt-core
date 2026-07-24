@@ -58,8 +58,7 @@
                     <row>
                         #if ($inventoryReportAdapter.isRepresentedLicense($license) && $useRepresentedLicenses)
                             <entry>
-                                <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
-                                <xref href="#$topicId/represented-licenses-fn" type="fn"/>
+                                <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref><xref href="#$topicId/represented-licenses-fn" type="fn"/>
                             </entry>
                             <entry>
                                 #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
@@ -72,7 +71,7 @@
                                 #if ($licenseData)
                                     #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap))
                                     #if ($mappedStatus)
-                                        $mappedStatus<xref href="#$topicId/represented-licenses-fn" type="fn"/>
+                                        $mappedStatus
                                     #end
                                 #else
                                     &nbsp;

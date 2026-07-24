@@ -544,11 +544,14 @@ public class InventoryReport {
                 configParams.isAssessmentReportEnabled();
 
         // build adapters
+        InventoryReportAdapter inventoryReportAdapter = new InventoryReportAdapter(filteredInventory);
+        inventoryReportAdapter.setInventoryAssetPrefix(configParams.getInventoryAssetPrefix());
+
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
                 new AssetReportAdapter(filteredInventory),
                 isVulnerabilityReport ? ReportAdapterLoader.getAdapterOrThrow(IVulnerabilityReportAdapter.class).setup(projectInventory, securityPolicy) : null,
                 isVulnerabilityReport ? ReportAdapterLoader.getAdapterOrThrow(IAssessmentReportAdapter.class).setup(projectInventory, securityPolicy) : null,
-                new InventoryReportAdapter(filteredInventory));
+                inventoryReportAdapter);
 
 
         // write reports
