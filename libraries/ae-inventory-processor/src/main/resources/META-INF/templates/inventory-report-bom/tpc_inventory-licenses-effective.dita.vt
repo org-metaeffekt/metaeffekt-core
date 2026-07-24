@@ -41,7 +41,7 @@
                         #set($license=$licenseData.get("Canonical Name"))
                         #set($componentCount=$assetData.countComponentsForSingleLicense($license, false))
                         <row>
-                            #if ($inventory.isLicenseSubstructureRequired($license, $effectiveLicensesRepresented))
+                            #if ($assetData.isLicenseSubstructureRequired($license))
                                 <entry>
                                     <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
                                         $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/represented-licenses-fn" type="fn"/>
