@@ -7,7 +7,7 @@
         #set($components=$inventory.evaluateComponentsInContext("device"))
         #set($licensesInEffect=$inventory.evaluateLicenses(false))
 
-        #set($isSingleArtifactType = $inventory.hasArtifactType())
+        #set($isSingleArtifactType = $inventory.hasSingleArtifactType())
         #if ($isSingleArtifactType)
             #if ($inventory.isFootnoteRequired($licensesInEffect, $inventory.getRepresentedLicenses($licensesInEffect)))
                 <fn id="represented-licenses-fn">$utils.getText("general.represented-licenses-footnote")</fn>

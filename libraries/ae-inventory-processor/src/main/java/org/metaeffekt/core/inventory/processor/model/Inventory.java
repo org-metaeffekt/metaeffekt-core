@@ -2320,7 +2320,7 @@ public class Inventory implements Serializable {
         }
     }
 
-    public boolean hasArtifactType() {
+    public boolean hasSingleArtifactType() {
         String[] types = new String[]{"application", "module", "web-module", "package", "driver", "installation-package", "content", "appliance", "container", "device", "part", "artifact"};
         int count = 0;
         for (String type : types) {
