@@ -28,8 +28,8 @@ import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfig
 import java.io.File;
 import java.io.IOException;
 
-@Mojo(name = "aggregate-annex-folders", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
-public class AnnexResourceMojo extends AbstractProjectAwareConfiguredMojo {
+@Mojo(name = "aggregate-reference-licenses", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
+public class AggregateReferenceLicensesMojo extends AbstractProjectAwareConfiguredMojo {
 
     @Parameter(required = true)
     private File inventoryFile;

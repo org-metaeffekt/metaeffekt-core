@@ -22,9 +22,9 @@
                 <version>${ae.core.version}</version>
                 <executions>
                     <execution>
-                        <id>aggregate-annex-folders</id>
+                        <id>aggregate-licenses-from-reference-inventory</id>
                         <goals>
-                            <goal>aggregate-annex-folders</goal>
+                            <goal>aggregate-reference-licenses</goal>
                         </goals>
                         <phase>process-resources</phase>
                         <configuration>
