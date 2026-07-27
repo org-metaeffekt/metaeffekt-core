@@ -2319,4 +2319,16 @@ public class Inventory implements Serializable {
             return toString();
         }
     }
+
+    public boolean hasArtifactType() {
+        String[] types = new String[]{"application", "module", "web-module", "package", "driver", "installation-package", "content", "appliance", "container", "device", "part", "artifact"};
+        int count = 0;
+        for (String type : types) {
+            if (!evaluateComponentsInContext(type).isEmpty()) {
+                count++;
+            }
+        }
+        return count == 1;
+    }
+
 }

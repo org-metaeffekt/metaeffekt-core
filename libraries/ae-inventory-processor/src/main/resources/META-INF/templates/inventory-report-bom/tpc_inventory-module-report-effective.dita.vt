@@ -3,8 +3,16 @@
 <topic id="tpc_modules-$reportContext.id">
     <title>$utils.getText("general.short.modules")</title>
     <body>
+
         #set($components=$inventory.evaluateComponentsInContext("module"))
         #set($licensesInEffect=$inventory.evaluateLicenses(false))
+
+        #set($isSingleArtifactType = $inventory.hasArtifactType())
+        #if ($isSingleArtifactType)
+            #if ($inventory.isFootnoteRequired($licensesInEffect, $inventory.getRepresentedLicenses($licensesInEffect)))
+                <fn id="represented-licenses-fn">$utils.getText("general.represented-licenses-footnote")</fn>
+            #end
+        #end
 
 
         #if($components.isEmpty())
@@ -65,13 +73,13 @@
                                     #foreach($license in $representedLicenses)
                                         #if($representedLicensesInEffect.contains($license))
                                             #if ($inventoryReportAdapter.isRepresentedLicense($license))
-                                                <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref><xref href="tpc_inventory-bill-of-materials.dita#tpc_bom-$reportContext.id/represented-licenses-fn" type="fn"/></lines>
+                                                <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>#if ($isSingleArtifactType)<xref href="#tpc_modules-$reportContext.id/represented-licenses-fn" type="fn"/>#else<xref href="tpc_inventory-bill-of-materials.dita#tpc_bom-$reportContext.id/represented-licenses-fn" type="fn"/>#end</lines>
                                             #else
                                                 <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref></lines>
                                             #end
                                         #else
                                             #if ($inventoryReportAdapter.isRepresentedLicense($license))
-                                                $report.xmlEscapeLicense($license)<xref href="tpc_inventory-bill-of-materials.dita#tpc_bom-$reportContext.id/represented-licenses-fn" type="fn"/>
+                                                $report.xmlEscapeLicense($license)#if ($isSingleArtifactType)<xref href="#tpc_modules-$reportContext.id/represented-licenses-fn" type="fn"/>#else<xref href="tpc_inventory-bill-of-materials.dita#tpc_bom-$reportContext.id/represented-licenses-fn" type="fn"/>#end
                                             #else
                                                 $report.xmlEscapeLicense($license)
                                             #end
