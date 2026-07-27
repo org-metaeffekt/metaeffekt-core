@@ -71,10 +71,12 @@ public class PoetryParser extends PyProjectParser {
             return null;
         }
         final String type = source.path("type").asText(null);
-        final String url = source.path("url").asText(null);
+        final List<String> urls = new ArrayList<>();
+        String url = source.path("url").asText(null);
+        addIfNotNull(urls, url);
         final String reference = source.path("reference").asText(null);
 
-        return new PyProjectPackageSource(type, url, reference);
+        return new PyProjectPackageSource(type, urls, reference);
     }
 
     /**

@@ -15,12 +15,14 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
+import java.util.List;
+
 /**
  * Record for storing py project source information from poertry.lock file.
  *
  * @param type      the type of the source
- * @param url       the url of the source
+ * @param urls       the URLs of the source
  * @param reference the actual source name
  */
-public record PyProjectPackageSource(String type, String url, String reference) {
+public record PyProjectPackageSource(String type, List<String> urls, String reference) {
 }

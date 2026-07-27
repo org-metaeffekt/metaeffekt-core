@@ -28,10 +28,7 @@ import org.metaeffekt.core.inventory.processor.model.PyProjectPackageSource;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @AllArgsConstructor
@@ -77,6 +74,19 @@ public abstract class PyProjectParser {
      * @return list of unresolved dependencies (modules)
      */
     protected abstract List<UnresolvedModule> extractDirectDependencies(JsonNode projectNode, String fullQualifiedPath);
+
+    /**
+     * Adds an element to a collection if it is not null.
+     *
+     * @param collection the collection or any subclass of the collection
+     * @param value      the value
+     * @param <T>        the type of the value
+     */
+    protected <T> void addIfNotNull(Collection<T> collection, T value) {
+        if (value != null) {
+            collection.add(value);
+        }
+    }
 
     /**
      * Parses the toml and lock files extracting the dependencies.

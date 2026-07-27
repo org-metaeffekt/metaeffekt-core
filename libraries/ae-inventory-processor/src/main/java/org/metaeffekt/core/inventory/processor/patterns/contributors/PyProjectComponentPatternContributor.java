@@ -199,7 +199,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
         artifact.setComponent(name);
 
         if (pyProjectPackageSource != null) {
-            artifact.set(KEY_PACKAGE_SOURCE_URL, pyProjectPackageSource.url());
+            artifact.set(KEY_PACKAGE_SOURCE_URL, String.join(",", pyProjectPackageSource.urls()));
         }
         artifact.set(KEY_PACKAGE_FILES, String.valueOf(resolvedModule.getPyProjectPackageFiles()));
         artifact.set(Constants.KEY_PATH_IN_ASSET, relativePath + "[" + name + "]");

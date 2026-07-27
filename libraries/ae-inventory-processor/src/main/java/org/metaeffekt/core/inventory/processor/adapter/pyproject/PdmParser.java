@@ -72,15 +72,29 @@ public class PdmParser extends PyProjectParser {
         }
     }
 
+    /**
+     * The pdm.lock file does not save the package source repository under package.source but.
+     * If the pdm.lock file is generated with the 'static_urls' enables then the download URLs will be saved in the package.files array in the file object as url.
+     *
+     * @param packageNode the package node
+     * @return the {@link PyProjectPackageSource} object containing the URLs if they exist
+     */
     @Override
     protected PyProjectPackageSource parseSource(JsonNode packageNode) {
-        final JsonNode source = packageNode.path("index");
-        if (source.isMissingNode()) {
+        final JsonNode files = packageNode.path("files");
+        if (files.isMissingNode()) {
             return null;
         }
-        final String url = source.path("url").asText(null);
 
-        return new PyProjectPackageSource(null, url, null);
+        final List<String> urls = new ArrayList<>();
+        for (final JsonNode file : files) {
+            if (!file.isMissingNode()) {
+                final String url = file.path("url").asText(null);
+                addIfNotNull(urls, url);
+            }
+        }
+
+        return urls.isEmpty() ? null : new PyProjectPackageSource(null, urls, null);
     }
 
     private UnresolvedModule parseRequirement(String requirement) {
