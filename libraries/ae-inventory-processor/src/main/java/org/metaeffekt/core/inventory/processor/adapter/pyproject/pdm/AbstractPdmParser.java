@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.adapter.pyproject;
+package org.metaeffekt.core.inventory.processor.adapter.pyproject.pdm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.AbstractPyProjectParser;
 import org.metaeffekt.core.inventory.processor.model.PyProjectPackageSource;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,23 +28,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class for parsing pdm toml and pdm.lock files.
+ * Abstract class for parsing pdm toml and pdm.lock files.
  */
-public class PdmParser extends PyProjectParser {
+public abstract class AbstractPdmParser extends AbstractPyProjectParser {
     private static final Pattern REQUIREMENT_PATTERN = Pattern.compile(
             "^([A-Za-z0-9][A-Za-z0-9._-]*)" + // package name
                     "(?:\\[[^]]+\\])?" +               // ignore extras
                     "(.*)$"                            // version range
     );
-
-    public PdmParser() {
-        super("/project", "/project/dependencies", "/tool/pdm/dev-dependencies/dev", "pdm.lock");
-    }
-
-    @Override
-    public boolean supports(JsonNode root) {
-        return root.at("/project").isObject();
-    }
 
     @Override
     public String getIncludePattern() {
@@ -50,7 +43,7 @@ public class PdmParser extends PyProjectParser {
     }
 
     @Override
-    protected List<UnresolvedModule> extractDirectDependencies(JsonNode rootNode, String fullQualifiedPath) {
+    public List<UnresolvedModule> extractDirectDependencies(JsonNode rootNode, String fullQualifiedPath) {
         final List<UnresolvedModule> unresolvedModules = new ArrayList<>();
         final JsonNode dependencyNode = rootNode.at(fullQualifiedPath);
         if (!dependencyNode.isMissingNode() && dependencyNode.isArray()) {
@@ -63,7 +56,7 @@ public class PdmParser extends PyProjectParser {
     }
 
     @Override
-    protected void extractAndFillUnresolvedModules(JsonNode packageDependenciesNode, Map<String, UnresolvedModule> unresolvedModuleMap) {
+    public void extractAndFillUnresolvedModules(JsonNode packageDependenciesNode, Map<String, UnresolvedModule> unresolvedModuleMap) {
         if (!packageDependenciesNode.isMissingNode() && packageDependenciesNode.isArray()) {
             packageDependenciesNode.valueStream().forEach(dependency -> {
                 final UnresolvedModule unresolvedModule = parseRequirement(dependency.asText());
@@ -72,15 +65,8 @@ public class PdmParser extends PyProjectParser {
         }
     }
 
-    /**
-     * The pdm.lock file does not save the package source repository under package.source but.
-     * If the pdm.lock file is generated with the 'static_urls' enables then the download URLs will be saved in the package.files array in the file object as url.
-     *
-     * @param packageNode the package node
-     * @return the {@link PyProjectPackageSource} object containing the URLs if they exist
-     */
     @Override
-    protected PyProjectPackageSource parseSource(JsonNode packageNode) {
+    public PyProjectPackageSource parseSource(JsonNode packageNode) {
         final JsonNode files = packageNode.path("files");
         if (files.isMissingNode()) {
             return null;
@@ -97,6 +83,17 @@ public class PdmParser extends PyProjectParser {
         return urls.isEmpty() ? null : new PyProjectPackageSource(null, urls, null);
     }
 
+    @Override
+    public File getLockFile(File pyProjectToml) {
+        return new File(pyProjectToml.getParentFile(), "pdm.lock");
+    }
+
+    /**
+     * Parses a requirement (dependency with version and additional data) and only stored the name and version of it.
+     *
+     * @param requirement the requirement string to parse
+     * @return an unresolved module instance build from the requirement
+     */
     private UnresolvedModule parseRequirement(String requirement) {
         final String cleanedRequirement = removeMarker(requirement);
 

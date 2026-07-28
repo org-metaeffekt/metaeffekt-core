@@ -16,77 +16,55 @@
 package org.metaeffekt.core.inventory.processor.adapter.pyproject;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.toml.TomlMapper;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 import org.metaeffekt.core.inventory.processor.model.PyProjectPackageSource;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
-@Getter
-@AllArgsConstructor
-public abstract class PyProjectParser {
-    protected String projectNode;
-    protected String dependencyPath;
-    protected String devDependencyPath;
-    protected String lockFileName;
+/**
+ * Interface defining required methods for parsing py project toml and lock files.
+ */
+public interface PyProjectParser {
 
     /**
      * Checks whether this specific parser supports toml files.
      */
-    public abstract boolean supports(JsonNode root);
+    boolean supports(JsonNode root);
 
     /**
      * Defines the include pattern for a py project implementation subclass.
      *
      * @return the include pattern for this py project subclass
      */
-    public abstract String getIncludePattern();
+    String getIncludePattern();
 
     /**
-     * Parses the dependencies from packages in the lock file and creates {@link UnresolvedModule} objects from them.
+     * Determines the lock file from the py project toml file.
      *
-     * @param packageDependenciesNode the dependencies node in the package
-     * @param unresolvedModuleMap     a map consisting of the name of the dependency and its unresolved module representation
+     * @param pyProjectToml the py project toml file
+     * @return the corresponding lock file
      */
-    protected abstract void extractAndFillUnresolvedModules(JsonNode packageDependenciesNode, Map<String, UnresolvedModule> unresolvedModuleMap);
+    File getLockFile(File pyProjectToml);
 
     /**
-     * Parses information of the package source attribute of the lock file.
+     * Parses a project as a module.
      *
-     * @param packageNode the package node
-     * @return the extracted source data
+     * @param root the root
+     * @return the resolved project module
      */
-    protected abstract PyProjectPackageSource parseSource(JsonNode packageNode);
+    ResolvedModule parseProject(JsonNode root);
 
     /**
-     * Extracts the direct dependencies in a toml file
+     * Method for resolving modules from lock files.
      *
-     * @param projectNode       the root project node
-     * @param fullQualifiedPath the path to a node in the root project node
-     * @return list of unresolved dependencies (modules)
+     * @param lockNode the lock file node
+     * @return list of resolved modules
      */
-    protected abstract List<UnresolvedModule> extractDirectDependencies(JsonNode projectNode, String fullQualifiedPath);
-
-    /**
-     * Adds an element to a collection if it is not null.
-     *
-     * @param collection the collection or any subclass of the collection
-     * @param value      the value
-     * @param <T>        the type of the value
-     */
-    protected <T> void addIfNotNull(Collection<T> collection, T value) {
-        if (value != null) {
-            collection.add(value);
-        }
-    }
+    List<ResolvedModule> parseLockFile(JsonNode lockNode);
 
     /**
      * Parses the toml and lock files extracting the dependencies.
@@ -96,74 +74,30 @@ public abstract class PyProjectParser {
      * @return a {@link PyProjectData} object containing the parsed data
      * @throws IOException if an I/O error occurs
      */
-    public PyProjectData parse(File pyProjectToml, JsonNode root) throws IOException {
-        final PyProjectData pyProjectData = new PyProjectData();
-
-        // parse toml file
-        final JsonNode projectNode = root.at(getProjectNode());
-        final ResolvedModule projectModule = new ResolvedModule(projectNode.get("name").asText(), null);
-
-        projectModule.setVersion(projectNode.path("version").asText(null));
-        pyProjectData.setProjectModule(projectModule);
-        pyProjectData.setDirectRuntimeDependencies(extractDirectDependencies(root, getDependencyPath()));
-        pyProjectData.setDirectDevelopmentDependencies(extractDirectDependencies(root, getDevDependencyPath()));
-
-        // parse lock file
-        final File lockFile = new File(pyProjectToml.getParentFile(), getLockFileName());
-        final ObjectMapper lockObjectMapper = new TomlMapper();
-        final JsonNode lockNode = lockObjectMapper.readTree(lockFile);
-
-        pyProjectData.setResolvedModulesFromLockFile(getResolvedModulesFromLockFile(lockNode));
-        return pyProjectData;
-    }
+    PyProjectData parse(File pyProjectToml, JsonNode root) throws IOException;
 
     /**
-     * Method for resolving modules from lock files.
+     * Extracts the direct dependencies in a toml file.
      *
-     * @param lockNode the lock file node
-     * @return list of resolved modules
-     *
+     * @param projectNode       the root project node
+     * @param fullQualifiedPath the path to a node in the root project node
+     * @return list of unresolved dependencies (modules)
      */
-    private List<ResolvedModule> getResolvedModulesFromLockFile(JsonNode lockNode) {
-        final List<ResolvedModule> resolvedModules = new ArrayList<>();
-
-        lockNode.path("package").valueStream().forEach(packageNode -> {
-            final ResolvedModule resolvedModule = new ResolvedModule(packageNode.get("name").textValue(), null);
-            final JsonNode packageDependenciesNode = packageNode.path("dependencies");
-            final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
-
-            extractAndFillUnresolvedModules(packageDependenciesNode, unresolvedModuleMap);
-
-            resolvedModule.setVersion(packageNode.get("version").textValue());
-            resolvedModule.setPyProjectPackageFiles(collectPackageFileData(packageNode));
-            resolvedModule.setPyProjectPackageSource(parseSource(packageNode));
-            resolvedModule.setRuntimeDependencies(unresolvedModuleMap);
-            resolvedModules.add(resolvedModule);
-        });
-        return resolvedModules;
-    }
+    List<UnresolvedModule> extractDirectDependencies(JsonNode projectNode, String fullQualifiedPath);
 
     /**
-     * Collects the file elements from the files attribute from the package in the lock file.
+     * Parses the dependencies from packages in the lock file and creates {@link UnresolvedModule} objects from them.
+     *
+     * @param packageDependenciesNode the dependencies node in the package
+     * @param unresolvedModuleMap     a map consisting of the name of the dependency and its unresolved module representation
+     */
+    void extractAndFillUnresolvedModules(JsonNode packageDependenciesNode, Map<String, UnresolvedModule> unresolvedModuleMap);
+
+    /**
+     * Parses information of the package source attribute of the lock file.
      *
      * @param packageNode the package node
-     * @return JSON array containing the files and the hashes
+     * @return the extracted source data
      */
-    private JSONArray collectPackageFileData(JsonNode packageNode) {
-        final JsonNode files = packageNode.path("files");
-        if (files.isMissingNode() || !files.isArray()) {
-            return null;
-        }
-
-        final JSONArray fileData = new JSONArray();
-        for (JsonNode file : files) {
-            if (file.isObject()) {
-                final JSONObject fileDataObject = new JSONObject();
-                fileDataObject.put("file", file.path("file").asText(null));
-                fileDataObject.put("hash", file.path("hash").asText(null));
-                fileData.put(fileDataObject);
-            }
-        }
-        return fileData.isEmpty() ? null : fileData;
-    }
+    PyProjectPackageSource parseSource(JsonNode packageNode);
 }

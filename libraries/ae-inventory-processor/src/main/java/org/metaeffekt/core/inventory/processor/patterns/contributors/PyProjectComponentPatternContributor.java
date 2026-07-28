@@ -21,10 +21,9 @@ import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.PdmParser;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.PoetryParser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectParserFactory;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectParser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.AbstractPyProjectParser;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -41,8 +40,6 @@ import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 @Slf4j
 public class PyProjectComponentPatternContributor extends ComponentPatternContributor {
-
-    private static final List<PyProjectParser> PY_PROJECT_PARSERS = List.of(new PoetryParser(), new PdmParser());
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<>() {{
         add("pyproject.toml");
@@ -79,7 +76,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 final ObjectMapper objectMapper = new TomlMapper();
                 final JsonNode pyProjectRootNode = objectMapper.readTree(pyProjectToml);
 
-                final PyProjectParser parser = determineParser(pyProjectRootNode);
+                final AbstractPyProjectParser parser = new PyProjectParserFactory().getParser(pyProjectRootNode);
                 if (parser == null) {
                     log.info("Unsupported pyproject.toml format: {}", pyProjectToml.getAbsolutePath());
                     return null;
@@ -133,10 +130,6 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
 
         return Collections.emptyList();
 
-    }
-
-    private PyProjectParser determineParser(JsonNode root) {
-        return PY_PROJECT_PARSERS.stream().filter(parser -> parser.supports(root)).findFirst().orElse(null);
     }
 
     private List<UnresolvedModule> extractIndirectDependencies(List<UnresolvedModule> seedDependencies, Map<String, ResolvedModule> resolvedModules, Function<ResolvedModule, Map<String, UnresolvedModule>> supplier) {

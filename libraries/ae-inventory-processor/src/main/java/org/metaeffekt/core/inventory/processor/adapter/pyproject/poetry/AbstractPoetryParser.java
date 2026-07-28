@@ -13,34 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.adapter.pyproject;
+package org.metaeffekt.core.inventory.processor.adapter.pyproject.poetry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.AbstractPyProjectParser;
 import org.metaeffekt.core.inventory.processor.model.PyProjectPackageSource;
 
+import java.io.File;
 import java.util.*;
 
 /**
- * Class for parsing poetry toml and poetry.lock files.
+ * Abstract class for parsing poetry toml and poetry.lock files.
  */
-public class PoetryParser extends PyProjectParser {
-    public PoetryParser() {
-        super("/tool/poetry", "/tool/poetry/dependencies", "/tool/poetry/group/dev/dependencies", "poetry.lock");
-    }
-
-    @Override
-    public boolean supports(JsonNode root) {
-        return root.at("/tool/poetry").isObject();
-    }
-
+public abstract class AbstractPoetryParser extends AbstractPyProjectParser {
     @Override
     public String getIncludePattern() {
         return "pyproject.toml, poetry.lock";
     }
 
     @Override
-    protected List<UnresolvedModule> extractDirectDependencies(JsonNode rootNode, String fullQualifiedPath) {
+    public List<UnresolvedModule> extractDirectDependencies(JsonNode rootNode, String fullQualifiedPath) {
         final List<UnresolvedModule> unresolvedModules = new ArrayList<>();
         final JsonNode dependencyNode = rootNode.at(fullQualifiedPath);
         if (!dependencyNode.isMissingNode()) {
@@ -54,7 +47,7 @@ public class PoetryParser extends PyProjectParser {
     }
 
     @Override
-    protected void extractAndFillUnresolvedModules(JsonNode packageDependenciesNode, Map<String, UnresolvedModule> unresolvedModuleMap) {
+    public void extractAndFillUnresolvedModules(JsonNode packageDependenciesNode, Map<String, UnresolvedModule> unresolvedModuleMap) {
         if (!packageDependenciesNode.isMissingNode()) {
             packageDependenciesNode.propertyStream().forEach(dependency -> {
                 final String versionRange = deriveVersionRange(dependency.getValue());
@@ -65,7 +58,7 @@ public class PoetryParser extends PyProjectParser {
     }
 
     @Override
-    protected PyProjectPackageSource parseSource(JsonNode packageNode) {
+    public PyProjectPackageSource parseSource(JsonNode packageNode) {
         final JsonNode source = packageNode.path("source");
         if (source.isMissingNode()) {
             return null;
@@ -77,6 +70,11 @@ public class PoetryParser extends PyProjectParser {
         final String reference = source.path("reference").asText(null);
 
         return new PyProjectPackageSource(type, urls, reference);
+    }
+
+    @Override
+    public File getLockFile(File pyProjectToml) {
+        return new File(pyProjectToml.getParentFile(), "poetry.lock");
     }
 
     /**
