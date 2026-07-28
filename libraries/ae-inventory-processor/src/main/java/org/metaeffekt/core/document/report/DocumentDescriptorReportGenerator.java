@@ -88,6 +88,8 @@ public class DocumentDescriptorReportGenerator {
     }
 
     private static void deriveAssets(DocumentDescriptor documentDescriptor) {
+        List<DocumentPart> newParts = new ArrayList<>();
+
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             final List<InventoryContext> inventoryContexts = new ArrayList<>();
 
@@ -125,8 +127,32 @@ public class DocumentDescriptorReportGenerator {
                     }
                 }
             }
-            documentPart.setInventoryContexts(inventoryContexts);
+
+            if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX && inventoryContexts.size() > 1) {
+                for (InventoryContext ctx : inventoryContexts) {
+                    String assetId = ctx.getInventory().getAssetMetaData().stream()
+                            .filter(AssetMetaData::isPrimary)
+                            .findFirst()
+                            .map(a -> a.get(AssetMetaData.Attribute.ASSET_ID))
+                            .orElse("unknown");
+
+                    String normalizedAssetId = assetId.replaceAll("[^a-zA-Z0-9_-]", "_");
+                    String newIdentifier = documentPart.getIdentifier() + "-" + normalizedAssetId;
+
+                    DocumentPart newPart = new DocumentPart(
+                            newIdentifier,
+                            Collections.singletonList(ctx),
+                            documentPart.getDocumentPartType(),
+                            new HashMap<>(documentPart.getParams() != null ? documentPart.getParams() : Collections.emptyMap())
+                    );
+                    newParts.add(newPart);
+                }
+            } else {
+                documentPart.setInventoryContexts(inventoryContexts);
+                newParts.add(documentPart);
+            }
         }
+        documentDescriptor.setDocumentParts(newParts);
     }
 
     /**
