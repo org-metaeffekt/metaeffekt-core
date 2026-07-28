@@ -49,7 +49,7 @@ public class ReportUtils {
         Properties props = new Properties();
         InputStream inputStream = this.getClass()
                 .getClassLoader()
-                .getResourceAsStream("META-INF/templates/lang/" + lang + ".properties");
+                .getResourceAsStream("META-INF/templates/_generic/localization/" + lang + ".properties");
 
         try {
             if (inputStream != null) {
