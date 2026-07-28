@@ -60,10 +60,7 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
     public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
 
-        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
-
         Analysis analysis = new Analysis(inventory);
-
         analysis.selectArtifacts().logListWithAllAttributes();
 
         // expect that the substructure is visible

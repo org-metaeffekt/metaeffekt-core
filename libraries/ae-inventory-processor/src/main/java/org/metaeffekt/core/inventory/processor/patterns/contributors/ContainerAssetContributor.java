@@ -121,6 +121,7 @@ public class ContainerAssetContributor extends ComponentPatternContributor {
                     cpd.set("Image Id", containerImageId);
                     cpd.set(containerAssetId, Constants.MARKER_CROSS);
 
+                    // FIXME-KKL: this is a confusions; what is the specific type here?
                     cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "saved-container");
 
                     cpd.setExpansionInventorySupplier(() -> createAssetInventory(containerAssetId, cpd, baseDir, manifestFile));

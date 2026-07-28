@@ -62,6 +62,11 @@ public class InventorySerializationContext {
      */
     public static final String CONTEXT_ASSET_DATA_COLUMN_LIST = CONTEXT_KEY_ASSET_DATA + ".columnlist";
 
+    /**
+     * Stores Report column names in the order that is used when writing the inventory.
+     */
+    public static final String CONTEXT_REPORT_DATA_COLUMN_LIST = CONTEXT_KEY_REPORT_DATA + ".columnlist";
+
 
     /**
      * The context map stores metadata on excel file level, including
@@ -185,6 +190,7 @@ public class InventorySerializationContext {
         initializeSerializationContext(inventory, Collections.emptyList(), CONTEXT_VULNERABILITY_DATA_COLUMN_LIST, VulnerabilityMetaData.MIN_ATTRIBUTES);
         initializeSerializationContext(inventory, inventory.getLicenseData(), CONTEXT_LICENSE_DATA_COLUMN_LIST, LicenseData.MIN_ATTRIBUTES);
         initializeSerializationContext(inventory, inventory.getLicenseMetaData(), CONTEXT_LICENSE_NOTICE_DATA_COLUMN_LIST, LicenseMetaData.MIN_ATTRIBUTES);
+        initializeSerializationContext(inventory, inventory.getReportData(), CONTEXT_REPORT_DATA_COLUMN_LIST, ReportData.MIN_ATTRIBUTES);
     }
 
     public SheetSerializationContext createArtifactSerializationContext(Inventory inventory) {
@@ -201,6 +207,10 @@ public class InventorySerializationContext {
 
     public SheetSerializationContext createVulnerabilitySerializationContext(Inventory inventory, String assessmentContext) {
         return new SheetSerializationContext(inventory, CONTEXT_KEY_VULNERABILITY_DATA, () -> inventory.getVulnerabilityMetaData(assessmentContext));
+    }
+
+    public SheetSerializationContext createReportSerializationContext(Inventory inventory, String assessmentContext) {
+        return new SheetSerializationContext(inventory, CONTEXT_KEY_REPORT_DATA, inventory::getReportData);
     }
 
     public void clear() {

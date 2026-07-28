@@ -21,6 +21,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.inventory.resolver.FileServerSourceArchiveResolver;
 import org.metaeffekt.core.inventory.resolver.RemoteUriResolver;
 
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.spi.connector.transport.TransporterProvider;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -30,21 +34,24 @@ import java.util.Properties;
 public class FileServerMirror extends AbstractMirror {
 
     @Parameter
-    private String propertyFilePath;
-
-    @Parameter
     private List<String> sourceUrls = new ArrayList<>();
 
-    public FileServerSourceArchiveResolver createResolver(Properties properties) {
-        final FileServerSourceArchiveResolver resolver = new FileServerSourceArchiveResolver();
+    @Parameter
+    private List<org.metaeffekt.core.inventory.resolver.ServerCredential> credentials = new ArrayList<>();
+
+    public FileServerSourceArchiveResolver createResolver(Properties properties, RepositorySystemSession repositorySystemSession, List<RemoteRepository> remoteProjectRepositories, TransporterProvider transporterProvider) {
+        final FileServerSourceArchiveResolver resolver = new MavenAwareFileServerSourceArchiveResolver(repositorySystemSession, remoteProjectRepositories, transporterProvider);
 
         // pass the plugin configuration properties
         resolver.setProperties(properties);
-        resolver.setPropertyFilePath(propertyFilePath);
+        
         resolver.setSourceUrls(sourceUrls);
+        resolver.setCredentials(credentials);
 
         // initialize the URI resolver
-        resolver.setUriResolver(new RemoteUriResolver(properties));
+        RemoteUriResolver uriResolver = new RemoteUriResolver(properties);
+        uriResolver.setCredentials(credentials);
+        resolver.setUriResolver(uriResolver);
 
         return resolver;
     }
