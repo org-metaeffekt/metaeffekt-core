@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="asset">
-    <glossterm>Asset</glossterm>
+    <glossterm>Assets</glossterm>
     <glossdef>
         <p>
             Ein Asset, insbesondere ein Software- oder Hardware-Asset, ist eine identifizier- und nutzbare Einheit, die einem
@@ -13,6 +13,6 @@
         </p>
     </glossdef>
     <glossBody>
-        <glossSurfaceForm>Asset</glossSurfaceForm>
+        <glossSurfaceForm>Assets</glossSurfaceForm>
     </glossBody>
 </glossentry>
