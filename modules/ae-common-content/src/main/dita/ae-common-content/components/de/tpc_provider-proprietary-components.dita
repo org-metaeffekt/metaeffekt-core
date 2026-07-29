@@ -6,7 +6,7 @@
         <p>
             Proprietäre Komponenten, die in der von der ${organization.name} entwickelten und gelieferten
             Software-Distribution enthalten sind, werden - sofern nicht ausdrücklich anders angegeben - unter
-            ${organization.license_de} zur Verfügung gestellt.
+            ${organization.license} zur Verfügung gestellt.
         </p>
     </body>
 </topic>
