@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="module">
-    <glossterm>Modul</glossterm>
+    <glossterm>Module</glossterm>
     <glossdef>
         <p>
             Ein Modul ist eine eigenständige Softwareeinheit mit spezieller Funktionalität, die in verschiedenen Anwendungen
