@@ -71,6 +71,6 @@ ${organization.name}
 ====================
 - Organization name. Example: MyCo AG
 
-${organization.license} / ${organization.license_de}
+${organization.license}
 ====================================================
 - The general license under which the organization distributes its components.

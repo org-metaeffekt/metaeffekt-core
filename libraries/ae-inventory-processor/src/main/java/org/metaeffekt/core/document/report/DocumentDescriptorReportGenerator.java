@@ -93,12 +93,19 @@ public class DocumentDescriptorReportGenerator {
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             final List<InventoryContext> inventoryContexts = new ArrayList<>();
 
+            boolean reportWithoutAsset = false;
+            if (documentPart.getParams() != null && documentPart.getParams().containsKey("reportWithoutAsset")) {
+                reportWithoutAsset = Boolean.parseBoolean(documentPart.getParams().get("reportWithoutAsset"));
+            }
+
             for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
-                if (inventoryContext.getAssetName() != null) {
+                if (reportWithoutAsset) {
+                    inventoryContext.setAssetName("");
+                    inventoryContext.setAssetVersion("");
                     inventoryContexts.add(inventoryContext);
-                } else if (inventoryContext.getAssetVersion() != null) {
-                    throw new IllegalStateException("The field 'assetVersion' for inventoryContext [" + inventoryContext.getIdentifier() + "] is set, but no 'assetName' is specified, please set an 'assetName' as well or remove the field 'assetVersion'.");
-                } else {
+                } else if (inventoryContext.getAssetName() != null && inventoryContext.getAssetVersion() != null) {
+                    inventoryContexts.add(inventoryContext);
+                } else if (inventoryContext.getAssetName() == null && inventoryContext.getAssetVersion() == null) {
                     if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
                         // separate handling for initial license documentation, since we want to report on all assets in
                         // the inventory, but do not want to generate the content for each asset separately
@@ -116,7 +123,7 @@ public class DocumentDescriptorReportGenerator {
 
                             String assetVersion = primaryAsset
                                     .map(a -> a.get(AssetMetaData.Attribute.VERSION))
-                                    .orElse(null);
+                                    .orElseThrow(() -> new IllegalStateException("Missing asset version in primary asset for inventory [" + inventoryContext.getIdentifier() + "]. Please make sure that every primary asset has a specified version."));
 
                             final String encodedAssetName = Base64.getEncoder().encodeToString(assetName.getBytes());
                             InventoryContext derivedContext = new InventoryContext(inventory, encodedAssetName, inventoryContext.getReportContext(), inventoryContext.getLicensesPath(), inventoryContext.getComponentsPath());
@@ -125,6 +132,10 @@ public class DocumentDescriptorReportGenerator {
                             inventoryContexts.add(derivedContext);
                         }
                     }
+                } else if (inventoryContext.getAssetName() == null) {
+                    throw new IllegalStateException("The field 'assetVersion' for inventoryContext [" + inventoryContext.getIdentifier() + "] is set, but no 'assetName' is specified, please set an 'assetName' as well or remove the field 'assetName'.");
+                } else {
+                    throw new IllegalStateException("The field 'assetName' for inventoryContext [" + inventoryContext.getIdentifier() + "] is set, but no 'assetVersion' is specified, please set an 'assetVersion' as well or remove the field 'assetName'.");
                 }
             }
 
