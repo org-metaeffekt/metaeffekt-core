@@ -88,11 +88,22 @@ public class DocumentDescriptorReportGenerator {
     }
 
     private static void deriveAssets(DocumentDescriptor documentDescriptor) {
+        List<DocumentPart> newParts = new ArrayList<>();
+
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             final List<InventoryContext> inventoryContexts = new ArrayList<>();
 
+            boolean reportWithoutAsset = false;
+            if (documentPart.getParams() != null && documentPart.getParams().containsKey("reportWithoutAsset")) {
+                reportWithoutAsset = Boolean.parseBoolean(documentPart.getParams().get("reportWithoutAsset"));
+            }
+
             for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
-                if (inventoryContext.getAssetName() != null && inventoryContext.getAssetVersion() != null) {
+                if (reportWithoutAsset) {
+                    inventoryContext.setAssetName("");
+                    inventoryContext.setAssetVersion("");
+                    inventoryContexts.add(inventoryContext);
+                } else if (inventoryContext.getAssetName() != null && inventoryContext.getAssetVersion() != null) {
                     inventoryContexts.add(inventoryContext);
                 } else if (inventoryContext.getAssetName() == null && inventoryContext.getAssetVersion() == null) {
                     if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
