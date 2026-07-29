@@ -68,8 +68,6 @@ public class Inventory implements Serializable {
 
     public static final String CLASSIFICATION_CURRENT = "current";
 
-    public static final String[] ARTIFACT_TYPES = new String[]{"application", "module", "web-module", "package", "driver", "installation-package", "content", "appliance", "container", "device", "part", "artifact"};
-
     // Components are structured by context. This is the package context.
     public static final String COMPONENT_CONTEXT_PACKAGE = "package";
 
@@ -106,6 +104,8 @@ public class Inventory implements Serializable {
     // Components are structured by context. This is the content context.
     public static final String COMPONENT_CONTEXT_CONTENT = "content";
 
+    public static final String[] ARTIFACT_TYPES = new String[]{COMPONENT_CONTEXT_APPLICATION, COMPONENT_CONTEXT_MODULE, COMPONENT_CONTEXT_WEB_MODULE, COMPONENT_CONTEXT_PACKAGE, COMPONENT_CONTEXT_DRIVER, COMPONENT_CONTEXT_INSTALLATION_PACKAGE, COMPONENT_CONTEXT_CONTENT, COMPONENT_CONTEXT_APPLIANCE, COMPONENT_CONTEXT_CONTAINER, COMPONENT_CONTEXT_DEVICE, COMPONENT_CONTEXT_PART, COMPONENT_CONTEXT_ARTIFACT};
+
     private List<Artifact> artifacts = new ArrayList<>();
 
     private List<LicenseMetaData> licenseMetaData = new ArrayList<>();
@@ -118,13 +118,16 @@ public class Inventory implements Serializable {
 
     private List<AdvisoryMetaData> advisoryMetaData = new ArrayList<>();
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private List<ThreatMetaData> threatMetaData = new ArrayList<>();
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private List<WeaknessMetaData> weaknessMetaData = new ArrayList<>();
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private List<AttackPatternMetaData> attackPatternMetaData = new ArrayList<>();
 
     private List<InventoryInfo> inventoryInfo = new ArrayList<>();
@@ -643,7 +646,6 @@ public class Inventory implements Serializable {
      *
      * @param includeLicensesWithArtifactsOnly Result will cover licenses of artifacts without artifactId when true.
      * @param includeManagedArtifactsOnly      Results will only cover license of managed artifacts when true.
-     *
      * @return List of license names covered by this inventory.
      */
     public List<String> evaluateLicenses(boolean includeLicensesWithArtifactsOnly, boolean includeManagedArtifactsOnly) {
@@ -725,7 +727,6 @@ public class Inventory implements Serializable {
      * Returns all relevant notices for a given effective license.
      *
      * @param effectiveLicense The effective license.
-     *
      * @return List of {@link ArtifactLicenseData} instances.
      */
     public List<ArtifactLicenseData> evaluateNotices(String effectiveLicense) {
@@ -795,11 +796,11 @@ public class Inventory implements Serializable {
     }
 
     //FIXME-KKL: Check behavior of this method and the usage in inventory-report.properties.vt
+
     /**
      * Collect ArtifactLicenseData aggregates artifacts that use the effective license given.
      *
      * @param effectiveLicense The effective license to evaluate the artifacts for.
-     *
      * @return List of {@link ArtifactLicenseData} instances.
      */
     public List<ArtifactLicenseData> evaluateComponents(String effectiveLicense) {
@@ -882,7 +883,7 @@ public class Inventory implements Serializable {
                     // this means that the license data is inconsistent and has overlaps. This must
                     // be resolved in the underlying meta data.
                     throw new IllegalStateException(String.format("Multiple matches for component:version:license: %s." +
-                            " Meta data inconsistent. Please correct license meta data to resolve inconsistencies.",
+                                    " Meta data inconsistent. Please correct license meta data to resolve inconsistencies.",
                             computeQualifier(component, version, license)));
                 }
                 match = lmd;
@@ -2000,6 +2001,7 @@ public class Inventory implements Serializable {
     }
 
     // FIXME-JFU: move to adapter or adapter-centric class
+
     /**
      * The substructure is required when:
      * <ol>
