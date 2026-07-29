@@ -68,6 +68,8 @@ public class Inventory implements Serializable {
 
     public static final String CLASSIFICATION_CURRENT = "current";
 
+    public static final String[] ARTIFACT_TYPES = new String[]{"application", "module", "web-module", "package", "driver", "installation-package", "content", "appliance", "container", "device", "part", "artifact"};
+
     // Components are structured by context. This is the package context.
     public static final String COMPONENT_CONTEXT_PACKAGE = "package";
 
@@ -2321,9 +2323,8 @@ public class Inventory implements Serializable {
     }
 
     public boolean hasSingleArtifactType() {
-        String[] types = new String[]{"application", "module", "web-module", "package", "driver", "installation-package", "content", "appliance", "container", "device", "part", "artifact"};
         int count = 0;
-        for (String type : types) {
+        for (String type : ARTIFACT_TYPES) {
             if (!evaluateComponentsInContext(type).isEmpty()) {
                 count++;
             }
