@@ -153,10 +153,10 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
         }
 
         if (softwareDistributionAnnexSourcePath == null) {
-            softwareDistributionAnnexSourcePath = new File(targetDirectory, "annex/sources");
+            softwareDistributionAnnexSourcePath = new File(targetDirectory, "sources");
         }
         if (retainedSourcesSourcePath == null) {
-            retainedSourcesSourcePath = new File(targetDirectory, "retained-sources/sources");
+            retainedSourcesSourcePath = new File(targetDirectory, "retained-sources");
         }
 
         if (skip) {
