@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.adapter.pyproject;
+package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.pdm.PdmParserV1;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.poetry.PoetryParserV1;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.LockFileParserFactory;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.pdm.PdmTomlParser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.poetry.PoetryTomlParser;
 
 import java.util.List;
 
-public class PyProjectParserFactory {
-    private static final List<AbstractPyProjectParser> parsers = List.of(new PoetryParserV1(), new PdmParserV1());
+public class TomlParserFactory {
+    private static final List<AbstractTomlParser> parsers = List.of(new PoetryTomlParser(new LockFileParserFactory()), new PdmTomlParser(new LockFileParserFactory()));
 
-    public AbstractPyProjectParser getParser(JsonNode root) {
+    public AbstractTomlParser getParser(JsonNode root) {
         return parsers.stream()
                 .filter(parser -> parser.supports(root))
                 .findFirst()

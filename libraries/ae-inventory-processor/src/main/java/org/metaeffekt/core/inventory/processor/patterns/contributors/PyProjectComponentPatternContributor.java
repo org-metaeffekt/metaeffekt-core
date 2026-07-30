@@ -21,9 +21,9 @@ import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectParserFactory;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.TomlParserFactory;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.AbstractPyProjectParser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractTomlParser;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -76,7 +76,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 final ObjectMapper objectMapper = new TomlMapper();
                 final JsonNode pyProjectRootNode = objectMapper.readTree(pyProjectToml);
 
-                final AbstractPyProjectParser parser = new PyProjectParserFactory().getParser(pyProjectRootNode);
+                final AbstractTomlParser parser = new TomlParserFactory().getParser(pyProjectRootNode);
                 if (parser == null) {
                     log.info("Unsupported pyproject.toml format: {}", pyProjectToml.getAbsolutePath());
                     return null;
@@ -191,7 +191,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
         artifact.setVersion(version);
         artifact.setComponent(name);
 
-        if (pyProjectPackageSource != null) {
+        if (pyProjectPackageSource != null && !pyProjectPackageSource.urls().isEmpty()) {
             artifact.set(KEY_PACKAGE_SOURCE_URL, String.join(",", pyProjectPackageSource.urls()));
         }
         artifact.set(KEY_PACKAGE_FILES, String.valueOf(resolvedModule.getPyProjectPackageFiles()));
