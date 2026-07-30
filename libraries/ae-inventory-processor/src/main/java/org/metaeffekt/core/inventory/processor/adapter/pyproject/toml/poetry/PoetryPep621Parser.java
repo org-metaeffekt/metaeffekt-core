@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.pdm;
+package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.poetry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
@@ -25,29 +25,24 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Class for parsing pdm toml files.
+ * Class for parsing V2 poetry toml files that support PEP621.
  */
-public class PdmTomlParser extends AbstractPep621Parser {
-    private static final String PDM_PATH = "/tool/pdm";
-    private static final String DEV_DEPENDENCIES_PATH = "/tool/pdm/dev-dependencies/dev";
+public class PoetryPep621Parser extends AbstractPep621Parser implements PoetryToml {
+    private static final String DEV_DEPENDENCIES_PATH = "/project/dependency-groups/dev";
 
     @Override
     public boolean supports(JsonNode root) {
-        return getProjectNode(root).isObject() && root.at(PDM_PATH).isObject();
+        return getProjectNode(root).isObject() && root.at(getPoetryPath()).isObject();
     }
 
     @Override
     public String getIncludePattern() {
-        return "pyproject.toml, pdm.lock";
+        return getPoetryIncludePattern();
     }
 
     @Override
     protected ResolvedModule parseProject(JsonNode projectNode) {
-        ResolvedModule module = new ResolvedModule(projectNode.path("name").asText(), null);
-        // FIXME-SFA: version can be dynamic, then it can be determined by reading tool.pdm.version
-        module.setVersion(projectNode.path("version").asText(null));
-
-        return module;
+        return parsePoetryProject(projectNode);
     }
 
     @Override
@@ -57,7 +52,6 @@ public class PdmTomlParser extends AbstractPep621Parser {
 
     @Override
     protected JsonNode readLockFile(File pyProjectToml) throws IOException {
-        File lock = new File(pyProjectToml.getParentFile(), "pdm.lock");
-        return mapper.readTree(lock);
+        return mapper.readTree(getLockFile(pyProjectToml));
     }
 }

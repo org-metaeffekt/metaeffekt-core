@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.LockFileParser;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,4 +48,13 @@ public interface PyProjectTomlParser {
      * @throws IOException if an I/O error occurs
      */
     PyProjectData parse(File pyProjectToml, JsonNode root) throws IOException;
+
+    /**
+     * Creates a lock file parser corresponding to the lock file version-
+     *
+     * @param lockRoot the root node of the lock file
+     * @return the lock file parser for the specific lock file version
+     */
+    LockFileParser createLockFileParser(JsonNode lockRoot);
+
 }

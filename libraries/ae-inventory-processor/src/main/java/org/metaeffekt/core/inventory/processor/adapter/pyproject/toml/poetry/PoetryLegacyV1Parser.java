@@ -16,29 +16,58 @@
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.poetry;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractTomlParser;
 
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider.extractVersion;
 
 /**
- * Abstract class for parsing poetry toml files.
+ * Class for parsing legacy (V1) poetry toml files.
  */
-public abstract class AbstractPoetryTomlParser extends AbstractTomlParser {
-    protected static final String POETRY_PATH = "/tool/poetry";
+public class PoetryLegacyV1Parser extends AbstractTomlParser implements PoetryToml {
+    private static final String RUNTIME_DEPENDENCIES_PATH = "/tool/poetry/dependencies";
+    private static final String DEV_DEPENDENCIES_PATH = "/tool/poetry/group/dev/dependencies";
+    private final String POETRY_PATH = getPoetryPath();
+
+    @Override
+    public boolean supports(JsonNode root) {
+        return root.at(POETRY_PATH).isObject() && !root.at("/project").isObject();
+    }
 
     @Override
     public String getIncludePattern() {
-        return "pyproject.toml, poetry.lock";
+        return getPoetryIncludePattern();
     }
 
-    /**
-     * Returns default oetry node.
-     */
-    protected JsonNode getPoetryNode(JsonNode root) {
+    @Override
+    protected JsonNode getProjectNode(JsonNode root) {
         return root.at(POETRY_PATH);
+    }
+
+    @Override
+    protected ResolvedModule parseProject(JsonNode projectNode) {
+        return parsePoetryProject(projectNode);
+    }
+
+    @Override
+    protected List<UnresolvedModule> extractRuntimeDependencies(JsonNode root) {
+        return extractObjectDirectDependencies(root.at(RUNTIME_DEPENDENCIES_PATH));
+    }
+
+    @Override
+    protected List<UnresolvedModule> extractDevelopmentDependencies(JsonNode root) {
+        return extractObjectDirectDependencies(root.at(DEV_DEPENDENCIES_PATH));
+    }
+
+    @Override
+    protected JsonNode readLockFile(File pyProjectToml) throws IOException {
+        return mapper.readTree(getLockFile(pyProjectToml));
     }
 
     protected List<UnresolvedModule> extractObjectDirectDependencies(JsonNode dependencyNode) {
@@ -48,15 +77,5 @@ public abstract class AbstractPoetryTomlParser extends AbstractTomlParser {
         }
         dependencyNode.propertyStream().forEach(entry -> unresolvedModules.add(new UnresolvedModule(entry.getKey(), null, extractVersion(entry.getValue()))));
         return unresolvedModules;
-    }
-
-    /**
-     * Checks if Poetry 2 PEP621 structure exists.
-     *
-     * @param root the file root node
-     * @return true if file is in poetry 2 PEP621 structure, else false
-     */
-    protected boolean hasPep621Project(JsonNode root) {
-        return root.path("project").isObject();
     }
 }

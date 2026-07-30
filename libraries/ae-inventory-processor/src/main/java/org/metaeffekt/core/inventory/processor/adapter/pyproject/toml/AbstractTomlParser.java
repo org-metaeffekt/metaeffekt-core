@@ -24,19 +24,23 @@ import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.LockFileParser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.LockFileParserFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider.parseRequirement;
-
 /**
- * Abstract class defining shared methods for poetry and pdm file parsing.
+ * Abstract class defining and providing shared methods for poetry and pdm file parsing.
  */
 @Getter
 @AllArgsConstructor
 public abstract class AbstractTomlParser implements PyProjectTomlParser {
+    /**
+     * Lock file parser factory used for determining lock file parser.
+     */
+    protected final LockFileParserFactory lockParserFactory = new LockFileParserFactory();
+
     /**
      * Mapper for reading toml files into objects.
      */
@@ -45,7 +49,8 @@ public abstract class AbstractTomlParser implements PyProjectTomlParser {
     @Override
     public PyProjectData parse(File pyProjectToml, JsonNode root) throws IOException {
         PyProjectData data = new PyProjectData();
-        data.setProjectModule(parseProject(root));
+        JsonNode projectNode = getProjectNode(root);
+        data.setProjectModule(parseProject(projectNode));
         data.setDirectRuntimeDependencies(extractRuntimeDependencies(root));
         data.setDirectDevelopmentDependencies(extractDevelopmentDependencies(root));
 
@@ -55,50 +60,49 @@ public abstract class AbstractTomlParser implements PyProjectTomlParser {
         return data;
     }
 
-    /**
-     * Parses PEP508 dependency strings.
-     *
-     * @param dependencyNode the dependency node
-     * @return list of unresolved dependencies
-     */
-    protected static List<UnresolvedModule> extractPep508DirectDependencies(JsonNode dependencyNode) {
-        List<UnresolvedModule> unresolvedModules = new ArrayList<>();
-        if (!dependencyNode.isArray()) {
-            return unresolvedModules;
-        }
-        dependencyNode.valueStream().forEach(dependency -> unresolvedModules.add(parseRequirement(dependency.asText())));
-        return unresolvedModules;
+    @Override
+    public LockFileParser createLockFileParser(JsonNode lockRoot) {
+        return lockParserFactory.getParser(lockRoot);
     }
 
     /**
-     * Parses a project as a module.
+     * Returns the poetry or pdm project node.
      *
-     * @param root the root
-     * @return the resolved project module
+     * @param root the file root node
+     * @return the project node
      */
-    protected abstract ResolvedModule parseProject(JsonNode root);
+    protected abstract JsonNode getProjectNode(JsonNode root);
 
     /**
-     * Parses runtime dependencies.
+     * Parses a poetry or pdm project as a module.
+     *
+     * @param projectNode the project root
+     * @return the resolved project module
+     */
+    protected abstract ResolvedModule parseProject(JsonNode projectNode);
+
+    /**
+     * Extracts the runtime dependencies.
+     *
+     * @param root the file root node
+     * @return list of unresolved runtime dependencies
      */
     protected abstract List<UnresolvedModule> extractRuntimeDependencies(JsonNode root);
 
     /**
-     * Parses development dependencies.
+     * Extracts the dev dependencies.
+     *
+     * @param root the file root node
+     * @return list of unresolved dev dependencies
      */
     protected abstract List<UnresolvedModule> extractDevelopmentDependencies(JsonNode root);
 
     /**
-     * Return the lock file root as a JSON node.
+     * Returns the lock file root as a JSON node.
      *
      * @param pyProjectToml the pyproject toml file
      * @return the JSON node of the lock file
      * @throws IOException if an I/O error occurs
      */
     protected abstract JsonNode readLockFile(File pyProjectToml) throws IOException;
-
-    /**
-     * Creates the matching lock parser.
-     */
-    protected abstract LockFileParser createLockFileParser(JsonNode lockRoot);
 }

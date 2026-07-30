@@ -16,17 +16,25 @@
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.LockFileParserFactory;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.pdm.PdmTomlParser;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.poetry.PoetryTomlParser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.poetry.PoetryLegacyV1Parser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.poetry.PoetryPep621Parser;
 
 import java.util.List;
 
+/**
+ * Factory class used to determine a parser for a specific toml file version.
+ */
 public class TomlParserFactory {
-    private static final List<AbstractTomlParser> parsers = List.of(new PoetryTomlParser(new LockFileParserFactory()), new PdmTomlParser(new LockFileParserFactory()));
+    private static final List<AbstractTomlParser> PARSERS = List.of(new PoetryLegacyV1Parser(), new PoetryPep621Parser(), new PdmTomlParser());
 
+    /**
+     * Determines the lock file parser for the specific toml file.
+     * @param root the toml file root node
+     * @return the corresponding lock file parser
+     */
     public AbstractTomlParser getParser(JsonNode root) {
-        return parsers.stream()
+        return PARSERS.stream()
                 .filter(parser -> parser.supports(root))
                 .findFirst()
                 .orElse(null);

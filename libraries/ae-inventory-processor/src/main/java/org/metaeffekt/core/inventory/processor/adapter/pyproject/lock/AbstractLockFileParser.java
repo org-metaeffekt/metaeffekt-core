@@ -1,3 +1,18 @@
+/*
+ * Copyright 2009-2026 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.lock;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,11 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * Abstract class for parsing poetry and pdm lock files.
+ */
 public abstract class AbstractLockFileParser implements LockFileParser {
 
     /**
-     * Extracts all packages from poetry.lock.
+     * Extracts all packages from poetry.lock as resolved modules.
+     *
+     * @param lockRoot the lock file root node
+     * @return list of resolved packages
      */
     protected List<ResolvedModule> extractPackages(JsonNode lockRoot) {
         List<ResolvedModule> resolvedModules = new ArrayList<>();
@@ -24,7 +44,7 @@ public abstract class AbstractLockFileParser implements LockFileParser {
             return resolvedModules;
         }
         packages.forEach(packageNode -> {
-                    ResolvedModule module = parsePackage(packageNode);
+                    ResolvedModule module = extractPackage(packageNode);
                     resolvedModules.add(module);
                 }
         );
@@ -32,12 +52,15 @@ public abstract class AbstractLockFileParser implements LockFileParser {
     }
 
     /**
-     * Creates resolved module from poetry package.
+     * Extracts package information for one package as a resolved module.
+     *
+     * @param packageNode the package node
+     * @return the resolved package
      */
-    protected ResolvedModule parsePackage(JsonNode packageNode) {
+    protected ResolvedModule extractPackage(JsonNode packageNode) {
         ResolvedModule module = new ResolvedModule(packageNode.path("name").asText(), null);
         module.setVersion(packageNode.path("version").asText(null));
-        Map<String, UnresolvedModule> unresolvedModuleMap = parseDependencies(packageNode.path("dependencies"));
+        Map<String, UnresolvedModule> unresolvedModuleMap = extractDependencies(packageNode.path("dependencies"));
         module.setRuntimeDependencies(unresolvedModuleMap);
 
         module.setPyProjectPackageSource(parseSource(packageNode));
@@ -47,7 +70,7 @@ public abstract class AbstractLockFileParser implements LockFileParser {
     }
 
     /**
-     * Collects the file elements from the files attribute from the package in the lock file.
+     * Collects the file elements from the files array in the package.
      *
      * @param packageNode the package node
      * @return JSON array containing the files and the hashes
@@ -70,17 +93,19 @@ public abstract class AbstractLockFileParser implements LockFileParser {
     }
 
     /**
-     * Parses package.dependencies.
+     * Extracts the dependencies from the package.
+     *
+     * @param dependenciesNode the dependencies node
+     * @return map consisting of the dependency name and itself as a unresolved module
      */
-    protected abstract Map<String, UnresolvedModule> parseDependencies(JsonNode dependencies);
+    protected abstract Map<String, UnresolvedModule> extractDependencies(JsonNode dependenciesNode);
 
 
     /**
-     * Parses information of the package source attribute of the lock file.
+     * Parses information of the package source attribute.
      *
      * @param packageNode the package node
      * @return the extracted source data
      */
     protected abstract PyProjectPackageSource parseSource(JsonNode packageNode);
-
 }
