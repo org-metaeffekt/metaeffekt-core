@@ -43,7 +43,7 @@ public class PdmTomlParser extends AbstractPep621Parser {
 
     @Override
     protected ResolvedModule parseProject(JsonNode projectNode) {
-        ResolvedModule module = new ResolvedModule(projectNode.path("name").asText(), null);
+        final ResolvedModule module = new ResolvedModule(projectNode.path("name").asText(), null);
         // FIXME-SFA: version can be dynamic, then it can be determined by reading tool.pdm.version
         module.setVersion(projectNode.path("version").asText(null));
 

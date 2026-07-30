@@ -35,7 +35,7 @@ public abstract class AbstractPoetryLockParser extends AbstractLockFileParser {
 
     @Override
     protected Map<String, UnresolvedModule> extractDependencies(JsonNode dependenciesNode) {
-        Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
+        final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
         if (!dependenciesNode.isObject()) {
             return unresolvedModuleMap;
         }
@@ -48,7 +48,7 @@ public abstract class AbstractPoetryLockParser extends AbstractLockFileParser {
 
     @Override
     protected PyProjectPackageSource parseSource(JsonNode packageNode) {
-        JsonNode source = packageNode.path("source");
+        final JsonNode source = packageNode.path("source");
         if (source.isMissingNode()) {
             return null;
         }

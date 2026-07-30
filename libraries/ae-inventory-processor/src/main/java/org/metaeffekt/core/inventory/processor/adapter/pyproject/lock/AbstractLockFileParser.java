@@ -38,13 +38,13 @@ public abstract class AbstractLockFileParser implements LockFileParser {
      * @return list of resolved packages
      */
     protected List<ResolvedModule> extractPackages(JsonNode lockRoot) {
-        List<ResolvedModule> resolvedModules = new ArrayList<>();
-        JsonNode packages = lockRoot.path("package");
+        final List<ResolvedModule> resolvedModules = new ArrayList<>();
+        final JsonNode packages = lockRoot.path("package");
         if (!packages.isArray()) {
             return resolvedModules;
         }
         packages.forEach(packageNode -> {
-                    ResolvedModule module = extractPackage(packageNode);
+                    final ResolvedModule module = extractPackage(packageNode);
                     resolvedModules.add(module);
                 }
         );
@@ -58,9 +58,9 @@ public abstract class AbstractLockFileParser implements LockFileParser {
      * @return the resolved package
      */
     protected ResolvedModule extractPackage(JsonNode packageNode) {
-        ResolvedModule module = new ResolvedModule(packageNode.path("name").asText(), null);
+        final ResolvedModule module = new ResolvedModule(packageNode.path("name").asText(), null);
         module.setVersion(packageNode.path("version").asText(null));
-        Map<String, UnresolvedModule> unresolvedModuleMap = extractDependencies(packageNode.path("dependencies"));
+        final Map<String, UnresolvedModule> unresolvedModuleMap = extractDependencies(packageNode.path("dependencies"));
         module.setRuntimeDependencies(unresolvedModuleMap);
 
         module.setPyProjectPackageSource(parseSource(packageNode));
@@ -76,13 +76,13 @@ public abstract class AbstractLockFileParser implements LockFileParser {
      * @return JSON array containing the files and the hashes
      */
     protected JSONArray collectFiles(JsonNode packageNode) {
-        JsonNode files = packageNode.path("files");
+        final JsonNode files = packageNode.path("files");
         if (!files.isArray()) {
             return null;
         }
-        JSONArray fileData = new JSONArray();
+        final JSONArray fileData = new JSONArray();
         files.forEach(file -> {
-                    JSONObject object = new JSONObject();
+                    final JSONObject object = new JSONObject();
                     object.put("file", file.path("file").asText(null));
                     object.put("hash", file.path("hash").asText(null));
                     fileData.put(object);

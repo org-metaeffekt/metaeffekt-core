@@ -59,7 +59,7 @@ public interface PoetryToml {
      * @return the poetry metadata from the toml file
      */
     default ResolvedModule parsePoetryProject(JsonNode projectNode) {
-        ResolvedModule module = new ResolvedModule(projectNode.path("name").asText(), null);
+        final ResolvedModule module = new ResolvedModule(projectNode.path("name").asText(), null);
         module.setVersion(projectNode.path("version").asText(null));
         return module;
     }

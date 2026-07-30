@@ -48,14 +48,14 @@ public abstract class AbstractTomlParser implements PyProjectTomlParser {
 
     @Override
     public PyProjectData parse(File pyProjectToml, JsonNode root) throws IOException {
-        PyProjectData data = new PyProjectData();
-        JsonNode projectNode = getProjectNode(root);
+        final PyProjectData data = new PyProjectData();
+        final JsonNode projectNode = getProjectNode(root);
         data.setProjectModule(parseProject(projectNode));
         data.setDirectRuntimeDependencies(extractRuntimeDependencies(root));
         data.setDirectDevelopmentDependencies(extractDevelopmentDependencies(root));
 
-        JsonNode lockNode = readLockFile(pyProjectToml);
-        LockFileParser lockParser = createLockFileParser(lockNode);
+        final JsonNode lockNode = readLockFile(pyProjectToml);
+        final LockFileParser lockParser = createLockFileParser(lockNode);
         data.setResolvedModulesFromLockFile(lockParser.parse(lockNode));
         return data;
     }

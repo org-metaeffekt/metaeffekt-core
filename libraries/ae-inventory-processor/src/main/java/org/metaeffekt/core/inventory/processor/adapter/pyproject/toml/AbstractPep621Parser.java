@@ -47,7 +47,7 @@ public abstract class AbstractPep621Parser extends AbstractTomlParser {
      * @return list of unresolved dependencies
      */
     protected static List<UnresolvedModule> extractPep508DirectDependencies(JsonNode dependenciesNode) {
-        List<UnresolvedModule> unresolvedModules = new ArrayList<>();
+        final List<UnresolvedModule> unresolvedModules = new ArrayList<>();
         if (!dependenciesNode.isArray()) {
             return unresolvedModules;
         }

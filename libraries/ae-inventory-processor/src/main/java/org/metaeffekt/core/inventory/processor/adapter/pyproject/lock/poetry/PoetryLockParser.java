@@ -26,7 +26,7 @@ import java.util.List;
 public class PoetryLockParser extends AbstractPoetryLockParser {
     @Override
     public boolean supports(JsonNode root) {
-        String version = root.path("metadata").path("lock-version").asText();
+        final String version = root.path("metadata").path("lock-version").asText();
         return version.startsWith("1.") || version.startsWith("2.");
     }
 

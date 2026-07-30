@@ -71,11 +71,13 @@ public class PoetryLegacyV1Parser extends AbstractTomlParser implements PoetryTo
     }
 
     protected List<UnresolvedModule> extractObjectDirectDependencies(JsonNode dependencyNode) {
-        List<UnresolvedModule> unresolvedModules = new ArrayList<>();
+        final List<UnresolvedModule> unresolvedModules = new ArrayList<>();
         if (dependencyNode.isMissingNode()) {
             return unresolvedModules;
         }
-        dependencyNode.propertyStream().forEach(entry -> unresolvedModules.add(new UnresolvedModule(entry.getKey(), null, extractVersion(entry.getValue()))));
+        dependencyNode.propertyStream().forEach(entry ->
+                unresolvedModules.add(new UnresolvedModule(entry.getKey(), null, extractVersion(entry.getValue())))
+        );
         return unresolvedModules;
     }
 }

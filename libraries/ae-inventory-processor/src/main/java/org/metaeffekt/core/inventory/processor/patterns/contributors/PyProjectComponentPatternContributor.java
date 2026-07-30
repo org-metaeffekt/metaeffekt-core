@@ -101,7 +101,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                 // - indirect runtime dependencies are marked with '(r)' for project-level module
 
                 final Map<String, ResolvedModule> nameToResolvedModuleMap = new HashMap<>();
-                for (ResolvedModule resolvedModule : resolvedModules) {
+                for (final ResolvedModule resolvedModule : resolvedModules) {
                     nameToResolvedModuleMap.put(resolvedModule.getName(), resolvedModule);
                 }
 

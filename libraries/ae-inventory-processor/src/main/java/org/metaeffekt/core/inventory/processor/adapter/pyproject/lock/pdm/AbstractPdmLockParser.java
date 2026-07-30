@@ -34,12 +34,12 @@ import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.S
 public abstract class AbstractPdmLockParser extends AbstractLockFileParser {
     @Override
     protected Map<String, UnresolvedModule> extractDependencies(JsonNode dependenciesNode) {
-        Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
+        final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();
         if (!dependenciesNode.isArray()) {
             return unresolvedModuleMap;
         }
         dependenciesNode.valueStream().forEach(dependency -> {
-                    UnresolvedModule module = parseRequirement(dependency.asText());
+                    final UnresolvedModule module = parseRequirement(dependency.asText());
                     unresolvedModuleMap.put(module.getName(), module);
                 }
         );
@@ -49,9 +49,9 @@ public abstract class AbstractPdmLockParser extends AbstractLockFileParser {
 
     @Override
     protected PyProjectPackageSource parseSource(JsonNode packageNode) {
-        List<String> urls = new ArrayList<>();
+        final List<String> urls = new ArrayList<>();
         packageNode.path("files").forEach(file -> {
-                    String url = file.path("url").asText(null);
+                    final String url = file.path("url").asText(null);
                     addIfNotNull(urls, url);
                 }
         );
