@@ -22,18 +22,21 @@ import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractPe
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Class for parsing pdm toml files.
+ * Class for parsing pdm toml files (<a href="https://pdm-project.org/en/latest/">https://pdm-project.org/en/latest//</a>).
  */
 public class PdmTomlParser extends AbstractPep621Parser {
     private static final String PDM_PATH = "/tool/pdm";
-    private static final String DEV_DEPENDENCIES_PATH = "/tool/pdm/dev-dependencies/dev";
+    private static final String LEGACY_DEV_DEPENDENCIES_PATH = PDM_PATH + LEGACY_DEV_DEPENDENCIES_PATH_SUFFIX;
 
     @Override
     public boolean supports(JsonNode root) {
-        return getProjectNode(root).isObject() && root.at(PDM_PATH).isObject();
+        return getProjectNode(root).isObject() && !root.at(PDM_PATH).isMissingNode();
     }
 
     @Override
@@ -52,7 +55,14 @@ public class PdmTomlParser extends AbstractPep621Parser {
 
     @Override
     protected List<UnresolvedModule> extractDevelopmentDependencies(JsonNode root) {
-        return extractPep508DirectDependencies(root.at(DEV_DEPENDENCIES_PATH));
+        final List<UnresolvedModule> pep735DevDependencies = extractPEP735DependencyGroup(root.at(PEP_735_DEPENDENCY_GROUPS_PATH), "dev", new LinkedHashSet<>());
+        final List<UnresolvedModule> unresolvedLegacyDevPep508Modules = extractPep508Dependencies(root.at(LEGACY_DEV_DEPENDENCIES_PATH));
+
+        final Map<String, UnresolvedModule> dependencies = new LinkedHashMap<>();
+        mergeInto(dependencies, pep735DevDependencies);
+        mergeInto(dependencies, unresolvedLegacyDevPep508Modules);
+
+        return List.copyOf(dependencies.values());
     }
 
     @Override

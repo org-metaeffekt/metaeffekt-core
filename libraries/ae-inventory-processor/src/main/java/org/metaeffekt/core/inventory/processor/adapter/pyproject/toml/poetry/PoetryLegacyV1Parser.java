@@ -22,22 +22,20 @@ import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractTo
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-
-import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider.extractVersion;
+import java.util.Map;
 
 /**
- * Class for parsing legacy (V1) poetry toml files.
+ * Class for parsing legacy (V1) poetry toml files (versions <2.1) (<a href="https://python-poetry.org/docs/1.8/">https://python-poetry.org/docs/1.8/</a>).
  */
 public class PoetryLegacyV1Parser extends AbstractTomlParser implements PoetryToml {
-    private static final String RUNTIME_DEPENDENCIES_PATH = "/tool/poetry/dependencies";
-    private static final String DEV_DEPENDENCIES_PATH = "/tool/poetry/group/dev/dependencies";
-    private final String POETRY_PATH = getPoetryPath();
+    private static final String RUNTIME_DEPENDENCIES_PATH = POETRY_PATH + "/dependencies";
+    private static final String LEGACY_DEV_DEPENDENCIES_PATH = POETRY_PATH + LEGACY_DEV_DEPENDENCIES_PATH_SUFFIX;
 
     @Override
     public boolean supports(JsonNode root) {
-        return root.at(POETRY_PATH).isObject() && !root.at("/project").isObject();
+        return getProjectNode(root).isObject() && !root.at("/project").isObject();
     }
 
     @Override
@@ -57,27 +55,23 @@ public class PoetryLegacyV1Parser extends AbstractTomlParser implements PoetryTo
 
     @Override
     protected List<UnresolvedModule> extractRuntimeDependencies(JsonNode root) {
-        return extractObjectDirectDependencies(root.at(RUNTIME_DEPENDENCIES_PATH));
+        return extractPropertySpecifiedDependencies(root.at(RUNTIME_DEPENDENCIES_PATH));
     }
 
     @Override
     protected List<UnresolvedModule> extractDevelopmentDependencies(JsonNode root) {
-        return extractObjectDirectDependencies(root.at(DEV_DEPENDENCIES_PATH));
+        final List<UnresolvedModule> poetryGroupDevDependencies = extractPropertySpecifiedDependencies(root.at(DEV_DEPENDENCIES_PATH));
+        final List<UnresolvedModule> legacyDevDependencies = extractPropertySpecifiedDependencies(root.at(LEGACY_DEV_DEPENDENCIES_PATH));
+
+        final Map<String, UnresolvedModule> dependencies = new LinkedHashMap<>();
+        mergeInto(dependencies, poetryGroupDevDependencies);
+        mergeInto(dependencies, legacyDevDependencies);
+
+        return List.copyOf(dependencies.values());
     }
 
     @Override
     protected JsonNode readLockFile(File pyProjectToml) throws IOException {
         return mapper.readTree(getLockFile(pyProjectToml));
-    }
-
-    protected List<UnresolvedModule> extractObjectDirectDependencies(JsonNode dependencyNode) {
-        final List<UnresolvedModule> unresolvedModules = new ArrayList<>();
-        if (dependencyNode.isMissingNode()) {
-            return unresolvedModules;
-        }
-        dependencyNode.propertyStream().forEach(entry ->
-                unresolvedModules.add(new UnresolvedModule(entry.getKey(), null, extractVersion(entry.getValue())))
-        );
-        return unresolvedModules;
     }
 }

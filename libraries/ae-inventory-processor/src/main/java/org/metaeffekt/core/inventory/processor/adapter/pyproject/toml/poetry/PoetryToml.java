@@ -17,13 +17,23 @@ package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.poetry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
+import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 
 import java.io.File;
+import java.util.List;
+
+import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider.extractVersion;
 
 /**
  * Interface for collecting poetry specific attributes and methods.
  */
 public interface PoetryToml {
+    /**
+     * The poetry path definition.
+     */
+    String POETRY_PATH = "/tool/poetry";
+    String DEV_DEPENDENCIES_PATH = POETRY_PATH + "/group/dev/dependencies";
+
     /**
      * Returns the standard include pattern for poetry files.
      *
@@ -31,15 +41,6 @@ public interface PoetryToml {
      */
     default String getPoetryIncludePattern() {
         return "pyproject.toml, poetry.lock";
-    }
-
-    /**
-     * Returns the standard poetry path in a poetry toml file.
-     *
-     * @return the standard poetry path in a poetry toml file
-     */
-    default String getPoetryPath() {
-        return "/tool/poetry";
     }
 
     /**
@@ -62,5 +63,20 @@ public interface PoetryToml {
         final ResolvedModule module = new ResolvedModule(projectNode.path("name").asText(), null);
         module.setVersion(projectNode.path("version").asText(null));
         return module;
+    }
+
+    /**
+     * Extracts dev dependencies for poetry, specified as properties (dependency="^2.0").
+     *
+     * @param dependencyNode the dependencies node
+     * @return list of unresolved dependencies
+     */
+    default List<UnresolvedModule> extractPropertySpecifiedDependencies(JsonNode dependencyNode) {
+        if (dependencyNode.isMissingNode() || !dependencyNode.isObject()) {
+            return List.of();
+        }
+
+        return dependencyNode.propertyStream()
+                .map(entry -> new UnresolvedModule(entry.getKey(), null, extractVersion(entry.getValue()))).toList();
     }
 }

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
@@ -34,8 +35,11 @@ import java.util.*;
  * Abstract class defining and providing shared methods for poetry and pdm file parsing.
  */
 @Getter
+@Slf4j
 @AllArgsConstructor
 public abstract class AbstractTomlParser implements PyProjectTomlParser {
+    protected static final String LEGACY_DEV_DEPENDENCIES_PATH_SUFFIX = "/dev-dependencies/dev";
+
     /**
      * Lock file parser factory used for determining lock file parser.
      */
@@ -63,6 +67,41 @@ public abstract class AbstractTomlParser implements PyProjectTomlParser {
     @Override
     public LockFileParser createLockFileParser(JsonNode lockRoot) {
         return lockParserFactory.getParser(lockRoot);
+    }
+
+    /**
+     * Merges all dependencies from a source into a target map while checking for version conflicts and deduplicating same dependencies.
+     *
+     * @param target the target map
+     * @param source the source list of unresolved dependencies
+     */
+    protected static void mergeInto(Map<String, UnresolvedModule> target, List<UnresolvedModule> source) {
+        if (source.isEmpty()) {
+            return;
+        }
+        for (UnresolvedModule module : source) {
+            target.merge(module.getName(), module, AbstractTomlParser::checkNoConflict);
+        }
+    }
+
+    /**
+     * BiFunction for Map.merge: identical entries will be deduplicated,
+     * conflicting entries: the existing dependency entry (unresolved module) will be kept.
+     *
+     * @param existing the existing unresolved module in the map
+     * @param incoming the incoming unresolved module in the map
+     * @return the unresolved module to keep
+     */
+    protected static UnresolvedModule checkNoConflict(UnresolvedModule existing, UnresolvedModule incoming) {
+        if (Objects.equals(existing.getVersionRange(), incoming.getVersionRange())) {
+            return existing;
+        }
+
+        log.warn("Development dependency '{}' is defined multiple times with different version ranges ('{}' and '{}'). Keeping the first definition.",
+                incoming.getName(),
+                existing.getVersionRange(),
+                incoming.getVersionRange());
+        return existing;
     }
 
     /**
