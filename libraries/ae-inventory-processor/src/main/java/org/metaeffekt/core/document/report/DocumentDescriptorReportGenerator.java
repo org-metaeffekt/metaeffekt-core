@@ -87,7 +87,7 @@ public class DocumentDescriptorReportGenerator {
         documentDescriptorReport.createImprint(documentDescriptor);
     }
 
-    private static void deriveAssets(DocumentDescriptor documentDescriptor) {
+    static void deriveAssets(DocumentDescriptor documentDescriptor) {
         List<DocumentPart> newParts = new ArrayList<>();
 
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
