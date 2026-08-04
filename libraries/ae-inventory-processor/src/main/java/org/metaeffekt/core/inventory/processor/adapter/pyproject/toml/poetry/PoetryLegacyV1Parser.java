@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class for parsing legacy (V1) poetry toml files (versions <2.1) (<a href="https://python-poetry.org/docs/1.8/">https://python-poetry.org/docs/1.8/</a>).
+ * Class for parsing legacy (V1) poetry toml files (versions prior to 2.1) (<a href="https://python-poetry.org/docs/1.8/">https://python-poetry.org/docs/1.8/</a>).
  */
 public class PoetryLegacyV1Parser extends AbstractTomlParser implements PoetryToml {
     private static final String RUNTIME_DEPENDENCIES_PATH = POETRY_PATH + "/dependencies";

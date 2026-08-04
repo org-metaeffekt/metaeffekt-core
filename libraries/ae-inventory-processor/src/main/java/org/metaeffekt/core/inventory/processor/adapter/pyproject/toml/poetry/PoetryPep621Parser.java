@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class for parsing V2 poetry toml files that support PEP621 (versions >=2.1) (<a href="https://python-poetry.org/docs/">https://python-poetry.org/docs/</a>).
+ * Class for parsing V2 poetry toml files that support PEP621 (versions from 2.1) (<a href="https://python-poetry.org/docs/">https://python-poetry.org/docs/</a>).
  */
 public class PoetryPep621Parser extends AbstractPep621Parser implements PoetryToml {
     private static final String LEGACY_DEV_DEPENDENCIES_PATH = POETRY_PATH + LEGACY_DEV_DEPENDENCIES_PATH_SUFFIX;
