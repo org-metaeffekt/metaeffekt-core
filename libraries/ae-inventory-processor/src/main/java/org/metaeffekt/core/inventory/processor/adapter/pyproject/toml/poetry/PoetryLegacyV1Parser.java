@@ -58,6 +58,15 @@ public class PoetryLegacyV1Parser extends AbstractTomlParser implements PoetryTo
         return extractPropertySpecifiedDependencies(root.at(RUNTIME_DEPENDENCIES_PATH));
     }
 
+    /**
+     * Toml formats for poetry versions prior to 2.1 support dev dependencies listed under /tool/poetry/group/dev/dependencies as well as
+     * under the legacy convention path /tool/poetry/dev-dependencies/dev.
+     * So the file may have dev dependencies listed under both paths if both coexist in the toml file.
+     * Therefore, both path have to be evalated and the dev dependencies have to be extracted and merged from these.
+     *
+     * @param root the file root node
+     * @return list of unresolved dev dependencies
+     */
     @Override
     protected List<UnresolvedModule> extractDevelopmentDependencies(JsonNode root) {
         final List<UnresolvedModule> poetryGroupDevDependencies = extractPropertySpecifiedDependencies(root.at(DEV_DEPENDENCIES_PATH));

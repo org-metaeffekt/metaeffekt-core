@@ -53,6 +53,15 @@ public class PdmTomlParser extends AbstractPep621Parser {
         return module;
     }
 
+    /**
+     * Toml format for pdm support dev dependencies listed under the PEP 735 defined standard path /dependency-groups but also the
+     * legacy path /tool/pdm/dev-dependencies/dev.
+     * So the file may have dev dependencies listed under both paths if they coexist in the toml file.
+     * Therefore, both these paths have to be evalated and the dev dependencies have to be extracted and merged from these.
+     *
+     * @param root the file root node
+     * @return list of unresolved dev dependencies
+     */
     @Override
     protected List<UnresolvedModule> extractDevelopmentDependencies(JsonNode root) {
         final List<UnresolvedModule> pep735DevDependencies = extractPEP735DependencyGroup(root.at(PEP_735_DEPENDENCY_GROUPS_PATH), "dev", new LinkedHashSet<>());

@@ -48,6 +48,15 @@ public class PoetryPep621Parser extends AbstractPep621Parser implements PoetryTo
         return parsePoetryProject(projectNode);
     }
 
+    /**
+     * Toml formats for poetry versions from 2.1 support dev dependencies listed under the PEP 735 defined standard path /dependency-groups but also the legacy paths
+     * /tool/poetry/group/dev/dependencies as well as under /tool/poetry/dev-dependencies/dev.
+     * So the file may have dev dependencies listed under those three paths if they coexist in the toml file.
+     * Therefore, all paths have to be evalated and the dev dependencies have to be extracted and merged from these.
+     *
+     * @param root the file root node
+     * @return list of unresolved dev dependencies
+     */
     @Override
     protected List<UnresolvedModule> extractDevelopmentDependencies(JsonNode root) {
         final List<UnresolvedModule> pep735DevDependencies = extractPEP735DependencyGroup(root.at(PEP_735_DEPENDENCY_GROUPS_PATH), "dev", new LinkedHashSet<>());
