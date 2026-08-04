@@ -34,6 +34,16 @@ public class PdmTomlParser extends AbstractPep621Parser {
     private static final String PDM_PATH = "/tool/pdm";
     private static final String LEGACY_DEV_DEPENDENCIES_PATH = PDM_PATH + LEGACY_DEV_DEPENDENCIES_PATH_SUFFIX;
 
+    /**
+     * Record for storing dynamic version data.
+     *
+     * @param source   the source to determine the dynamic version ("file" | "scm" | "call")
+     * @param getter   the getter function to determine the dynamic version if source="call": "modul:function"
+     * @param fromFile the path to the file for determining the dynamic version if source="file"
+     * @param pattern  optional regex pattern for "file"/"scm"
+     */
+    private record DynamicVersionInfo(String source, String getter, String fromFile, String pattern) {}
+
     @Override
     public boolean supports(JsonNode root) {
         return getProjectNode(root).isObject() && !root.at(PDM_PATH).isMissingNode();
@@ -45,12 +55,58 @@ public class PdmTomlParser extends AbstractPep621Parser {
     }
 
     @Override
-    protected ResolvedModule parseProject(JsonNode projectNode) {
-        final ResolvedModule module = new ResolvedModule(projectNode.path("name").asText(), null);
-        // FIXME-SFA: version can be dynamic, then it can be determined by reading tool.pdm.version
-        module.setVersion(projectNode.path("version").asText(null));
+    protected ResolvedModule parseProject(JsonNode root) {
+        final ResolvedModule module = new ResolvedModule(getProjectNode(root).path("name").asText(), null);
+        final String version = extractProjectVersion(root);
+        module.setVersion(version);
 
         return module;
+    }
+
+    /**
+     * Extracts the version of the project for pdm files.
+     * If no value for version under /project/version is defined, it will be checked, whether the version is dynamic.
+     * If so the source of that dynamically determined version will be stored, otherwise null.
+     *
+     * @param root the root file node
+     * @return the extracted version or its source
+     */
+    private String extractProjectVersion(JsonNode root) {
+        final JsonNode projectNode = getProjectNode(root);
+        final JsonNode versionNode = projectNode.path("/version");
+        if (!versionNode.isMissingNode()) {
+            return versionNode.asText();
+        }
+
+        final boolean isDynamicVersion = isFieldListedAsDynamic(projectNode, "version");
+        if (!isDynamicVersion) {
+            return null; // no version and also not declared dynamic
+        }
+
+        // version is dynamic -> no value extractable -> extract source
+        return extractDynamicVersionSource(root);
+    }
+
+    private boolean isFieldListedAsDynamic(JsonNode projectNode, String fieldName) {
+        final JsonNode dynamic = projectNode.at("/dynamic");
+        if (!dynamic.isArray()) return false;
+        return dynamic.valueStream().anyMatch(n -> fieldName.equals(n.asText()));
+    }
+
+    private String extractDynamicVersionSource(JsonNode root) {
+        final JsonNode versionConfig = root.at(PDM_PATH + "/version");
+        if (versionConfig.isMissingNode()) {
+            return null;
+        }
+
+        final DynamicVersionInfo dynamicVersionInfo = new DynamicVersionInfo(
+                versionConfig.path("source").asText(null),
+                versionConfig.path("getter").asText(null),
+                versionConfig.path("path").asText(null),
+                versionConfig.path("pattern").asText(null)
+        );
+
+        return "dynamic: " + dynamicVersionInfo.source;
     }
 
     /**

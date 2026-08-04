@@ -49,8 +49,8 @@ public class PoetryLegacyV1Parser extends AbstractTomlParser implements PoetryTo
     }
 
     @Override
-    protected ResolvedModule parseProject(JsonNode projectNode) {
-        return parsePoetryProject(projectNode);
+    protected ResolvedModule parseProject(JsonNode root) {
+        return parsePoetryProject(getProjectNode(root));
     }
 
     @Override
