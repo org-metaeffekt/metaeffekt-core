@@ -78,7 +78,7 @@ public abstract class AbstractPep621Parser extends AbstractTomlParser {
 
         final Map<String, UnresolvedModule> unresolvedModuleMap = new LinkedHashMap<>();
         // own, direct PEP 508 dependency strings (without included groups)
-        List<UnresolvedModule> directPep508dependencies = extractPep508Dependencies(stringEntries);
+        final List<UnresolvedModule> directPep508dependencies = extractPep508Dependencies(stringEntries);
         for (UnresolvedModule module : directPep508dependencies) {
             unresolvedModuleMap.put(module.getName(), module);
         }

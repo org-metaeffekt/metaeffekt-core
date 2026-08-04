@@ -32,6 +32,7 @@ import java.util.Map;
  */
 public class PoetryPep621Parser extends AbstractPep621Parser implements PoetryToml {
     private static final String LEGACY_DEV_DEPENDENCIES_PATH = POETRY_PATH + LEGACY_DEV_DEPENDENCIES_PATH_SUFFIX;
+    private static final String LEGACY_RUNTIME_DEPENDENCIES_PATH = POETRY_PATH + "/dependencies";
 
     @Override
     public boolean supports(JsonNode root) {
@@ -46,6 +47,25 @@ public class PoetryPep621Parser extends AbstractPep621Parser implements PoetryTo
     @Override
     protected ResolvedModule parseProject(JsonNode projectNode) {
         return parsePoetryProject(projectNode);
+    }
+
+    /**
+     * Poetry versions from 2.1 by convention support the /project/dependencies path where the main (runtime) dependencies are listed.
+     * If this path contains minimum one dependency, the legacy /tool/poetry/dependencies path will only contain enrichment information for the dependencies listed under /project/dependencies.
+     * If /project/dependencies does not list any dependencies then the /tool/poetry/dependencies path will be considered as the primary source that contains the runtime dependencies.
+     * More information on: <a href="https://python-poetry.org/docs/dependency-specification/">https://python-poetry.org/docs/dependency-specification/</a>.
+     *
+     * @param root the file root node
+     * @return list of unresolved runtime dependencies from /project/dependencies if not empty, else from /tool/poetry/dependencies
+     */
+    @Override
+    protected List<UnresolvedModule> extractRuntimeDependencies(JsonNode root) {
+        final List<UnresolvedModule> pep621RuntimeDependencies = super.extractRuntimeDependencies(root);
+        if (pep621RuntimeDependencies.isEmpty()) {
+            return extractPropertySpecifiedDependencies(root.at(LEGACY_RUNTIME_DEPENDENCIES_PATH));
+        }
+
+        return pep621RuntimeDependencies;
     }
 
     /**
