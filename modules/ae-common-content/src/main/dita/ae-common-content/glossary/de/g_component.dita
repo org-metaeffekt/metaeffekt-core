@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="component">
-    <glossterm>Komponente</glossterm>
+    <glossterm>Komponenten</glossterm>
     <glossdef>
         <p>
             Eine Komponente ist eine Gruppe, die ein oder mehrere Artefakte umfasst.

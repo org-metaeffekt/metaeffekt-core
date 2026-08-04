@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="artifact">
-    <glossterm>Artefakt</glossterm>
+    <glossterm>Artefakte</glossterm>
     <glossdef>
         <p>
             Hard- und Software-Assets sind aus verschiedenen Bestandteilen aufgebaut. Dabei werden diese Bestandteile

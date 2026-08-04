@@ -82,10 +82,9 @@
                                     #if ($licenseData)
                                         #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
                                         #if ($mappedStatus && $licenseData.get("Open CoDE Status")=="(approved)")
-                                            $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils)
-                                            <xref href="#$topicId/id-opencode-similar-fn" type="fn"/> <xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
+                                            $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils)<xref href="#$topicId/id-opencode-similar-fn" type="fn"/><xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
                                         #elseif ($mappedStatus)
-                                            $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils) <xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
+                                            $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils)<xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
                                         #end
                                     #else
                                         &nbsp;
@@ -124,7 +123,7 @@
                                     #if ($licenseData)
                                         #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
                                         #if ($mappedStatus && $licenseData.get("Open CoDE Status")=="(approved)")
-                                            $mappedStatus <xref href="#$topicId/id-opencode-similar-fn" type="fn"/>
+                                            ${mappedStatus}<xref href="#$topicId/id-opencode-similar-fn" type="fn"/>
                                         #elseif ($mappedStatus)
                                             $mappedStatus
                                         #end
