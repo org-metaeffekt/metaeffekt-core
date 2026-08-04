@@ -23,7 +23,6 @@ import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractPe
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -106,7 +105,7 @@ public class PdmTomlParser extends AbstractPep621Parser {
                 versionConfig.path("pattern").asText(null)
         );
 
-        return "dynamic: " + dynamicVersionInfo.source;
+        return "dynamic:" + dynamicVersionInfo.source;
     }
 
     /**
@@ -120,11 +119,11 @@ public class PdmTomlParser extends AbstractPep621Parser {
      */
     @Override
     protected List<UnresolvedModule> extractDevelopmentDependencies(JsonNode root) {
-        final List<UnresolvedModule> pep735DevDependencies = extractPEP735DependencyGroup(root.at(PEP_735_DEPENDENCY_GROUPS_PATH), "dev", new LinkedHashSet<>());
+        final Map<String, List<UnresolvedModule>> pep735DevDependencies = extractAllPEP735DependencyGroups(root.at(PEP_735_DEPENDENCY_GROUPS_PATH));
         final List<UnresolvedModule> unresolvedLegacyDevPep508Modules = extractPep508Dependencies(root.at(LEGACY_DEV_DEPENDENCIES_PATH));
 
         final Map<String, UnresolvedModule> dependencies = new LinkedHashMap<>();
-        mergeInto(dependencies, pep735DevDependencies);
+        pep735DevDependencies.values().forEach(groupDeps -> mergeInto(dependencies, groupDeps));
         mergeInto(dependencies, unresolvedLegacyDevPep508Modules);
 
         return List.copyOf(dependencies.values());

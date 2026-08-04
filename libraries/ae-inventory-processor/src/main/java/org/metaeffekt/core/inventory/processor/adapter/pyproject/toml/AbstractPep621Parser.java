@@ -45,14 +45,24 @@ public abstract class AbstractPep621Parser extends AbstractTomlParser {
     }
 
     /**
-     * Extracts PEP735 dependency groups for dev dependencies and also its included dependency groups (recursively).
+     * Extracts PEP735 dependency groups for development dependencies and also its included dependency groups (recursively).
      *
-     * @param groupsNode     the group node
-     * @param groupName      the name of the dependency group
-     * @param pathInProgress the path in progress
-     * @return list of unresolved dependencies
+     * @param groupsNode the group node
+     * @return Map of unresolved development dependencies by group name
      */
-    protected static List<UnresolvedModule> extractPEP735DependencyGroup(JsonNode groupsNode, String groupName, LinkedHashSet<String> pathInProgress) {
+    protected static Map<String, List<UnresolvedModule>> extractAllPEP735DependencyGroups(JsonNode groupsNode) {
+        if (!groupsNode.isObject()) {
+            return Map.of();
+        }
+
+        final Map<String, List<UnresolvedModule>> devDependenciesByGroupName = new LinkedHashMap<>();
+        groupsNode.fieldNames().forEachRemaining(groupName ->
+                devDependenciesByGroupName.put(groupName, extractPEP735DependencyGroup(groupsNode, groupName, new LinkedHashSet<>()))
+        );
+        return devDependenciesByGroupName;
+    }
+
+    private static List<UnresolvedModule> extractPEP735DependencyGroup(JsonNode groupsNode, String groupName, LinkedHashSet<String> pathInProgress) {
         if (groupsNode.isMissingNode() || !groupsNode.has(groupName)) {
             return List.of();
         }

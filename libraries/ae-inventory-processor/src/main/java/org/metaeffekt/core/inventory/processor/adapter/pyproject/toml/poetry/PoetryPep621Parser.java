@@ -79,13 +79,13 @@ public class PoetryPep621Parser extends AbstractPep621Parser implements PoetryTo
      */
     @Override
     protected List<UnresolvedModule> extractDevelopmentDependencies(JsonNode root) {
-        final List<UnresolvedModule> pep735DevDependencies = extractPEP735DependencyGroup(root.at(PEP_735_DEPENDENCY_GROUPS_PATH), "dev", new LinkedHashSet<>());
+        final Map<String, List<UnresolvedModule>> pep735DevDependencies = extractAllPEP735DependencyGroups(root.at(PEP_735_DEPENDENCY_GROUPS_PATH));
         final List<UnresolvedModule> poetryGroupDevDependencies = extractPropertySpecifiedDependencies(root.at(DEV_DEPENDENCIES_PATH));
         final List<UnresolvedModule> legacyDevDependencies = extractPropertySpecifiedDependencies(root.at(LEGACY_DEV_DEPENDENCIES_PATH));
 
         // merge order important for keeping dependency when more than one dependency exists.
         final Map<String, UnresolvedModule> dependencies = new LinkedHashMap<>();
-        mergeInto(dependencies, pep735DevDependencies);
+        pep735DevDependencies.values().forEach(groupDeps -> mergeInto(dependencies, groupDeps));
         mergeInto(dependencies, poetryGroupDevDependencies);
         mergeInto(dependencies, legacyDevDependencies);
 
