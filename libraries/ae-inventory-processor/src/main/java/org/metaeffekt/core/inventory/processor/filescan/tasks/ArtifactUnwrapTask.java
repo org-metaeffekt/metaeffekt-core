@@ -89,11 +89,11 @@ public class ArtifactUnwrapTask extends ScanTask {
 
         // NOTE: this reference artifact must be explicitly matched; no wildcard version is supported (yet)
         // only include the artifact if the classification does not include HINT_IGNORE
-        final boolean explicitUnrwap = referenceArtifact.isPresent() && (
+        final boolean explicitUnwrap = referenceArtifact.isPresent() && (
                 referenceArtifact.get().hasClassification(HINT_SCAN) ||
                 referenceArtifact.get().hasClassification(HINT_COMPLEX));
 
-        final boolean explicitNoUnrwap = !explicitUnrwap && referenceArtifact.isPresent() &&
+        final boolean explicitNoUnwrap = !explicitUnwrap && referenceArtifact.isPresent() &&
                 referenceArtifact.get().hasClassification(HINT_ATOMIC);
 
         final boolean explicitInclude = (referenceArtifact.isPresent() &&
@@ -108,13 +108,13 @@ public class ArtifactUnwrapTask extends ScanTask {
 
         // we implicitly try to unwrap if the artifact is not known and ends with jar; FIXME: include also other suffixes, make configurable
         final boolean implicitUnwrap = artifactWithScanClassification ||
-                (!referenceArtifact.isPresent() &&
+                (referenceArtifact.isEmpty() &&
                         !file.getName().toLowerCase().endsWith(".jar") &&
                         !file.getName().toLowerCase().endsWith(".xar"));
 
         boolean unpacked = false;
 
-        if (!explicitNoUnrwap && (implicitUnwrap || explicitUnrwap)) {
+        if (!explicitNoUnwrap && (implicitUnwrap || explicitUnwrap)) {
 
             if (unpackIfPossible(file, targetFolder, issues)) {
                 // unpack successful...
@@ -122,7 +122,7 @@ public class ArtifactUnwrapTask extends ScanTask {
 
                 postProcessUnwrapped(artifact, file, targetFolder, issues);
 
-                final boolean implicitExclude = !explicitInclude && !explicitUnrwap;
+                final boolean implicitExclude = !explicitInclude && !explicitUnwrap;
 
                 boolean markForDelete = false;
 
@@ -175,7 +175,7 @@ public class ArtifactUnwrapTask extends ScanTask {
             // it is important to correct the classification in case the artifact was not scanned; causes different
             // downstream processing; e.g. certain attributes will not be computed.
             // FIXME: inspection should not modify the classification, but use another attribute
-            if (explicitNoUnrwap && referenceArtifact.isPresent()) {
+            if (explicitNoUnwrap) {
                 artifact.setClassification(referenceArtifact.get().getClassification());
             }
 
