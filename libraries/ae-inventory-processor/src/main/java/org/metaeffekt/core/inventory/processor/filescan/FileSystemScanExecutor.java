@@ -28,6 +28,7 @@ import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.SheetSerializationContext;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
 import org.metaeffekt.core.util.FileUtils;
 
@@ -88,7 +89,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             applyStaticComponentPatterns(false);
 
             // collect tasks based on the current inventory (process markers)
-            final List<ScanTask> scanTasks = collectOutstandingScanTasks();
+            final List<ScanTask> scanTasks = collectPendingUnwrapTasks();
 
             // push tasks for being processed and mark for another iteration
             if (!scanTasks.isEmpty()) {
@@ -120,16 +121,16 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         final Inventory inventory = fileSystemScanContext.getInventory();
 
-        final boolean removeIntermediateAttributes = true;
-        if (removeIntermediateAttributes) {
-            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_INSPECTED, inventory);
-            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_SCAN_DIRECTIVE, inventory);
-            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ARTIFACT_PATH, inventory);
-            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_ID_CHAIN, inventory);
-            InventoryUtils.removeArtifactAttribute(AssetMetaData.Attribute.ASSET_PATH.getKey(), inventory);
-            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, inventory);
-            InventoryUtils.removeArtifactAttribute(FileCollectTask.ATTRIBUTE_KEY_ANCHOR, inventory);
-        }
+        final SheetSerializationContext artifactContext = inventory.getSerializationContext()
+                .createArtifactSerializationContext(inventory);
+
+        artifactContext.removeAttribute(ATTRIBUTE_KEY_INSPECTED);
+        artifactContext.removeAttribute(ATTRIBUTE_KEY_SCAN_DIRECTIVE);
+        artifactContext.removeAttribute(ATTRIBUTE_KEY_ARTIFACT_PATH);
+        artifactContext.removeAttribute(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
+        artifactContext.removeAttribute(AssetMetaData.Attribute.ASSET_PATH.getKey());
+        artifactContext.removeAttribute(ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER);
+        artifactContext.removeAttribute(FileCollectTask.ATTRIBUTE_KEY_ANCHOR);
 
         mergeDuplicates(inventory);
     }
@@ -145,7 +146,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
                     // fallback to asset path; more as a processing failure indication
                     if (StringUtils.isBlank(assetId)) {
-                        log.warn("Cannot resolve asset id for path " + assetPath);
+                        log.warn("Cannot resolve asset id for path [{}]", assetPath);
                     } else {
                         artifact.set(assetId, MARKER_CONTAINS);
                     }
@@ -176,14 +177,19 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         }
     }
 
-    private List<ScanTask> collectOutstandingScanTasks() {
+    private List<ScanTask> collectPendingUnwrapTasks() {
 
         final List<ScanTask> scanTasks = new ArrayList<>();
 
         for (Artifact artifact : fileSystemScanContext.getArtifactList()) {
             if (!StringUtils.isEmpty(artifact.get(ATTRIBUTE_KEY_UNWRAP))) {
 
-                // TODO: exclude artifacts removed (though collection in component)
+                // exclude artifacts removed through collection in a component pattern
+                final String scanDirective = artifact.get(ATTRIBUTE_KEY_SCAN_DIRECTIVE);
+
+                if (scanDirective != null && scanDirective.contains(SCAN_DIRECTIVE_DELETE)) {
+                    continue; // Skip unwrapping
+                }
                 scanTasks.add(new ArtifactUnwrapTask(artifact, null));
             }
         }
@@ -303,7 +309,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             final Set<String> relativePaths = artifact.getRootPaths();
             for (String path : relativePaths) {
                 if (!StringUtils.isBlank(path)) {
-                    final String modulatedRelativePath = stripSquareBraketsFromLastElement(path);
+                    final String modulatedRelativePath = stripSquareBracketsFromLastElement(path);
                     modulatedSet.add(modulatedRelativePath);
                 }
             }
@@ -311,7 +317,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         }
     }
 
-    private static String stripSquareBraketsFromLastElement(String relativePath) {
+    private static String stripSquareBracketsFromLastElement(String relativePath) {
         final File file = new File(relativePath);
         String name = file.getName();
         if (name.startsWith("[") && name.endsWith("]")) {
@@ -321,8 +327,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         if (file.getParentFile() != null) {
             path = file.getParentFile().getPath() + "/";
         }
-        final String modulatedRelativePath = path + name;
-        return modulatedRelativePath;
+        return path + name;
     }
 
     private void mergeRedundantContainerArtifacts(Inventory inventory) {
