@@ -81,6 +81,8 @@ public class ArtifactUnwrapTask extends ScanTask {
         final List<Artifact> referenceArtifacts = fileSystemScanContext.getScanParam().
                 getReferenceInventory().findAllWithId(file.getName());
 
+        // FIXME: consider removing the check for a blank checksum; define the different use cases of using information
+        //   from the reference inventory.
         // seek for a matching artifact without checksum (file name matching only)
         final Optional<Artifact> referenceArtifact = referenceArtifacts.stream()
                 .filter(a -> StringUtils.isBlank(a.getChecksum())).findFirst();
