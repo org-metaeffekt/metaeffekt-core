@@ -89,7 +89,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             applyStaticComponentPatterns(false);
 
             // collect tasks based on the current inventory (process markers)
-            final List<ScanTask> scanTasks = collectPendingUnwrapTasks();
+            final List<ScanTask> scanTasks = collectPendingScanTasks();
 
             // push tasks for being processed and mark for another iteration
             if (!scanTasks.isEmpty()) {
@@ -177,7 +177,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         }
     }
 
-    private List<ScanTask> collectPendingUnwrapTasks() {
+    private List<ScanTask> collectPendingScanTasks() {
 
         final List<ScanTask> scanTasks = new ArrayList<>();
 
