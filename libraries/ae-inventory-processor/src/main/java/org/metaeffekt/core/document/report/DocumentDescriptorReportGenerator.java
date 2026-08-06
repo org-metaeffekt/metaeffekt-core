@@ -397,14 +397,23 @@ public class DocumentDescriptorReportGenerator {
         builder.failOnMissingVelocityRuntimeReferences(Boolean.parseBoolean(mergedParams.get("failOnMissingVelocityRuntimeReferences")));
         builder.inventoryAssetPrefix(mergedParams.get("inventoryAssetPrefix"));
 
-        if (mergedParams.get("inventoryBomComponentColumnWidth") != null) {
-            builder.inventoryBomComponentColumnWidth(mergedParams.get("inventoryBomComponentColumnWidth"));
+        if (mergedParams.get("reportEffectiveTableComponentColumnWidth") != null) {
+            builder.reportEffectiveTableComponentColumnWidth(Integer.parseInt(mergedParams.get("reportEffectiveTableComponentColumnWidth")));
         }
-        if (mergedParams.get("inventoryBomArtifactColumnWidth") != null) {
-            builder.inventoryBomArtifactColumnWidth(mergedParams.get("inventoryBomArtifactColumnWidth"));
+        if (mergedParams.get("reportEffectiveTableArtifactColumnWidth") != null) {
+            builder.reportEffectiveTableArtifactColumnWidth(Integer.parseInt(mergedParams.get("reportEffectiveTableArtifactColumnWidth")));
         }
-        if (mergedParams.get("inventoryBomLicenseColumnWidth") != null) {
-            builder.inventoryBomLicenseColumnWidth(mergedParams.get("inventoryBomLicenseColumnWidth"));
+        if (mergedParams.get("reportEffectiveTableLicenseColumnWidth") != null) {
+            builder.reportEffectiveTableLicenseColumnWidth(Integer.parseInt(mergedParams.get("reportEffectiveTableLicenseColumnWidth")));
+        }
+        if (mergedParams.get("licenseNoticeTableArtifactColumnWidth") != null) {
+            builder.licenseNoticeTableArtifactColumnWidth(Integer.parseInt(mergedParams.get("licenseNoticeTableArtifactColumnWidth")));
+        }
+        if (mergedParams.get("licenseNoticeTableVersionColumnWidth") != null) {
+            builder.licenseNoticeTableVersionColumnWidth(Integer.parseInt(mergedParams.get("licenseNoticeTableVersionColumnWidth")));
+        }
+        if (mergedParams.get("licenseNoticeTableVersionColumnWidth") != null) {
+            builder.licenseNoticeTableVersionColumnWidth(Integer.parseInt(mergedParams.get("licenseNoticeTableVersionColumnWidth")));
         }
 
         ReportConfigurationParameters configParams = builder.build();

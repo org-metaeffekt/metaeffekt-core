@@ -151,13 +151,22 @@ public class ReportConfigurationParameters {
     private String inventoryAssetPrefix = null;
 
     @Builder.Default
-    private String inventoryBomComponentColumnWidth = "20*";
+    private int reportEffectiveTableComponentColumnWidth = 20;
 
     @Builder.Default
-    private String inventoryBomArtifactColumnWidth = "45*";
+    private int reportEffectiveTableArtifactColumnWidth = 45;
 
     @Builder.Default
-    private String inventoryBomLicenseColumnWidth = "35*";
+    private int reportEffectiveTableLicenseColumnWidth = 35;
+
+    @Builder.Default
+    private int licenseNoticeTableArtifactColumnWidth = 50;
+
+    @Builder.Default
+    private int licenseNoticeTableVersionColumnWidth = 15;
+
+    @Builder.Default
+    private int licenseNoticeTableLicenseColumnWidth = 35;
 
     public void setAllFailConditions(boolean shouldFail) {
         failOnError = shouldFail;
