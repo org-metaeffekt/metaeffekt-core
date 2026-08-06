@@ -68,11 +68,11 @@ public class PyProjectComponentPatternContributorTest {
 
         assertThat(groupedDependencyCounts.get("r")).isEqualTo(2);
         assertThat(groupedDependencyCounts.get("d")).isEqualTo(1);
-        assertThat(groupedDependencyCounts.get("(r)")).isEqualTo(7);
-        assertThat(groupedDependencyCounts.get("(d)")).isEqualTo(4);
+        assertThat(groupedDependencyCounts.get("(r)")).isEqualTo(8);
+        assertThat(groupedDependencyCounts.get("(d)")).isEqualTo(3);
 
-        assertThat(groupedDependencyCounts.get("r") + groupedDependencyCounts.get("(r)")).isEqualTo(9);
-        assertThat(groupedDependencyCounts.get("d") + groupedDependencyCounts.get("(d)")).isEqualTo(5);
+        assertThat(groupedDependencyCounts.get("r") + groupedDependencyCounts.get("(r)")).isEqualTo(10);
+        assertThat(groupedDependencyCounts.get("d") + groupedDependencyCounts.get("(d)")).isEqualTo(4);
     }
 
     /**
@@ -147,17 +147,17 @@ public class PyProjectComponentPatternContributorTest {
         new InventoryWriter().writeInventory(inventory, new File("target/pdm-001-inventory.xlsx"));
 
         List<Artifact> artifacts = inventory.getArtifacts();
-        assertThat(artifacts.size()).isEqualTo(64);
+        assertThat(artifacts.size()).isEqualTo(84);
 
         final String projectAssetId = "AID-" + cpd.get(COMPONENT_PART);
         final Map<String, Long> groupedDependencyCounts = artifacts.stream().collect(Collectors.groupingBy(a -> a.get(projectAssetId), Collectors.counting()));
 
         assertThat(groupedDependencyCounts.get("r")).isEqualTo(24);
         assertThat(groupedDependencyCounts.get("d")).isEqualTo(12);
-        assertThat(groupedDependencyCounts.get("(r)")).isEqualTo(11);
-        assertThat(groupedDependencyCounts.get("(d)")).isEqualTo(17);
+        assertThat(groupedDependencyCounts.get("(r)")).isEqualTo(15);
+        assertThat(groupedDependencyCounts.get("(d)")).isEqualTo(33);
 
-        assertThat(groupedDependencyCounts.get("r") + groupedDependencyCounts.get("(r)")).isEqualTo(35);
-        assertThat(groupedDependencyCounts.get("d") + groupedDependencyCounts.get("(d)")).isEqualTo(29);
+        assertThat(groupedDependencyCounts.get("r") + groupedDependencyCounts.get("(r)")).isEqualTo(39);
+        assertThat(groupedDependencyCounts.get("d") + groupedDependencyCounts.get("(d)")).isEqualTo(45);
     }
 }

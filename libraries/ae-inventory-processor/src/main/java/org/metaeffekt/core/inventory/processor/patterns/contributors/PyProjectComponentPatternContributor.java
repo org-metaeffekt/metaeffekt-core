@@ -21,6 +21,7 @@ import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.TomlParserFactory;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractTomlParser;
@@ -102,7 +103,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
 
                 final Map<String, ResolvedModule> nameToResolvedModuleMap = new HashMap<>();
                 for (final ResolvedModule resolvedModule : resolvedModules) {
-                    nameToResolvedModuleMap.put(resolvedModule.getName(), resolvedModule);
+                    nameToResolvedModuleMap.put(SharedMethodProvider.normalizePackageName(resolvedModule.getName()), resolvedModule);
                 }
 
                 final Map<String, Artifact> nameToArtifactMap = new HashMap<>();
@@ -138,22 +139,23 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
 
         final List<UnresolvedModule> indirectDependencies = new ArrayList<>();
         while (!stack.isEmpty()) {
-            UnresolvedModule unresolvedModule = stack.pop();
+            final UnresolvedModule unresolvedModule = stack.pop();
 
-            if (!indirectDependencies.contains(unresolvedModule)) {
-                ResolvedModule resolvedModule = resolvedModules.get(unresolvedModule.getName());
-                if (resolvedModule == null) {
-                    log.warn("Unable to resolve module [{}].", unresolvedModule.getName());
-                    continue;
-                }
+            final ResolvedModule resolvedModule = resolvedModules.get(SharedMethodProvider.normalizePackageName(unresolvedModule.getName()));
+            if (resolvedModule == null) {
+                log.warn("Unable to resolve module [{}].", unresolvedModule.getName());
+                continue;
+            }
 
-                Map<String, UnresolvedModule> map = supplier.apply(resolvedModule);
-                if (map != null) {
-                    for (Map.Entry<String, UnresolvedModule> dependency : map.entrySet()) {
-                        UnresolvedModule module = dependency.getValue();
-                        indirectDependencies.add(module);
-                        stack.push(module);
-                    }
+            final Map<String, UnresolvedModule> transitiveRuntimeDependenciesByName = supplier.apply(resolvedModule);
+            if (transitiveRuntimeDependenciesByName == null) {
+                continue;
+            }
+            if (!new HashSet<>(indirectDependencies).containsAll(transitiveRuntimeDependenciesByName.values())) {
+                for (Map.Entry<String, UnresolvedModule> dependency : transitiveRuntimeDependenciesByName.entrySet()) {
+                    final UnresolvedModule module = dependency.getValue();
+                    indirectDependencies.add(module);
+                    stack.push(module);
                 }
             }
         }
@@ -166,7 +168,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                                         Map<String, ResolvedModule> nameToResolvedModuleMap, String relativePath) {
         for (UnresolvedModule module : dependencies) {
             final String name = module.getName();
-            final ResolvedModule resolvedModule = nameToResolvedModuleMap.get(name);
+            final ResolvedModule resolvedModule = nameToResolvedModuleMap.get(SharedMethodProvider.normalizePackageName(name));
 
             if (resolvedModule == null) {
                 log.warn("Cannot find resolved module for module name [{}]. Skipping.", name);

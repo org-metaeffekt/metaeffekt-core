@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 
 import java.util.Collection;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +29,7 @@ public class SharedMethodProvider {
                     "(?:\\[[^]]+\\])?" +               // ignore extras
                     "(.*)$"                            // version range
     );
+    private static final Pattern SEPARATOR_RUN = Pattern.compile("[-_.]+");
 
     /**
      * Adds an element to a collection if it is not null.
@@ -57,6 +59,19 @@ public class SharedMethodProvider {
             dependencyNode.get(1).get("version").textValue();
         }
         return null;
+    }
+
+    /**
+     * Normalizes a package name as defined by PEP 503.
+     * -, _, . are translated to '-'.
+     * Example: 'charset_normalizer', 'Charset-Normalizer', 'charset.normalizer' are normalized to 'charset-normalizer'.
+     *
+     * @param name the unnormalized package name
+     * @return the normalized package name
+     */
+    public static String normalizePackageName(String name) {
+        if (name == null) return null;
+        return SEPARATOR_RUN.matcher(name.toLowerCase(Locale.ROOT)).replaceAll("-");
     }
 
     /**
