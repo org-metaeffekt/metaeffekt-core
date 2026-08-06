@@ -52,7 +52,12 @@
         #foreach($license in $filteredLicenseList)
             #if(!$license.contains(" + "))
                 #set($licenseData=$inventory.findMatchingLicenseData($license))
-                #set($count = $assetData.countComponentsForSingleLicense($license, $onlyCountAssets))
+
+                #if($useRepresentedLicenses)
+                    #set($count = $assetData.countComponentsForRepresentedLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets))
+                #else
+                    #set($count = $assetData.countComponentsForSingleLicense($license, $onlyCountAssets))
+                #end
 
                 #if ($count != 0)
                     <row>
@@ -93,11 +98,7 @@
                             #end
                             <entry>
                                 <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">
-                                    #if($useRepresentedLicenses)
-                                        <codeph>$assetData.countComponentsForRepresentedLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets)</codeph>
-                                    #else
-                                        <codeph>$assetData.countComponentsForSingleLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets)</codeph>
-                                    #end
+                                    <codeph>$count</codeph>
                                 </xref>
                             </entry>
                         #else
