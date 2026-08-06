@@ -41,6 +41,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -388,23 +389,29 @@ public class DocumentDescriptorReportGenerator {
 
         builder.reportLanguage(documentDescriptor.getLanguage());
 
-        // FIXME: we should not need to list all parameters; these should automatically propagate
-        builder.enableOpenCodeStatus(Boolean.parseBoolean(mergedParams.get("enableOpenCodeStatus")));
-        builder.includeInofficialOsiStatus(Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus")));
-        builder.filterAdvisorySummary(Boolean.parseBoolean(mergedParams.get("filterAdvisorySummary")));
-        builder.hidePriorityInformation(Boolean.parseBoolean(mergedParams.get("hidePriorityInformation")));
-        builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.get("filterVulnerabilitiesNotCoveredByArtifacts")));
-        builder.failOnMissingVelocityRuntimeReferences(Boolean.parseBoolean(mergedParams.get("failOnMissingVelocityRuntimeReferences")));
-        builder.inventoryAssetPrefix(mergedParams.get("inventoryAssetPrefix"));
-
-        if (mergedParams.get("inventoryBomComponentColumnWidth") != null) {
-            builder.inventoryBomComponentColumnWidth(mergedParams.get("inventoryBomComponentColumnWidth"));
-        }
-        if (mergedParams.get("inventoryBomArtifactColumnWidth") != null) {
-            builder.inventoryBomArtifactColumnWidth(mergedParams.get("inventoryBomArtifactColumnWidth"));
-        }
-        if (mergedParams.get("inventoryBomLicenseColumnWidth") != null) {
-            builder.inventoryBomLicenseColumnWidth(mergedParams.get("inventoryBomLicenseColumnWidth"));
+        // automatically propagate all parameters to the builder using reflection
+        for (Map.Entry<String, String> entry : mergedParams.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (value == null) continue;
+            try {
+                Method[] methods = builder.getClass().getMethods();
+                for (Method method : methods) {
+                    if (method.getName().equals(key) && method.getParameterCount() == 1) {
+                        Class<?> paramType = method.getParameterTypes()[0];
+                        if (paramType == String.class) {
+                            method.invoke(builder, value);
+                        } else if (paramType == boolean.class || paramType == Boolean.class) {
+                            method.invoke(builder, Boolean.parseBoolean(value));
+                        } else if (paramType == int.class || paramType == Integer.class) {
+                            method.invoke(builder, Integer.parseInt(value));
+                        }
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Could not apply parameter '{}' to builder", key, e);
+            }
         }
 
         ReportConfigurationParameters configParams = builder.build();
