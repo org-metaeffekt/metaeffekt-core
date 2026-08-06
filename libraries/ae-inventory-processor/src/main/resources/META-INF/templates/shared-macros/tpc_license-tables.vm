@@ -154,8 +154,9 @@
         <p>
             #if($inventory.assetMetaData.size() == 1)
                 #if($folder)
+                    #set($licensePathEscaped = $report.xmlEscapePreformattedContentString("${report.getRelativeLicensePath()}/${folder}/"))
                     $utils.getText("asset-report-bom.license-asset-topic-location")
-                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html"
+                    <xref href="$licensePathEscaped" type="html"
                           scope="external">$report.xmlEscapeString($license)
                         [external]
                     </xref>.
@@ -163,8 +164,9 @@
             #else
             $utils.getText("asset-report-bom.license-asset-topic")
             #if($folder)
+                #set($licensePathEscaped = $report.xmlEscapePreformattedContentString("${report.getRelativeLicensePath()}/${folder}/"))
                 $utils.getText("asset-report-bom.license-asset-topic-location")
-                <xref href="$report.getRelativeLicensePath()/$folder/" type="html"
+                <xref href="$licensePathEscaped" type="html"
                       scope="external">$report.xmlEscapeString($license)
                     [external]
                 </xref>.
