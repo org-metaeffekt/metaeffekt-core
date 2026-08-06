@@ -41,6 +41,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -388,32 +389,29 @@ public class DocumentDescriptorReportGenerator {
 
         builder.reportLanguage(documentDescriptor.getLanguage());
 
-        // FIXME: we should not need to list all parameters; these should automatically propagate
-        builder.enableOpenCodeStatus(Boolean.parseBoolean(mergedParams.get("enableOpenCodeStatus")));
-        builder.includeInofficialOsiStatus(Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus")));
-        builder.filterAdvisorySummary(Boolean.parseBoolean(mergedParams.get("filterAdvisorySummary")));
-        builder.hidePriorityInformation(Boolean.parseBoolean(mergedParams.get("hidePriorityInformation")));
-        builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.get("filterVulnerabilitiesNotCoveredByArtifacts")));
-        builder.failOnMissingVelocityRuntimeReferences(Boolean.parseBoolean(mergedParams.get("failOnMissingVelocityRuntimeReferences")));
-        builder.inventoryAssetPrefix(mergedParams.get("inventoryAssetPrefix"));
-
-        if (mergedParams.get("reportEffectiveTableComponentColumnWidth") != null) {
-            builder.reportEffectiveTableComponentColumnWidth(Integer.parseInt(mergedParams.get("reportEffectiveTableComponentColumnWidth")));
-        }
-        if (mergedParams.get("reportEffectiveTableArtifactColumnWidth") != null) {
-            builder.reportEffectiveTableArtifactColumnWidth(Integer.parseInt(mergedParams.get("reportEffectiveTableArtifactColumnWidth")));
-        }
-        if (mergedParams.get("reportEffectiveTableLicenseColumnWidth") != null) {
-            builder.reportEffectiveTableLicenseColumnWidth(Integer.parseInt(mergedParams.get("reportEffectiveTableLicenseColumnWidth")));
-        }
-        if (mergedParams.get("licenseNoticeTableArtifactColumnWidth") != null) {
-            builder.licenseNoticeTableArtifactColumnWidth(Integer.parseInt(mergedParams.get("licenseNoticeTableArtifactColumnWidth")));
-        }
-        if (mergedParams.get("licenseNoticeTableVersionColumnWidth") != null) {
-            builder.licenseNoticeTableVersionColumnWidth(Integer.parseInt(mergedParams.get("licenseNoticeTableVersionColumnWidth")));
-        }
-        if (mergedParams.get("licenseNoticeTableVersionColumnWidth") != null) {
-            builder.licenseNoticeTableVersionColumnWidth(Integer.parseInt(mergedParams.get("licenseNoticeTableVersionColumnWidth")));
+        // automatically propagate all parameters to the builder using reflection
+        for (Map.Entry<String, String> entry : mergedParams.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (value == null) continue;
+            try {
+                Method[] methods = builder.getClass().getMethods();
+                for (Method method : methods) {
+                    if (method.getName().equals(key) && method.getParameterCount() == 1) {
+                        Class<?> paramType = method.getParameterTypes()[0];
+                        if (paramType == String.class) {
+                            method.invoke(builder, value);
+                        } else if (paramType == boolean.class || paramType == Boolean.class) {
+                            method.invoke(builder, Boolean.parseBoolean(value));
+                        } else if (paramType == int.class || paramType == Integer.class) {
+                            method.invoke(builder, Integer.parseInt(value));
+                        }
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Could not apply parameter '{}' to builder", key, e);
+            }
         }
 
         ReportConfigurationParameters configParams = builder.build();
