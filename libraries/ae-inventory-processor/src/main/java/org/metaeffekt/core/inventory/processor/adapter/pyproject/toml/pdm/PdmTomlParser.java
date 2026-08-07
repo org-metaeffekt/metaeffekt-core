@@ -56,7 +56,7 @@ public class PdmTomlParser extends AbstractPep621Parser {
     @Override
     protected ResolvedModule parseProject(JsonNode root) {
         final ResolvedModule module = new ResolvedModule(getProjectNode(root).path("name").asText(), null);
-        final String version = extractProjectVersion(root);
+        final String version = extractPdmProjectVersion(root);
         module.setVersion(version);
 
         return module;
@@ -70,7 +70,7 @@ public class PdmTomlParser extends AbstractPep621Parser {
      * @param root the root file node
      * @return the extracted version or its source
      */
-    private String extractProjectVersion(JsonNode root) {
+    private String extractPdmProjectVersion(JsonNode root) {
         final JsonNode projectNode = getProjectNode(root);
         final JsonNode versionNode = projectNode.path("/version");
         if (!versionNode.isMissingNode()) {

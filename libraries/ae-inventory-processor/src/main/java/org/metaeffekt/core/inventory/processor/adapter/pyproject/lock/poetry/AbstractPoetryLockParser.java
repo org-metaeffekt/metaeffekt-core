@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider.addIfNotNull;
-import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider.extractVersion;
+import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.PyProjectUtils.addIfNotNull;
+import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.PyProjectUtils.extractVersion;
 
 /**
  * Abstract class for parsing poetry lock file versions 1.x and 2.x.

@@ -23,7 +23,7 @@ import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 
 import java.util.*;
 
-import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider.parseRequirement;
+import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.PyProjectUtils.parseRequirement;
 
 /**
  * Abstract class for parsing pdm toml files.
@@ -76,7 +76,7 @@ public abstract class AbstractPep621Parser extends AbstractTomlParser {
         final ArrayNode stringEntries = JsonNodeFactory.instance.arrayNode();
         final List<String> includedGroups = new ArrayList<>();
 
-        for (JsonNode entry : groupArray) {
+        for (final JsonNode entry : groupArray) {
             if (entry.isTextual()) {
                 stringEntries.add(entry);
             } else if (entry.isObject() && entry.has("include-group")) {
@@ -89,11 +89,11 @@ public abstract class AbstractPep621Parser extends AbstractTomlParser {
         final Map<String, UnresolvedModule> unresolvedModuleMap = new LinkedHashMap<>();
         // own, direct PEP 508 dependency strings (without included groups)
         final List<UnresolvedModule> directPep508dependencies = extractPep508Dependencies(stringEntries);
-        for (UnresolvedModule module : directPep508dependencies) {
+        for (final UnresolvedModule module : directPep508dependencies) {
             unresolvedModuleMap.put(module.getName(), module);
         }
         // recursively include other included groups
-        for (String included : includedGroups) {
+        for (final String included : includedGroups) {
             final List<UnresolvedModule> pep735DependencyGroupDependencies = extractPEP735DependencyGroup(groupsNode, included, pathInProgress);
             mergeInto(unresolvedModuleMap, pep735DependencyGroupDependencies);
         }

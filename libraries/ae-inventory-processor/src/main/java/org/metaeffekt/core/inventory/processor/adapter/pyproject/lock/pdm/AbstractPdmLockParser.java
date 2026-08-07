@@ -25,13 +25,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider.addIfNotNull;
-import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider.parseRequirement;
+import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.PyProjectUtils.addIfNotNull;
+import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.PyProjectUtils.parseRequirement;
 
 /**
  * Abstract class for parsing pdm lock files.
  */
 public abstract class AbstractPdmLockParser extends AbstractLockFileParser {
+
     @Override
     protected Map<String, UnresolvedModule> extractDependencies(JsonNode dependenciesNode) {
         final Map<String, UnresolvedModule> unresolvedModuleMap = new HashMap<>();

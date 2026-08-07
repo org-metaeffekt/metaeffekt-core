@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SharedMethodProvider {
+public class PyProjectUtils {
     private static final Pattern REQUIREMENT_PATTERN = Pattern.compile(
             "^([A-Za-z0-9][A-Za-z0-9._-]*)" + // package name
                     "(?:\\[[^]]+\\])?" +               // ignore extras

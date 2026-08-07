@@ -22,7 +22,7 @@ import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 import java.io.File;
 import java.util.List;
 
-import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider.extractVersion;
+import static org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.PyProjectUtils.extractVersion;
 
 /**
  * Interface for collecting poetry specific attributes and methods.

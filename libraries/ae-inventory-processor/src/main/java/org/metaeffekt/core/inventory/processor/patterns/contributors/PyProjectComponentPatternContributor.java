@@ -21,7 +21,7 @@ import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.SharedMethodProvider;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.PyProjectUtils;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.TomlParserFactory;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractTomlParser;
@@ -103,7 +103,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
 
                 final Map<String, ResolvedModule> nameToResolvedModuleMap = new HashMap<>();
                 for (final ResolvedModule resolvedModule : resolvedModules) {
-                    nameToResolvedModuleMap.put(SharedMethodProvider.normalizePackageName(resolvedModule.getName()), resolvedModule);
+                    nameToResolvedModuleMap.put(PyProjectUtils.normalizePackageName(resolvedModule.getName()), resolvedModule);
                 }
 
                 final Map<String, Artifact> nameToArtifactMap = new HashMap<>();
@@ -141,7 +141,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
         while (!stack.isEmpty()) {
             final UnresolvedModule unresolvedModule = stack.pop();
 
-            final ResolvedModule resolvedModule = resolvedModules.get(SharedMethodProvider.normalizePackageName(unresolvedModule.getName()));
+            final ResolvedModule resolvedModule = resolvedModules.get(PyProjectUtils.normalizePackageName(unresolvedModule.getName()));
             if (resolvedModule == null) {
                 log.warn("Unable to resolve module [{}].", unresolvedModule.getName());
                 continue;
@@ -168,7 +168,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
                                         Map<String, ResolvedModule> nameToResolvedModuleMap, String relativePath) {
         for (UnresolvedModule module : dependencies) {
             final String name = module.getName();
-            final ResolvedModule resolvedModule = nameToResolvedModuleMap.get(SharedMethodProvider.normalizePackageName(name));
+            final ResolvedModule resolvedModule = nameToResolvedModuleMap.get(PyProjectUtils.normalizePackageName(name));
 
             if (resolvedModule == null) {
                 log.warn("Cannot find resolved module for module name [{}]. Skipping.", name);

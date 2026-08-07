@@ -78,7 +78,7 @@ public abstract class AbstractTomlParser implements PyProjectTomlParser {
         if (source.isEmpty()) {
             return;
         }
-        for (UnresolvedModule module : source) {
+        for (final UnresolvedModule module : source) {
             target.merge(module.getName(), module, AbstractTomlParser::checkNoConflict);
         }
     }

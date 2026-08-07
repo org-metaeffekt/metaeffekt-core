@@ -35,20 +35,19 @@ import java.util.Map;
 public abstract class AbstractLockFileParser implements LockFileParser {
 
     /**
-     * Extracts all packages from poetry.lock as resolved modules.
+     * Extracts data for packages in a .lock file as resolved modules.
      *
      * @param lockRoot the lock file root node
      * @return list of resolved packages
      */
     protected List<ResolvedModule> extractPackages(JsonNode lockRoot) {
-        final boolean filesAreCentralized = lockRoot.path("metadata").path("lock-version").asText().startsWith("1.");
         final List<ResolvedModule> resolvedModules = new ArrayList<>();
         final JsonNode packages = lockRoot.path("package");
         if (!packages.isArray()) {
             return resolvedModules;
         }
         packages.forEach(packageNode -> {
-                    final ResolvedModule module = extractPackage(packageNode, filesAreCentralized, lockRoot);
+                    final ResolvedModule module = extractPackage(packageNode, lockRoot);
                     resolvedModules.add(module);
                 }
         );
@@ -56,7 +55,7 @@ public abstract class AbstractLockFileParser implements LockFileParser {
     }
 
     /**
-     * Extracts the dependencies from the package.
+     * Extracts the dependencies from a package.
      *
      * @param dependenciesNode the dependencies node
      * @return map consisting of the dependency name and itself as a unresolved module
@@ -78,29 +77,29 @@ public abstract class AbstractLockFileParser implements LockFileParser {
      * @param packageNode the package node
      * @return the resolved package
      */
-    private ResolvedModule extractPackage(JsonNode packageNode, boolean filesAreCentralized, JsonNode lockRoot) {
+    private ResolvedModule extractPackage(JsonNode packageNode, JsonNode lockRoot) {
         final ResolvedModule module = new ResolvedModule(packageNode.path("name").asText(), null);
         module.setVersion(packageNode.path("version").asText(null));
         final Map<String, UnresolvedModule> unresolvedModuleMap = extractDependencies(packageNode.path("dependencies"));
         module.setRuntimeDependencies(unresolvedModuleMap);
 
         module.setPyProjectPackageSource(parseSource(packageNode));
-        module.setPyProjectPackageFiles(collectFiles(packageNode, filesAreCentralized, lockRoot));
+        module.setPyProjectPackageFiles(collectFiles(packageNode, lockRoot));
 
         return module;
     }
 
     /**
-     * Collects the file elements from the files array in the [[package]] array, or if the lock version is 1.x from metadata.files.
+     * Collects the file elements from the files array in [[package]], or if the lock version is 1.x from metadata.files.
      *
-     * @param packageNode         the package node
-     * @param filesAreCentralized whether the files are centrally listed under metadata.files or not
-     * @param lockRoot            the lock file root node used for extracting the centralized files
+     * @param packageNode the package node
+     * @param lockRoot    the lock file root node used for extracting the centralized files
      * @return JSON array containing the files and the hashes for a package
      */
-    private JSONArray collectFiles(JsonNode packageNode, boolean filesAreCentralized, JsonNode lockRoot) {
+    private JSONArray collectFiles(JsonNode packageNode, JsonNode lockRoot) {
+        final boolean filesAreCentralized = lockRoot.path("metadata").path("lock-version").asText().startsWith("1.");
         if (filesAreCentralized) {
-            final Map<String, JSONArray> packageNamesToFilesMap = parseMetadataFiles(lockRoot);
+            final Map<String, JSONArray> packageNamesToFilesMap = parseMetadataFiles(lockRoot.at("/metadata/files"));
             return packageNamesToFilesMap.get(packageNode.path("name").asText());
         }
         return extractFilesAndAddToArray(packageNode.path("files"));
@@ -109,17 +108,15 @@ public abstract class AbstractLockFileParser implements LockFileParser {
     /**
      * In lock versions 1.x the files are listed under metadata.files, as opposed to version 2.0 and above where they are listed for each package under [[package]].files.
      *
-     * @param lockRoot the lock file root node
+     * @param metadataFiles the files node
      * @return a map containing the package name as the key and the files as its values (as JSONArray)
      */
-    private Map<String, JSONArray> parseMetadataFiles(JsonNode lockRoot) {
-        JsonNode metadataFiles = lockRoot.at("/metadata/files");
+    private static Map<String, JSONArray> parseMetadataFiles(JsonNode metadataFiles) {
         if (!metadataFiles.isObject()) {
             return Map.of();
         }
 
         final Map<String, JSONArray> packageNamesToFilesMap = new LinkedHashMap<>();
-
         metadataFiles.propertyStream().forEach(entry -> {
             final JSONArray filesArray = extractFilesAndAddToArray(entry.getValue());
             packageNamesToFilesMap.put(entry.getKey(), filesArray);
@@ -128,17 +125,16 @@ public abstract class AbstractLockFileParser implements LockFileParser {
     }
 
     private static JSONArray extractFilesAndAddToArray(JsonNode files) {
-        if (!files.isArray()) {
-            return null;
-        }
         final JSONArray filesArray = new JSONArray();
-        files.forEach(file -> {
-                    final JSONObject object = new JSONObject();
-                    object.put("file", file.path("file").asText(null));
-                    object.put("hash", file.path("hash").asText(null));
-                    filesArray.put(object);
-                }
-        );
+        if (!files.isArray()) {
+            return filesArray;
+        }
+
+        for (final JsonNode file : files) {
+            filesArray.put(new JSONObject()
+                    .put("file", file.path("file").asText(null))
+                    .put("hash", file.path("hash").asText(null)));
+        }
         return filesArray;
     }
 }
