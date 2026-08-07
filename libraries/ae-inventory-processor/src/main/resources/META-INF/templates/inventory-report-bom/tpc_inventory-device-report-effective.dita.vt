@@ -22,9 +22,9 @@
         <p>
         <table otherprops="wide" id="table_devices">
             <tgroup cols="3">
-                <colspec colname="COLSPEC0" colnum="1" colwidth="$configParams.getInventoryBomComponentColumnWidth()" align="left"/>
-                <colspec colname="COLSPEC1" colnum="2" colwidth="$configParams.getInventoryBomArtifactColumnWidth()" align="left"/>
-                <colspec colname="COLSPEC2" colnum="3" colwidth="$configParams.getInventoryBomLicenseColumnWidth()" align="left"/>
+                <colspec colname="COLSPEC0" colnum="1" colwidth="$configParams.getReportEffectiveTableComponentColumnWidth()*" align="left"/>
+                <colspec colname="COLSPEC1" colnum="2" colwidth="$configParams.getReportEffectiveTableArtifactColumnWidth()*" align="left"/>
+                <colspec colname="COLSPEC2" colnum="3" colwidth="$configParams.getReportEffectiveTableLicenseColumnWidth()*" align="left"/>
                 <thead>
                 <row>
                     <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.component")</entry>

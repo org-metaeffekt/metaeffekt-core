@@ -41,6 +41,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -87,7 +88,7 @@ public class DocumentDescriptorReportGenerator {
         documentDescriptorReport.createImprint(documentDescriptor);
     }
 
-    private static void deriveAssets(DocumentDescriptor documentDescriptor) {
+    static void deriveAssets(DocumentDescriptor documentDescriptor) {
         List<DocumentPart> newParts = new ArrayList<>();
 
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
@@ -99,13 +100,30 @@ public class DocumentDescriptorReportGenerator {
             }
 
             for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
+                final String assetName = inventoryContext.getAssetName();
+                final String assetVersion = inventoryContext.getAssetVersion();
+
+                // 1. no assets are provided and reportWithoutAssets flag is set, we initialize with empty asset info
                 if (reportWithoutAsset) {
                     inventoryContext.setAssetName("");
                     inventoryContext.setAssetVersion("");
                     inventoryContexts.add(inventoryContext);
-                } else if (inventoryContext.getAssetName() != null && inventoryContext.getAssetVersion() != null) {
+
+                // 2. asset info is provided completely, initialize normally
+                } else if (assetName != null && assetVersion != null) {
                     inventoryContexts.add(inventoryContext);
-                } else if (inventoryContext.getAssetName() == null && inventoryContext.getAssetVersion() == null) {
+
+                // 3. only assetName is provided, set empty version
+                } else if (assetName != null && assetVersion == null) {
+                    inventoryContext.setAssetVersion("");
+                    inventoryContexts.add(inventoryContext);
+
+                // 4. only assetVersion is provided, invalid state
+                } else if (assetName == null && assetVersion != null) {
+                    throw new IllegalStateException("The field 'assetVersion' for inventoryContext [" + inventoryContext.getIdentifier() + "] is set, but no 'assetName' is specified, please set an 'assetName' as well or remove the field 'assetVersion'.");
+
+                // 5. no assets are provided, asset information is derived from inventory
+                } else {
                     if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
                         // separate handling for initial license documentation, since we want to report on all assets in
                         // the inventory, but do not want to generate the content for each asset separately
@@ -117,25 +135,21 @@ public class DocumentDescriptorReportGenerator {
                                     .filter(AssetMetaData::isPrimary)
                                     .findFirst();
 
-                            String assetName = primaryAsset
+                            String derivedName = primaryAsset
                                     .map(a -> a.get(AssetMetaData.Attribute.NAME))
                                     .orElseThrow(() -> new IllegalStateException("Missing asset name in primary asset for inventory [" + inventoryContext.getIdentifier() + "]. Please make sure that every primary asset has a specified name."));
 
-                            String assetVersion = primaryAsset
+                            String derivedVersion = primaryAsset
                                     .map(a -> a.get(AssetMetaData.Attribute.VERSION))
-                                    .orElseThrow(() -> new IllegalStateException("Missing asset version in primary asset for inventory [" + inventoryContext.getIdentifier() + "]. Please make sure that every primary asset has a specified version."));
+                                    .orElse("");
 
-                            final String encodedAssetName = Base64.getEncoder().encodeToString(assetName.getBytes());
+                            final String encodedAssetName = Base64.getEncoder().encodeToString(derivedName.getBytes());
                             InventoryContext derivedContext = new InventoryContext(inventory, encodedAssetName, inventoryContext.getReportContext(), inventoryContext.getLicensesPath(), inventoryContext.getComponentsPath());
-                            derivedContext.setAssetName(assetName);
-                            derivedContext.setAssetVersion(assetVersion);
+                            derivedContext.setAssetName(derivedName);
+                            derivedContext.setAssetVersion(derivedVersion);
                             inventoryContexts.add(derivedContext);
                         }
                     }
-                } else if (inventoryContext.getAssetName() == null) {
-                    throw new IllegalStateException("The field 'assetVersion' for inventoryContext [" + inventoryContext.getIdentifier() + "] is set, but no 'assetName' is specified, please set an 'assetName' as well or remove the field 'assetName'.");
-                } else {
-                    throw new IllegalStateException("The field 'assetName' for inventoryContext [" + inventoryContext.getIdentifier() + "] is set, but no 'assetVersion' is specified, please set an 'assetVersion' as well or remove the field 'assetName'.");
                 }
             }
 
@@ -375,23 +389,29 @@ public class DocumentDescriptorReportGenerator {
 
         builder.reportLanguage(documentDescriptor.getLanguage());
 
-        // FIXME: we should not need to list all parameters; these should automatically propagate
-        builder.enableOpenCodeStatus(Boolean.parseBoolean(mergedParams.get("enableOpenCodeStatus")));
-        builder.includeInofficialOsiStatus(Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus")));
-        builder.filterAdvisorySummary(Boolean.parseBoolean(mergedParams.get("filterAdvisorySummary")));
-        builder.hidePriorityInformation(Boolean.parseBoolean(mergedParams.get("hidePriorityInformation")));
-        builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.get("filterVulnerabilitiesNotCoveredByArtifacts")));
-        builder.failOnMissingVelocityRuntimeReferences(Boolean.parseBoolean(mergedParams.get("failOnMissingVelocityRuntimeReferences")));
-        builder.inventoryAssetPrefix(mergedParams.get("inventoryAssetPrefix"));
-
-        if (mergedParams.get("inventoryBomComponentColumnWidth") != null) {
-            builder.inventoryBomComponentColumnWidth(mergedParams.get("inventoryBomComponentColumnWidth"));
-        }
-        if (mergedParams.get("inventoryBomArtifactColumnWidth") != null) {
-            builder.inventoryBomArtifactColumnWidth(mergedParams.get("inventoryBomArtifactColumnWidth"));
-        }
-        if (mergedParams.get("inventoryBomLicenseColumnWidth") != null) {
-            builder.inventoryBomLicenseColumnWidth(mergedParams.get("inventoryBomLicenseColumnWidth"));
+        // automatically propagate all parameters to the builder using reflection
+        for (Map.Entry<String, String> entry : mergedParams.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (value == null) continue;
+            try {
+                Method[] methods = builder.getClass().getMethods();
+                for (Method method : methods) {
+                    if (method.getName().equals(key) && method.getParameterCount() == 1) {
+                        Class<?> paramType = method.getParameterTypes()[0];
+                        if (paramType == String.class) {
+                            method.invoke(builder, value);
+                        } else if (paramType == boolean.class || paramType == Boolean.class) {
+                            method.invoke(builder, Boolean.parseBoolean(value));
+                        } else if (paramType == int.class || paramType == Integer.class) {
+                            method.invoke(builder, Integer.parseInt(value));
+                        }
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Could not apply parameter '{}' to builder", key, e);
+            }
         }
 
         ReportConfigurationParameters configParams = builder.build();
