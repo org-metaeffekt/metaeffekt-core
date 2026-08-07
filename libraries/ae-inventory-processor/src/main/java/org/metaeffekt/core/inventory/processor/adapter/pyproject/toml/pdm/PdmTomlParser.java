@@ -45,7 +45,7 @@ public class PdmTomlParser extends AbstractPep621Parser {
 
     @Override
     public boolean supports(JsonNode root) {
-        return getProjectNode(root).isObject() && !root.at(PDM_PATH).isMissingNode();
+        return getProjectNode(root).isObject() && isPdmFile(root);
     }
 
     @Override
@@ -133,5 +133,14 @@ public class PdmTomlParser extends AbstractPep621Parser {
     protected JsonNode readLockFile(File pyProjectToml) throws IOException {
         File lock = new File(pyProjectToml.getParentFile(), "pdm.lock");
         return mapper.readTree(lock);
+    }
+
+    private boolean isPdmFile(JsonNode root) {
+        String backend = detectBuildBackend(root);
+        if (backend != null) {
+            return backend.startsWith("pdm");
+        }
+        // Fallback, if no build-system field is defined in toml
+        return root.at(PDM_PATH).isObject();
     }
 }

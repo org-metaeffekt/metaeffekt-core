@@ -35,7 +35,7 @@ public class PoetryPep621Parser extends AbstractPep621Parser implements PoetryTo
 
     @Override
     public boolean supports(JsonNode root) {
-        return getProjectNode(root).isObject() && !root.at(POETRY_PATH).isMissingNode();
+        return getProjectNode(root).isObject() && isPoetryFile(root);
     }
 
     @Override
@@ -94,5 +94,14 @@ public class PoetryPep621Parser extends AbstractPep621Parser implements PoetryTo
     @Override
     protected JsonNode readLockFile(File pyProjectToml) throws IOException {
         return mapper.readTree(getLockFile(pyProjectToml));
+    }
+
+    private boolean isPoetryFile(JsonNode root) {
+        String backend = detectBuildBackend(root);
+        if (backend != null) {
+            return backend.startsWith("poetry");
+        }
+        // Fallback, if no build-system field is defined in toml
+        return root.at(POETRY_PATH).isObject();
     }
 }

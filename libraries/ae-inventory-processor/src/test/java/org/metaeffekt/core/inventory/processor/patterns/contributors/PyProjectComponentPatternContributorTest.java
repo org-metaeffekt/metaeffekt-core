@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.util.FileUtils.computeMD5Checksum;
 
@@ -81,7 +82,7 @@ public class PyProjectComponentPatternContributorTest {
      * @throws IOException if an I/O error occurs
      */
     @Test
-    public void testPoetry002() throws IOException {
+    public void testPoetry002_legacy() throws IOException {
         final File baseDir = new File("src/test/resources/component-pattern-contributor/pyproject");
         final String relativeAnchorPath = "poetry002/pyproject.toml";
         final File anchorFile = new File(baseDir, relativeAnchorPath);
@@ -118,6 +119,28 @@ public class PyProjectComponentPatternContributorTest {
         assertThat(groupedDependencyCounts.get("(d)")).isNull();
 
         assertThat(groupedDependencyCounts.get("r") + groupedDependencyCounts.get("(r)")).isEqualTo(3);
+    }
+
+    /**
+     * With cycle in pyproject.toml, testing that extractPEP735DependencyGroup in
+     * {@link org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractPep621Parser} throws an exception.
+     */
+    @Test
+    public void testPoetry003_with_cycle() {
+        final File baseDir = new File("src/test/resources/component-pattern-contributor/pyproject");
+        final String relativeAnchorPath = "poetry003/pyproject.toml";
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
+
+        if (!anchorFile.exists()) {
+            throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
+        }
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> pyProjectComponentPatternContributor.contribute(baseDir, relativeAnchorPath, computeMD5Checksum(anchorFile))
+        );
+
+        assertEquals("Cycle detected in include-group: test -> dev -> test", exception.getMessage());
     }
 
     @Test

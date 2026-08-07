@@ -39,6 +39,7 @@ import java.util.*;
 @AllArgsConstructor
 public abstract class AbstractTomlParser implements PyProjectTomlParser {
     protected static final String LEGACY_DEV_DEPENDENCIES_PATH_SUFFIX = "/dev-dependencies/dev";
+    private static final String BUILD_BACKEND = "/build-system/build-backend";
 
     /**
      * Lock file parser factory used for determining lock file parser.
@@ -66,6 +67,11 @@ public abstract class AbstractTomlParser implements PyProjectTomlParser {
     @Override
     public LockFileParser createLockFileParser(JsonNode lockRoot) {
         return lockParserFactory.getParser(lockRoot);
+    }
+
+    @Override
+    public String detectBuildBackend(JsonNode root) {
+        return root.at(BUILD_BACKEND).asText(null);
     }
 
     /**

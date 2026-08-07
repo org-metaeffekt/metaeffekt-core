@@ -29,8 +29,19 @@ public interface PyProjectTomlParser {
 
     /**
      * Checks whether this specific parser supports toml files.
+     *
+     * @param root the root JSON node from the toml file
+     * @return whether this parser supports the given file or not
      */
     boolean supports(JsonNode root);
+
+    /**
+     * Detects the build backend to decide if the .toml file is a poetry or pdm file.
+     *
+     * @param root the root JSON node from the toml file
+     * @return the build-backend value as string
+     */
+    String detectBuildBackend(JsonNode root);
 
     /**
      * Defines the include pattern for a py project implementation subclass.
@@ -56,5 +67,4 @@ public interface PyProjectTomlParser {
      * @return the lock file parser for the specific lock file version
      */
     LockFileParser createLockFileParser(JsonNode lockRoot);
-
 }

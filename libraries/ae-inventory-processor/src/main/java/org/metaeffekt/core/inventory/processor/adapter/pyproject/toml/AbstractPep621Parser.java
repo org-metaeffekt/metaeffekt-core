@@ -62,6 +62,30 @@ public abstract class AbstractPep621Parser extends AbstractTomlParser {
         return devDependenciesByGroupName;
     }
 
+    /**
+     * Resolves a single named group from a PEP 735 {@code [dependency-groups]} table, recursively expanding any {@code {include-group = "..."}} references it contains.
+     *
+     * <p>Each entry in the group's array is either a PEP 508 dependency string
+     * (added directly) or an include reference, whose target group is resolved
+     * recursively and merged into the result. Dependencies are deduplicated by
+     * name across the group and all of its (transitive) includes.
+     *
+     * <p>{@code pathInProgress} tracks the chain of group names currently being
+     * resolved on the current recursion path (not globally across sibling calls),
+     * so that diamond-shaped includes (e.g. both {@code dev} and {@code ci}
+     * including {@code test}) are resolved twice without being mistaken for a
+     * cycle. If a group is encountered a second time on the same path, an
+     * {@link IllegalStateException} is thrown describing the full cycle.
+     *
+     * @param groupsNode     the JSON node representation of the {@code [dependency-groups]} table
+     * @param groupName      the name of the group to resolve
+     * @param pathInProgress the set of group names on the current recursion path
+     * @return the fully resolved, deduplicated list of dependencies for {@code groupName},
+     * or an empty list if the group does not exist
+     * @throws IllegalStateException if a cyclic {@code include-group} reference is detected,
+     *                               or if a group entry is neither a string nor a valid
+     *                               {@code include-group} table
+     */
     private static List<UnresolvedModule> extractPEP735DependencyGroup(JsonNode groupsNode, String groupName, LinkedHashSet<String> pathInProgress) {
         if (groupsNode.isMissingNode() || !groupsNode.has(groupName)) {
             return List.of();
@@ -82,7 +106,7 @@ public abstract class AbstractPep621Parser extends AbstractTomlParser {
             } else if (entry.isObject() && entry.has("include-group")) {
                 includedGroups.add(entry.get("include-group").asText());
             } else {
-                throw new IllegalStateException("Invalid Entry in dependency-groups." + groupName + ": " + entry);
+                throw new IllegalStateException("Invalid entry in dependency-groups." + groupName + ": " + entry);
             }
         }
 
