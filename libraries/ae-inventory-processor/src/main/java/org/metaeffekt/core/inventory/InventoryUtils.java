@@ -372,7 +372,7 @@ public abstract class InventoryUtils {
      *
      * @return a map containing the artifact and a set of assets.
      */
-    public static Set<AssetMetaData> getAssetsForArtifacts(Inventory inventory, Set<Artifact> artifacts) {
+    public static Collection<AssetMetaData> getAssetsForArtifacts(Inventory inventory, Collection<Artifact> artifacts) {
         Set<AssetMetaData> setOfAssets = new HashSet<>();
         for (AssetMetaData assetMetaData : inventory.getAssetMetaData()) {
             String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
