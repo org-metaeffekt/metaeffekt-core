@@ -21,8 +21,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
-import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
-import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 
 import java.io.File;
@@ -35,7 +33,16 @@ import java.io.IOException;
 public class EnrichInventoryWithReferenceMojo extends AbstractInventoryReportCreationMojo {
 
     @Parameter(required = true)
-    private File inventory;
+    private File inputInventoryFile;
+
+    @Parameter(required = true)
+    private File outputInventoryFile;
+
+    @Parameter(required = true)
+    private File referenceInventoryDir;
+
+    @Parameter(defaultValue = "*.xls*")
+    private String referenceInventoryIncludes;
 
     @Override
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
@@ -54,17 +61,20 @@ public class EnrichInventoryWithReferenceMojo extends AbstractInventoryReportCre
         configParams.failOnDowngrade(false);
         configParams.failOnUpgrade(false);
 
-
         InventoryReport report = new InventoryReport(configParams.build());
 
         // apply standard configuration (parent class)
         configureInventoryReport(report);
-        report.setTargetInventoryDir(inventory.getParentFile());
-        report.setTargetInventoryPath(inventory.getName());
+
+        report.setTargetInventoryDir(outputInventoryFile.getParentFile());
+        report.setTargetInventoryPath(outputInventoryFile.getName());
+
+        report.setReferenceInventoryDir(referenceInventoryDir);
+        report.setReferenceInventoryIncludes(referenceInventoryIncludes);
 
         try {
-            getLog().info("Starting inventory report creation for " + inventory.getAbsolutePath());
-            final Inventory readInventory = new InventoryReader().readInventory(inventory);
+            getLog().info("Starting inventory report creation for " + inputInventoryFile.getAbsolutePath());
+            final Inventory readInventory = new InventoryReader().readInventory(inputInventoryFile);
             getLog().debug("Parsed inventory data: " + readInventory.getInventorySizePrintString());
             report.setInventory(readInventory);
         } catch (IOException e) {

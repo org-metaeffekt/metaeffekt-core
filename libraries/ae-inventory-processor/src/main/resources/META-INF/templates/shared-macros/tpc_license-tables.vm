@@ -52,14 +52,18 @@
         #foreach($license in $filteredLicenseList)
             #if(!$license.contains(" + "))
                 #set($licenseData=$inventory.findMatchingLicenseData($license))
-                #set($count = $assetData.countComponentsForSingleLicense($license, $onlyCountAssets))
+
+                #if($useRepresentedLicenses)
+                    #set($count = $assetData.countComponentsForRepresentedLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets))
+                #else
+                    #set($count = $assetData.countComponentsForSingleLicense($license, $onlyCountAssets))
+                #end
 
                 #if ($count != 0)
                     <row>
                         #if ($inventoryReportAdapter.isRepresentedLicense($license) && $useRepresentedLicenses)
                             <entry>
-                                <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
-                                <xref href="#$topicId/represented-licenses-fn" type="fn"/>
+                                <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref><xref href="#$topicId/represented-licenses-fn" type="fn"/>
                             </entry>
                             <entry>
                                 #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
@@ -72,7 +76,7 @@
                                 #if ($licenseData)
                                     #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap))
                                     #if ($mappedStatus)
-                                        $mappedStatus<xref href="#$topicId/represented-licenses-fn" type="fn"/>
+                                        $mappedStatus
                                     #end
                                 #else
                                     &nbsp;
@@ -83,10 +87,9 @@
                                     #if ($licenseData)
                                         #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
                                         #if ($mappedStatus && $licenseData.get("Open CoDE Status")=="(approved)")
-                                            $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils)
-                                            <xref href="#$topicId/id-opencode-similar-fn" type="fn"/> <xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
+                                            $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils)<xref href="#$topicId/id-opencode-similar-fn" type="fn"/><xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
                                         #elseif ($mappedStatus)
-                                            $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils) <xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
+                                            $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils)<xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
                                         #end
                                     #else
                                         &nbsp;
@@ -95,11 +98,7 @@
                             #end
                             <entry>
                                 <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">
-                                    #if($useRepresentedLicenses)
-                                        <codeph>$assetData.countComponentsForRepresentedLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets)</codeph>
-                                    #else
-                                        <codeph>$assetData.countComponentsForSingleLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets)</codeph>
-                                    #end
+                                    <codeph>$count</codeph>
                                 </xref>
                             </entry>
                         #else
@@ -125,7 +124,7 @@
                                     #if ($licenseData)
                                         #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
                                         #if ($mappedStatus && $licenseData.get("Open CoDE Status")=="(approved)")
-                                            $mappedStatus <xref href="#$topicId/id-opencode-similar-fn" type="fn"/>
+                                            ${mappedStatus}<xref href="#$topicId/id-opencode-similar-fn" type="fn"/>
                                         #elseif ($mappedStatus)
                                             $mappedStatus
                                         #end
@@ -156,8 +155,9 @@
         <p>
             #if($inventory.assetMetaData.size() == 1)
                 #if($folder)
+                    #set($licensePathEscaped = $report.xmlEscapePreformattedContentString("${report.getRelativeLicensePath()}/${folder}/"))
                     $utils.getText("asset-report-bom.license-asset-topic-location")
-                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html"
+                    <xref href="$licensePathEscaped" type="html"
                           scope="external">$report.xmlEscapeString($license)
                         [external]
                     </xref>.
@@ -165,8 +165,9 @@
             #else
             $utils.getText("asset-report-bom.license-asset-topic")
             #if($folder)
+                #set($licensePathEscaped = $report.xmlEscapePreformattedContentString("${report.getRelativeLicensePath()}/${folder}/"))
                 $utils.getText("asset-report-bom.license-asset-topic-location")
-                <xref href="$report.getRelativeLicensePath()/$folder/" type="html"
+                <xref href="$licensePathEscaped" type="html"
                       scope="external">$report.xmlEscapeString($license)
                     [external]
                 </xref>.

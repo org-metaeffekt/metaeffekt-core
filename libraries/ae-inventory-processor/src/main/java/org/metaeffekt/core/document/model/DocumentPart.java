@@ -73,7 +73,7 @@ public class DocumentPart {
             throw new IllegalStateException("The part type must be specified.");
         }
 
-        if (inventoryContexts != null && inventoryContexts.size() > 1) {
+        if (inventoryContexts != null && inventoryContexts.size() > 1 && documentPartType != DocumentPartType.ANNEX) {
             throw new IllegalStateException("The part '" + documentPartType + "' currently does not support multiple input inventories.");
         }
 

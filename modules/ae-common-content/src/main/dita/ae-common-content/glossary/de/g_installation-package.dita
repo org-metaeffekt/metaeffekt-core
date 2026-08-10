@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="installation-package">
-    <glossterm>Installationspaket</glossterm>
+    <glossterm>Installationspakete</glossterm>
     <glossdef>
         <p>
             Ein Installationspaket ist ein gebündelter Satz von Dateien zur Installation von Software. Gängige Formate

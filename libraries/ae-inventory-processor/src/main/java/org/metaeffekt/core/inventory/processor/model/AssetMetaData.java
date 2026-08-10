@@ -67,7 +67,8 @@ public class AssetMetaData extends AbstractModelBase {
         // FIXME: consolidate
         SOURCE_CODE_URL("Source Code URL"),
         SUPPLIER("Supplier"),
-        TYPE("Type");
+        TYPE("Type"),
+        REPORT_ORDER("Report Order");
 
         private String key;
 
