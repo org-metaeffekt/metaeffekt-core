@@ -69,6 +69,18 @@ public class InventoryReportAdapter {
         return sorted;
     }
 
+    public List<List<Artifact>> groupArtifactsByComponent(Collection<Artifact> artifacts) {
+        if (artifacts == null) {
+            return Collections.emptyList();
+        }
+        Map<String, List<Artifact>> grouped = new LinkedHashMap<>();
+        for (Artifact artifact : sortArtifactsByComponent(artifacts)) {
+            String component = artifact.getComponent() == null ? "" : artifact.getComponent();
+            grouped.computeIfAbsent(component, k -> new ArrayList<>()).add(artifact);
+        }
+        return new ArrayList<>(grouped.values());
+    }
+
     /**
      * Complex type to enable different required terms categories to be differentiated.
      */
