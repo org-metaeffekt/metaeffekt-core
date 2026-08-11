@@ -8,8 +8,9 @@
             <p>
                 $utils.getText("inventory-report-bom.license-artifact-topic")
                 #if($folder)
+                    #set($licensePathEscaped = $report.xmlEscapePreformattedContentString("${report.getRelativeLicensePath()}/${folder}/"))
                     $utils.getText("inventory-report-bom.license-artifact-topic-location")
-                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$report.xmlEscapeLicense($license) [external]</xref>.
+                    <xref href="$licensePathEscaped" type="html" scope="external">$report.xmlEscapeLicense($license) [external]</xref>.
                 #end
             </p>
             <p>

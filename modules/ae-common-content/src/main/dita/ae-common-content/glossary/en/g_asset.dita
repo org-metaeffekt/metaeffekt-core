@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="asset">
-    <glossterm>Asset</glossterm>
+    <glossterm>Assets</glossterm>
     <glossdef>
         <p>
             An asset, especially a software or hardware asset, is an identifiable and usable unit dedicated to a specific purpose
