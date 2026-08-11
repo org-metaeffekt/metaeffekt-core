@@ -7,7 +7,7 @@
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>ae-core</artifactId>
     <name>metaeffekt-core</name>
-    <version>ae-2322-ssvc-minimal-integration-SNAPSHOT</version>
+    <version>HEAD-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>Core project with fundamental runtime and build support.</description>
