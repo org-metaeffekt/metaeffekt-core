@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
@@ -28,8 +29,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Is also being tested in {@code AssessmentInventoryMergerCompatibilityTest} in artifact analysis.
+ */
 @Slf4j
 public class AssessmentInventoryMerger {
+
+    /**
+     * Mirrors {@code VulnerabilityContextInventory.INVENTORY_INFO_NAMESPACE_VCI_PREFIX} from ae-artifact-analysis.
+     */
+    private static final String VCI_INVENTORY_INFO_NAMESPACE = "vulnerability-context-inventory";
 
     private List<File> inputInventoryFiles;
     private List<Inventory> inputInventories;
@@ -91,6 +100,14 @@ public class AssessmentInventoryMerger {
 
             assetMetaData.set(AssetMetaData.Attribute.ASSESSMENT, localUniqueAssessmentId);
             assetMetaData.set(AssetMetaData.Attribute.NAME, assetName);
+
+            // certain inventory info namespaces cannot be merged directly, and must be treated differently
+            final InventoryInfo vciInventoryInfo = inputInventory.findInventoryInfo(VCI_INVENTORY_INFO_NAMESPACE);
+            if (vciInventoryInfo != null) {
+                final InventoryInfo renamedVciInventoryInfo = new InventoryInfo(vciInventoryInfo);
+                renamedVciInventoryInfo.set(InventoryInfo.Attribute.ID, VCI_INVENTORY_INFO_NAMESPACE + "-" + localUniqueAssessmentId);
+                outputInventory.getInventoryInfo().add(renamedVciInventoryInfo);
+            }
 
             commonInventories.add(inputInventory);
             assessmentInventoryMap.put(localUniqueAssessmentId, inputInventory);
