@@ -59,6 +59,16 @@ public class InventoryReportAdapter {
         }
     }
 
+    public List<Artifact> sortArtifactsByComponent(Collection<Artifact> artifacts) {
+        if (artifacts == null) {
+            return Collections.emptyList();
+        }
+        List<Artifact> sorted = new ArrayList<>(artifacts);
+        sorted.sort(Comparator.comparing((Artifact a) -> a.getComponent() == null ? "" : a.getComponent().toLowerCase())
+                .thenComparing(a -> a.getId() == null ? "" : a.getId().toLowerCase()));
+        return sorted;
+    }
+
     /**
      * Complex type to enable different required terms categories to be differentiated.
      */

@@ -26,7 +26,8 @@
 
                 #insertLicenseTable(
                     "tpc_effective_license_$reportContext.id",
-                    $license,"Inventory Licenses",
+                    $license,
+                    "$report.xmlEscapeLicense($license) $utils.getText('general.short.variants')",
                     $licensesRepresentedBy,
                     false,
                     "#tpc_effective_license_",
