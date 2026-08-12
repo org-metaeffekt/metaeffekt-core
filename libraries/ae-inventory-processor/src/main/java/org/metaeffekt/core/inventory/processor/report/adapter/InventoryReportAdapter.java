@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.report.adapter;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -26,7 +27,10 @@ import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfig
 import java.util.*;
 
 @Getter
+@Setter
 public class InventoryReportAdapter {
+
+    private String inventoryAssetPrefix;
 
     private Inventory inventory;
 
@@ -53,6 +57,16 @@ public class InventoryReportAdapter {
                 }
             }
         }
+    }
+
+    public List<Artifact> sortArtifactsByComponent(Collection<Artifact> artifacts) {
+        if (artifacts == null) {
+            return Collections.emptyList();
+        }
+        List<Artifact> sorted = new ArrayList<>(artifacts);
+        sorted.sort(Comparator.comparing((Artifact a) -> a.getComponent() == null ? "" : a.getComponent().toLowerCase())
+                .thenComparing(a -> a.getId() == null ? "" : a.getId().toLowerCase()));
+        return sorted;
     }
 
     /**

@@ -68,6 +68,10 @@ public class MavenProjectSourcesComponentPatternContributor extends ComponentPat
             cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
             cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
             cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
+
+            // FIXME-KKL: this should/must not be necessary
+            cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar,**/pom.xml,**/*.pom");
+
             cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
 
             cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, MAVEN_PROJECT_SOURCE_TYPE);

@@ -86,6 +86,8 @@ public class VersionFileComponentPatternContributor extends ComponentPatternCont
                 componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
 
                 componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+
+                // FIXME-KKL: this is a confusions; what is the the specific type here?
                 componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "versioned-file");
 
                 evaluationContext.registerProcessed(semaphore);

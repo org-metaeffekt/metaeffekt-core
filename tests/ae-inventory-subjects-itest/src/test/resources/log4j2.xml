@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration
+        strict="true"
+        monitorInterval="30"
+        shutdownHook="disable"
+        xmlns="https://logging.apache.org/xml/ns"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://logging.apache.org/xml/ns https://logging.apache.org/xml/ns/log4j-config-2.xsd">
+    <Properties>
+        <Property name="consoleLayoutPattern" value="%d{ISO8601} %-5p %tn : %m%n"/>
+    </Properties>
+
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout pattern="${consoleLayoutPattern}"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.metaeffekt" level="INFO"/>
+        <Logger name="org.metaeffekt.core.common.kernel.ant.log.LoggingProjectAdapter" level="ERROR"/>
+        <Logger name="org.metaeffekt.core.inventory.processor.report" level="INFO"/>
+        <Logger name="org.owasp.dependencycheck" level="WARN"/>
+
+        <Root level="INFO">
+            <AppenderRef ref="CONSOLE"/>
+            <AppenderRef ref="FILE"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

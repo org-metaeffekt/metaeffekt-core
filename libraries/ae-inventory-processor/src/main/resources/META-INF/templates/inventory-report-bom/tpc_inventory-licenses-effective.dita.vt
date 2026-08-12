@@ -23,7 +23,7 @@
           <fn id="id-opencode-represented-fn">$utils.getText("general.open-code-multiple-footnote")</fn>
         #end
 
-## License Options (not necessarily expressions)
+    ## License Options (not necessarily expressions)
     #if (!$termsWithOptions.isEmpty())
         <table id="LicenseOptions" otherprops="wide">
             <title>$utils.getText("general.short.license-options") $reportContext.withTitle()</title>
@@ -41,11 +41,11 @@
                         #set($license=$licenseData.get("Canonical Name"))
                         #set($componentCount=$assetData.countComponentsForSingleLicense($license, false))
                         <row>
-                            #if ($inventory.isLicenseSubstructureRequired($license, $effectiveLicensesRepresented))
+                            #if ($assetData.isLicenseSubstructureRequired($license))
                                 <entry>
                                     <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
-                                        $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/represented-licenses-fn" type="fn"/>
-                                    </xref>
+                                        $report.xmlEscapeLicense($license)
+                                    </xref><xref href="#tpc_license-summary-$reportContext.id/represented-licenses-fn" type="fn"/>
                                 </entry>
                             #else
                                 <entry>

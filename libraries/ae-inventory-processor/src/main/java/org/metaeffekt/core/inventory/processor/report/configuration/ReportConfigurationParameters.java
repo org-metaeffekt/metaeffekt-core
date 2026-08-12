@@ -155,11 +155,34 @@ public class ReportConfigurationParameters {
     @Builder.Default
     private boolean documentPurposeEnabled = false;
 
+    @Builder.Default
+    private String inventoryAssetPrefix = null;
+
+    @Builder.Default
+    private int reportEffectiveTableComponentColumnWidth = 20;
+
+    @Builder.Default
+    private int reportEffectiveTableArtifactColumnWidth = 45;
+
+    @Builder.Default
+    private int reportEffectiveTableLicenseColumnWidth = 35;
+
+    @Builder.Default
+    private int licenseNoticeTableArtifactColumnWidth = 50;
+
+    @Builder.Default
+    private int licenseNoticeTableVersionColumnWidth = 15;
+
+    @Builder.Default
+    private int licenseNoticeTableLicenseColumnWidth = 35;
+
+
     /**
      * Custom parameters passed from the document descriptor or parts.
      */
     @Builder.Default
     private Map<String, String> customParams = new java.util.HashMap<>();
+
 
     public void setAllFailConditions(boolean shouldFail) {
         failOnError = shouldFail;

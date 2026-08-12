@@ -80,6 +80,7 @@ public class ContainerInspectAssetContributor extends ComponentPatternContributo
 
                     cpd.set("Container Image - Id", assetMetaData.get(ContainerImageInspectAdapter.KEY_IMAGE_ID));
 
+                    // FIXME-KKL: this is a confusions; what is the the specific type here?
                     cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "container-inspect");
 
                     cpd.setExpansionInventorySupplier(() -> createAssetInventory(assetMetaData, relativeAnchorPath));

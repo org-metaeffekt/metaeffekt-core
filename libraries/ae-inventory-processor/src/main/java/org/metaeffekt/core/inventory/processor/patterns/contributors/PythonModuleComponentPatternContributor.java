@@ -186,7 +186,7 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/*.exe");
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
-        componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "python-library");
+        componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "python-module");
 
         String purl = buildPurl(componentName, componentVersion);
         componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
