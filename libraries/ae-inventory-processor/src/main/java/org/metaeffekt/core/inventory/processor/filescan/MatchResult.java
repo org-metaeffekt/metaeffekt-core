@@ -110,7 +110,7 @@ public class MatchResult {
     }
 
     private void setDistroNameAndVersionForCorrespondingArtifacts(String distroName, String distroVersion, Artifact derivedArtifact) {
-        if (List.of(Constants.ARTIFACT_TYPE_PACKAGE, Constants.ARTIFACT_TYPE_DISTRO).contains(componentPatternData.get(TYPE))) {
+        if (List.of(Constants.ARTIFACT_TYPE_PACKAGE, Constants.ARTIFACT_TYPE_DISTRO).contains(componentPatternData.get(Constants.KEY_TYPE))) {
             derivedArtifact.set(Constants.KEY_DISTRO_NAME, distroName);
             derivedArtifact.set(Constants.KEY_DISTRO_VERSION, distroVersion);
         }
