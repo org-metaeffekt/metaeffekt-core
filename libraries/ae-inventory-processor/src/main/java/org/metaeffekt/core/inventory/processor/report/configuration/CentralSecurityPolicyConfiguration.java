@@ -635,6 +635,11 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         final CentralSecurityPolicyConfiguration configuration = new CentralSecurityPolicyConfiguration();
         final Map<String, Object> policyConfigurationMap = jsonObject.toMap();
         
+        if (jsonObject.has("priorityScoreConfiguration")) {
+            configuration.setPriorityScoreConfiguration(VulnerabilityPriorityScoreConfiguration.fromJson(jsonObject.getJSONObject("priorityScoreConfiguration")));
+            policyConfigurationMap.remove("priorityScoreConfiguration");
+        }
+
         configuration.setProperties(new LinkedHashMap<>(policyConfigurationMap));
 
         final List<ProcessMisconfiguration> misconfigurations = new ArrayList<>();
