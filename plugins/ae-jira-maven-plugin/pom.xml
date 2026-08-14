@@ -107,12 +107,10 @@
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-      <version>3.1.5</version>
         </dependency>
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-      <version>3.1.5</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

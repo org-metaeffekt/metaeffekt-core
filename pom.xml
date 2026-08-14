@@ -84,7 +84,7 @@
         <dom4j.version>2.1.4</dom4j.version>
         <easymock.version>3.4</easymock.version>
         <jackson2.version>2.22.0</jackson2.version>
-        <jackson3.version>3.1.5</jackson3.version>
+        <jackson3.version>3.2.0</jackson3.version>
         <fasterxml.jackson.version>2.22.0</fasterxml.jackson.version>
         <findbugs.version>3.0.2</findbugs.version>
         <geronimo.servlet.spec.version>1.0</geronimo.servlet.spec.version>
