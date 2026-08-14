@@ -221,9 +221,9 @@ public class CvssSeverityRanges {
 
     public static final CvssSeverityRanges EXPLOITABILITY_SEVERITY_RANGES = new CvssSeverityRanges(
             "Evident:strong-red," +
-            "POC:strong-light-orange," +
-            "Hypothetical:strong-yellow," +
-            "Not Evident:pastel-gray"
+            "Unconfirmed:strong-yellow," +
+            "Not Evident:pastel-gray," +
+            "Undefined:strong-dark"
     );
 
 

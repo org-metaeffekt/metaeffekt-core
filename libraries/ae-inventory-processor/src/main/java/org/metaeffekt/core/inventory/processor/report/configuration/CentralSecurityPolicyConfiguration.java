@@ -291,7 +291,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * These rules sequentially evaluate indicators like CVSS vector components, EPSS scores, and KEV presence.
      */
     @Getter @Setter
-    @ProcessConfigurationProperty(converter = ExploitabilityConverter.class)
     private List<ExploitabilityLabelConfiguration> exploitability = new ArrayList<>();
 
     public CentralSecurityPolicyConfiguration setCvssSeverityRanges(String cvssSeverityRanges) {
@@ -318,20 +317,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     public CentralSecurityPolicyConfiguration setPriorityScoreSeverityRanges(CvssSeverityRanges priorityScoreSeverityRanges) {
         this.priorityScoreSeverityRanges = priorityScoreSeverityRanges.toString();
         return this;
-    }
-
-    public static class ExploitabilityConverter implements FieldConverter<List<ExploitabilityLabelConfiguration>, List<Object>> {
-        @Override
-        public List<Object> serialize(List<ExploitabilityLabelConfiguration> internal) {
-            if (internal == null || internal.isEmpty()) return null;
-            return ExploitabilityLabelConfiguration.toJsonArray(internal).toList();
-        }
-
-        @Override
-        public List<ExploitabilityLabelConfiguration> deserialize(List<Object> external) {
-            if (external == null) return new ArrayList<>();
-            return ExploitabilityLabelConfiguration.fromJsonArray(new JSONArray(external));
-        }
     }
 
     public CvssSeverityRanges getPriorityScoreSeverityRanges() {
@@ -481,6 +466,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
         if (this.exploitabilitySeverityRanges == null) {
             misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Exploitability score severity ranges must not be null"));
+        }
+
+        if (this.exploitability == null || this.exploitability.isEmpty()) {
+            misconfigurations.add(new ProcessMisconfiguration("exploitability", "Exploitability must not be null"));
         }
 
         if (this.cvssVersionSelectionPolicy == null || this.cvssVersionSelectionPolicy.isEmpty()) {
