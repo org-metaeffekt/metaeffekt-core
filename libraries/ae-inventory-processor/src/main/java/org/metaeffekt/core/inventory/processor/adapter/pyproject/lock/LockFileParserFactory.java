@@ -15,9 +15,9 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.lock;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.pdm.PdmLockV4_5Parser;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.poetry.PoetryLockParser;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 

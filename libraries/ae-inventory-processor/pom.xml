@@ -250,8 +250,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <groupId>tools.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-toml</artifactId>
+      <version>3.1.5</version>
         </dependency>
 
     </dependencies>

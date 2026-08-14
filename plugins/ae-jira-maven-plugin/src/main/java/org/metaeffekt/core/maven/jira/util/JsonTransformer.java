@@ -15,17 +15,17 @@
  */
 package org.metaeffekt.core.maven.jira.util;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.POJONode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.exc.StreamWriteException;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.POJONode;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -36,23 +36,23 @@ public class JsonTransformer {
     /**
      * Convert data tree recursively to a JSON string.
      *
-     * @param data the data to be converted
+     * @param data   the data to be converted
      * @param indent if <code>true</code>, indent the output (typically with two spaces)
-     *
      * @return JSON string representation of the given data tree
      */
     public static String transform(Object data, boolean indent) {
-        ObjectMapper mapper = new ObjectMapper();
+        JsonMapper.Builder builder = JsonMapper.builder();
         if (indent) {
-            mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+            builder.configure(SerializationFeature.INDENT_OUTPUT, indent);
         }
+        final JsonMapper mapper = builder.build();
         try {
             return mapper.writeValueAsString(data);
-        } catch (JsonGenerationException e) {
+        } catch (StreamWriteException e) {
             throw new RuntimeException(e);
-        } catch (JsonMappingException e) {
+        } catch (DatabindException e) {
             throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
@@ -65,18 +65,15 @@ public class JsonTransformer {
      * <code>java.util.Map</code> and <code>java.util.List</code>.
      *
      * @param dataString the data string to be converted
-     *
      * @return The JSON data as a hierarchical structure of maps, lists, string and number values
      */
     public static Object transform(String dataString) {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode result = null;
 
         try {
             result = mapper.readTree(dataString);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
 
@@ -100,18 +97,18 @@ public class JsonTransformer {
             return node.doubleValue();
         } else if (node.isBoolean()) {
             return node.booleanValue();
-        } else if (node.isTextual()) {
-            return node.textValue();
+        } else if (node.isString()) {
+            return node.stringValue();
         } else if (node.isNull()) {
             return null;
         } else {
-            return node.asText();
+            return node.asString();
         }
     }
 
     private static Map<String, Object> transformPojo(POJONode pojoNode) {
         Map<String, Object> result = new HashMap<String, Object>();
-        Iterator<String> fieldNames = pojoNode.fieldNames();
+        Iterator<String> fieldNames = pojoNode.propertyNames().iterator();
         while (fieldNames.hasNext()) {
             String key = fieldNames.next();
             JsonNode node = pojoNode.get(key);
@@ -122,7 +119,7 @@ public class JsonTransformer {
 
     private static Map<String, Object> transformObject(ObjectNode objectNode) {
         Map<String, Object> result = new HashMap<String, Object>();
-        Iterator<String> fieldNames = objectNode.fieldNames();
+        Iterator<String> fieldNames = objectNode.propertyNames().iterator();
         while (fieldNames.hasNext()) {
             String key = fieldNames.next();
             JsonNode node = objectNode.get(key);
@@ -133,7 +130,7 @@ public class JsonTransformer {
 
     private static List<Object> transformArray(ArrayNode arrayNode) {
         List<Object> result = new ArrayList<Object>();
-        Iterator<JsonNode> nodes = arrayNode.elements();
+        Iterator<JsonNode> nodes = arrayNode.values().iterator();
         while (nodes.hasNext()) {
             JsonNode node = nodes.next();
             result.add(transformNode(node));
