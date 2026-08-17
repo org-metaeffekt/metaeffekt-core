@@ -464,12 +464,25 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             misconfigurations.add(new ProcessMisconfiguration("epssSeverityRanges", "EPSS score severity ranges must not be null"));
         }
 
-        if (this.exploitabilitySeverityRanges == null) {
-            misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Exploitability score severity ranges must not be null"));
+        if (this.exploitabilitySeverityRanges != null && StringUtils.isEmpty(this.exploitabilitySeverityRanges)) {
+            misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Exploitability score severity ranges must not be empty"));
         }
 
-        if (this.exploitability == null || this.exploitability.isEmpty()) {
-            misconfigurations.add(new ProcessMisconfiguration("exploitability", "Exploitability must not be null"));
+        if (this.exploitability != null && !this.exploitability.isEmpty()) {
+            if (this.exploitabilitySeverityRanges == null) {
+                misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Exploitability score severity ranges must not be null"));
+            } else if (!StringUtils.isEmpty(this.exploitabilitySeverityRanges)) {
+                final CvssSeverityRanges ranges = new CvssSeverityRanges(this.exploitabilitySeverityRanges);
+                final Set<String> ruleLabels = this.exploitability.stream()
+                        .map(ExploitabilityLabelConfiguration::getLabel)
+                        .collect(Collectors.toSet());
+
+                for (final CvssSeverityRanges.SeverityRange range : ranges.getRanges()) {
+                    if (!ruleLabels.contains(range.getName())) {
+                        misconfigurations.add(new ProcessMisconfiguration("exploitability", "Exploitability must contain rules for all defined ranges in exploitabilitySeverityRanges. Missing rule for: " + range.getName()));
+                    }
+                }
+            }
         }
 
         if (this.cvssVersionSelectionPolicy == null || this.cvssVersionSelectionPolicy.isEmpty()) {
