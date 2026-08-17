@@ -15,9 +15,6 @@
  */
 package org.metaeffekt.core.maven.jira.util;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.exc.StreamWriteException;
-import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
@@ -46,15 +43,8 @@ public class JsonTransformer {
             builder.configure(SerializationFeature.INDENT_OUTPUT, indent);
         }
         final JsonMapper mapper = builder.build();
-        try {
-            return mapper.writeValueAsString(data);
-        } catch (StreamWriteException e) {
-            throw new RuntimeException(e);
-        } catch (DatabindException e) {
-            throw new RuntimeException(e);
-        } catch (JacksonException e) {
-            throw new RuntimeException(e);
-        }
+        return mapper.writeValueAsString(data);
+
     }
 
     /**
@@ -71,11 +61,7 @@ public class JsonTransformer {
         ObjectMapper mapper = new JsonMapper();
         JsonNode result = null;
 
-        try {
-            result = mapper.readTree(dataString);
-        } catch (JacksonException e) {
-            throw new RuntimeException(e);
-        }
+        result = mapper.readTree(dataString);
 
         return transformNode(result);
     }
