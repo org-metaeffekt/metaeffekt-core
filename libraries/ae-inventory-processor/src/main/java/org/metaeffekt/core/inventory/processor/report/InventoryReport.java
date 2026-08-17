@@ -883,7 +883,7 @@ public class InventoryReport {
                 // attached to the artifact. A wildcard on LMD-level has different semantics. Therefore
                 // the matchingLicenseMetaData.getVersion() is not relevant here.
             }
-            effectiveLicense = effectiveLicense.replaceAll("/s*,/s*", "|");
+            effectiveLicense = effectiveLicense.replaceAll("\\s*,\\s*", "|");
 
             // derive version (unspecific, specific)
             final String versionUnspecificComponentFolder = LicenseMetaData.deriveComponentFolderName(componentName);
@@ -899,7 +899,7 @@ public class InventoryReport {
                     versionUnspecificComponentFolder : versionSpecificComponentFolder;
 
             // copy touched components to target component folder
-            if (targetComponentDir != null) {
+            if (targetComponentDir != null && referenceComponentPath != null) {
                 missingFiles |= checkAndCopyComponentFolder(sourcePath,
                         new File(targetComponentDir, targetPath), reportedSourceFolders);
             }
@@ -910,14 +910,11 @@ public class InventoryReport {
                 for (String licenseInEffect : effectiveLicenses) {
                     final String effectiveLicenseFolderName = LicenseMetaData.deriveLicenseFolderName(licenseInEffect);
 
-                    // in any case copy the license license folder
-                    missingFiles |= checkAndCopyLicenseFolder(effectiveLicenseFolderName,
-                            new File(targetLicenseDir, effectiveLicenseFolderName), reportedSourceFolders);
-
-                    // copy the component folder into the effective license folder
-                    final File licenseTargetDir = new File(targetLicenseDir, effectiveLicenseFolderName);
-                    missingFiles |= checkAndCopyComponentFolder(sourcePath,
-                            new File(licenseTargetDir, targetPath), reportedSourceFolders);
+                    // in any case copy the license folder
+                    if (referenceLicensePath != null) {
+                        missingFiles |= checkAndCopyLicenseFolder(effectiveLicenseFolderName,
+                                new File(targetLicenseDir, effectiveLicenseFolderName), reportedSourceFolders);
+                    }
                 }
             }
         }
