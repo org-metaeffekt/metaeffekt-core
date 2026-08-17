@@ -72,6 +72,7 @@ public class InventoryReport {
 
     public static final String TEMPLATE_GROUP_PURPOSE = "purpose";
     public static final String TEMPLATE_GROUP_CONTEXT = "context";
+    public static final String TEMPLATE_GROUP_NOTICE = "notice";
 
     public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
@@ -607,6 +608,11 @@ public class InventoryReport {
         if (configParams.isDocumentPurposeEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_PURPOSE, reportContext);
+        }
+
+        if (configParams.isDocumentNoticeEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_NOTICE, reportContext);
         }
 
         // evaluate licenses only for managed artifacts

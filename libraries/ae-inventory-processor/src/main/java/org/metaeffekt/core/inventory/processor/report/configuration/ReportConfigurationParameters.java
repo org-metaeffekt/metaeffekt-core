@@ -156,6 +156,9 @@ public class ReportConfigurationParameters {
     private boolean documentPurposeEnabled = false;
 
     @Builder.Default
+    private boolean documentNoticeEnabled = false;
+
+    @Builder.Default
     private String inventoryAssetPrefix = null;
 
     @Builder.Default

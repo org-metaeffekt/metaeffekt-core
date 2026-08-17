@@ -449,6 +449,15 @@ public class DocumentDescriptorReportGenerator {
             case VULNERABILITY_SUMMARY_PART:
                 builder.inventoryVulnerabilityReportSummaryEnabled(true);
                 break;
+            case NOTICE:
+                builder.documentNoticeEnabled(true);
+                if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT ||
+                        documentDescriptor.getDocumentType() == DocumentType.PERIODIC_VULNERABILITY_REPORT) {
+                    mergedParams.putIfAbsent("document.notice.prioritization.enabled", "true");
+                } else if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+                    mergedParams.putIfAbsent("document.notice.prioritization.enabled", "false");
+                }
+                break;
             case VULNERABILITY_SUMMARY_REPORT:
                 builder.assessmentReportEnabled(true);
                 break;
