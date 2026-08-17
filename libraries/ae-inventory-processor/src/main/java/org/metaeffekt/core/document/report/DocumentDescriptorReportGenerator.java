@@ -250,10 +250,10 @@ public class DocumentDescriptorReportGenerator {
                 if (mergedParams.get("referenceComponentPath") != null) {
                     report.setReferenceComponentPath(mergedParams.get("referenceComponentPath"));
                 }
-                if (mergedParams.get("targetLicensesDir") == null) {
+                if (mergedParams.get("targetLicenseDir") == null) {
                     report.setTargetLicenseDir(new File(documentDescriptor.getTargetDocumentDir(), "licenses"));
                 } else {
-                    report.setTargetLicenseDir(new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetLicensesDir")));
+                    report.setTargetLicenseDir(new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetLicenseDir")));
                 }
                 if (mergedParams.get("targetComponentDir") == null) {
                     report.setTargetComponentDir(new File(documentDescriptor.getTargetDocumentDir(), "components"));
