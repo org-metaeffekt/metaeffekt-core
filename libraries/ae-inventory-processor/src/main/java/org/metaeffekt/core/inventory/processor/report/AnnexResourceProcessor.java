@@ -39,24 +39,24 @@ public class AnnexResourceProcessor {
     private final ReportConfigurationParameters configParams;
 
     private final File referenceInventoryDir;
-    private final String referenceComponentPath;
-    private final String referenceLicensePath;
+    private final String referenceComponentsDir;
+    private final String referenceLicensesDir;
 
-    private final File targetComponentDir;
-    private final File targetLicenseDir;
+    private final File targetComponentsDir;
+    private final File targetLicensesDir;
 
     public AnnexResourceProcessor(Inventory inventory, Inventory referenceInventory,
                                   ReportConfigurationParameters configParams,
-                                  File referenceInventoryDir, String referenceComponentPath, String referenceLicensePath,
-                                  File targetComponentDir, File targetLicenseDir) {
+                                  File referenceInventoryDir, String referenceComponentsDir, String referenceLicensesDir,
+                                  File targetComponentsDir, File targetLicensesDir) {
         this.inventory = inventory;
         this.referenceInventory = referenceInventory;
         this.configParams = configParams;
         this.referenceInventoryDir = referenceInventoryDir;
-        this.referenceComponentPath = referenceComponentPath;
-        this.referenceLicensePath = referenceLicensePath;
-        this.targetComponentDir = targetComponentDir;
-        this.targetLicenseDir = targetLicenseDir;
+        this.referenceComponentsDir = referenceComponentsDir;
+        this.referenceLicensesDir = referenceLicensesDir;
+        this.targetComponentsDir = targetComponentsDir;
+        this.targetLicensesDir = targetLicensesDir;
     }
 
     public boolean execute() {
@@ -107,15 +107,15 @@ public class AnnexResourceProcessor {
                     versionUnspecificComponentFolder : versionSpecificComponentFolder;
 
             // copy logic
-            if (targetComponentDir != null) {
+            if (targetComponentsDir != null) {
                 missingFiles |= checkAndCopyComponentFolder(sourcePath,
-                        new File(targetComponentDir, targetPath), reportedSourceFolders);
+                        new File(targetComponentsDir, targetPath), reportedSourceFolders);
             }
 
-            if (targetLicenseDir != null) {
+            if (targetLicensesDir != null) {
                 for (String licenseInEffect : effectiveLicense.split("\\|")) {
                     final String licenseFolderName = LicenseMetaData.deriveLicenseFolderName(licenseInEffect);
-                    File licenseTargetDir = new File(targetLicenseDir, licenseFolderName);
+                    File licenseTargetDir = new File(targetLicensesDir, licenseFolderName);
 
                     missingFiles |= checkAndCopyLicenseFolder(licenseFolderName,
                             licenseTargetDir, reportedSourceFolders);
@@ -142,12 +142,12 @@ public class AnnexResourceProcessor {
     }
 
     private boolean checkAndCopyLicenseFolder(String folderName, File targetDir, Set<String> reported) {
-        File sourceDir = new File(referenceInventoryDir, referenceLicensePath);
+        File sourceDir = new File(referenceInventoryDir, referenceLicensesDir);
         return performCopy(sourceDir, folderName, targetDir, reported, configParams.isFailOnMissingLicenseFile(), "[missing license file]");
     }
 
     private boolean checkAndCopyComponentFolder(String folderName, File targetDir, Set<String> reported) {
-        File sourceDir = new File(referenceInventoryDir, referenceComponentPath);
+        File sourceDir = new File(referenceInventoryDir, referenceComponentsDir);
         return performCopy(sourceDir, folderName, targetDir, reported, configParams.isFailOnMissingComponentFiles(), "[missing component specific license file]");
     }
 
