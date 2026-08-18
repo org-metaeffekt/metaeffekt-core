@@ -106,9 +106,8 @@ public class CvssSeverityRanges {
         private final double floor, ceil;
         private final int index;
 
-        // FIXME-YWI: Check regex
         private SeverityRange(String input, int index) {
-            Matcher matcher = RANGE_PATTERN.matcher(input);
+            final Matcher matcher = RANGE_PATTERN.matcher(input);
             if (!matcher.matches()) {
                 throw new IllegalArgumentException("Range pattern does not match format [NAME:COLOR:FLOOR:CEIL] or [NAME:COLOR] in " + input);
             }
@@ -119,8 +118,8 @@ public class CvssSeverityRanges {
                 throw new IllegalArgumentException("Range color unknown in [" + input + "]. available colors are [" + getAvailableColors() + "]");
             }
 
-            String rawFloor = matcher.group(3);
-            String rawCeil = matcher.group(4);
+            final String rawFloor = matcher.group(3);
+            final String rawCeil = matcher.group(4);
 
             if (rawFloor != null && rawCeil != null) {
                 final String floorStr = rawFloor.trim();
@@ -221,11 +220,10 @@ public class CvssSeverityRanges {
 
     public static final CvssSeverityRanges EXPLOITABILITY_SEVERITY_RANGES = new CvssSeverityRanges(
             "Evident:strong-red," +
-            "Unconfirmed:strong-yellow," +
-            "Not Evident:pastel-gray," +
-            "Undefined:strong-dark"
+                    "Unconfirmed:strong-yellow," +
+                    "Not Evident:pastel-gray," +
+                    "Undefined:strong-dark"
     );
-
 
     private static String getAvailableColors() {
         StringJoiner colors = new StringJoiner(", ");

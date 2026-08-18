@@ -145,4 +145,9 @@ public class CspLoaderTest {
             loader.loadConfiguration();
         });
     }
+
+    @Test
+    public void defaultValidationTest() {
+        new CentralSecurityPolicyConfiguration().assertNoMisconfigurations();
+    }
 }

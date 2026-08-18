@@ -291,7 +291,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * These rules sequentially evaluate indicators like CVSS vector components, EPSS scores, and KEV presence.
      */
     @Getter @Setter
-    private List<ExploitabilityLabelConfiguration> exploitability = new ArrayList<>();
+    private List<ExploitabilityLabelConfiguration> exploitability = ExploitabilityLabelConfiguration.DEFAULT;
 
     public CentralSecurityPolicyConfiguration setCvssSeverityRanges(String cvssSeverityRanges) {
         if (cvssSeverityRanges != null) {
@@ -337,17 +337,17 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return super.accessCachedProperty("epssSeverityRanges", this.epssSeverityRanges, CvssSeverityRanges::new);
     }
 
-    public CentralSecurityPolicyConfiguration setExploitabilityScoreSeverityRanges(String exploitabilitySeverityRanges) {
+    public CentralSecurityPolicyConfiguration setExploitabilitySeverityRanges(String exploitabilitySeverityRanges) {
         this.exploitabilitySeverityRanges = exploitabilitySeverityRanges;
         return this;
     }
 
-    public CentralSecurityPolicyConfiguration setExploitabilityScoreSeverityRanges(CvssSeverityRanges exploitabilitySeverityRanges) {
+    public CentralSecurityPolicyConfiguration setExploitabilitySeverityRanges(CvssSeverityRanges exploitabilitySeverityRanges) {
         this.exploitabilitySeverityRanges = exploitabilitySeverityRanges.toString();
         return this;
     }
 
-    public CvssSeverityRanges getExploitabilityScoreSeverityRanges() {
+    public CvssSeverityRanges getExploitabilitySeverityRanges() {
         return super.accessCachedProperty("exploitabilitySeverityRanges", this.exploitabilitySeverityRanges, CvssSeverityRanges::new);
     }
 
@@ -464,22 +464,24 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             misconfigurations.add(new ProcessMisconfiguration("epssSeverityRanges", "EPSS score severity ranges must not be null"));
         }
 
-        if (this.exploitabilitySeverityRanges != null && StringUtils.isEmpty(this.exploitabilitySeverityRanges)) {
-            misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Exploitability score severity ranges must not be empty"));
+        if (this.exploitabilitySeverityRanges == null) {
+            misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Must not be null"));
+        } else if (StringUtils.isEmpty(this.exploitabilitySeverityRanges)) {
+            misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Must not be empty"));
         }
 
-        if (this.exploitability != null && !this.exploitability.isEmpty()) {
-            if (this.exploitabilitySeverityRanges == null) {
-                misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Exploitability score severity ranges must not be null"));
-            } else if (!StringUtils.isEmpty(this.exploitabilitySeverityRanges)) {
-                final CvssSeverityRanges ranges = new CvssSeverityRanges(this.exploitabilitySeverityRanges);
+        if (this.exploitability == null) {
+            misconfigurations.add(new ProcessMisconfiguration("exploitability", "Must not be null"));
+        } else {
+            if (StringUtils.isNotEmpty(this.exploitabilitySeverityRanges)) {
+                final CvssSeverityRanges ranges = this.getExploitabilitySeverityRanges();
                 final Set<String> ruleLabels = this.exploitability.stream()
                         .map(ExploitabilityLabelConfiguration::getLabel)
                         .collect(Collectors.toSet());
 
-                for (final CvssSeverityRanges.SeverityRange range : ranges.getRanges()) {
+                for (CvssSeverityRanges.SeverityRange range : ranges.getRanges()) {
                     if (!ruleLabels.contains(range.getName())) {
-                        misconfigurations.add(new ProcessMisconfiguration("exploitability", "Exploitability must contain rules for all defined ranges in exploitabilitySeverityRanges. Missing rule for: " + range.getName()));
+                        misconfigurations.add(new ProcessMisconfiguration("exploitability", "Must contain rules for all defined ranges. Missing rule for: " + range.getName()));
                     }
                 }
             }
@@ -647,12 +649,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     public static CentralSecurityPolicyConfiguration fromJson(JSONObject jsonObject, String errorMessage) throws IOException {
         final CentralSecurityPolicyConfiguration configuration = new CentralSecurityPolicyConfiguration();
         final Map<String, Object> policyConfigurationMap = jsonObject.toMap();
-        
-        if (jsonObject.has("priorityScoreConfiguration")) {
-            configuration.setPriorityScoreConfiguration(VulnerabilityPriorityScoreConfiguration.fromJson(jsonObject.getJSONObject("priorityScoreConfiguration")));
-            policyConfigurationMap.remove("priorityScoreConfiguration");
-        }
-
         configuration.setProperties(new LinkedHashMap<>(policyConfigurationMap));
 
         final List<ProcessMisconfiguration> misconfigurations = new ArrayList<>();

@@ -31,6 +31,8 @@ public class CvssSeverityRangesTest {
         new CvssSeverityRanges("Low:strong-yellow:0.0:2.9,Average:strong-light-orange:3.0:6.9,Strong:strong-dark-orange:7.0:8.9,Maximum:strong-red:9.0:10.0");
         new CvssSeverityRanges("Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,High:strong-red::10.0");
         new CvssSeverityRanges("Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,High:strong-red:7.0:");
+        new CvssSeverityRanges("Low:strong-red");
+        new CvssSeverityRanges("");
         parseMustFail("Color should not have existed", "Undefined:dummy-color:-100.0:100.0");
         parseMustFail("Range should not have been valid", "Undefined:strong-gray:3.5:2.1");
         parseMustFail("Too few parts", "Undefined:strong-gray:-100.0");
@@ -42,6 +44,7 @@ public class CvssSeverityRangesTest {
         parseMustFail("Empty part", "Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,:strong-red:7.0:10.0");
         parseMustFail("Empty part", "Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,High::7.0:10.0");
         parseMustFail("Range delimiters both empty", "Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,High:strong-red::");
+        parseMustFail("More than one part must be defined", "Low");
     }
 
     private void parseMustFail(String message, String rangeString) {
