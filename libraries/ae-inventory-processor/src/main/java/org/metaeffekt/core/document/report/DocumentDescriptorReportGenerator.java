@@ -253,12 +253,20 @@ public class DocumentDescriptorReportGenerator {
                 if (mergedParams.get("targetLicenseDir") == null) {
                     report.setTargetLicenseDir(new File(documentDescriptor.getTargetDocumentDir(), "licenses"));
                 } else {
-                    report.setTargetLicenseDir(new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetLicenseDir")));
+                    File targetLicenseDir = new File(mergedParams.get("targetLicenseDir"));
+                    if (!targetLicenseDir.isAbsolute()) {
+                        targetLicenseDir = new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetLicenseDir"));
+                    }
+                    report.setTargetLicenseDir(targetLicenseDir);
                 }
                 if (mergedParams.get("targetComponentDir") == null) {
                     report.setTargetComponentDir(new File(documentDescriptor.getTargetDocumentDir(), "components"));
                 } else {
-                    report.setTargetComponentDir(new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetComponentDir")));
+                    File targetComponentDir = new File(mergedParams.get("targetComponentDir"));
+                    if (!targetComponentDir.isAbsolute()) {
+                        targetComponentDir = new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetComponentDir"));
+                    }
+                    report.setTargetComponentDir(targetComponentDir);
                 }
 
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));

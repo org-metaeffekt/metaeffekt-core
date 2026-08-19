@@ -785,7 +785,10 @@ public class InventoryReport {
     private boolean checkAndCopyLicenseFolder(String licenseFolderName, File targetDir,
                                               Set<String> reportedLicenseFolders) {
 
-        File sourceLicenseRootDir = new File(getGlobalInventoryDir(), referenceLicensePath);
+        File sourceLicenseRootDir = new File(referenceLicensePath);
+        if (!sourceLicenseRootDir.isAbsolute()) {
+            sourceLicenseRootDir = new File(getGlobalInventoryDir(), referenceLicensePath);
+        }
 
         File derivedFile = new File(sourceLicenseRootDir, licenseFolderName);
         if (derivedFile.exists()) {
@@ -812,7 +815,10 @@ public class InventoryReport {
     private boolean checkAndCopyComponentFolder(String componentFolderName, File targetDir,
                                                 Set<String> reportedLicenseFolders) {
 
-        File sourceComponentRootDir = new File(getGlobalInventoryDir(), referenceComponentPath);
+        File sourceComponentRootDir = new File(referenceComponentPath);
+        if (!sourceComponentRootDir.isAbsolute()) {
+            sourceComponentRootDir = new File(getGlobalInventoryDir(), referenceComponentPath);
+        }
 
         File derivedFile = new File(sourceComponentRootDir, componentFolderName);
         if (derivedFile.exists()) {
