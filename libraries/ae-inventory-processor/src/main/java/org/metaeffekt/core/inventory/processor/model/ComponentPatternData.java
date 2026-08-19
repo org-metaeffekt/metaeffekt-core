@@ -158,15 +158,7 @@ public class ComponentPatternData extends AbstractModelBase {
      * @return String to compare component patterns.
      */
     public String createCompareStringRepresentation() {
-        StringBuilder sb = new StringBuilder();
-        for (String attributeKey : CORE_ATTRIBUTES) {
-            if (sb.length() > 0) {
-                sb.append(":");
-            }
-            String value = get(attributeKey);
-            sb.append(value == null ? "" : value);
-        }
-        return sb.toString();
+        return createCompareStringRepresentation(CORE_ATTRIBUTES);
     }
 
     public String createToStringRepresentation() {

@@ -101,14 +101,7 @@ public class ReportData extends AbstractModelBase {
      * @return String to compare component patterns.
      */
     public String createCompareStringRepresentation() {
-        StringBuilder sb = new StringBuilder();
-        for (String attributeKey : CORE_ATTRIBUTES) {
-            if (sb.length() > 0) {
-                sb.append(":");
-            }
-            sb.append(get(attributeKey));
-        }
-        return sb.toString();
+        return createCompareStringRepresentation(CORE_ATTRIBUTES);
     }
 
     public String get(Attribute attribute, String defaultValue) {
