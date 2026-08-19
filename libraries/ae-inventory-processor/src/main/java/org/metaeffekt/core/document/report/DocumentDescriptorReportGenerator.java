@@ -223,13 +223,13 @@ public class DocumentDescriptorReportGenerator {
 
                 if (inventoryContext.getReferenceInventoryContext() != null) {
                     report.setReferenceInventory(inventoryContext.getReferenceInventoryContext().getInventory());
-                    String referenceComponentPath = inventoryContext.getReferenceInventoryContext().getComponentsPath();
-                    if (referenceComponentPath != null) {
-                        report.setReferenceComponentPath(referenceComponentPath);
+                    String referenceComponentsDir = inventoryContext.getReferenceInventoryContext().getComponentsPath();
+                    if (referenceComponentsDir != null) {
+                        report.setReferenceComponentsDir(referenceComponentsDir);
                     }
-                    String referenceLicensePath = inventoryContext.getReferenceInventoryContext().getLicensesPath();
-                    if (referenceLicensePath != null) {
-                        report.setReferenceLicensePath(referenceLicensePath);
+                    String referenceLicensesDir = inventoryContext.getReferenceInventoryContext().getLicensesPath();
+                    if (referenceLicensesDir != null) {
+                        report.setReferenceLicensesDir(referenceLicensesDir);
                     }
                 } else {
                     report.setReferenceInventory(inventoryContext.getInventory());
@@ -244,21 +244,29 @@ public class DocumentDescriptorReportGenerator {
                     String partSvgPath = String.format("../../%s/%s", mergedParams.get(GEN_PATH), documentPart.getIdentifier());
                     report.setReportPartSvgPath(partSvgPath);
                 }
-                if (mergedParams.get("referenceLicensePath") != null) {
-                    report.setReferenceLicensePath(mergedParams.get("referenceLicensePath"));
+                if (mergedParams.get("referenceLicensesDir") != null) {
+                    report.setReferenceLicensesDir(mergedParams.get("referenceLicensesDir"));
                 }
-                if (mergedParams.get("referenceComponentPath") != null) {
-                    report.setReferenceComponentPath(mergedParams.get("referenceComponentPath"));
+                if (mergedParams.get("referenceComponentsDir") != null) {
+                    report.setReferenceComponentsDir(mergedParams.get("referenceComponentsDir"));
                 }
-                if (mergedParams.get("targetLicenseDir") == null) {
-                    report.setTargetLicenseDir(new File(documentDescriptor.getTargetDocumentDir(), "licenses"));
+                if (mergedParams.get("targetLicensesDir") == null) {
+                    report.setTargetLicensesDir(new File(documentDescriptor.getTargetDocumentDir(), "licenses"));
                 } else {
-                    report.setTargetLicenseDir(new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetLicenseDir")));
+                    File targetLicensesDir = new File(mergedParams.get("targetLicensesDir"));
+                    if (!targetLicensesDir.isAbsolute()) {
+                        targetLicensesDir = new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetLicensesDir"));
+                    }
+                    report.setTargetLicensesDir(targetLicensesDir);
                 }
-                if (mergedParams.get("targetComponentDir") == null) {
-                    report.setTargetComponentDir(new File(documentDescriptor.getTargetDocumentDir(), "components"));
+                if (mergedParams.get("targetComponentsDir") == null) {
+                    report.setTargetComponentsDir(new File(documentDescriptor.getTargetDocumentDir(), "components"));
                 } else {
-                    report.setTargetComponentDir(new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetComponentDir")));
+                    File targetComponentsDir = new File(mergedParams.get("targetComponentsDir"));
+                    if (!targetComponentsDir.isAbsolute()) {
+                        targetComponentsDir = new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetComponentsDir"));
+                    }
+                    report.setTargetComponentsDir(targetComponentsDir);
                 }
 
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));

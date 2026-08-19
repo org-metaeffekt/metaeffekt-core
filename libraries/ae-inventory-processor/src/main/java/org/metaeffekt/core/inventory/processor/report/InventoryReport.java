@@ -92,12 +92,12 @@ public class InventoryReport {
     /**
      * Path to the component details. Relative to referenceInventoryDir.
      */
-    private String referenceComponentPath;
+    private String referenceComponentsDir;
 
     /**
      * Path to the license details. Relative to referenceInventoryDir.
      */
-    private String referenceLicensePath;
+    private String referenceLicensesDir;
 
     /**
      * The target path where to produce the reports.
@@ -123,12 +123,12 @@ public class InventoryReport {
     /**
      * The directory where components are aggregated.
      */
-    private File targetComponentDir;
+    private File targetComponentsDir;
 
     /**
      * The directory where licenses are aggregated.
      */
-    private File targetLicenseDir;
+    private File targetLicensesDir;
 
     /**
      * Project name initialized with default value.
@@ -143,7 +143,7 @@ public class InventoryReport {
      * This is the relative path as it will be used in the resulting dita templates. This needs
      * to be configured to match the relative path from the documentation to the licenses.
      */
-    private String relativeLicensePath = "licenses";
+    private String relativeLicensesDir = "licenses";
 
     private List<Artifact> addOnArtifacts;
 
@@ -785,7 +785,10 @@ public class InventoryReport {
     private boolean checkAndCopyLicenseFolder(String licenseFolderName, File targetDir,
                                               Set<String> reportedLicenseFolders) {
 
-        File sourceLicenseRootDir = new File(getGlobalInventoryDir(), referenceLicensePath);
+        File sourceLicenseRootDir = new File(referenceLicensesDir);
+        if (!sourceLicenseRootDir.isAbsolute()) {
+            sourceLicenseRootDir = new File(getGlobalInventoryDir(), referenceLicensesDir);
+        }
 
         File derivedFile = new File(sourceLicenseRootDir, licenseFolderName);
         if (derivedFile.exists()) {
@@ -812,7 +815,10 @@ public class InventoryReport {
     private boolean checkAndCopyComponentFolder(String componentFolderName, File targetDir,
                                                 Set<String> reportedLicenseFolders) {
 
-        File sourceComponentRootDir = new File(getGlobalInventoryDir(), referenceComponentPath);
+        File sourceComponentRootDir = new File(referenceComponentsDir);
+        if (!sourceComponentRootDir.isAbsolute()) {
+            sourceComponentRootDir = new File(getGlobalInventoryDir(), referenceComponentsDir);
+        }
 
         File derivedFile = new File(sourceComponentRootDir, componentFolderName);
         if (derivedFile.exists()) {
@@ -899,21 +905,21 @@ public class InventoryReport {
                     versionUnspecificComponentFolder : versionSpecificComponentFolder;
 
             // copy touched components to target component folder
-            if (targetComponentDir != null && referenceComponentPath != null) {
+            if (targetComponentsDir != null && referenceComponentsDir != null) {
                 missingFiles |= checkAndCopyComponentFolder(sourcePath,
-                        new File(targetComponentDir, targetPath), reportedSourceFolders);
+                        new File(targetComponentsDir, targetPath), reportedSourceFolders);
             }
 
             // now sort component folders into the effective license folders
-            if (targetLicenseDir != null) {
+            if (targetLicensesDir != null) {
                 final String[] effectiveLicenses = effectiveLicense.split("\\|");
                 for (String licenseInEffect : effectiveLicenses) {
                     final String effectiveLicenseFolderName = LicenseMetaData.deriveLicenseFolderName(licenseInEffect);
 
                     // in any case copy the license folder
-                    if (referenceLicensePath != null) {
+                    if (referenceLicensesDir != null) {
                         missingFiles |= checkAndCopyLicenseFolder(effectiveLicenseFolderName,
-                                new File(targetLicenseDir, effectiveLicenseFolderName), reportedSourceFolders);
+                                new File(targetLicensesDir, effectiveLicenseFolderName), reportedSourceFolders);
                     }
                 }
             }
@@ -999,15 +1005,15 @@ public class InventoryReport {
         log.debug("- Source/Target paths:");
         logConfigurationLogFile("referenceInventoryDir", referenceInventoryDir);
         logConfigurationLogToString("referenceInventoryIncludes", referenceInventoryIncludes);
-        logConfigurationLogToString("referenceComponentPath", referenceComponentPath);
-        logConfigurationLogToString("referenceLicensePath", referenceLicensePath);
+        logConfigurationLogToString("referenceComponentsDir", referenceComponentsDir);
+        logConfigurationLogToString("referenceLicensesDir", referenceLicensesDir);
         logConfigurationLogFile("targetReportDir", targetReportDir);
         logConfigurationLogFile("diffInventoryFile", diffInventoryFile);
         logConfigurationLogFile("targetInventoryDir", targetInventoryDir);
         logConfigurationLogToString("targetInventoryPath", targetInventoryPath);
-        logConfigurationLogFile("targetComponentDir", targetComponentDir);
-        logConfigurationLogFile("targetLicenseDir", targetLicenseDir);
-        logConfigurationLogToString("relativeLicensePath", relativeLicensePath);
+        logConfigurationLogFile("targetComponentsDir", targetComponentsDir);
+        logConfigurationLogFile("targetLicensesDir", targetLicensesDir);
+        logConfigurationLogToString("relativeLicensesDir", relativeLicensesDir);
 
         log.debug("- Validation fail flags:");
         log.debug(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", configParams.isFailOnError(), configParams.isFailOnBanned(), configParams.isFailOnDowngrade(), configParams.isFailOnUnknown(), configParams.isFailOnUnknownVersion(), configParams.isFailOnDevelopment(), configParams.isFailOnInternal());
