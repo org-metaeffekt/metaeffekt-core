@@ -15,21 +15,18 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.PyProjectUtils;
-import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.TomlParserFactory;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.PyProjectUtils;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractTomlParser;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.TomlParserFactory;
 import org.metaeffekt.core.inventory.processor.model.*;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.toml.TomlMapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -125,7 +122,7 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
 
                 return list;
             }
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             log.warn("Failure processing composer.lock file: [{}]", e.getMessage());
         }
 

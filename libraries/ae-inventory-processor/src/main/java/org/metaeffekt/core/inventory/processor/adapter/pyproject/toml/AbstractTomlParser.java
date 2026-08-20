@@ -15,9 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +23,15 @@ import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.LockFileParser;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.LockFileParserFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.toml.TomlMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Abstract class defining and providing shared methods for poetry and pdm file parsing.

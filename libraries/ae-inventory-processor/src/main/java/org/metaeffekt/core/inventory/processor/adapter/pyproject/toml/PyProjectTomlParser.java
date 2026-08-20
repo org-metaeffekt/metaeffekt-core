@@ -15,9 +15,9 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.LockFileParser;
+import tools.jackson.databind.JsonNode;
 
 import java.io.File;
 import java.io.IOException;

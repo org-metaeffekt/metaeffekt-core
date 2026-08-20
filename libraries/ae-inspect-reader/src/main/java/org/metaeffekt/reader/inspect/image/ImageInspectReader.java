@@ -15,18 +15,19 @@
  */
 package org.metaeffekt.reader.inspect.image;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.metaeffekt.reader.inspect.image.model.ImageInspectData;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Collection of static functions for reading docker (image) inspect output to java objects..
  */
 public class ImageInspectReader {
 
-    protected static ObjectMapper objectMapper = new ObjectMapper();
+    protected static ObjectMapper objectMapper = new JsonMapper();
 
     /**
      * Reads docker inspect json files and converts them to a list of inspection outputs.
@@ -45,7 +46,7 @@ public class ImageInspectReader {
         ImageInspectData inspects;
         try {
             inspects = objectMapper.readValue(file, ImageInspectData.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Encountered exception while reading [" + file.getName() + "]: " +
                     e.getMessage(), e);
         }

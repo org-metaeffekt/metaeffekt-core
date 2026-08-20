@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.pdm.PdmTomlParser;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.poetry.PoetryLegacyV1Parser;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.poetry.PoetryPep621Parser;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 
