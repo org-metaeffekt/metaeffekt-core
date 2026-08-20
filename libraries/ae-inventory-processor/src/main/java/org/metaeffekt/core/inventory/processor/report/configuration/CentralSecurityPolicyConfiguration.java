@@ -87,6 +87,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     private String epssSeverityRanges = CvssSeverityRanges.EPSS_SCORE_SEVERITY_RANGES.toString();
 
     /**
+     * Used to convert an exploitability score or label into a severity category for displaying in reports and dashboards.<p>
+     * Default: string value of {@link CvssSeverityRanges#EXPLOITABILITY_SEVERITY_RANGES}<p>
+     * Parsed property:<br>
+     * <code>String &rarr; CvssSeverityRanges</code>
+     */
+    private String exploitabilitySeverityRanges = CvssSeverityRanges.EXPLOITABILITY_SEVERITY_RANGES.toString();
+
+    /**
      * Specifies rules that are applied step by step to overlay several selected vectors from different sources to calculate a resulting vector.
      * This selector will provide the &ldquo;provided&rdquo; or &ldquo;base&rdquo; vectors.<br>
      * By default, this excludes user assessment vectors, only selecting provided vectors from external data sources, starting with the NVD and working its way through several other providers.<br>
@@ -295,6 +303,13 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @Getter @Setter
     private VulnerabilityPriorityScoreConfiguration priorityScoreConfiguration = new VulnerabilityPriorityScoreConfiguration();
 
+    /**
+     * Defines rules and criteria for assigning an exploitability label to a vulnerability.<br>
+     * These rules sequentially evaluate indicators like CVSS vector components, EPSS scores, and KEV presence.
+     */
+    @Getter @Setter
+    private List<ExploitabilityLabelConfiguration> exploitability = ExploitabilityLabelConfiguration.DEFAULT;
+
     public CentralSecurityPolicyConfiguration setCvssSeverityRanges(String cvssSeverityRanges) {
         if (cvssSeverityRanges != null) {
             this.cvssSeverityRanges = cvssSeverityRanges;
@@ -337,6 +352,20 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public CvssSeverityRanges getEpssScoreSeverityRanges() {
         return super.accessCachedProperty("epssSeverityRanges", this.epssSeverityRanges, CvssSeverityRanges::new);
+    }
+
+    public CentralSecurityPolicyConfiguration setExploitabilitySeverityRanges(String exploitabilitySeverityRanges) {
+        this.exploitabilitySeverityRanges = exploitabilitySeverityRanges;
+        return this;
+    }
+
+    public CentralSecurityPolicyConfiguration setExploitabilitySeverityRanges(CvssSeverityRanges exploitabilitySeverityRanges) {
+        this.exploitabilitySeverityRanges = exploitabilitySeverityRanges.toString();
+        return this;
+    }
+
+    public CvssSeverityRanges getExploitabilitySeverityRanges() {
+        return super.accessCachedProperty("exploitabilitySeverityRanges", this.exploitabilitySeverityRanges, CvssSeverityRanges::new);
     }
 
     public CentralSecurityPolicyConfiguration setInitialCvssSelector(JSONObject initialCvssSelector) {
@@ -459,6 +488,29 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         }
         if (this.epssSeverityRanges == null) {
             misconfigurations.add(new ProcessMisconfiguration("epssSeverityRanges", "EPSS score severity ranges must not be null"));
+        }
+
+        if (this.exploitabilitySeverityRanges == null) {
+            misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Must not be null"));
+        } else if (StringUtils.isEmpty(this.exploitabilitySeverityRanges)) {
+            misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Must not be empty"));
+        }
+
+        if (this.exploitability == null) {
+            misconfigurations.add(new ProcessMisconfiguration("exploitability", "Must not be null"));
+        } else {
+            if (StringUtils.isNotEmpty(this.exploitabilitySeverityRanges)) {
+                final CvssSeverityRanges ranges = this.getExploitabilitySeverityRanges();
+                final Set<String> ruleLabels = this.exploitability.stream()
+                        .map(ExploitabilityLabelConfiguration::getLabel)
+                        .collect(Collectors.toSet());
+
+                for (CvssSeverityRanges.SeverityRange range : ranges.getRanges()) {
+                    if (!ruleLabels.contains(range.getName())) {
+                        misconfigurations.add(new ProcessMisconfiguration("exploitability", "Must contain rules for all defined ranges. Missing rule for: " + range.getName()));
+                    }
+                }
+            }
         }
 
         if (this.cvssVersionSelectionPolicy == null || this.cvssVersionSelectionPolicy.isEmpty()) {

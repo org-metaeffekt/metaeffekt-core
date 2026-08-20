@@ -59,6 +59,53 @@ public class InventoryReportAdapter {
         }
     }
 
+    public List<Artifact> sortArtifactsByComponent(Collection<Artifact> artifacts) {
+        if (artifacts == null) {
+            return Collections.emptyList();
+        }
+        List<Artifact> sorted = new ArrayList<>(artifacts);
+        sorted.sort(Comparator.comparing((Artifact a) -> a.getComponent() == null ? "" : a.getComponent().toLowerCase())
+                .thenComparing(a -> a.getId() == null ? "" : a.getId().toLowerCase()));
+        return sorted;
+    }
+
+    public List<List<Artifact>> groupArtifactsByComponent(Collection<Artifact> artifacts) {
+        if (artifacts == null) {
+            return Collections.emptyList();
+        }
+        Map<String, List<Artifact>> grouped = new LinkedHashMap<>();
+        for (Artifact artifact : sortArtifactsByComponent(artifacts)) {
+            String component = artifact.getComponent() == null ? "" : artifact.getComponent();
+            grouped.computeIfAbsent(component, k -> new ArrayList<>()).add(artifact);
+        }
+        return new ArrayList<>(grouped.values());
+    }
+
+    public List<Artifact> sortArtifactsByComponentAndVersion(Collection<Artifact> artifacts) {
+        if (artifacts == null) {
+            return Collections.emptyList();
+        }
+        List<Artifact> sorted = new ArrayList<>(artifacts);
+        sorted.sort(Comparator.comparing((Artifact a) -> a.getComponent() == null ? "" : a.getComponent().toLowerCase())
+                .thenComparing(a -> a.getVersion() == null ? "" : a.getVersion().toLowerCase())
+                .thenComparing(a -> a.getId() == null ? "" : a.getId().toLowerCase()));
+        return sorted;
+    }
+
+    public List<List<Artifact>> groupArtifactsByComponentAndVersion(Collection<Artifact> artifacts) {
+        if (artifacts == null) {
+            return Collections.emptyList();
+        }
+        Map<String, List<Artifact>> grouped = new LinkedHashMap<>();
+        for (Artifact artifact : sortArtifactsByComponentAndVersion(artifacts)) {
+            String component = artifact.getComponent() == null ? "" : artifact.getComponent();
+            String version = artifact.getVersion() == null ? "" : artifact.getVersion();
+            String key = component + "||" + version;
+            grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(artifact);
+        }
+        return new ArrayList<>(grouped.values());
+    }
+
     /**
      * Complex type to enable different required terms categories to be differentiated.
      */
