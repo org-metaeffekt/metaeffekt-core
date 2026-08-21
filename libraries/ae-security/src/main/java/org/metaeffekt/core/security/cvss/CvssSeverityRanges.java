@@ -107,9 +107,9 @@ public class CvssSeverityRanges {
         private final int index;
 
         private SeverityRange(String input, int index) {
-            Matcher matcher = RANGE_PATTERN.matcher(input);
+            final Matcher matcher = RANGE_PATTERN.matcher(input);
             if (!matcher.matches()) {
-                throw new IllegalArgumentException("Range pattern does not match format [NAME:COLOR:FLOOR:CEIL] in " + input);
+                throw new IllegalArgumentException("Range pattern does not match format [NAME:COLOR:FLOOR:CEIL] or [NAME:COLOR] in " + input);
             }
 
             this.name = matcher.group(1).trim();
@@ -118,16 +118,24 @@ public class CvssSeverityRanges {
                 throw new IllegalArgumentException("Range color unknown in [" + input + "]. available colors are [" + getAvailableColors() + "]");
             }
 
-            final String floorStr = matcher.group(3).trim();
-            final String ceilStr = matcher.group(4).trim();
-            this.floor = StringUtils.isEmpty(floorStr) ? -Double.MAX_VALUE : Double.parseDouble(floorStr);
-            this.ceil = StringUtils.isEmpty(ceilStr) ? Double.MAX_VALUE : Double.parseDouble(ceilStr);
+            final String rawFloor = matcher.group(3);
+            final String rawCeil = matcher.group(4);
 
-            if (floorStr.isEmpty() && ceilStr.isEmpty()) {
-                throw new IllegalArgumentException("Both floor and ceil cannot be empty in [" + input + "]");
-            }
-            if (this.floor > this.ceil) {
-                throw new IllegalArgumentException("Range floor [" + this.floor + "] must be smaller than range ceil [" + this.ceil + "] in [" + input + "]");
+            if (rawFloor != null && rawCeil != null) {
+                final String floorStr = rawFloor.trim();
+                final String ceilStr = rawCeil.trim();
+                this.floor = StringUtils.isEmpty(floorStr) ? -Double.MAX_VALUE : Double.parseDouble(floorStr);
+                this.ceil = StringUtils.isEmpty(ceilStr) ? Double.MAX_VALUE : Double.parseDouble(ceilStr);
+
+                if (floorStr.isEmpty() && ceilStr.isEmpty()) {
+                    throw new IllegalArgumentException("Both floor and ceil cannot be empty in [" + input + "]");
+                }
+                if (this.floor > this.ceil) {
+                    throw new IllegalArgumentException("Range floor [" + this.floor + "] must be smaller than range ceil [" + this.ceil + "] in [" + input + "]");
+                }
+            } else {
+                this.floor = -Double.MAX_VALUE;
+                this.ceil = Double.MAX_VALUE;
             }
 
             this.index = index;
@@ -157,7 +165,7 @@ public class CvssSeverityRanges {
             return index;
         }
 
-        private final static Pattern RANGE_PATTERN = Pattern.compile("([^:]+):([^:]+):([^:]*):([^:]*)");
+        private final static Pattern RANGE_PATTERN = Pattern.compile("([^:]+):([^:]+)(?::([^:]*):([^:]*))?");
 
         @Override
         public int compareTo(SeverityRange o) {
@@ -166,6 +174,9 @@ public class CvssSeverityRanges {
 
         @Override
         public String toString() {
+            if (floor == -Double.MAX_VALUE && ceil == Double.MAX_VALUE) {
+                return String.format("%s:%s", name, color.getCssRootName());
+            }
             return String.format("%s:%s:%s:%s",
                     name,
                     color.getCssRootName(),
@@ -207,6 +218,12 @@ public class CvssSeverityRanges {
                     "≤0.01:pastel-gray::0.01"
     );
 
+    public static final CvssSeverityRanges EXPLOITABILITY_SEVERITY_RANGES = new CvssSeverityRanges(
+            "Evident:strong-red," +
+                    "Unconfirmed:strong-yellow," +
+                    "Not Evident:pastel-gray," +
+                    "Undefined:strong-dark"
+    );
 
     private static String getAvailableColors() {
         StringJoiner colors = new StringJoiner(", ");
