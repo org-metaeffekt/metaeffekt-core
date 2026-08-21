@@ -223,18 +223,20 @@ public class DocumentDescriptorReportGenerator {
 
                 if (inventoryContext.getReferenceInventoryContext() != null) {
                     report.setReferenceInventory(inventoryContext.getReferenceInventoryContext().getInventory());
-                    report.setReferenceComponentPath(inventoryContext.getReferenceInventoryContext().getComponentsPath());
-                    report.setReferenceLicensePath(inventoryContext.getReferenceInventoryContext().getLicensesPath());
-
+                    String referenceComponentsDir = inventoryContext.getReferenceInventoryContext().getComponentsPath();
+                    if (referenceComponentsDir != null) {
+                        report.setReferenceComponentsDir(referenceComponentsDir);
+                    }
+                    String referenceLicensesDir = inventoryContext.getReferenceInventoryContext().getLicensesPath();
+                    if (referenceLicensesDir != null) {
+                        report.setReferenceLicensesDir(referenceLicensesDir);
+                    }
                 } else {
                     report.setReferenceInventory(inventoryContext.getInventory());
                 }
                 report.setInventory(inventoryContext.getInventory());
 
-                // these fields were originally part of DocumentDescriptorReportContext, however we decided that these seem
-                // to be default values that we do not need to change for different DocumentDescriptors, thus we set them here
-                report.setReferenceComponentPath("components");
-                report.setReferenceLicensePath("licenses");
+
 
                 // the genPath specifies, where the SVGs are generated, it is relative to the targetDocumentDir of the document,
                 // the InventoryReport however requires this path to be relative to its local targetReportDir (e.g. <targetDocumentDir>/parts/<partName>)
@@ -242,23 +244,29 @@ public class DocumentDescriptorReportGenerator {
                     String partSvgPath = String.format("../../%s/%s", mergedParams.get(GEN_PATH), documentPart.getIdentifier());
                     report.setReportPartSvgPath(partSvgPath);
                 }
-                if (mergedParams.get("referenceLicensePath") != null) {
-                    report.setReferenceLicensePath(mergedParams.get("referenceLicensePath"));
+                if (mergedParams.get("referenceLicensesDir") != null) {
+                    report.setReferenceLicensesDir(mergedParams.get("referenceLicensesDir"));
                 }
-                if (mergedParams.get("referenceComponentPath") != null) {
-                    report.setReferenceComponentPath(mergedParams.get("referenceComponentPath"));
+                if (mergedParams.get("referenceComponentsDir") != null) {
+                    report.setReferenceComponentsDir(mergedParams.get("referenceComponentsDir"));
                 }
-                if (mergedParams.get("LicensesDir") == null) {
-                    report.setTargetLicenseDir(new File("license"));
-                    log.info("used default targetLicensesDir as 'license'");
+                if (mergedParams.get("targetLicensesDir") == null) {
+                    report.setTargetLicensesDir(new File(documentDescriptor.getTargetDocumentDir(), "licenses"));
                 } else {
-                    report.setTargetLicenseDir(new File(mergedParams.get("targetLicensesDir")));
+                    File targetLicensesDir = new File(mergedParams.get("targetLicensesDir"));
+                    if (!targetLicensesDir.isAbsolute()) {
+                        targetLicensesDir = new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetLicensesDir"));
+                    }
+                    report.setTargetLicensesDir(targetLicensesDir);
                 }
-                if (mergedParams.get("targetComponentDir") == null) {
-                    report.setTargetComponentDir(new File("component"));
-                    log.info("used default targetComponentDir as 'component'");
+                if (mergedParams.get("targetComponentsDir") == null) {
+                    report.setTargetComponentsDir(new File(documentDescriptor.getTargetDocumentDir(), "components"));
                 } else {
-                    report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
+                    File targetComponentsDir = new File(mergedParams.get("targetComponentsDir"));
+                    if (!targetComponentsDir.isAbsolute()) {
+                        targetComponentsDir = new File(documentDescriptor.getTargetDocumentDir(), mergedParams.get("targetComponentsDir"));
+                    }
+                    report.setTargetComponentsDir(targetComponentsDir);
                 }
 
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));

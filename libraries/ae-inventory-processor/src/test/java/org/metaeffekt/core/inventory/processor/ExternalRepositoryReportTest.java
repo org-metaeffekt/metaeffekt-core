@@ -105,17 +105,17 @@ public class ExternalRepositoryReportTest {
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
-        report.setReferenceLicensePath("licenses");
-        report.setReferenceComponentPath("components");
+        report.setReferenceLicensesDir("licenses");
+        report.setReferenceComponentsDir("components");
         report.setInventory(InventoryUtils.readInventory(inventoryDir, "*.xlsx"));
         report.setTargetReportDir(new File(reportDir, "report"));
 
         reportDir.mkdirs();
 
         final File targetLicensesDir = new File(reportDir, "licenses");
-        final File targetComponentDir = new File(reportDir, "components");
-        report.setTargetLicenseDir(targetLicensesDir);
-        report.setTargetComponentDir(targetComponentDir);
+        final File targetComponentsDir = new File(reportDir, "components");
+        report.setTargetLicensesDir(targetLicensesDir);
+        report.setTargetComponentsDir(targetComponentsDir);
 
         report.setTargetInventoryDir(reportDir);
         report.setTargetInventoryPath("result.xls");

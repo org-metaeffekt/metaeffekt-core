@@ -1,0 +1,12 @@
+#macro(formatArtifactGroup $artifactGroup)
+#set($addEmptyLine=false)
+#foreach($artifact in $artifactGroup)
+#if($addEmptyLine)<lines><line>&nbsp;</line></lines>#end
+#if($artifact.getGroupId())<lines><line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
+<line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>
+#else
+<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
+#end
+#set($addEmptyLine=true)
+#end
+#end
