@@ -54,8 +54,8 @@ public class DocumentPartTest {
 
         DocumentPart vulnerabilityReportPart = new DocumentPart("test", contexts, DocumentPartType.VULNERABILITY_REPORT, partParams);
         DocumentPart annexPart = new DocumentPart("test", contexts, DocumentPartType.ANNEX, partParams);
-        parts.add(vulnerabilityReportPart);
         parts.add(annexPart);
+        parts.add(vulnerabilityReportPart);
 
         Map<String, String> documentParams = new HashMap<>();
         documentParams.put("targetLicensesDir", "test");
