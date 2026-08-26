@@ -51,13 +51,13 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * Location of components relative to the sourceInventoryDir.
      */
     @Parameter(required = true, defaultValue = "components")
-    private String sourceComponentPath;
+    private String sourceComponentsDir;
 
     /**
      * Location of licenses relative to the sourceInventoryDir.
      */
     @Parameter(required = true, defaultValue = "licenses")
-    private String sourceLicensePath;
+    private String sourceLicensesDir;
 
     @Parameter(defaultValue = "${project.build.directory}/inventory")
     private File targetInventoryDir;
@@ -141,13 +141,13 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private File targetReportDir;
 
     @Parameter
-    private File targetLicenseDir;
+    private File targetLicensesDir;
 
     @Parameter
-    private File targetComponentDir;
+    private File targetComponentsDir;
 
     @Parameter(defaultValue = "licenses")
-    private String relativeLicensePath;
+    private String relativeLicensesDir;
 
     @Parameter
     private List<Artifact> addOnArtifacts;
@@ -232,14 +232,14 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         // source inventory settings
         report.setReferenceInventoryDir(sourceInventoryDir);
         report.setReferenceInventoryIncludes(sourceInventoryIncludes);
-        report.setReferenceLicensePath(sourceLicensePath);
-        report.setReferenceComponentPath(sourceComponentPath);
+        report.setReferenceLicensesDir(sourceLicensesDir);
+        report.setReferenceComponentsDir(sourceComponentsDir);
 
         // target inventory settings
         report.setTargetInventoryDir(targetInventoryDir);
         report.setTargetInventoryPath(targetInventoryPath);
-        report.setTargetLicenseDir(targetLicenseDir);
-        report.setTargetComponentDir(targetComponentDir);
+        report.setTargetLicensesDir(targetLicensesDir);
+        report.setTargetComponentsDir(targetComponentsDir);
 
         // vulnerability settings
         final CentralSecurityPolicyConfiguration activeSecurityPolicy = this.securityPolicy.loadConfiguration();
@@ -259,7 +259,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
         report.setTargetReportDir(targetReportDir);
 
-        report.setRelativeLicensePath(relativeLicensePath);
+        report.setRelativeLicensesDir(relativeLicensesDir);
 
         report.setAddOnArtifacts(addOnArtifacts);
 

@@ -34,12 +34,12 @@ public class AnnexResourceProcessorTest {
         Inventory referenceInventory = reader.readInventory(new File(resourceDir, "inventory/artifact-inventory-01.xls"));
         ReportConfigurationParameters configParams = ReportConfigurationParameters.builder().build();
         File referenceInventoryDir = new File (resourceDir);
-        String referenceComponentPath = "components";
-        String referenceLicensePath = "licenses";
-        File targetComponentDir = new File("target/license-resource-processor/inventory/components");
-        File targetLicenseDir = new File("target/license-resource-processor/inventory/licenses");
+        String referenceComponentsDir = "components";
+        String referenceLicensesDir = "licenses";
+        File targetComponentsDir = new File("target/license-resource-processor/inventory/components");
+        File targetLicensesDir = new File("target/license-resource-processor/inventory/licenses");
 
-        AnnexResourceProcessor processor = new AnnexResourceProcessor(inventory, referenceInventory, configParams, referenceInventoryDir, referenceComponentPath, referenceLicensePath, targetComponentDir, targetLicenseDir);
+        AnnexResourceProcessor processor = new AnnexResourceProcessor(inventory, referenceInventory, configParams, referenceInventoryDir, referenceComponentsDir, referenceLicensesDir, targetComponentsDir, targetLicensesDir);
         processor.execute();
     }
 }

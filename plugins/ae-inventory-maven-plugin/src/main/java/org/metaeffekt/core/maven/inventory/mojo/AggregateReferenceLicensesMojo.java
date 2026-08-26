@@ -41,16 +41,16 @@ public class AggregateReferenceLicensesMojo extends AbstractProjectAwareConfigur
     private String referenceInventoryIncludes;
 
     @Parameter(defaultValue = "../components")
-    private String referenceComponentPath;
+    private String referenceComponentsDir;
 
     @Parameter(defaultValue = "../licenses")
-    private String referenceLicensePath;
+    private String referenceLicensesDir;
 
     @Parameter
-    private File targetComponentDir;
+    private File targetComponentsDir;
 
     @Parameter
-    private File targetLicenseDir;
+    private File targetLicensesDir;
 
     @Parameter(defaultValue = "true")
     private boolean failOnMissingLicenseFile;
@@ -63,24 +63,24 @@ public class AggregateReferenceLicensesMojo extends AbstractProjectAwareConfigur
         }
 
         // check if the path is null, empty, or contains an unexpanded Maven placeholder
-        if (isInvalidPath(targetComponentDir)) {
+        if (isInvalidPath(targetComponentsDir)) {
             File defaultDir = new File(getProject().getBuild().getDirectory(), "inventory/components");
             getLog().warn("Target component directory is not set or invalid. Falling back to: " + defaultDir);
-            this.targetComponentDir = defaultDir;
+            this.targetComponentsDir = defaultDir;
         }
 
-        if (isInvalidPath(targetLicenseDir)) {
+        if (isInvalidPath(targetLicensesDir)) {
             File defaultDir = new File(getProject().getBuild().getDirectory(), "inventory/licenses");
             getLog().warn("Target license directory is not set or invalid. Falling back to: " + defaultDir);
-            this.targetLicenseDir = defaultDir;
+            this.targetLicensesDir = defaultDir;
         }
 
         // sanitize reference paths (ensure they aren't "${...}")
-        if (isInvalidString(referenceComponentPath)) {
-            this.referenceComponentPath = "components";
+        if (isInvalidString(referenceComponentsDir)) {
+            this.referenceComponentsDir = "components";
         }
-        if (isInvalidString(referenceLicensePath)) {
-            this.referenceLicensePath = "licenses";
+        if (isInvalidString(referenceLicensesDir)) {
+            this.referenceLicensesDir = "licenses";
         }
 
         try {
@@ -93,8 +93,8 @@ public class AggregateReferenceLicensesMojo extends AbstractProjectAwareConfigur
 
             AnnexResourceProcessor processor = new AnnexResourceProcessor(
                     inventory, referenceInventory, configParams,
-                    referenceInventoryDir, referenceComponentPath, referenceLicensePath,
-                    targetComponentDir, targetLicenseDir
+                    referenceInventoryDir, referenceComponentsDir, referenceLicensesDir,
+                    targetComponentsDir, targetLicensesDir
             );
 
             boolean success = processor.execute();

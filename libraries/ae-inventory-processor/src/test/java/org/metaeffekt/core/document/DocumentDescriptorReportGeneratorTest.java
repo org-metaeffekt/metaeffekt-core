@@ -55,7 +55,7 @@ public class DocumentDescriptorReportGeneratorTest {
 
         Map<String, String> documentParams = new HashMap<>();
         documentParams.put("targetLicensesDir", "");
-        documentParams.put("targetComponentDir", "");
+        documentParams.put("targetComponentsDir", "");
         String language = "en";
         String identifier = "test";
 

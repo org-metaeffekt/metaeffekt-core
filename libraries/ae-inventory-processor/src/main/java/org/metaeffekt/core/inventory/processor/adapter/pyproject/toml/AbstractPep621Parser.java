@@ -15,11 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 import java.util.*;
 
@@ -56,7 +56,7 @@ public abstract class AbstractPep621Parser extends AbstractTomlParser {
         }
 
         final Map<String, List<UnresolvedModule>> devDependenciesByGroupName = new LinkedHashMap<>();
-        groupsNode.fieldNames().forEachRemaining(groupName ->
+        groupsNode.propertyNames().iterator().forEachRemaining(groupName ->
                 devDependenciesByGroupName.put(groupName, extractPEP735DependencyGroup(groupsNode, groupName, new LinkedHashSet<>()))
         );
         return devDependenciesByGroupName;

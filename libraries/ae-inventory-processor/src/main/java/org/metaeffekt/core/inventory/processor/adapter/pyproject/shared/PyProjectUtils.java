@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.shared;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Collection;
 import java.util.Locale;
