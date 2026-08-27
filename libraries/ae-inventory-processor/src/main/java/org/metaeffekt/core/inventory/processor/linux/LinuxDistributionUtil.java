@@ -171,8 +171,6 @@ public class LinuxDistributionUtil {
         parseUsrBinOsRelease(distroBaseDir, linuxDistro);
         parseEtcOsRelease(distroBaseDir, linuxDistro);
 
-        //parseIssue(distroBaseDir, linuxDistro);
-
         parseSystemReleaseCpe(distroBaseDir, linuxDistro);
 
         // fallback option in case version id not available yet
@@ -260,27 +258,6 @@ public class LinuxDistributionUtil {
             }
         } catch (Exception e) {
             log.debug("Cannot parse [{}].", file.getAbsolutePath());
-        }
-    }
-
-    private static void parseIssue(File distroBaseDir, LinuxDistro linuxDistro) {
-        final File issueFile = new File(distroBaseDir, "etc/issue");
-        try {
-            if (issueFile.exists()) {
-                final String issue = FileUtils.readFileToString(issueFile, "UTF-8");
-
-                String issueExtract = issue.replace("Welcome to ", "");
-                issueExtract = issueExtract.replace("Kernel \\r on an \\m (\\l)", "");
-                issueExtract = issueExtract.replace("\\S\nKernel \\r on an \\m", "");
-                issueExtract = issueExtract.replace("Kernel \\r on an \\m", ""); // this line exists in the issue file in centos 6.9
-                issueExtract = issueExtract.replace(" \\n \\l", "");
-                issueExtract = issueExtract.replace(" - Kernel %r (%t).", "");
-                issueExtract = issueExtract.trim();
-
-                linuxDistro.issue = modulateValue(issueExtract, linuxDistro.issue);
-            }
-        } catch (Exception e) {
-            log.debug("Cannot parse [{}].", issueFile.getAbsolutePath());
         }
     }
 

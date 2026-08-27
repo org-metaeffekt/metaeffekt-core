@@ -107,8 +107,8 @@ public final class Constants {
     public static final String KEY_ISSUE = "Issue";
 
     public static final String KEY_ARCHIVE_PATH = "Archive Path";
-    public static final String KEY_DISTRO_NAME = "Distro Name";
-    public static final String KEY_DISTRO_VERSION = "Distro Version";
+    public static final String KEY_DISTRO_NAME = "Distro - Name";
+    public static final String KEY_DISTRO_VERSION = "Distro - Version";
 
     public static final String ARTIFACT_TYPE_DISTRO = "distro";
     public static final String ARTIFACT_TYPE_PACKAGE = "package";
