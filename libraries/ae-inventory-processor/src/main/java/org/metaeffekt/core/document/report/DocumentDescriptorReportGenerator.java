@@ -384,8 +384,15 @@ public class DocumentDescriptorReportGenerator {
                 builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
                 builder.inventoryVulnerabilityReportEnabled(true);
                 break;
+            case EXPLOITABILITY_REPORT:
+                builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
+                builder.inventoryExploitabilityReportEnabled(true);
+                break;
             case VULNERABILITY_STATISTICS_REPORT:
                 builder.inventoryVulnerabilityStatisticsReportEnabled(true);
+                break;
+            case EXPLOITABILITY_STATISTICS_REPORT:
+                builder.inventoryExploitabilityStatisticsReportEnabled(true);
                 break;
             case VULNERABILITY_SUMMARY_PART:
                 builder.inventoryVulnerabilityReportSummaryEnabled(true);
