@@ -583,7 +583,7 @@ public class InventoryReport {
                     TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_VULNERABILITY_STATISTICS_VULNERABILITY, reportContext);
         }
 
-        if (configParams.isInventoryVulnerabilityStatisticsReportEnabled()) {
+        if (configParams.isInventoryExploitabilityStatisticsReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_EXPLOITABILITY_STATISTICS_VULNERABILITY, reportContext);
         }
