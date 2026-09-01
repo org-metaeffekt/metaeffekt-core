@@ -200,6 +200,15 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     private final List<String> includeVulnerabilitiesWithAdvisoryReviewStatus = new ArrayList<>(Collections.singletonList("all"));
 
     /**
+     * Filters vulnerabilities based on their effective assessment status.<br>
+     * Compares the vulnerabilities' {@link VulnerabilityMetaData#ASSESSMENT_STATUSES} and removes those which possess an
+     * effective assessment which is not found in the configured list.
+     * This filter occurs during the <code>MergeAdvisorInventoriesMojo</code>
+     */
+    @Getter
+    private final List<String> includeVulnerabilitiesWithAssessmentStatus = new ArrayList<>(Collections.singletonList("any"));
+
+    /**
      * Filters vulnerabilities based on the provider of their security advisory.<br>
      * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
      * Each entry uses three keys: <code>src</code> (source/provider name), <code>impl</code> (implementation), and <code>st</code> (store: <code>sa</code> for security advisory).
@@ -511,6 +520,15 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                 misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryReviewStatus", "Advisory review status must not be null"));
             } else if (!CentralSecurityPolicyConfiguration.isAny(status) && !AdvisoryMetaData.ADVISORY_REVIEW_STATUS_VALUES.contains(status)) {
                 misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryReviewStatus", "Unknown advisory review status: " + status + ", must be a valid status from " + AdvisoryMetaData.ADVISORY_REVIEW_STATUS_VALUES + " or \"all\""));
+            }
+        }
+
+        for (String status : includeVulnerabilitiesWithAssessmentStatus) {
+            // must be valid status or any
+            if (status == null) {
+                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAssessmentStatus", "Assessment status must not be null"));
+            } else if (!CentralSecurityPolicyConfiguration.isAny(status) && !VulnerabilityMetaData.ASSESSMENT_STATUSES.contains(status)) {
+                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAssessmentStatus", "Unknown assessment status: " + status + ", must be a valid status from " + VulnerabilityMetaData.ASSESSMENT_STATUSES + " or \"any\""));
             }
         }
 
