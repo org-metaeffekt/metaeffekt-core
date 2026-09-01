@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 public class LinuxDistributionUtil {
 
     private static final Pattern CPE_PATTERN = Pattern.compile("cpe:/o:(.*?):.*?:(.*?):.*?$");
+    private static final List<String> VERSION_ID_KEYS = List.of("DEBIAN_VERSION_FULL", "VERSION_ID");
 
     public static final String ISSUE = "issue";
     public static final String ISSUE_NET = "issue.net";
@@ -55,7 +56,7 @@ public class LinuxDistributionUtil {
     /**
      * List all potential paths providing details on the linux distribution
      */
-    public static final String[] CONTEXT_PATHS = new String[] {
+    public static final String[] CONTEXT_PATHS = new String[]{
             "/etc/" + ISSUE, // consumed
             "/etc/" + ISSUE_NET, // open
 
@@ -170,8 +171,6 @@ public class LinuxDistributionUtil {
         parseUsrBinOsRelease(distroBaseDir, linuxDistro);
         parseEtcOsRelease(distroBaseDir, linuxDistro);
 
-        parseIssue(distroBaseDir, linuxDistro);
-
         parseSystemReleaseCpe(distroBaseDir, linuxDistro);
 
         // fallback option in case version id not available yet
@@ -262,29 +261,8 @@ public class LinuxDistributionUtil {
         }
     }
 
-    private static void parseIssue(File distroBaseDir, LinuxDistro linuxDistro) {
-        final File issueFile = new File(distroBaseDir, "etc/issue");
-        try {
-            if (issueFile.exists()) {
-                final String issue = FileUtils.readFileToString(issueFile, "UTF-8");
-
-                String issueExtract = issue.replace("Welcome to ", "");
-                issueExtract = issueExtract.replace("Kernel \\r on an \\m (\\l)", "");
-                issueExtract = issueExtract.replace("\\S\nKernel \\r on an \\m", "");
-                issueExtract = issueExtract.replace("Kernel \\r on an \\m", ""); // this line exists in the issue file in centos 6.9
-                issueExtract = issueExtract.replace(" \\n \\l", "");
-                issueExtract = issueExtract.replace(" - Kernel %r (%t).", "");
-                issueExtract = issueExtract.trim();
-
-                linuxDistro.issue = modulateValue(issueExtract, linuxDistro.issue);
-            }
-        } catch (Exception e) {
-            log.debug("Cannot parse [{}].", issueFile.getAbsolutePath());
-        }
-    }
-
     public static boolean applies(String pathInContext) {
-        pathInContext= "/" + pathInContext;
+        pathInContext = "/" + pathInContext;
         for (String contextPath : CONTEXT_PATHS) {
             if (pathInContext.endsWith(contextPath)) {
                 return true;
@@ -310,17 +288,35 @@ public class LinuxDistributionUtil {
 
         if (osReleaseFile.exists()) {
             final Properties properties = PropertiesUtils.loadPropertiesFile(osReleaseFile);
-            linuxDistro.issue = modulateValue(properties.getProperty("NAME"), linuxDistro.issue);
+            linuxDistro.issue = modulateValue(populateNameWithVersionCodename(properties), linuxDistro.issue);
             linuxDistro.version = modulateValue(properties.getProperty("VERSION"), linuxDistro.version);
 
             linuxDistro.id = modulateValue(properties.getProperty("ID"), linuxDistro.id);
-            linuxDistro.versionId = modulateValue(properties.getProperty("VERSION_ID"), linuxDistro.versionId);
+            linuxDistro.versionId = modulateValue(getVersionIdWithFallbacks(properties), linuxDistro.versionId);
 
             linuxDistro.cpe = modulateValue(properties.getProperty("CPE_NAME"), linuxDistro.cpe);
             linuxDistro.url = modulateValue(properties.getProperty("HOME_URL"), linuxDistro.url);
 
             linuxDistro.filePropertiesMap.put(path, properties);
         }
+    }
+
+    private static String populateNameWithVersionCodename(Properties properties) {
+        String name = properties.getProperty("NAME");
+        String versionCodename = properties.getProperty("VERSION_CODENAME");
+
+        return versionCodename != null ? name + " (" + versionCodename + ")" : name;
+    }
+
+    private static String getVersionIdWithFallbacks(Properties properties) {
+        for (final String versionKey : VERSION_ID_KEYS) {
+            final String versionId = properties.getProperty(versionKey);
+            if (!StringUtils.isBlank(versionId)) {
+                return versionId;
+            }
+        }
+        log.debug("No version id found in any of the fallback keys: {}", VERSION_ID_KEYS);
+        return null;
     }
 
     private static String modulateValue(String name, String currentValue) {
