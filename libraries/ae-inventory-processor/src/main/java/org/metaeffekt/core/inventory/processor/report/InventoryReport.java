@@ -67,7 +67,6 @@ public class InventoryReport {
 
     public static final String TEMPLATE_GROUP_ANNEX_REPORT = "annex-report";
     public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT = "vulnerability-report";
-    public static final String TEMPLATE_GROUP_EXPLOITABILITY_REPORT = "exploitability-report";
     public static final String TEMPLATE_GROUP_SUMMARY_REPORT = "summary-report";
     public static final String TEMPLATE_GROUP_VULNERABILITY_STATISTICS_VULNERABILITY = "vulnerability-statistics-report";
     public static final String TEMPLATE_GROUP_EXPLOITABILITY_STATISTICS_VULNERABILITY = "exploitability-statistics-report";
@@ -563,14 +562,9 @@ public class InventoryReport {
                     TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_ANNEX_REPORT, reportContext);
         }
 
-        if (configParams.isInventoryVulnerabilityReportEnabled()) {
+        if (configParams.isInventoryVulnerabilityReportEnabled() || configParams.isInventoryExploitabilityReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_VULNERABILITY_REPORT, reportContext);
-        }
-
-        if (configParams.isInventoryExploitabilityReportEnabled()) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_EXPLOITABILITY_REPORT, reportContext);
         }
 
         if (configParams.isInventoryVulnerabilityReportSummaryEnabled()) {

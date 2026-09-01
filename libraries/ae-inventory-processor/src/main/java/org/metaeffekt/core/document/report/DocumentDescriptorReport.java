@@ -240,11 +240,8 @@ public class DocumentDescriptorReport {
                     break;
 
                 case VULNERABILITY_REPORT:
-                    propertiesFilename = "vulnerability-report.properties";
-                    break;
-
                 case EXPLOITABILITY_REPORT:
-                    propertiesFilename = "exploitability-report.properties";
+                    propertiesFilename = "vulnerability-report.properties";
                     break;
 
                 case VULNERABILITY_SUMMARY_PART:

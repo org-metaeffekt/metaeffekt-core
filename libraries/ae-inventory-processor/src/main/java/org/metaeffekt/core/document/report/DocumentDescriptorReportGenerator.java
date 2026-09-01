@@ -439,6 +439,7 @@ public class DocumentDescriptorReportGenerator {
     private static void generateLabelSvgs(DocumentDescriptor documentDescriptor) throws IOException {
         final DocumentType documentType = documentDescriptor.getDocumentType();
         if (documentType != DocumentType.VULNERABILITY_REPORT &&
+                documentType != DocumentType.EXPLOITABILITY_REPORT &&
                 documentType != DocumentType.VULNERABILITY_STATISTICS_REPORT &&
                 documentType != DocumentType.PERIODIC_VULNERABILITY_REPORT &&
                 documentType != DocumentType.VULNERABILITY_SUMMARY_REPORT) {
