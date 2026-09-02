@@ -62,7 +62,7 @@ public class InventoryReport {
     public static final String TEMPLATES_GENERIC_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "_generic";
     private static final String TEMPLATES_REPORTS_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "reports";
 
-    private static final String TEMPLATES_TECHNICAL_BASE_DIR = "technical";
+    private static final String TEMPLATES_TECHNICAL_BASE_DIR = TEMPLATES_GENERIC_BASE_DIR + SEPARATOR_SLASH + "technical";
     public static final String TEMPLATE_GROUP_ASSESSMENT_LABELS = "assessment-labels";
 
     public static final String TEMPLATE_GROUP_ANNEX_REPORT = "annex-report";
