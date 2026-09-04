@@ -199,7 +199,7 @@ public class DocumentDescriptorReportGenerator {
 
             List<InventoryContext> contexts = documentPart.getInventoryContexts();
             if (documentPart.getDocumentPartType() == DocumentPartType.CONTEXT) {
-                // For parts like CONTEXT and PURPOSE that do not require an inventory
+                // For parts like CONTEXT that do not require an inventory
                 Map<String, String> mergedParams;
 
                 if (documentPart.getParams() != null && documentDescriptor.getParams() != null) {
