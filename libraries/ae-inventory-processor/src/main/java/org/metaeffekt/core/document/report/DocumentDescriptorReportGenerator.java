@@ -384,8 +384,15 @@ public class DocumentDescriptorReportGenerator {
                 builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
                 builder.inventoryVulnerabilityReportEnabled(true);
                 break;
+            case EXPLOITABILITY_REPORT:
+                builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
+                builder.inventoryExploitabilityReportEnabled(true);
+                break;
             case VULNERABILITY_STATISTICS_REPORT:
                 builder.inventoryVulnerabilityStatisticsReportEnabled(true);
+                break;
+            case EXPLOITABILITY_STATISTICS_REPORT:
+                builder.inventoryExploitabilityStatisticsReportEnabled(true);
                 break;
             case VULNERABILITY_SUMMARY_PART:
                 builder.inventoryVulnerabilityReportSummaryEnabled(true);
@@ -432,6 +439,7 @@ public class DocumentDescriptorReportGenerator {
     private static void generateLabelSvgs(DocumentDescriptor documentDescriptor) throws IOException {
         final DocumentType documentType = documentDescriptor.getDocumentType();
         if (documentType != DocumentType.VULNERABILITY_REPORT &&
+                documentType != DocumentType.EXPLOITABILITY_REPORT &&
                 documentType != DocumentType.VULNERABILITY_STATISTICS_REPORT &&
                 documentType != DocumentType.PERIODIC_VULNERABILITY_REPORT &&
                 documentType != DocumentType.VULNERABILITY_SUMMARY_REPORT) {
