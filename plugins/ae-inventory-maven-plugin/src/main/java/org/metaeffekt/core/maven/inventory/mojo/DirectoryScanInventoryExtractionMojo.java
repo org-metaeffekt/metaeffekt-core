@@ -97,7 +97,7 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
             // read reference inventory
             final Inventory sourceInventory = InventoryUtils.readInventory(sourceInventoryDir, sourceInventoryIncludes);
 
-            // initialize DirectoryInventoryScan instance to perfom scan
+            // initialize DirectoryInventoryScan instance to perform scan
             final DirectoryInventoryScan scan = new DirectoryInventoryScan(
                     inputDirectory, scanDirectory,
                     scanIncludes, scanExcludes,
