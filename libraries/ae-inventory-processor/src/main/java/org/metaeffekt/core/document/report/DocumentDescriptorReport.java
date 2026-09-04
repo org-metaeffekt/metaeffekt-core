@@ -247,10 +247,13 @@ public class DocumentDescriptorReport {
                 case VULNERABILITY_SUMMARY_REPORT:
                     break;
 
-                default:
-                    // enforce this list is completed for new part types
-                    throw new IllegalStateException("Unknown document part type. Cannot map properties.");
-            }
+                    case PURPOSE:
+                        break;
+
+                    default:
+                        // enforce this list is completed for new part types
+                        throw new IllegalStateException("Unknown document part type. Cannot map properties.");
+                }
 
             if (propertiesFilename != null) {
                 final File targetDir = new File(new File(targetReportDir, "parts"), documentPart.getIdentifier());
