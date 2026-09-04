@@ -38,7 +38,7 @@ public class LinuxDistributionUtilTest {
     public void test002() {
         File folder = new File("src/test/resources/component-pattern-contributor/linux-distro-002");
         LinuxDistributionUtil.LinuxDistro distro = LinuxDistributionUtil.parseDistro(folder);
-        Assertions.assertThat(distro.issue).isEqualTo("Debian GNU/Linux");
+        Assertions.assertThat(distro.issue).isEqualTo("Debian GNU/Linux (bullseye)");
         Assertions.assertThat(distro.version).isEqualTo("11.7");
         Assertions.assertThat(distro.id).isEqualTo("debian");
         Assertions.assertThat(distro.versionId).isEqualTo("11");

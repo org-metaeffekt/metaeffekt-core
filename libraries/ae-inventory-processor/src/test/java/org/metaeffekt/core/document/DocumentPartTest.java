@@ -59,7 +59,7 @@ public class DocumentPartTest {
 
         Map<String, String> documentParams = new HashMap<>();
         documentParams.put("targetLicensesDir", "test");
-        documentParams.put("targetComponentDir", "test");
+        documentParams.put("targetComponentsDir", "test");
         documentDescriptor.setDocumentParts(parts);
         documentDescriptor.setLanguage("en");
         documentDescriptor.setDocumentType(DocumentType.ANNEX);

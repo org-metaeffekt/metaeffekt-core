@@ -197,9 +197,14 @@ public class ComponentPatternProducer {
         // track used suppliers to not apply multiple times
         final Set<Object> consumedObjects = new HashSet<>();
 
+        // FIXME: this currently anticipates that we only get one linux distro at a time. In the future we may want to integrate this within the respective contributors
+        final MatchResult distroAssetMatchResult = componentPatterns.stream().filter(mr -> mr.componentPatternData.getContext().equals(LinuxDistributionAssetContributor.class.getName())).findFirst().orElse(null);
+        final String distroName = distroAssetMatchResult != null ? distroAssetMatchResult.componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_NAME) : null;
+        final String distroVersion = distroAssetMatchResult != null ? distroAssetMatchResult.componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION) : null;
+
         for (MatchResult matchResult : componentPatterns) {
 
-            final Artifact derivedArtifact = matchResult.deriveArtifact();
+            final Artifact derivedArtifact = matchResult.deriveArtifact(distroName, distroVersion);
             fileSystemScanContext.contribute(derivedArtifact);
 
             final Supplier<Inventory> expansionInventorySupplier =
@@ -228,17 +233,17 @@ public class ComponentPatternProducer {
                         if (!managedAssetId) {
                             artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
 
-                            if (assetId != null) {
+                            // set the asset id, only if the key is defined and we would not overwrite an
+                            // existing value (which may be more precise than a 'c' for contains
+                            if (assetId != null && artifact.get(assetId) == null) {
                                 artifact.set(assetId, Constants.MARKER_CONTAINS);
                             }
                         }
                         fileSystemScanContext.contribute(artifact);
                     }
-
                     consumedObjects.add(expansionInventorySupplier);
                 }
             }
-
         }
     }
 
@@ -619,6 +624,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new VersionFileComponentPatternContributor());
         contributorRunnerBuilder.add(new VersionedFolderComponentPatternContributor());
         contributorRunnerBuilder.add(new VersionFolderComponentPatternContributor());
+        contributorRunnerBuilder.add(new PyProjectComponentPatternContributor());
 
         return contributorRunnerBuilder.build();
     }

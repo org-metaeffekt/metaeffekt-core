@@ -1,0 +1,93 @@
+#parse("META-INF/templates/shared-macros/tpc_artifact-formatting.vm")
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_packages-$reportContext.id">
+    <title>$utils.getText("general.short.packages")</title>
+    <body>
+
+        #set($components=$inventory.evaluateComponentsInContext("package"))
+        #set($licensesInEffect=$inventory.evaluateLicenses(false))
+
+        #set($isSingleArtifactType = $inventory.hasSingleArtifactType())
+        #if ($isSingleArtifactType)
+            #if ($inventory.isFootnoteRequired($licensesInEffect, $inventory.getRepresentedLicenses($licensesInEffect)))
+                <fn id="represented-licenses-fn">$utils.getText("general.represented-licenses-footnote")</fn>
+            #end
+        #end
+
+
+        #if($components.isEmpty())
+        <p>$utils.getText("inventory-report-bom.no-individual-package")</p>
+        #else
+        <p>$utils.getText("inventory-report-bom.package-table-descr")</p>
+        <p>
+        <table otherprops="wide" id="table_packages">
+            <tgroup cols="3">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="$configParams.getReportEffectiveTableComponentColumnWidth()*" align="left"/>
+                <colspec colname="COLSPEC1" colnum="2" colwidth="$configParams.getReportEffectiveTableArtifactColumnWidth()*" align="left"/>
+                <colspec colname="COLSPEC2" colnum="3" colwidth="$configParams.getReportEffectiveTableLicenseColumnWidth()*" align="left"/>
+                <thead>
+                <row>
+                    <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.component")</entry>
+                    <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.packages")</entry>
+                    <entry colname="COLSPEC2" valign="top">$utils.getText(
+                        "inventory-report-bom.short.effective-licenses")</entry>
+                </row>
+                </thead>
+
+                <tbody>
+
+                    #foreach($component in $components)
+                        #set($artifactGroups=$inventory.evaluateComponent($component))
+                        #foreach($artifactGroup in $artifactGroups)
+                            #set($hasNotice=$inventory.hasNotice($component))
+                        <row>
+                            #if($hasNotice)
+                                <entry>
+                                    <xref href="tpc_inventory-component-license-details.dita#tpc_component_notice_$inventory.deriveLicenseId($component.name)"
+                                          type="topic">
+                                        $report.xmlEscapeComponentName($component.getOriginalComponentName())
+                                    </xref>
+                                </entry>
+                            #else
+                                <entry>$report.xmlEscapeComponentName($component.getOriginalComponentName())</entry>
+                            #end
+                          <entry>
+                              #formatArtifactGroup($artifactGroup)
+                          </entry>
+
+                            #set($effectiveLicenses=$inventory.getEffectiveLicensesForArtifactGroup($artifactGroup))
+                            #set($representedLicenses=$inventory.getRepresentedLicensesForArtifactGroup($effectiveLicenses))
+                            #set($representedLicensesInEffect=$inventory.getRepresentedLicenses($licensesInEffect))
+
+                            #if($representedLicenses.isEmpty())
+                                <entry>&nbsp;</entry>
+                            #else
+                                <entry>
+                                    #foreach($license in $representedLicenses)
+                                        #if($representedLicensesInEffect.contains($license))
+                                            #if ($inventoryReportAdapter.isRepresentedLicense($license))
+                                                <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>#if ($isSingleArtifactType)<xref href="#tpc_packages-$reportContext.id/represented-licenses-fn" type="fn"/>#else<xref href="tpc_inventory-bill-of-materials.dita#tpc_bom-$reportContext.id/represented-licenses-fn" type="fn"/>#end</lines>
+                                            #else
+                                                <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref></lines>
+                                            #end
+                                        #else
+                                            #if ($inventoryReportAdapter.isRepresentedLicense($license))
+                                                $report.xmlEscapeLicense($license)#if ($isSingleArtifactType)<xref href="#tpc_packages-$reportContext.id/represented-licenses-fn" type="fn"/>#else<xref href="tpc_inventory-bill-of-materials.dita#tpc_bom-$reportContext.id/represented-licenses-fn" type="fn"/>#end
+                                            #else
+                                                $report.xmlEscapeLicense($license)
+                                            #end
+                                        #end
+                                    #end
+                                </entry>
+                            #end
+                        </row>
+                        #end
+                    #end
+                </tbody>
+            </tgroup>
+        </table>
+        </p>
+        #end
+    </body>
+</topic>

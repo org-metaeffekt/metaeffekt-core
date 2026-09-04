@@ -179,8 +179,8 @@ public class RepositoryReportTest {
 
         report.setReferenceInventoryDir(inventoryDir);
         report.setReferenceInventoryIncludes(inventoryIncludes);
-        report.setReferenceLicensePath(LICENSES_PATH);
-        report.setReferenceComponentPath(COMPONENTS_PATH);
+        report.setReferenceLicensesDir(LICENSES_PATH);
+        report.setReferenceComponentsDir(COMPONENTS_PATH);
 
         report.setInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
 
@@ -192,9 +192,9 @@ public class RepositoryReportTest {
         targetReportPath.mkdirs();
 
         final File targetLicensesDir = new File(target, "licenses");
-        final File targetComponentDir = new File(target, "components");
-        report.setTargetLicenseDir(targetLicensesDir);
-        report.setTargetComponentDir(targetComponentDir);
+        final File targetComponentsDir = new File(target, "components");
+        report.setTargetLicensesDir(targetLicensesDir);
+        report.setTargetComponentsDir(targetComponentsDir);
         report.setTargetReportDir(targetReportPath);
 
         final boolean valid = report.createReport();
@@ -220,8 +220,8 @@ public class RepositoryReportTest {
 
         report.setReferenceInventoryDir(inventoryDir);
         report.setReferenceInventoryIncludes(inventoryIncludes);
-        report.setReferenceLicensePath(LICENSES_PATH);
-        report.setReferenceComponentPath(COMPONENTS_PATH);
+        report.setReferenceLicensesDir(LICENSES_PATH);
+        report.setReferenceComponentsDir(COMPONENTS_PATH);
         report.setInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
 
         PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
@@ -239,8 +239,8 @@ public class RepositoryReportTest {
         File noticeReport = new File(targetReportPath, "tpc_inventory-component-license-details.dita");
         File artifactReport = new File(targetReportPath, "tpc_inventory-artifact-report.dita");
 
-        report.setTargetLicenseDir(new File("licenses"));
-        report.setTargetComponentDir(new File("components"));
+        report.setTargetLicensesDir(new File("licenses"));
+        report.setTargetComponentsDir(new File("components"));
         report.setTargetReportDir(targetReportPath);
 
         final boolean valid = report.createReport();
@@ -292,8 +292,8 @@ public class RepositoryReportTest {
         report.setReferenceInventoryDir(referenceInventoryDir);
         report.setReferenceInventoryIncludes(referenceInventoryIncludes);
 
-        report.setReferenceLicensePath(new File(inventoryDir, "licenses").getAbsolutePath());
-        report.setReferenceComponentPath(new File(inventoryDir, "components").getAbsolutePath());
+        report.setReferenceLicensesDir(new File(inventoryDir, "licenses").getAbsolutePath());
+        report.setReferenceComponentsDir(new File(inventoryDir, "components").getAbsolutePath());
 
         report.setInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
 
@@ -308,9 +308,9 @@ public class RepositoryReportTest {
         reportTarget.mkdirs();
 
         final File targetLicensesDir = new File(reportTarget, "licenses");
-        final File targetComponentDir = new File(reportTarget, "components");
-        report.setTargetLicenseDir(targetLicensesDir);
-        report.setTargetComponentDir(targetComponentDir);
+        final File targetComponentsDir = new File(reportTarget, "components");
+        report.setTargetLicensesDir(targetLicensesDir);
+        report.setTargetComponentsDir(targetComponentsDir);
 
         report.setTargetInventoryDir(reportTarget);
         report.setTargetInventoryPath("result.xls");

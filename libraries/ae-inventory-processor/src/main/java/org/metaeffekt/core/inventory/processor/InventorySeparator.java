@@ -100,6 +100,18 @@ public class InventorySeparator {
                 filter(AssetMetaData::isPrimary)
                 .collect(Collectors.toList());
 
+        primaryAssets.sort(Comparator.comparingInt(asset -> {
+            String reportOrder = asset.get(AssetMetaData.Attribute.REPORT_ORDER);
+            if (reportOrder == null || reportOrder.trim().isEmpty()) {
+                return Integer.MAX_VALUE;
+            }
+            try {
+                return Integer.parseInt(reportOrder.trim());
+            } catch (NumberFormatException e) {
+                return Integer.MAX_VALUE;
+            }
+        }));
+
         final RelationshipRegistry relationshipRegistry = new RelationshipRegistry();
         relationshipRegistry.buildFromInventory(inventory);
 

@@ -87,6 +87,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     private String epssSeverityRanges = CvssSeverityRanges.EPSS_SCORE_SEVERITY_RANGES.toString();
 
     /**
+     * Used to convert an exploitability score or label into a severity category for displaying in reports and dashboards.<p>
+     * Default: string value of {@link CvssSeverityRanges#EXPLOITABILITY_SEVERITY_RANGES}<p>
+     * Parsed property:<br>
+     * <code>String &rarr; CvssSeverityRanges</code>
+     */
+    private String exploitabilitySeverityRanges = CvssSeverityRanges.EXPLOITABILITY_SEVERITY_RANGES.toString();
+
+    /**
      * Specifies rules that are applied step by step to overlay several selected vectors from different sources to calculate a resulting vector.
      * This selector will provide the &ldquo;provided&rdquo; or &ldquo;base&rdquo; vectors.<br>
      * By default, this excludes user assessment vectors, only selecting provided vectors from external data sources, starting with the NVD and working its way through several other providers.<br>
@@ -200,6 +208,15 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     private final List<String> includeVulnerabilitiesWithAdvisoryReviewStatus = new ArrayList<>(Collections.singletonList("all"));
 
     /**
+     * Filters vulnerabilities based on their effective assessment status.<br>
+     * Compares the vulnerabilities' {@link VulnerabilityMetaData#ASSESSMENT_STATUSES} and removes those which possess an
+     * effective assessment which is not found in the configured list.
+     * This filter occurs during the <code>MergeAdvisorInventoriesMojo</code>
+     */
+    @Getter
+    private final List<String> includeVulnerabilitiesWithAssessmentStatus = new ArrayList<>(Collections.singletonList("any"));
+
+    /**
      * Filters vulnerabilities based on the provider of their security advisory.<br>
      * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
      * Each entry uses three keys: <code>src</code> (source/provider name), <code>impl</code> (implementation), and <code>st</code> (store: <code>sa</code> for security advisory).
@@ -278,6 +295,13 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @Getter @Setter
     private VulnerabilityPriorityScoreConfiguration priorityScoreConfiguration = new VulnerabilityPriorityScoreConfiguration();
 
+    /**
+     * Defines rules and criteria for assigning an exploitability label to a vulnerability.<br>
+     * These rules sequentially evaluate indicators like CVSS vector components, EPSS scores, and KEV presence.
+     */
+    @Getter @Setter
+    private List<ExploitabilityLabelConfiguration> exploitability = ExploitabilityLabelConfiguration.DEFAULT;
+
     public CentralSecurityPolicyConfiguration setCvssSeverityRanges(String cvssSeverityRanges) {
         if (cvssSeverityRanges != null) {
             this.cvssSeverityRanges = cvssSeverityRanges;
@@ -320,6 +344,20 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public CvssSeverityRanges getEpssScoreSeverityRanges() {
         return super.accessCachedProperty("epssSeverityRanges", this.epssSeverityRanges, CvssSeverityRanges::new);
+    }
+
+    public CentralSecurityPolicyConfiguration setExploitabilitySeverityRanges(String exploitabilitySeverityRanges) {
+        this.exploitabilitySeverityRanges = exploitabilitySeverityRanges;
+        return this;
+    }
+
+    public CentralSecurityPolicyConfiguration setExploitabilitySeverityRanges(CvssSeverityRanges exploitabilitySeverityRanges) {
+        this.exploitabilitySeverityRanges = exploitabilitySeverityRanges.toString();
+        return this;
+    }
+
+    public CvssSeverityRanges getExploitabilitySeverityRanges() {
+        return super.accessCachedProperty("exploitabilitySeverityRanges", this.exploitabilitySeverityRanges, CvssSeverityRanges::new);
     }
 
     public CentralSecurityPolicyConfiguration setInitialCvssSelector(JSONObject initialCvssSelector) {
@@ -435,6 +473,29 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             misconfigurations.add(new ProcessMisconfiguration("epssSeverityRanges", "EPSS score severity ranges must not be null"));
         }
 
+        if (this.exploitabilitySeverityRanges == null) {
+            misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Must not be null"));
+        } else if (StringUtils.isEmpty(this.exploitabilitySeverityRanges)) {
+            misconfigurations.add(new ProcessMisconfiguration("exploitabilitySeverityRanges", "Must not be empty"));
+        }
+
+        if (this.exploitability == null) {
+            misconfigurations.add(new ProcessMisconfiguration("exploitability", "Must not be null"));
+        } else {
+            if (StringUtils.isNotEmpty(this.exploitabilitySeverityRanges)) {
+                final CvssSeverityRanges ranges = this.getExploitabilitySeverityRanges();
+                final Set<String> ruleLabels = this.exploitability.stream()
+                        .map(ExploitabilityLabelConfiguration::getLabel)
+                        .collect(Collectors.toSet());
+
+                for (CvssSeverityRanges.SeverityRange range : ranges.getRanges()) {
+                    if (!ruleLabels.contains(range.getName())) {
+                        misconfigurations.add(new ProcessMisconfiguration("exploitability", "Must contain rules for all defined ranges. Missing rule for: " + range.getName()));
+                    }
+                }
+            }
+        }
+
         if (this.cvssVersionSelectionPolicy == null || this.cvssVersionSelectionPolicy.isEmpty()) {
             misconfigurations.add(new ProcessMisconfiguration("cvssVersionSelectionPolicy", "CVSS version selection policy must not be null or empty"));
         }
@@ -511,6 +572,15 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                 misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryReviewStatus", "Advisory review status must not be null"));
             } else if (!CentralSecurityPolicyConfiguration.isAny(status) && !AdvisoryMetaData.ADVISORY_REVIEW_STATUS_VALUES.contains(status)) {
                 misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryReviewStatus", "Unknown advisory review status: " + status + ", must be a valid status from " + AdvisoryMetaData.ADVISORY_REVIEW_STATUS_VALUES + " or \"all\""));
+            }
+        }
+
+        for (String status : includeVulnerabilitiesWithAssessmentStatus) {
+            // must be valid status or any
+            if (status == null) {
+                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAssessmentStatus", "Assessment status must not be null"));
+            } else if (!CentralSecurityPolicyConfiguration.isAny(status) && !VulnerabilityMetaData.ASSESSMENT_STATUSES.contains(status)) {
+                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAssessmentStatus", "Unknown assessment status: " + status + ", must be a valid status from " + VulnerabilityMetaData.ASSESSMENT_STATUSES + " or \"any\""));
             }
         }
 

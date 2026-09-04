@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors.cargo;
 
-import com.fasterxml.jackson.dataformat.toml.TomlMapper;
+import tools.jackson.dataformat.toml.TomlMapper;
 
 import java.io.File;
 import java.io.IOException;

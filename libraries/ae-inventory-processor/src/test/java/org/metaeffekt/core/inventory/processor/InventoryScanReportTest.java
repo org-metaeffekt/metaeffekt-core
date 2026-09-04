@@ -96,8 +96,8 @@ public class InventoryScanReportTest {
 
         report.setReferenceInventoryDir(new File("XXX/inventory/src/main/resources"));
         report.setReferenceInventoryIncludes("**/*.xls");
-        report.setReferenceComponentPath("XXX/inventory/src/main/resources/components");
-        report.setReferenceLicensePath("XXX/inventory/src/main/resources/licenses");
+        report.setReferenceComponentsDir("XXX/inventory/src/main/resources/components");
+        report.setReferenceLicensesDir("XXX/inventory/src/main/resources/licenses");
 
         final File inputDir = new File("XXX/target/contents");
         final File scanDir = new File("XXX/target/bomscan");

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_asset-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+
+    <!-- FIXME: streamline title generation with tpc_inventory-asset.dita.vt -->
+#set($assetTitlePrefix = $utils.getText("inventory-report-bom.short.asset"))
+#if("$!inventoryReportAdapter.inventoryAssetPrefix" != "")
+    #set($assetTitlePrefix = $inventoryReportAdapter.inventoryAssetPrefix)
+#elseif($inventoryReportAdapter.inventoryAssetPrefix == "")
+    #set($assetTitlePrefix = "")
+#end
+    <title>$reportContext.combinedTitle($assetTitlePrefix, false)#if($reportContext && $reportContext.getReportInventoryVersion()) $report.xmlEscapeString($reportContext.getReportInventoryVersion())#end</title>
+    <body>
+    <p>
+        $utils.getText("inventory-report-bom.asset")
+    </p>
+
+    </body>
+</topic>

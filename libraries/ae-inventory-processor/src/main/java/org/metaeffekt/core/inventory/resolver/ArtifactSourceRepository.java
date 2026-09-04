@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.resolver;
 
+import lombok.Getter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.io.File;
@@ -24,19 +25,14 @@ import java.io.File;
  * {@link ArtifactSourceRepository} has a {@link SourceArchiveResolver} that abstracts the resolution of the source
  * archives.
  */
+@Getter
 public class ArtifactSourceRepository extends ArtifactPatternMatcher {
 
     private String id;
 
-    private String targetFolder;
-
     private SourceArchiveResolver sourceArchiveResolver;
 
     private boolean ignoreMatches;
-
-    public String getId() {
-        return id;
-    }
 
     public void setId(String id) {
         this.id = id;
@@ -44,31 +40,15 @@ public class ArtifactSourceRepository extends ArtifactPatternMatcher {
 
     public SourceArchiveResolverResult resolveSourceArchive(Artifact artifact, File targetDir) {
         if (sourceArchiveResolver != null) {
-            File effectiveTargetDir = new File(targetDir, targetFolder);
-            return sourceArchiveResolver.resolveArtifactSourceArchive(artifact, effectiveTargetDir);
+            return sourceArchiveResolver.resolveArtifactSourceArchive(artifact, targetDir);
         }
         return new SourceArchiveResolverResult();
-    }
-
-    public SourceArchiveResolver getSourceArchiveResolver() {
-        return sourceArchiveResolver;
     }
 
     public void setSourceArchiveResolver(SourceArchiveResolver sourceArchiveResolver) {
         this.sourceArchiveResolver = sourceArchiveResolver;
     }
 
-    public String getTargetFolder() {
-        return targetFolder;
-    }
-
-    public void setTargetFolder(String targetFolder) {
-        this.targetFolder = targetFolder;
-    }
-
-    public boolean isIgnoreMatches() {
-        return ignoreMatches;
-    }
 
     public void setIgnoreMatches(boolean ignoreMatches) {
         this.ignoreMatches = ignoreMatches;

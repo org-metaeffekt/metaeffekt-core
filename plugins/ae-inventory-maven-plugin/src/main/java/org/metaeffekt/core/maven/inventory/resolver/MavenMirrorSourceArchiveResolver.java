@@ -58,7 +58,9 @@ public class MavenMirrorSourceArchiveResolver implements SourceArchiveResolver {
             artifact.deriveArtifactId();
 
             attemptResolveMavenRepo(artifact, "sources", result);
-            attemptResolveMavenRepo(artifact, "source", result);
+            if (result.isEmpty()) {
+                attemptResolveMavenRepo(artifact, "source", result);
+            }
         }
 
         return result;

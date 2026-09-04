@@ -1,0 +1,236 @@
+/*
+ * Copyright 2009-2026 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.metaeffekt.core.inventory.processor.patterns.contributors;
+
+import lombok.extern.slf4j.Slf4j;
+import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
+import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.PyProjectUtils;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractTomlParser;
+import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.TomlParserFactory;
+import org.metaeffekt.core.inventory.processor.model.*;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.toml.TomlMapper;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
+import static org.metaeffekt.core.util.FileUtils.asRelativePath;
+
+@Slf4j
+public class PyProjectComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<>() {{
+        add("pyproject.toml");
+    }});
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
+    }
+
+    @Override
+    public boolean applies(String pathInContext) {
+        return suffixes.stream().anyMatch(pathInContext::endsWith);
+    }
+
+    @Override
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
+        final File contextBaseDir = anchorFile.getParentFile();
+        final String anchorRelPath = asRelativePath(contextBaseDir, anchorFile);
+
+        try {
+
+            // the main anchor
+            if (relativeAnchorPath.endsWith(".toml")) {
+                final List<ComponentPatternData> list = new ArrayList<>();
+
+                final File pyProjectToml = new File(baseDir, relativeAnchorPath);
+                final ObjectMapper objectMapper = new TomlMapper();
+                final JsonNode pyProjectRootNode = objectMapper.readTree(pyProjectToml);
+
+                final AbstractTomlParser parser = new TomlParserFactory().getParser(pyProjectRootNode);
+                if (parser == null) {
+                    log.info("Unsupported pyproject.toml format: {}", pyProjectToml.getAbsolutePath());
+                    return null;
+                }
+
+                final PyProjectData pyProjectData = parser.parse(pyProjectToml, pyProjectRootNode);
+                final ResolvedModule projectModule = pyProjectData.getProjectModule();
+                final List<UnresolvedModule> directDevelopmentDependencies = pyProjectData.getDirectDevelopmentDependencies();
+                final List<UnresolvedModule> directRuntimeDependencies = pyProjectData.getDirectRuntimeDependencies();
+                final List<ResolvedModule> resolvedModules = pyProjectData.getResolvedModulesFromLockFile();
+
+                // here we have the
+                // - a resolve project level-module
+                // - unresolved direct dependencies
+                // - all known resolved dependencies with their unresolved transitives
+
+                // we want to
+                // - create an inventory with artifacts representing the resolved modules
+                // - direct development dependencies are marked with 'd' for project-level module
+                // - indirect development dependencies are marked with '(d)' for project-level module
+                // - direct runtime dependencies are marked with 'r' for project-level module
+                // - indirect runtime dependencies are marked with '(r)' for project-level module
+
+                final Map<String, ResolvedModule> nameToResolvedModuleMap = new HashMap<>();
+                for (final ResolvedModule resolvedModule : resolvedModules) {
+                    nameToResolvedModuleMap.put(PyProjectUtils.normalizePackageName(resolvedModule.getName()), resolvedModule);
+                }
+
+                final Map<String, Artifact> nameToArtifactMap = new HashMap<>();
+                final String projectAssetId = "AID-" + projectModule.deriveQualifier();
+
+                // NOTE: here transitive development dependencies are starting from a direct dev dependencies and then uses transitive runtime deps
+                final List<UnresolvedModule> indirectDevelopmentDependencies = extractIndirectDependencies(directDevelopmentDependencies, nameToResolvedModuleMap, ResolvedModule::getRuntimeDependencies);
+                contributeDependencies(indirectDevelopmentDependencies, "(d)", projectAssetId, nameToArtifactMap, nameToResolvedModuleMap, relativeAnchorPath);
+                contributeDependencies(directDevelopmentDependencies, "d", projectAssetId, nameToArtifactMap, nameToResolvedModuleMap, relativeAnchorPath);
+
+                final List<UnresolvedModule> indirectRuntimeDependencies = extractIndirectDependencies(directRuntimeDependencies, nameToResolvedModuleMap, ResolvedModule::getRuntimeDependencies);
+                contributeDependencies(indirectRuntimeDependencies, "(r)", projectAssetId, nameToArtifactMap, nameToResolvedModuleMap, relativeAnchorPath);
+                contributeDependencies(directRuntimeDependencies, "r", projectAssetId, nameToArtifactMap, nameToResolvedModuleMap, relativeAnchorPath);
+
+                final Inventory inventory = new Inventory();
+                inventory.getArtifacts().addAll(nameToArtifactMap.values());
+                ComponentPatternData cpd = createComponentPatternData(inventory, projectModule, anchorRelPath, anchorChecksum, parser.getIncludePattern());
+                list.add(cpd);
+
+                return list;
+            }
+        } catch (JacksonException | IOException e) {
+            log.warn("Failure processing composer.lock file: [{}]", e.getMessage());
+        }
+
+        return Collections.emptyList();
+
+    }
+
+    private List<UnresolvedModule> extractIndirectDependencies(List<UnresolvedModule> seedDependencies, Map<String, ResolvedModule> resolvedModules, Function<ResolvedModule, Map<String, UnresolvedModule>> supplier) {
+        final Stack<UnresolvedModule> stack = new Stack<>();
+        seedDependencies.forEach(stack::push);
+
+        final List<UnresolvedModule> indirectDependencies = new ArrayList<>();
+        while (!stack.isEmpty()) {
+            final UnresolvedModule unresolvedModule = stack.pop();
+
+            final ResolvedModule resolvedModule = resolvedModules.get(PyProjectUtils.normalizePackageName(unresolvedModule.getName()));
+            if (resolvedModule == null) {
+                log.warn("Unable to resolve module [{}].", unresolvedModule.getName());
+                continue;
+            }
+
+            final Map<String, UnresolvedModule> transitiveRuntimeDependenciesByName = supplier.apply(resolvedModule);
+            if (transitiveRuntimeDependenciesByName == null) {
+                continue;
+            }
+            if (!new HashSet<>(indirectDependencies).containsAll(transitiveRuntimeDependenciesByName.values())) {
+                for (Map.Entry<String, UnresolvedModule> dependency : transitiveRuntimeDependenciesByName.entrySet()) {
+                    final UnresolvedModule module = dependency.getValue();
+                    indirectDependencies.add(module);
+                    stack.push(module);
+                }
+            }
+        }
+
+        return indirectDependencies;
+    }
+
+    private void contributeDependencies(List<UnresolvedModule> dependencies, String dependencyType,
+                                        String projectAssetId, Map<String, Artifact> nameToArtifactMap,
+                                        Map<String, ResolvedModule> nameToResolvedModuleMap, String relativePath) {
+        for (UnresolvedModule module : dependencies) {
+            final String name = module.getName();
+            final ResolvedModule resolvedModule = nameToResolvedModuleMap.get(PyProjectUtils.normalizePackageName(name));
+
+            if (resolvedModule == null) {
+                log.warn("Cannot find resolved module for module name [{}]. Skipping.", name);
+                continue;
+            }
+
+            Artifact artifact = nameToArtifactMap.get(resolvedModule.getName());
+            if (artifact == null) {
+                artifact = createArtifact(resolvedModule, relativePath, name);
+                nameToArtifactMap.put(name, artifact);
+            }
+            artifact.set(projectAssetId, dependencyType);
+        }
+    }
+
+    private Artifact createArtifact(ResolvedModule resolvedModule, String relativePath, String name) {
+        final Artifact artifact = new Artifact();
+        final String version = resolvedModule.getVersion();
+        final PyProjectPackageSource pyProjectPackageSource = resolvedModule.getPyProjectPackageSource();
+
+        artifact.setId(name + "-" + version);
+        artifact.setVersion(version);
+        artifact.setComponent(name);
+
+        if (pyProjectPackageSource != null && !pyProjectPackageSource.urls().isEmpty()) {
+            artifact.set(KEY_PACKAGE_SOURCE_URL, String.join(",", pyProjectPackageSource.urls()));
+        }
+        artifact.set(KEY_PACKAGE_FILES, String.valueOf(resolvedModule.getPyProjectPackageFiles()));
+        artifact.set(Constants.KEY_PATH_IN_ASSET, relativePath + "[" + name + "]");
+
+        // we cannot add a root path; there is no physical file that is part of the module
+        // artifact.set(KEY_ROOT_PATHS, relativePath);
+
+        artifact.set(KEY_TYPE, ARTIFACT_TYPE_MODULE);
+        artifact.set(KEY_COMPONENT_SOURCE_TYPE, "python-module");
+
+        artifact.set(KEY_PURL, buildPurl(name, version));
+        return artifact;
+    }
+
+    private ComponentPatternData createComponentPatternData(Inventory inventory, ResolvedModule projectModule, String anchorRelPath, String anchorChecksum, String includePattern) {
+        final ComponentPatternData cpd = new ComponentPatternData();
+
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, anchorRelPath);
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
+
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, projectModule.getName());
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, projectModule.getVersion());
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, projectModule.deriveQualifier());
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART_PATH, anchorRelPath);
+
+        cpd.set(ComponentPatternData.Attribute.TYPE, ARTIFACT_TYPE_APPLICATION);
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "python-application");
+
+        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
+
+        cpd.setExpansionInventorySupplier(() -> inventory);
+        return cpd;
+    }
+
+    private String buildPurl(String name, String version) {
+        // first we have to handle that the name should not be case sensitive and underscore should be replaced by dash
+        // see: https://github.com/package-url/purl-spec/blob/master/PURL-TYPES.rst#pypi
+        name = name.toLowerCase(Locale.ENGLISH).replace("_", "-");
+        return "pkg:pypi/" + name + "@" + version;
+    }
+
+}

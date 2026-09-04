@@ -22,10 +22,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
-import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
@@ -39,6 +36,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.TYPE;
+import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PACKAGE_FILES;
+import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PACKAGE_SOURCE_URL;
 
 @Slf4j
 public class DirectoryInventoryScanTest {
@@ -221,7 +222,7 @@ public class DirectoryInventoryScanTest {
     /**
      * Test to scan an external folder.
      *
-     * @throws IOException
+     * @throws IOException if an error I/O occurs
      */
     @Disabled
     @Test
@@ -236,7 +237,7 @@ public class DirectoryInventoryScanTest {
         final File projectBaseDir = new File("../../.examples");
 
         // select case
-        String caseString = "case-005";
+        String caseString = "case-2026-07-08_001";
 
         final File scanInputDir = new File(projectBaseDir, caseString);
         final File scanDir = new File(projectBaseDir, caseString + "-scan");
@@ -274,6 +275,104 @@ public class DirectoryInventoryScanTest {
         if (executeAggregation) {
             aggregateArchives(scanDir, filteredTargetScanInventoryFile, referenceInventoryDir, targetAggregationInventoryFile, targetAggregationDir);
         }
+    }
+
+    /**
+     * Test to scan a pyproject directory with poetry file and check for case specific attributes.
+     *
+     * @throws IOException if an error occurs during directory handling
+     */
+    @Disabled
+    @Test
+    public void testScanExternalFolder_PyProjectPoetry() throws IOException {
+        // input
+        final File projectBaseDir = new File("../../.examples");
+
+        // select case
+        String caseString = "case-2026-07-17_001";
+
+        final File scanInputDir = new File(projectBaseDir, caseString);
+        final File scanDir = new File(projectBaseDir, caseString + "-scan");
+
+        // other sources
+        final File referenceInventoryDir = new File(projectBaseDir, "reference/inventory");
+
+        // scan
+        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
+
+        // check artifacts and collect their attributes
+        final Set<String> artifactAttributes = new HashSet<>();
+        List<Artifact> artifacts = inventory.getArtifacts();
+        artifacts.forEach(artifact -> artifactAttributes.addAll(artifact.getAttributes()));
+
+        // assert artifacts have package files and package source url headers
+        assertTrue(artifactAttributes.contains(KEY_PACKAGE_FILES));
+        assertTrue(artifactAttributes.contains(KEY_PACKAGE_SOURCE_URL));
+    }
+
+    /**
+     * Test to scan a pyproject directory with pdm file and check for case specific attributes.
+     *
+     * @throws IOException if an error occurs during directory handling
+     */
+    @Disabled
+    @Test
+    public void testScanExternalFolder_PyProjectPdm() throws IOException {
+        // input
+        final File projectBaseDir = new File("../../.examples");
+
+        // select case
+        String caseString = "case-2026-07-22_001";
+
+        final File scanInputDir = new File(projectBaseDir, caseString);
+        final File scanDir = new File(projectBaseDir, caseString + "-scan");
+
+        // other sources
+        final File referenceInventoryDir = new File(projectBaseDir, "reference/inventory");
+
+        // scan
+        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
+
+        // check artifacts and collect their attributes
+        final Set<String> artifactHeaders = new HashSet<>();
+        List<Artifact> artifacts = inventory.getArtifacts();
+        artifacts.forEach(artifact -> artifactHeaders.addAll(artifact.getAttributes()));
+
+        // assert artifacts have package files
+        assertTrue(artifactHeaders.contains(KEY_PACKAGE_FILES));
+    }
+
+
+    /**
+     * Test to scan an alpine distro container directory and check for distro name and version.
+     *
+     * @throws IOException if an error occurs during directory handling
+     */
+    @Disabled
+    @Test
+    public void testScanExternalFolder_ApineDistroNameAndVersion() throws IOException {
+        // input
+        final File projectBaseDir = new File("../../.examples");
+
+        // select case
+        String caseString = "case-2026-08-11_001";
+
+        final File scanInputDir = new File(projectBaseDir, caseString);
+        final File scanDir = new File(projectBaseDir, caseString + "-scan");
+
+        // other sources
+        final File referenceInventoryDir = new File(projectBaseDir, "reference/inventory");
+
+        // scan
+        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
+
+        // check artifacts and collect their attributes
+        List<Artifact> artifacts = inventory.getArtifacts();
+
+        // assert artifacts have package files
+        List<Artifact> packageOrDistroArtifacts = artifacts.stream().filter(a->List.of(Constants.ARTIFACT_TYPE_PACKAGE, Constants.ARTIFACT_TYPE_DISTRO).contains(a.get(TYPE))).toList();
+        packageOrDistroArtifacts.forEach(a->assertTrue(a.getAttributes().containsAll(List.of(Constants.KEY_DISTRO_NAME, Constants.KEY_DISTRO_VERSION))));
+        log.info("Found [{}] distro/pakcage artifacts having a distro name and version", packageOrDistroArtifacts.size());
     }
 
     @Disabled
@@ -316,22 +415,22 @@ public class DirectoryInventoryScanTest {
     }
 
     private static Inventory scan(File referenceInventoryDir, File scanInputDir, File scanDir, String... postScanExcludes) throws IOException {
-        String[] scanIncludes = new String[] {
+        String[] scanIncludes = new String[]{
                 "**/*"
         };
-        String[] scanExcludes = new String[] {
-                "**/.DS_Store", "**/._*" ,
+        String[] scanExcludes = new String[]{
+                "**/.DS_Store", "**/._*",
                 "**/.git/**/*", "**/.git*", "**/.git*",
 
                 "**/.bundle/cache/compact_index/rubygems.org*/**/*",
                 "**/.bundle/cache/compact_index/rubygems.org*"
         };
 
-        String[] unwrapIncludes = new String[] {
+        String[] unwrapIncludes = new String[]{
                 "**/*"
         };
 
-        String[] unwrapExcludes = new String[] {
+        String[] unwrapExcludes = new String[]{
                 // suffixed known to be non-structural
                 "**/*.js.gz", "**/*.js.map.gz", "**/*.css.gz",
                 "**/*.css.map.gz", "**/*.svg.gz", "**/*.json.gz",
