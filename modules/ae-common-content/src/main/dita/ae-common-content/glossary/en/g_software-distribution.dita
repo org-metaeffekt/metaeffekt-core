@@ -9,7 +9,7 @@
         different characteristics. A software distribution can be converted for instance by an executable file, an
         archive or a file system image.
         <p>
-            See also: <abbreviated-form keyref="provider"/>, <abbreviated-form keyref="recipient"/>
+            See also: <i><xref keyref="provider">Provider</xref></i>, <i><xref keyref="recipient">Recipient</xref></i>
         </p>
     </glossdef>
     <glossBody>

@@ -10,7 +10,7 @@
          (<i>provider</i>), is also a recipient in the supply chain and is dependent on supplies from other providers
          (<i>supplier</i>).
         <p>
-            See also: <abbreviated-form keyref="recipient"/>, <abbreviated-form keyref="software-distribution"/>
+            See also: <i><xref keyref="recipient">Recipient</xref></i>, <i><xref keyref="software-distribution">Software Distribution</xref></i>
         </p>
     </glossdef>
     <glossBody>
