@@ -134,7 +134,6 @@ public class InventoryReportAdapter {
      * categories.
      *
      * @param canonicalNames List of canonical names identifying a license or generic terms.
-     *
      * @return A {@link TermsCategorization} instance carrying the categorized data.
      */
     public TermsCategorization categorizeTerms(List<String> canonicalNames) {
@@ -242,4 +241,13 @@ public class InventoryReportAdapter {
         return ""; // everything else is treated as blank
     }
 
+    public static String truncateString(String string, int length) {
+        if (string != null && string.length() <= length) {
+            return string;
+        } else if (string != null) {
+            return string.substring(0, length - 3) + "...";
+        } else {
+            return "null";
+        }
+    }
 }
