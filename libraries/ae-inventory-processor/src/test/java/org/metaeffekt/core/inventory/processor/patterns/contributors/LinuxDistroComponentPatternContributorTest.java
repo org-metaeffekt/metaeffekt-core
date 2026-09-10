@@ -53,7 +53,7 @@ public class LinuxDistroComponentPatternContributorTest {
 
         final ComponentPatternData cpd = cpdList.get(0);
         Assertions.assertThat(cpd.get(COMPONENT_PART)).isEqualTo("debian-11");
-        Assertions.assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("Debian GNU/Linux");
+        Assertions.assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("Debian GNU/Linux (bullseye)");
         Assertions.assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("11");
     }
 

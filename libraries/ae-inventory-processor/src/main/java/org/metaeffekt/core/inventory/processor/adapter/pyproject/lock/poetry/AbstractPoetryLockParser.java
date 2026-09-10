@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.poetry;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.AbstractLockFileParser;
 import org.metaeffekt.core.inventory.processor.model.PyProjectPackageSource;
+import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;

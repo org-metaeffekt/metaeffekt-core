@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.TYPE;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PACKAGE_FILES;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PACKAGE_SOURCE_URL;
 
@@ -339,6 +340,39 @@ public class DirectoryInventoryScanTest {
 
         // assert artifacts have package files
         assertTrue(artifactHeaders.contains(KEY_PACKAGE_FILES));
+    }
+
+
+    /**
+     * Test to scan an alpine distro container directory and check for distro name and version.
+     *
+     * @throws IOException if an error occurs during directory handling
+     */
+    @Disabled
+    @Test
+    public void testScanExternalFolder_ApineDistroNameAndVersion() throws IOException {
+        // input
+        final File projectBaseDir = new File("../../.examples");
+
+        // select case
+        String caseString = "case-2026-08-11_001";
+
+        final File scanInputDir = new File(projectBaseDir, caseString);
+        final File scanDir = new File(projectBaseDir, caseString + "-scan");
+
+        // other sources
+        final File referenceInventoryDir = new File(projectBaseDir, "reference/inventory");
+
+        // scan
+        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
+
+        // check artifacts and collect their attributes
+        List<Artifact> artifacts = inventory.getArtifacts();
+
+        // assert artifacts have package files
+        List<Artifact> packageOrDistroArtifacts = artifacts.stream().filter(a->List.of(Constants.ARTIFACT_TYPE_PACKAGE, Constants.ARTIFACT_TYPE_DISTRO).contains(a.get(TYPE))).toList();
+        packageOrDistroArtifacts.forEach(a->assertTrue(a.getAttributes().containsAll(List.of(Constants.KEY_DISTRO_NAME, Constants.KEY_DISTRO_VERSION))));
+        log.info("Found [{}] distro/pakcage artifacts having a distro name and version", packageOrDistroArtifacts.size());
     }
 
     @Disabled

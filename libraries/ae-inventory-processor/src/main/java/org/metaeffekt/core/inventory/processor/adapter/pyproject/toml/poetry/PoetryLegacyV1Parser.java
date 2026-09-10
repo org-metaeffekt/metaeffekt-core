@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.poetry;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractTomlParser;
+import tools.jackson.databind.JsonNode;
 
 import java.io.File;
 import java.io.IOException;

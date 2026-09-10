@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter.pyproject.lock.poetry;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 
