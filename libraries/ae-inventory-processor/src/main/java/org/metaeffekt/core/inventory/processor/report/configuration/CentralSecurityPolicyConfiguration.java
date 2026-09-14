@@ -264,7 +264,9 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      */
     @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
     private String vulnerabilityRepresentationProviderPriority = new JSONArray()
-            .put(new JSONObject().put("src", "CVE").put("impl", "*").put("st", "vu")).toString();
+            .put(new JSONObject().put("src", "NVD").put("impl", "CVE").put("st", "vu"))
+            .put(new JSONObject().put("src", "EUVD").put("impl", "EUVD").put("st", "vu"))
+            .toString();
 
     /**
      * Used by the <code>AbstractInventoryReportCreationMojo</code> in all the vulnerability PDF report generations.<br>
