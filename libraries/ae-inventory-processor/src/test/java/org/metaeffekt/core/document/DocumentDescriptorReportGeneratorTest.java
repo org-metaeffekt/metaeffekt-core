@@ -36,6 +36,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.metaeffekt.core.inventory.InventoryUtils.readInventory;
 
 @Slf4j
 public class DocumentDescriptorReportGeneratorTest {
@@ -237,6 +238,35 @@ public class DocumentDescriptorReportGeneratorTest {
 
         File labelsDir = new File(targetReportDir, "resources/svg/labels");
         assertTrue(labelsDir.exists(), "Labels directory should exist for VULNERABILITY_SUMMARY_REPORT");
+    }
+
+    @Test
+    public void testIntermediateBookMapForMultiAsset () throws IOException {
+        File targetReportDir = new File("target/test-document-descriptor-report-generator/intermediate-bookmap-test");
+        File inventoryDir = new File("src/test/resources/document-descriptor/intermediate-bookmap-test");
+
+        Inventory inventory = readInventory(inventoryDir, "*.xlsx");
+        InventoryContext inventoryContext = new InventoryContext(inventory, "test", "testReportContext", null, null);
+        ArrayList<InventoryContext> inventoryContexts = new ArrayList<>();
+        inventoryContexts.add(inventoryContext);
+
+        Map<String, String> partParams = new HashMap<>();
+        DocumentPartType partType = DocumentPartType.ANNEX;
+        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
+        documentParts.add(documentPart);
+
+        documentDescriptor.setDocumentParts(documentParts);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
+        documentDescriptor.setDocumentType(DocumentType.ANNEX);
+
+        documentDescriptorReportGenerator.generate(documentDescriptor);
+
+        File expectedFile01 = new File(targetReportDir, "parts/test/map_test.ditamap");
+        assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
+        File expectedFile02 = new File(targetReportDir, "parts/test-AID-Project-I-AssetGroup-A_2_0-Asset-AA_1_0/map_test-AID-Project-I-AssetGroup-A_2_0-Asset-AA_1_0.ditamap");
+        assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
+        File expectedFile03 = new File(targetReportDir, "map_test-document.ditamap");
+        assertTrue(expectedFile03.exists(), "Expected file does not exist: " + expectedFile03.getAbsolutePath());
     }
 
 
