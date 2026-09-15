@@ -24,6 +24,7 @@ import org.metaeffekt.core.inventory.resolver.RemoteUriResolver;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.spi.connector.transport.TransporterProvider;
+import org.metaeffekt.core.inventory.resolver.ServerCredential;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +38,13 @@ public class FileServerMirror extends AbstractMirror {
     private List<String> sourceUrls = new ArrayList<>();
 
     @Parameter
-    private List<org.metaeffekt.core.inventory.resolver.ServerCredential> credentials = new ArrayList<>();
+    private List<ServerCredential> credentials = new ArrayList<>();
 
-    public FileServerSourceArchiveResolver createResolver(Properties properties, RepositorySystemSession repositorySystemSession, List<RemoteRepository> remoteProjectRepositories, TransporterProvider transporterProvider) {
-        final FileServerSourceArchiveResolver resolver = new MavenAwareFileServerSourceArchiveResolver(repositorySystemSession, remoteProjectRepositories, transporterProvider);
+    public FileServerSourceArchiveResolver createResolver(Properties properties,
+          RepositorySystemSession repositorySystemSession, List<RemoteRepository> remoteProjectRepositories, TransporterProvider transporterProvider) {
+
+        final FileServerSourceArchiveResolver resolver = new MavenAwareFileServerSourceArchiveResolver(
+                repositorySystemSession, remoteProjectRepositories, transporterProvider);
 
         // pass the plugin configuration properties
         resolver.setProperties(properties);

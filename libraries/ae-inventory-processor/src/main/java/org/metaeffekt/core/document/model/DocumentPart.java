@@ -50,6 +50,11 @@ public class DocumentPart {
      */
     private Map<String, String> params;
 
+    /**
+     * If this part was derived/split from an original part, this holds the identifier of the original part.
+     */
+    private String parentIdentifier;
+
     public DocumentPart(String identifier, List<InventoryContext> inventoryContexts, DocumentPartType documentPartType, Map<String, String> params) {
         this.inventoryContexts = inventoryContexts;
         this.documentPartType = documentPartType;
@@ -73,7 +78,7 @@ public class DocumentPart {
             throw new IllegalStateException("The part type must be specified.");
         }
 
-        if (inventoryContexts != null && inventoryContexts.size() > 1 && documentPartType != DocumentPartType.ANNEX) {
+        if (inventoryContexts != null && inventoryContexts.size() > 1 && documentPartType == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
             throw new IllegalStateException("The part '" + documentPartType + "' currently does not support multiple input inventories.");
         }
 
