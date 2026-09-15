@@ -46,7 +46,9 @@ public class SourceRepository extends IdentifiableComponent {
 
     private boolean ignoreMatches;
 
-    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate(final RepositorySystem repositorySystem, final RepositorySystemSession repositorySystemSession, final List<RemoteRepository> remoteProjectRepositories, final TransporterProvider transporterProvider) {
+    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate(
+            final RepositorySystem repositorySystem, final RepositorySystemSession repositorySystemSession,
+            final List<RemoteRepository> remoteProjectRepositories, final TransporterProvider transporterProvider) {
 
         ArtifactSourceRepository artifactSourceRepository = new ArtifactSourceRepository();
         artifactSourceRepository.setId(getId());
@@ -55,7 +57,11 @@ public class SourceRepository extends IdentifiableComponent {
         if (getPatterns() != null) {
             for (String pattern : patterns) {
                 String[] split = pattern.split(":");
-                artifactSourceRepository.register(new ArtifactPattern(extractPattern(0, split), extractPattern(1, split), extractPattern(2, split), extractPattern(3, split)));
+                artifactSourceRepository.register(new ArtifactPattern(
+                        extractPattern(0, split),
+                        extractPattern(1, split),
+                        extractPattern(2, split),
+                        extractPattern(3, split)));
             }
         }
 
