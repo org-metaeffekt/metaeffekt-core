@@ -247,7 +247,7 @@ public class InventoryReportAdapter {
         } else if (string != null) {
             return string.substring(0, length - 3) + "...";
         } else {
-            return "null";
+            return null;
         }
     }
 }
