@@ -7,7 +7,7 @@
             A driver is a software component that allows a device or peripheral to communicate with the operating system.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>
+            See also: <i><xref keyref="artifact">Artifact</xref></i>
         </p>
     </glossdef>
     <glossBody>

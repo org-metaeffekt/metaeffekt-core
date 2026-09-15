@@ -8,7 +8,7 @@
             or function. An asset usually represents a value proposition or delivery item in a supplier-recipient relationship.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="component"/>
+            See also: <i><xref keyref="artifact">Artifact</xref></i>, <i><xref keyref="component">Component</xref></i>
         </p>
     </glossdef>
     <glossBody>

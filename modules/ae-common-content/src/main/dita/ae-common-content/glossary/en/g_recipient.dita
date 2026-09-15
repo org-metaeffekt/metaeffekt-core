@@ -10,7 +10,7 @@
             of the software.
         </p>
         <p>
-            See also: <abbreviated-form keyref="provider"/>, <abbreviated-form keyref="software-distribution"/>
+            See also: <i><xref keyref="provider">Provider</xref></i>, <i><xref keyref="software-distribution">Software Distribution</xref></i>
         </p>
     </glossdef>
     <glossBody>
