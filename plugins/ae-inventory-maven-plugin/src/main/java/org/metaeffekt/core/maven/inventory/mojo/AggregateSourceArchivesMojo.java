@@ -35,9 +35,11 @@ import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.resolver.ArtifactPattern;
 import org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository;
+import org.metaeffekt.core.inventory.resolver.ServerCredential;
 import org.metaeffekt.core.inventory.resolver.SourceArchiveResolverResult;
 import org.metaeffekt.core.inventory.validation.ExecutionStatus;
 import org.metaeffekt.core.inventory.validation.ExecutionStatusEntry;
+import org.metaeffekt.core.maven.inventory.resolver.FileServerMirror;
 import org.metaeffekt.core.maven.inventory.resolver.Mapping;
 import org.metaeffekt.core.maven.inventory.resolver.SourceRepository;
 
@@ -60,6 +62,7 @@ import static java.lang.String.format;
 public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredMojo {
 
     public static final Artifact.Attribute SOURCE_AGGREGATION_MODE = Artifact.Attribute.SOURCE_AGGREGATION_MODE;
+
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
     private RepositorySystemSession repositorySystemSession;
 
@@ -182,7 +185,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
             sharedProperties.putAll(config.getProperties());
         }
 
-        // materialize configuration
+        // materialize configuration; propagate configuration to configured source repositories
         final List<ArtifactSourceRepository> delegateArtifactSourceRepositories = new ArrayList<>();
         for (SourceRepository sourceRepository : sourceRepositories) {
             if (sourceRepository.getProperties() == null) {
@@ -191,21 +194,30 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                 sourceRepository.getProperties().putAll(sharedProperties);
             }
 
-            if (sourceRepository.getFileServerMirror() != null) {
-                if (sourceRepository.getFileServerMirror().getSourceUrls() == null || sourceRepository.getFileServerMirror().getSourceUrls().isEmpty()) {
+            final FileServerMirror fileServerMirror = sourceRepository.getFileServerMirror();
+            if (fileServerMirror != null) {
+                // propagate source urls to file server mirror in case no other source urls have been defined
+                final List<String> sourceUrls = fileServerMirror.getSourceUrls();
+                if (sourceUrls == null || sourceUrls.isEmpty()) {
                     if (config.getSourceUrls() != null && !config.getSourceUrls().isEmpty()) {
-                        sourceRepository.getFileServerMirror().setSourceUrls(config.getSourceUrls());
+                        fileServerMirror.setSourceUrls(config.getSourceUrls());
                     }
                 }
-                if (sourceRepository.getFileServerMirror().getCredentials() == null || sourceRepository.getFileServerMirror().getCredentials().isEmpty()) {
+
+                // FIXME-RTU: may credentials leak here? must credentials not be provided for specific urls
+                // propagate credential to file server mirror in case no other credentials have been defined
+                final List<ServerCredential> credentials = fileServerMirror.getCredentials();
+                if (credentials == null || credentials.isEmpty()) {
                     if (config.getCredentials() != null && !config.getCredentials().isEmpty()) {
-                        sourceRepository.getFileServerMirror().setCredentials(config.getCredentials());
+                        fileServerMirror.setCredentials(config.getCredentials());
                     }
                 }
             }
 
             sourceRepository.dumpConfig(getLog(), "");
-            delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate(repositorySystem, repositorySystemSession, remoteProjectRepositories, transporterProvider));
+
+            delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate(
+                    repositorySystem, repositorySystemSession, remoteProjectRepositories, transporterProvider));
         }
 
         final ExecutionStatus executionStatus = new ExecutionStatus();
