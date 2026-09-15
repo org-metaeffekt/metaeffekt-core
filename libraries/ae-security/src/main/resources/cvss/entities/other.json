@@ -29,6 +29,25 @@
     "url": "https://nvd.nist.gov",
     "country": "US"
   },
+  "EUVD": {
+    "name": "EUVD",
+    "description": "European Union Vulnerability Database",
+    "email": "info@enisa.europa.eu",
+    "url": "https://euvd.enisa.europa.eu",
+    "country": "Greece",
+    "reportSteps": [
+      {
+        "stepIndex": 0,
+        "title": "Read reporting obligations",
+        "link": "https://www.enisa.europa.eu/topics/product-security/single-reporting-platform-srp"
+      },
+      {
+        "stepIndex": 1,
+        "title": "Submit via Single Reporting Platform",
+        "link": "https://portal.cra-srp.enisa.europa.eu/"
+      }
+    ]
+  },
   "ELASTIC": {
     "name": "Elastic",
     "description": "Elastic Security",
@@ -199,7 +218,7 @@
     "description": "CVE Security Advisories from Alpine Linux",
     "url": "https://secdb.alpinelinux.org/"
   },
-  "OSV_ECHO":{
+  "OSV_ECHO": {
     "name": "ECHO",
     "description": "CVE Security advisories for echoHQ images",
     "url": "https://www.echohq.com/"
