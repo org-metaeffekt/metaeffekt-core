@@ -291,15 +291,12 @@ public abstract class AbstractModelBase implements Serializable {
     }
 
     protected String createCompareStringRepresentation(List<String> attributeKeys) {
-        final StringBuilder sb = new StringBuilder();
+        final StringJoiner joiner = new StringJoiner(":");
         for (final String attributeKey : attributeKeys) {
-            if (sb.length() > 0) {
-                sb.append(":");
-            }
             final String value = get(attributeKey);
-            sb.append(value == null ? "" : value);
+            joiner.add(value == null ? "" : value);
         }
-        return sb.toString();
+        return joiner.toString();
     }
 
     public String getAlternatives(String... keys) {
