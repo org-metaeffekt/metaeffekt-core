@@ -74,7 +74,9 @@ public class DocumentDescriptorReport {
     public static final String TEMPLATE_GROUP_INITIAL_LICENSE_DOCUMENTATION_BOOKMAP = "initial-license-documentation-bookmap";
     public static final String TEMPLATE_GROUP_LICENSE_DOCUMENTATION_BOOKMAP = "license-documentation-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP = "vulnerability-report-bookmap";
+    public static final String TEMPLATE_GROUP_EXPLOITABILITY_REPORT_BOOKMAP = "exploitability-report-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP = "vulnerability-statistics-bookmap";
+    public static final String TEMPLATE_GROUP_EXPLOITABILITY_STATISTICS_REPORT_BOOKMAP = "exploitability-statistics-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP = "vulnerability-summary-bookmap";
 
     /**
@@ -92,8 +94,14 @@ public class DocumentDescriptorReport {
             if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
                 writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP);
             }
+            if (documentPart.getDocumentPartType() == DocumentPartType.EXPLOITABILITY_REPORT) {
+                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_EXPLOITABILITY_REPORT_BOOKMAP);
+            }
             if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
                 writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
+            }
+            if (documentPart.getDocumentPartType() == DocumentPartType.EXPLOITABILITY_STATISTICS_REPORT) {
+                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_EXPLOITABILITY_STATISTICS_REPORT_BOOKMAP);
             }
             if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_PART) {
                 continue;
@@ -192,7 +200,6 @@ public class DocumentDescriptorReport {
 
     /**
      * Adapter class for holding properties related to document report generation.
-     * Adapter class for holding properties related to document report generation.
      * <p>This class acts as a container for properties associated with each inventory context. It allows dynamic
      * manipulation and management of properties during the report creation process.</p>
      */
@@ -233,6 +240,7 @@ public class DocumentDescriptorReport {
                     break;
 
                 case VULNERABILITY_REPORT:
+                case EXPLOITABILITY_REPORT:
                     propertiesFilename = "vulnerability-report.properties";
                     break;
 
@@ -242,6 +250,9 @@ public class DocumentDescriptorReport {
 
                 // these do not provide properties
                 case VULNERABILITY_STATISTICS_REPORT:
+                    break;
+
+                case EXPLOITABILITY_STATISTICS_REPORT:
                     break;
 
                 case VULNERABILITY_SUMMARY_REPORT:
