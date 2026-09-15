@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.resolver;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.spi.connector.transport.GetTask;
@@ -22,15 +23,12 @@ import org.eclipse.aether.spi.connector.transport.Transporter;
 import org.eclipse.aether.spi.connector.transport.TransporterProvider;
 import org.metaeffekt.core.inventory.resolver.FileServerSourceArchiveResolver;
 import org.metaeffekt.core.inventory.resolver.SourceArchiveResolverResult;
-import lombok.extern.slf4j.Slf4j;
+import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.List;
-
-import org.metaeffekt.core.util.FileUtils;
-
 
 @Slf4j
 public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceArchiveResolver {
@@ -39,7 +37,9 @@ public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceA
     private final List<RemoteRepository> remoteProjectRepositories;
     private final TransporterProvider transporterProvider;
 
-    public MavenAwareFileServerSourceArchiveResolver(RepositorySystemSession repositorySystemSession, List<RemoteRepository> remoteProjectRepositories, TransporterProvider transporterProvider) {
+    public MavenAwareFileServerSourceArchiveResolver(RepositorySystemSession repositorySystemSession,
+            List<RemoteRepository> remoteProjectRepositories, TransporterProvider transporterProvider) {
+
         this.repositorySystemSession = repositorySystemSession;
         this.remoteProjectRepositories = remoteProjectRepositories;
         this.transporterProvider = transporterProvider;
@@ -48,19 +48,27 @@ public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceA
     @Override
     protected boolean downloadFile(String url, File targetDir, SourceArchiveResolverResult result) {
         if (remoteProjectRepositories != null && repositorySystemSession != null && transporterProvider != null) {
+
+            // NOTE: we match the url to be resolved to the maven repo urls; for this to
+            //   work we may require to add the repo to the maven settings (with its credentials)
+
+            // iterate repo and check whether url is a match
             for (RemoteRepository repo : remoteProjectRepositories) {
+
                 String repoUrl = repo.getUrl();
                 if (!repoUrl.endsWith("/")) {
                     repoUrl += "/";
                 }
+
                 if (url.startsWith(repoUrl)) {
                     String relativePath = url.substring(repoUrl.length());
                     String fileName = url.substring(url.lastIndexOf('/') + 1);
                     if (fileName.contains("?")) {
                         fileName = fileName.substring(0, fileName.indexOf("?"));
                     }
-                    File destinationFile = new File(targetDir, fileName);
 
+                    // check if file already exists; skip further processing in any case
+                    final File destinationFile = new File(targetDir, fileName);
                     if (destinationFile.exists()) {
                         result.addFile(destinationFile, url);
                         return true;
@@ -72,7 +80,7 @@ public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceA
                             task.setDataFile(destinationFile);
                             transporter.get(task);
 
-                            // MD5 Checksum Validation
+                            // MD5 checksum validation
                             try {
                                 GetTask md5Task = new GetTask(URI.create(relativePath + ".md5"));
                                 File md5File = new File(targetDir, fileName + ".md5");
@@ -80,7 +88,7 @@ public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceA
                                 transporter.get(md5Task);
 
                                 String expectedMd5 = new String(Files.readAllBytes(md5File.toPath())).trim();
-                                // Some md5 files contain the hash and the filename, e.g. "hash  filename"
+                                // some md5 files contain the hash and the filename, e.g. "hash  filename"
                                 if (expectedMd5.contains(" ")) {
                                     expectedMd5 = expectedMd5.split(" ")[0];
                                 }
@@ -89,16 +97,16 @@ public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceA
                                 if (!expectedMd5.equalsIgnoreCase(actualMd5)) {
                                     log.error("MD5 mismatch for [{}]. Expected [{}], got [{}]", url, expectedMd5, actualMd5);
                                     if (destinationFile.exists()) {
-                                        destinationFile.delete();
+                                        FileUtils.deleteQuietly(destinationFile);
                                     }
                                     if (md5File.exists()) {
-                                        md5File.delete();
+                                        FileUtils.deleteQuietly(md5File);
                                     }
-                                    continue; // Try next repo or fallback
+                                    continue; // try next repo or fallback
                                 }
                                 log.debug("MD5 checksum validated successfully for [{}]", url);
                                 if (md5File.exists()) {
-                                    md5File.delete();
+                                    FileUtils.deleteQuietly(md5File);
                                 }
                             } catch (Exception e) {
                                 log.debug("Failed to retrieve or validate MD5 for [{}] from [{}]: [{}]. Proceeding without MD5 validation.", url, repoUrl, e.getMessage());
@@ -110,16 +118,19 @@ public class MavenAwareFileServerSourceArchiveResolver extends FileServerSourceA
                             }
                         }
                     } catch (Exception e) {
-                        log.debug("Failed to download [{}] using Aether transporter from [{}]: [{}]", url, repoUrl, e.getMessage());
+                        // NOTE: to understand the failures debug-level log must be enabled
+                        log.debug("Failed to download [{}] from [{}]: [{}]", url, repoUrl, e.getMessage());
                         if (destinationFile.exists()) {
-                            destinationFile.delete();
+                            FileUtils.deleteQuietly(destinationFile);
                         }
                     }
+                } else {
+                    log.debug("Skipping repository with url [{}] not matching the download url [{}].", repoUrl, url);
                 }
             }
         }
 
-        // Fallback to default mechanism
+        // fallback to default mechanism
         return super.downloadFile(url, targetDir, result);
     }
 }
