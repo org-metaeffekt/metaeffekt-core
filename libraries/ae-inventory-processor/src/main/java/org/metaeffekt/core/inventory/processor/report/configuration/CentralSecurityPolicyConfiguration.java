@@ -713,9 +713,13 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
+                    // ENISA EUVD
+                    new SourceSelectorEntry(KnownCvssEntities.EUVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
                     // MSRC
                     new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.MSRC),
+
                     // GHSA
                     new SourceSelectorEntry(KnownCvssEntities.GHSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA),
@@ -744,6 +748,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
+                    // ENISA EUVD
+                    new SourceSelectorEntry(KnownCvssEntities.EUVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
 
                     // MSRC
                     new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
