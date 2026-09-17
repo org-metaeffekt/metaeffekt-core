@@ -3,9 +3,11 @@
 <glossentry id="nist">
     <glossterm>National Institute of Standards and Technology</glossterm>
     <glossdef>
-        Das National Institute of Standards and Technology (NIST) ist ein wissenschaftliches Labor und eine Behörde des
-        United State Department of Commerce. Neben vielen Aktivitäten veröffentlicht das NIST den Cybersecurity Framework
-        Leitfaden für Informationssicherheit und Risikomanagement.
+        <p>
+            Das National Institute of Standards and Technology (NIST) ist ein wissenschaftliches Labor und eine Behörde des
+            United State Department of Commerce. Neben vielen Aktivitäten veröffentlicht das NIST den Cybersecurity Framework
+            Leitfaden für Informationssicherheit und Risikomanagement.
+        </p>
     </glossdef>
     <glossBody>
         <glossSurfaceForm>National Institute of Standards and Technology (NIST)</glossSurfaceForm>

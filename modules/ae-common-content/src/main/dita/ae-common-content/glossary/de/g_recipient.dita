@@ -3,17 +3,16 @@
 <glossentry id="recipient">
     <glossterm>Empfänger</glossterm>
     <glossdef>
-        Der Empfänger einer Software steht mit einem Anbieter für gewöhnlich in einem Vertragsverhältnis. Dieses
-        Vertragsverhältnis kann zudem die Software-Distribution von Bestandteilen Dritter umfassen.
+        <p>
+            Der Empfänger einer Software steht mit einem Anbieter für gewöhnlich in einem Vertragsverhältnis. Dieses
+            Vertragsverhältnis kann zudem die Software-Distribution von Bestandteilen Dritter umfassen.
+        </p>
         <p>
             Je nach Vertragsverhältnis kann der Empfänger die Software weiterentwickeln, betreiben und/oder der
             Endanwender sein.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="provider"/>, <abbreviated-form keyref="software-distribution"/>
+            Siehe auch: <term keyref="provider">Anbieter</term>, <term keyref="software-distribution">Software-Distribution</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Empfänger</glossSurfaceForm>
-    </glossBody>
 </glossentry>

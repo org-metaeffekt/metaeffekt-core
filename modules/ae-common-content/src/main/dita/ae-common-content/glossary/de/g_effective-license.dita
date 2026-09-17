@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
-<glossentry id="effective-licenses">
-    <glossterm>Effektive Lizenzen</glossterm>
+<glossentry id="effective-license">
+    <glossterm>Effektive Lizenz</glossterm>
     <glossdef>
-        Es gibt verschiedene Fälle, in denen eine Komponente von einem Anbieter unter mehreren zugeordneten Lizenzen
-        zur Verfügung gestellt wird. Die effektiven Lizenzen sind die Lizenzen, die für die Software
-        Distribution bindend sind:
+        <p>
+            Es gibt verschiedene Fälle, in denen eine Komponente von einem Anbieter unter mehreren zugeordneten Lizenzen
+            zur Verfügung gestellt wird. Die effektiven Lizenzen sind die Lizenzen, die für die Software
+            Distribution bindend sind:
+        </p>
         <ul>
             <li>
                 Eine Komponente wird mit Lizenzierungsoptionen zur Verfügung gestellt (Dual- oder
@@ -26,10 +28,7 @@
             </li>
         </ul>
         <p>
-            Siehe auch: <abbreviated-form keyref="associated-licenses"/>, <abbreviated-form keyref="licenses"/>
+            Siehe auch: <term keyref="associated-license">Assoziierte Lizenz</term>, <term keyref="license">Lizenzen</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Effektive Lizenzen</glossSurfaceForm>
-    </glossBody>
 </glossentry>

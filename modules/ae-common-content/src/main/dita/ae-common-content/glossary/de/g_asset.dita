@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="asset">
-    <glossterm>Assets</glossterm>
+    <glossterm>Asset</glossterm>
     <glossdef>
         <p>
             Ein Asset, insbesondere ein Software- oder Hardware-Asset, ist eine identifizier- und nutzbare Einheit, die einem
@@ -9,10 +9,8 @@
             Wert- oder Liefergegenstand in einer Lieferanten-Empfänger-Beziehung dar.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="component"/>
+            Siehe auch: <term keyref="artifact">Artefakt</term>, <term keyref="component">Komponente</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Assets</glossSurfaceForm>
-    </glossBody>
+
 </glossentry>

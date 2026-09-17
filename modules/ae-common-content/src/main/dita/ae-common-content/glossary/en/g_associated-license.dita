@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
-<glossentry id="associated-licenses">
-    <glossterm>Associated Licenses</glossterm>
+<glossentry id="associated-license">
+    <glossterm>Associated License</glossterm>
     <glossdef>
         <p>
             A component and its parts can be made available by a provider under different licenses. This enables
@@ -15,10 +15,7 @@
             derivation of the effective licenses is limited by the terms of the associated licenses and their options.
         </p>
         <p>
-            See also: <abbreviated-form keyref="provider"/>, <abbreviated-form keyref="effective-licenses"/>, <abbreviated-form keyref="licenses"/>
+            See also: <term keyref="provider">Provider</term>, <term keyref="effective-license">Effective License</term>, <term keyref="license">License</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>associated license</glossSurfaceForm>
-    </glossBody>
 </glossentry>

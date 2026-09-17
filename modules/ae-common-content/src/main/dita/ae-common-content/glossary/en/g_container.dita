@@ -12,10 +12,7 @@
             dynamically. A common container runtime environment is Kubernetes.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="asset"/>
+            See also: <term keyref="artifact">Artifact</term>, <term keyref="asset">Asset</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>containers</glossSurfaceForm>
-    </glossBody>
 </glossentry>

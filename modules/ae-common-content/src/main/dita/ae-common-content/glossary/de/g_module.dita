@@ -8,10 +8,7 @@
             wiederverwendet werden kann. Beispiele: JARs, Python-Packages, Ruby Gems.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="artifact"/>
+            Siehe auch: <term keyref="artifact">Artefakt</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Module</glossSurfaceForm>
-    </glossBody>
 </glossentry>

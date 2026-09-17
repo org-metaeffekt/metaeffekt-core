@@ -14,10 +14,7 @@
             ist Kubernetes.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="asset"/>
+            Siehe auch: <term keyref="artifact">Artefakt</term>, <term keyref="asset">Asset</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Container</glossSurfaceForm>
-    </glossBody>
 </glossentry>

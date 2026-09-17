@@ -9,10 +9,7 @@
             resources.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>
+            See also: <term keyref="artifact">Artifact</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>applications</glossSurfaceForm>
-    </glossBody>
 </glossentry>

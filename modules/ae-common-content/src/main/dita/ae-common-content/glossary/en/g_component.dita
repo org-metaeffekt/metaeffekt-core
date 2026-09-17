@@ -14,7 +14,7 @@
             A hardware component groups devices or parts.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="subcomponent"/>
+            See also: <term keyref="artifact">Artifact</term>, <term keyref="subcomponent">Subcomponent</term>
         </p>
         <p>
             In common usage, the term component has a different connotation. In the context of software design or software architecture, the term "component" is understood as a
@@ -22,10 +22,7 @@
             parts. Therefore, the term "component" is used here only to group the actual constituents (artifacts).
         </p>
         <p>
-            Sell also: <abbreviated-form keyref="artifact"/>
+            Sell also: <term keyref="artifact">Artifact</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>components</glossSurfaceForm>
-    </glossBody>
 </glossentry>

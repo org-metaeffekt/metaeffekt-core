@@ -3,7 +3,9 @@
 <glossentry id="ram">
     <glossterm>System Memory</glossterm>
     <glossdef>
-        Random-access memory is a form of computer data storage.
+        <p>
+            Random-access memory is a form of computer data storage.
+        </p>
     </glossdef>
     <glossBody>
         <glossSurfaceForm>System Memory (RAM)</glossSurfaceForm>

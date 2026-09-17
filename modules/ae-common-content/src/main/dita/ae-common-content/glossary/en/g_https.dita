@@ -2,5 +2,9 @@
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary//EN" "glossary.dtd">
 <glossentry id="https">
     <glossterm>HTTPS</glossterm>
-    <glossdef><p>Hypertext Transfer Protocol Secure: Secure Internet protocol</p></glossdef>
+    <glossdef>
+        <p>
+            Hypertext Transfer Protocol Secure: Secure Internet protocol
+        </p>
+    </glossdef>
 </glossentry>

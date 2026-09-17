@@ -8,10 +8,7 @@
             or consumed by applications or services.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>
+            See also: <term keyref="artifact">Artifact</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>contents</glossSurfaceForm>
-    </glossBody>
 </glossentry>

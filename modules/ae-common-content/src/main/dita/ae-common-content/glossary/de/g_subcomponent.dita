@@ -3,12 +3,11 @@
 <glossentry id="subcomponent">
     <glossterm>Unterkomponente</glossterm>
     <glossdef>
-        Eine Unterkomponente ist eine Komponente, die in eine andere Komponente eingebettet oder von dieser intergriert wird.
         <p>
-            Siehe auch: <abbreviated-form keyref="component"/>
+            Eine Unterkomponente ist eine Komponente, die in eine andere Komponente eingebettet oder von dieser intergriert wird.
+        </p>
+        <p>
+            Siehe auch: <term keyref="component">Komponenten</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Unterkomponenten</glossSurfaceForm>
-    </glossBody>
 </glossentry>

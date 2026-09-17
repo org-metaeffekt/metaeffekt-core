@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="installation-package">
-    <glossterm>Installationspakete</glossterm>
+    <glossterm>Installationspaket</glossterm>
     <glossdef>
         <p>
             Ein Installationspaket ist ein gebündelter Satz von Dateien zur Installation von Software. Gängige Formate
             sind EXE, MSI und DMG.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="artifact"/>
+            Siehe auch: <term keyref="artifact">Artefakt</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Installationspakete</glossSurfaceForm>
-    </glossBody>
 </glossentry>

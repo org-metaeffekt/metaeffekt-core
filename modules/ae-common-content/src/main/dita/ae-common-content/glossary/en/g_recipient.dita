@@ -3,17 +3,16 @@
 <glossentry id="recipient">
     <glossterm>Recipient</glossterm>
     <glossdef>
-        The recipient of a software usually has a conctractual relationship with the provider. This conctractual
-        relationship may also include the software distributor of third-party components.
+        <p>
+            The recipient of a software usually has a contractual relationship with the provider. This contractual
+            relationship may also include the software distributor of third-party components.
+        </p>
         <p>
             Depending on the contractual relationship, the recipient may further develop, operate and/or be the end user
             of the software.
         </p>
         <p>
-            See also: <abbreviated-form keyref="provider"/>, <abbreviated-form keyref="software-distribution"/>
+            See also: <term keyref="provider">Provider</term>, <term keyref="software-distribution">Software-Distribution</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>recipients</glossSurfaceForm>
-    </glossBody>
 </glossentry>
