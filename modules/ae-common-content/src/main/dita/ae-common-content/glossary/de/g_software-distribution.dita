@@ -12,7 +12,7 @@
             eine ausführbare Datei, ein Archiv oder ein Dateisystem-Image umgesetzt werden.
         </p>
         <p>
-            Siehe auch: <term keyref="provider">Anbieter</term>, <term keyref="recipient">Empfänger</term>
+            Siehe auch: <term keyref="provider"/>, <term keyref="recipient"/>
         </p>
     </glossdef>
 </glossentry>

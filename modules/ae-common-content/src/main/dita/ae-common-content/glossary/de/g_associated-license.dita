@@ -16,7 +16,7 @@
             Lizenzen und deren Wahlmöglichkeiten eingeschränkt.
         </p>
         <p>
-            Siehe auch: <term keyref="provider">Anbieter</term>, <term keyref="effective-license">Effektive Lizenz</term>, <term keyref="license">Lizenzen</term>
+            Siehe auch: <term keyref="provider"/>, <term keyref="effective-license"/>, <term keyref="license"/>
         </p>
     </glossdef>
 </glossentry>

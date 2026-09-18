@@ -8,7 +8,7 @@
             wiederverwendet werden kann. Beispiele: JARs, Python-Packages, Ruby Gems.
         </p>
         <p>
-            Siehe auch: <term keyref="artifact">Artefakt</term>
+            Siehe auch: <term keyref="artifact"/>
         </p>
     </glossdef>
 </glossentry>

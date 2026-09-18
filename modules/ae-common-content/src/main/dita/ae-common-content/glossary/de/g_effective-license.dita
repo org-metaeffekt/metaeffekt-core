@@ -28,7 +28,7 @@
             </li>
         </ul>
         <p>
-            Siehe auch: <term keyref="associated-license">Assoziierte Lizenz</term>, <term keyref="license">Lizenzen</term>
+            Siehe auch: <term keyref="associated-license"/>, <term keyref="license"/>
         </p>
     </glossdef>
 </glossentry>

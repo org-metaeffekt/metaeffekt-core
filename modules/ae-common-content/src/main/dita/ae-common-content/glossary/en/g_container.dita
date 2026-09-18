@@ -12,7 +12,7 @@
             dynamically. A common container runtime environment is Kubernetes.
         </p>
         <p>
-            See also: <term keyref="artifact">Artifact</term>, <term keyref="asset">Asset</term>
+            See also: <term keyref="artifact"/>, <term keyref="asset"/>
         </p>
     </glossdef>
 </glossentry>

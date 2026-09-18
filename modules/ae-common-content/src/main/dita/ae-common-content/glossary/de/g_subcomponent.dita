@@ -7,7 +7,7 @@
             Eine Unterkomponente ist eine Komponente, die in eine andere Komponente eingebettet oder von dieser intergriert wird.
         </p>
         <p>
-            Siehe auch: <term keyref="component">Komponenten</term>
+            Siehe auch: <term keyref="component"/>
         </p>
     </glossdef>
 </glossentry>

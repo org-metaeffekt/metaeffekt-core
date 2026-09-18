@@ -43,6 +43,8 @@
             Lizenzbezeichnern dargestellt. Etwa <i>GNU Lesser General Public License 2.1 (or any later version)</i>
             oder <i>GNU General Public License 2.0 (with classpath exception)</i>.
         </p>
-        <p>Siehe auch: <term keyref="associated-license">Assoziierte Lizenz</term>, <term keyref="effective-license">Effektive Lizenz</term></p>
+        <p>
+            Siehe auch: <term keyref="associated-license"/>, <term keyref="effective-license"/>
+        </p>
     </glossdef>
 </glossentry>

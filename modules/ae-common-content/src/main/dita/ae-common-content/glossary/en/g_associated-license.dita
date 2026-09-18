@@ -15,7 +15,7 @@
             derivation of the effective licenses is limited by the terms of the associated licenses and their options.
         </p>
         <p>
-            See also: <term keyref="provider">Provider</term>, <term keyref="effective-license">Effective License</term>, <term keyref="license">License</term>
+            See also: <term keyref="provider"/>, <term keyref="effective-license"/>, <term keyref="license"/>
         </p>
     </glossdef>
 </glossentry>

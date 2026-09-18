@@ -14,7 +14,7 @@
             Eine Hardware-Komponente gruppiert analog Geräte oder Bauteile.
         </p>
         <p>
-            Siehe auch: <term keyref="artifact">Artefakt</term>, <term keyref="subcomponent">Unterkomponente</term>
+            Siehe auch: <term keyref="artifact"/>, <term keyref="subcomponent"/>
         </p>
         <p>
             Im allgemeinen Sprachgebrauch ist der Begriff der Komponente anders belegt. Im Kontext des Software-Designs oder der
@@ -23,7 +23,7 @@
             Daher wird der Begriff der Komponente hier lediglich zur Gruppierung der tatsächlichen Bestandteilen (Artifakte) verwendet.
         </p>
         <p>
-            Siehe auch: <term keyref="artifact">Artefakt</term>
+            Siehe auch: <term keyref="artifact"/>
         </p>
     </glossdef>
 </glossentry>

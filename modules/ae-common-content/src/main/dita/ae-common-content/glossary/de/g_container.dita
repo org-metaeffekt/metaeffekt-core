@@ -14,7 +14,7 @@
             ist Kubernetes.
         </p>
         <p>
-            Siehe auch: <term keyref="artifact">Artefakt</term>, <term keyref="asset">Asset</term>
+            Siehe auch: <term keyref="artifact"/>, <term keyref="asset"/>
         </p>
     </glossdef>
 </glossentry>

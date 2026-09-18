@@ -9,7 +9,7 @@
             Wert- oder Liefergegenstand in einer Lieferanten-Empfänger-Beziehung dar.
         </p>
         <p>
-            Siehe auch: <term keyref="artifact">Artefakt</term>, <term keyref="component">Komponente</term>
+            Siehe auch: <term keyref="artifact"/>, <term keyref="component"/>
         </p>
     </glossdef>
 
