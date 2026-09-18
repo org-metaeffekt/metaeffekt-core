@@ -8,10 +8,7 @@
             computergebundene Hardware. Geräte können weiter in Teilen separat erfasst werden.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="part"/>
+            Siehe auch: <term keyref="artifact"/>, <term keyref="part"/>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Gerät</glossSurfaceForm>
-    </glossBody>
 </glossentry>

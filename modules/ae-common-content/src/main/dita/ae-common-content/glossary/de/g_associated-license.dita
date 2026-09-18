@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
-<glossentry id="associated-licenses">
-    <glossterm>Assoziierte Lizenzen</glossterm>
+<glossentry id="associated-license">
+    <glossterm>Assoziierte Lizenz</glossterm>
     <glossdef>
         <p>
             Eine Komponente und ihre Bestandteile können durch einen Anbieter unter verschiedenen
@@ -16,10 +16,7 @@
             Lizenzen und deren Wahlmöglichkeiten eingeschränkt.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="provider"/>, <abbreviated-form keyref="effective-licenses"/>, <abbreviated-form keyref="licenses"/>
+            Siehe auch: <term keyref="provider"/>, <term keyref="effective-license"/>, <term keyref="license"/>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Assoziierte Lizenzen</glossSurfaceForm>
-    </glossBody>
 </glossentry>

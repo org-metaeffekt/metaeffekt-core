@@ -5,7 +5,7 @@
     <body>
         <p>
             In general, for each and every open source component the individual terms and conditions of the
-            <abbreviated-form keyref="associated-licenses"/> apply. The licensee of an open source component is granted
+            <term keyref="associated-license">associated licenses</term> apply. The licensee of an open source component is granted
             a non-exclusive right of use by the respective right holders restricted by the stipulated terms and
             conditions defined in the associated license. In particular, liability and warranty regulations of the
             individual open source license apply.

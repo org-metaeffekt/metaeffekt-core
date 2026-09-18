@@ -3,9 +3,9 @@
 <glossentry id="jconsole">
     <glossterm>JConsole</glossterm>
     <glossdef>
-    <p>
-    JMX-Client, der zusammen mit JDK-Distributionen ausgeliefert wird.
-    Per JMX (MBeans) kann eine Zielanwendung während der Laufzeit überwacht und administriert werden.
-    </p>
+        <p>
+            JMX-Client, der zusammen mit JDK-Distributionen ausgeliefert wird.
+            Per JMX (MBeans) kann eine Zielanwendung während der Laufzeit überwacht und administriert werden.
+        </p>
     </glossdef>
 </glossentry>
