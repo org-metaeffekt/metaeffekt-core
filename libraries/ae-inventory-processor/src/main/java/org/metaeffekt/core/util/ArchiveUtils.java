@@ -110,6 +110,11 @@ public class ArchiveUtils {
         tarExtensions.add("apk");
         tarExtensions.add("gem");
 
+        // rpm: red hat package manager
+        tarExtensions.add("rpm");
+        tarExtensions.add("cpio");
+
+
         // cab: windows cabinet file
         windowsExtensions.add("cab");
         // exe: windows executable (sometimes self-extracting archives)
