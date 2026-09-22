@@ -89,7 +89,7 @@ public class ArchiveUtils {
         // python eggs are also just zips
         zipExtensions.add("egg");
 
-        // gzip: gzip compressed file, less commonly used extention than ".gz"
+        // gzip: gzip compressed file, less commonly used extension than ".gz"
         gzipExtensions.add("gzip");
         // gz: gzip compressed file
         gzipExtensions.add("gz");
@@ -109,11 +109,9 @@ public class ArchiveUtils {
         // apk: android package (for apps, special zip), alpine linux package (special tar file)
         tarExtensions.add("apk");
         tarExtensions.add("gem");
-
         // rpm: red hat package manager
         tarExtensions.add("rpm");
         tarExtensions.add("cpio");
-
 
         // cab: windows cabinet file
         windowsExtensions.add("cab");
@@ -227,7 +225,7 @@ public class ArchiveUtils {
                 file = target;
             }
 
-            if(fileName.endsWith(".zst")) {
+            if (fileName.endsWith(".zst")) {
                 String targetName = file.getName();
                 File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".zst", null));
                 intermediateFiles.add(target);
