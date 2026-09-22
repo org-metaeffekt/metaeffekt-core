@@ -264,7 +264,9 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      */
     @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
     private String vulnerabilityRepresentationProviderPriority = new JSONArray()
-            .put(new JSONObject().put("src", "CVE").put("impl", "*").put("st", "vu")).toString();
+            .put(new JSONObject().put("src", "NVD").put("impl", "CVE").put("st", "vu"))
+            .put(new JSONObject().put("src", "EUVD").put("impl", "EUVD").put("st", "vu"))
+            .toString();
 
     /**
      * Used by the <code>AbstractInventoryReportCreationMojo</code> in all the vulnerability PDF report generations.<br>
@@ -711,9 +713,13 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
+                    // ENISA EUVD
+                    new SourceSelectorEntry(KnownCvssEntities.EUVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
                     // MSRC
                     new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.MSRC),
+
                     // GHSA
                     new SourceSelectorEntry(KnownCvssEntities.GHSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA),
@@ -742,6 +748,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
+                    // ENISA EUVD
+                    new SourceSelectorEntry(KnownCvssEntities.EUVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
 
                     // MSRC
                     new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
