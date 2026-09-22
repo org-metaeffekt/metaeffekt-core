@@ -119,6 +119,40 @@ public class DocumentDescriptorReport {
     }
 
     /**
+     * Creates intermediate bookmaps for parts that were split (have a parentIdentifier).
+     */
+    protected void createIntermediateBookMaps(DocumentDescriptor documentDescriptor) throws IOException {
+        Map<String, List<DocumentPart>> groupedParts = new LinkedHashMap<>();
+        for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
+            if (documentPart.getParentIdentifier() != null) {
+                groupedParts.computeIfAbsent(documentPart.getParentIdentifier(), k -> new ArrayList<>()).add(documentPart);
+            }
+        }
+
+        for (Map.Entry<String, List<DocumentPart>> entry : groupedParts.entrySet()) {
+            String parentId = entry.getKey();
+            List<DocumentPart> children = entry.getValue();
+
+            File targetDir = new File(new File(this.targetReportDir, "parts"), parentId);
+            targetDir.mkdirs();
+            File targetFile = new File(targetDir, "map_" + parentId + ".ditamap");
+
+            String templateResourcePath = TEMPLATES_BOOKMAPS_BASE_DIR + SEPARATOR_SLASH + "intermediate-bookmap" + SEPARATOR_SLASH + "map_intermediate.ditamap.vt";
+
+            Map<String, Object> extraContext = new HashMap<>();
+            extraContext.put("parentId", parentId);
+            extraContext.put("children", children);
+
+            produceDita(documentDescriptor,
+                    null,
+                    new DocumentDescriptorReportAdapters(),
+                    templateResourcePath,
+                    targetFile,
+                    extraContext);
+        }
+    }
+
+    /**
      * Method for creating the bookMap for the final document. This bookMap contains references to each part bookMap.
      *
      * @param documentDescriptor the descriptor containing document-specific information for the report generation
@@ -127,9 +161,20 @@ public class DocumentDescriptorReport {
     protected void createDocumentBookMap(DocumentDescriptor documentDescriptor) throws IOException {
         // Collect the file names of the generated part bookmaps.
         List<String> partBookMaps = new ArrayList<>();
+        Set<String> processedParents = new HashSet<>();
+
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
-            String bookMapFilename = "map_" + documentPart.getIdentifier() + ".ditamap";
-            partBookMaps.add("parts/" + documentPart.getIdentifier() + "/" + bookMapFilename);
+            if (documentPart.getParentIdentifier() != null) {
+                String parentId = documentPart.getParentIdentifier();
+                if (!processedParents.contains(parentId)) {
+                    String bookMapFilename = "map_" + parentId + ".ditamap";
+                    partBookMaps.add("parts/" + parentId + "/" + bookMapFilename);
+                    processedParents.add(parentId);
+                }
+            } else {
+                String bookMapFilename = "map_" + documentPart.getIdentifier() + ".ditamap";
+                partBookMaps.add("parts/" + documentPart.getIdentifier() + "/" + bookMapFilename);
+            }
         }
 
         // Specify the overall document bookmap template and target file.
