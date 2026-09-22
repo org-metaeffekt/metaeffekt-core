@@ -590,9 +590,9 @@ public class InventoryTest {
         initialInventory.getArtifacts().add(artifact);
 
         final VulnerabilityMetaData vmd = new VulnerabilityMetaData();
-        vmd.set(VulnerabilityMetaData.Attribute.SCORE_IMPACT, "9.8");
+        vmd.set(VulnerabilityMetaData.Attribute.SCORE_INITIAL_OVERALL, "9.8");
         vmd.set(VulnerabilityMetaData.Attribute.SCORE_CONTEXT_OVERALL, "9.0");
-        vmd.set(VulnerabilityMetaData.Attribute.SCORE_EXPLOITABILITY, "9.8");
+        vmd.set(VulnerabilityMetaData.Attribute.PRIORITY_SCORE, "9.8");
         vmd.set(VulnerabilityMetaData.Attribute.URL, url);
         initialInventory.getVulnerabilityMetaData().add(vmd);
 
@@ -644,7 +644,7 @@ public class InventoryTest {
         final Inventory initialInventory = new Inventory();
 
         final VulnerabilityMetaData vmd = dummyVulnerabilityMetaData();
-        vmd.set(VulnerabilityMetaData.Attribute.SCORE_IMPACT, "9.8");
+        vmd.set(VulnerabilityMetaData.Attribute.PRIORITY_SCORE, "9.8");
         vmd.set(VulnerabilityMetaData.Attribute.SCORE_CONTEXT_OVERALL, "0934348.300");
         vmd.set(VulnerabilityMetaData.Attribute.SCORE_INITIAL_OVERALL, "934348.3");
         vmd.set("Other number 1", "345.632");
@@ -656,7 +656,7 @@ public class InventoryTest {
 
         final Inventory readInventory = new InventoryReader().readInventory(xlsInventoryFile);
         Assertions.assertEquals(1, readInventory.getVulnerabilityMetaData().size());
-        Assertions.assertEquals("9.8", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_IMPACT));
+        Assertions.assertEquals("9.8", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.PRIORITY_SCORE));
         Assertions.assertEquals("934348.3", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_CONTEXT_OVERALL));
         Assertions.assertEquals("934348.3", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_INITIAL_OVERALL));
         Assertions.assertEquals("345.632", readInventory.getVulnerabilityMetaData().get(0).get("Other number 1"));
