@@ -84,6 +84,7 @@ public class DocumentDescriptorReportGenerator {
         DocumentDescriptorReport documentDescriptorReport = new DocumentDescriptorReport();
         documentDescriptorReport.setTargetReportDir(documentDescriptor.getTargetDocumentDir());
         documentDescriptorReport.createPartBookMap(documentDescriptor);
+        documentDescriptorReport.createIntermediateBookMaps(documentDescriptor);
         documentDescriptorReport.createDocumentBookMap(documentDescriptor);
         documentDescriptorReport.createImprint(documentDescriptor);
     }
@@ -153,7 +154,7 @@ public class DocumentDescriptorReportGenerator {
                 }
             }
 
-            if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX && inventoryContexts.size() > 1) {
+            if (documentPart.getDocumentPartType() != DocumentPartType.INITIAL_LICENSE_DOCUMENTATION && inventoryContexts.size() > 1) {
                 for (InventoryContext ctx : inventoryContexts) {
                     String assetId = ctx.getInventory().getAssetMetaData().stream()
                             .filter(AssetMetaData::isPrimary)
@@ -170,6 +171,7 @@ public class DocumentDescriptorReportGenerator {
                             documentPart.getDocumentPartType(),
                             new HashMap<>(documentPart.getParams() != null ? documentPart.getParams() : Collections.emptyMap())
                     );
+                    newPart.setParentIdentifier(documentPart.getIdentifier());
                     newParts.add(newPart);
                 }
             } else {

@@ -72,6 +72,7 @@ public abstract class KnownCvssEntities {
     public final static CvssEntity OTHER = ENTITIES_BY_KEYNAME.get("OTHER");
 
     public final static CvssEntity NVD = ENTITIES_BY_KEYNAME.get("NIST_NVD");
+    public final static CvssEntity EUVD = ENTITIES_BY_KEYNAME.get("EUVD");
     public final static CvssEntity GHSA = ObjectUtils.firstNonNull(ENTITIES_BY_KEYNAME.get("CVE_CNA_GITHUB_M"), ENTITIES_BY_NAME.get("GitHub, Inc."));
 
     // CVSS Entities coming from the OSV ecosystem
