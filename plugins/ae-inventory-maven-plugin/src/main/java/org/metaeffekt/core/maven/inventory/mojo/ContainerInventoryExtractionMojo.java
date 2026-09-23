@@ -25,11 +25,15 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.maven.inventory.extractor.*;
+import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -40,7 +44,7 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractionMojo {
 
     @Parameter(required = true, defaultValue = "${ae.extractor.analysis.dir}")
-    protected File analysisDir;
+    protected File inputDir;
 
     @Parameter(defaultValue = "false")
     protected boolean filterPackagesWithoutVersion = false;
@@ -51,7 +55,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     @Parameter
     protected String[] excludes;
 
-    private InventoryExtractor[] inventoryExtractors = new InventoryExtractor[]{
+    private final InventoryExtractor[] inventoryExtractors = new InventoryExtractor[]{
             new DebianInventoryExtractor(), // -> AptBasedInventoryExtractor
             new CentOSInventoryExtractor(), // -> RpmBasedInventoryExtractor
             new AlpineInventoryExtractor(), // -> ApkBasedInventoryExtractor
@@ -62,6 +66,9 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
+            final File analysisDir = deriveAnalysisFolder(inputDir);
+            getLog().info("Found analysis directory: " + analysisDir.getAbsolutePath());
+
             // fill content derived from preprocessed files
             final Inventory inventory = extractInventory(analysisDir);
 
@@ -94,7 +101,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             }
 
             // write list of filtered files
-            FileUtils.write(new File(analysisDir, "filtered-files.txt"), sb.toString(), FileUtils.ENCODING_UTF_8);
+            FileUtils.write(new File(inputDir, "filtered-files.txt"), sb.toString(), FileUtils.ENCODING_UTF_8);
 
             // try saving the excel file; may be too big
             try {
@@ -106,6 +113,38 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    private File deriveAnalysisFolder(File inputDir) throws IOException, MojoExecutionException {
+        if (!inputDir.isDirectory()) {
+            throw new MojoExecutionException("Input Directory is not a directory: " + inputDir);
+        }
+
+        final File tarGzArchive = FileUtils.findSingleFile(inputDir, "**/*.tar", "**/*.gz");
+        // the input directory contains a tar archive
+        if (tarGzArchive != null) {
+            ArchiveUtils.untar(tarGzArchive, inputDir);
+            FileUtils.deleteDirectoryQuietly(tarGzArchive);
+        }
+
+        // determine the analysis directory
+        return findAnalysisDirectory(inputDir);
+    }
+
+    private File findAnalysisDirectory(File extractedDir) throws IOException {
+        try (Stream<Path> paths = Files.walk(extractedDir.toPath())) {
+            return paths
+                    .filter(Files::isDirectory)
+                    .filter(this::isAnalysisDirectory)
+                    .map(Path::toFile)
+                    .findFirst()
+                    .orElseThrow(() -> new IOException("No analysis directory found"));
+        }
+    }
+
+    private boolean isAnalysisDirectory(Path dir) {
+        return Files.exists(dir.resolve("issue.txt"))
+                && Files.exists(dir.resolve("release.txt"));
     }
 
     private Inventory extractInventory(File analysisDir) throws IOException {
