@@ -42,6 +42,11 @@ public class StatisticsOverviewTable extends AbstractStatisticsOverviewTable<Sta
     }
 
     @Override
+    public SeverityToStatusRow findRowBySeverity(String severity) {
+        return super.findRowBySeverity(severity);
+    }
+
+    @Override
     public List<String> getHeaders() {
         final List<String> headers = new ArrayList<>();
         headers.add("severity");

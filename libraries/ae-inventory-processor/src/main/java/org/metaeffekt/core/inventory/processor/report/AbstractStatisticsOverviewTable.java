@@ -15,12 +15,14 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Getter
 @Slf4j
 public abstract class AbstractStatisticsOverviewTable<R extends AbstractStatisticsOverviewTable.AbstractSeverityToStatusRow> {
 
@@ -29,14 +31,6 @@ public abstract class AbstractStatisticsOverviewTable<R extends AbstractStatisti
 
     public AbstractStatisticsOverviewTable(boolean usesEffectiveSeverity) {
         this.usesEffectiveSeverity = usesEffectiveSeverity;
-    }
-
-    public List<R> getRows() {
-        return rows;
-    }
-
-    public boolean isUsesEffectiveSeverity() {
-        return usesEffectiveSeverity;
     }
 
     public abstract R findOrCreateRowBySeverity(CentralSecurityPolicyConfiguration securityPolicy, String severity);
