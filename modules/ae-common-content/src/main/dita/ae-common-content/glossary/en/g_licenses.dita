@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="licenses">
-    <glossterm>License identifiers and terms</glossterm>
+    <glossterm>License Identifiers and Terms</glossterm>
     <glossdef>
         The license designators used were derived from the licenses (title, version and content) according to standardized
         rules, as far as possible and reasonable. The objective of standardizations was pursued and abbreviations were
@@ -11,8 +11,7 @@
              the identifier was derived from content and context. In particular, simple <i>permissions</i>, which are common
              in many variations, are referred to here as "Permission Terms". In order to be able to classify and
              distinguish them more quickly, selected properties have been included in the license identifier
-             (e.g. <q>Permission Terms (no warranty;
-            no advertisment)</q>).
+             (e.g. <q>Permission Terms (no warranty; no advertisement)</q>).
         </p>
         <p>
             License information for components which are assignet to multiple licenses, which offer a choice or are provided
@@ -40,7 +39,9 @@
             identifiers. For example <i>GNU Lesser General Public License 2.1 (or any later version)</i>
             or <i>GNU General Public License 2.0 (with classpath exception)</i>.
         </p>
-        <p>See also: <abbreviated-form keyref="associated-licenses"/>, <abbreviated-form keyref="effective-licenses"/></p>
+        <!-- <abbreviated-form keyref="associated-licenses"/> -->
+        <!-- <abbreviated-form keyref="effective-licenses"/> -->
+        <p>See also: <i><xref keyref="associated-licenses">Associated Licenses</xref></i>, <i><xref keyref="effective-licenses">Effective Licenses</xref></i></p>
     </glossdef>
     <glossBody>
         <glossSurfaceForm>license identifiers and terms</glossSurfaceForm>

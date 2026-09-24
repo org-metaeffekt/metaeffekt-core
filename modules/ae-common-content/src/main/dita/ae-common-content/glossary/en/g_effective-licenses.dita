@@ -25,7 +25,7 @@
             </li>
         </ul>
         <p>
-            See also: <abbreviated-form keyref="associated-licenses"/>, <abbreviated-form keyref="licenses"/>
+            See also: <i><xref keyref="associated-licenses">Associated Licenses</xref></i>, <i><xref keyref="licenses">License Identifiers and Terms</xref></i>
         </p>
     </glossdef>
     <glossBody>

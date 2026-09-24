@@ -17,7 +17,7 @@
             can be exported and transferred from a virtualization environment. It is not attached to any hardware.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="asset"/>
+            See also: <i><xref keyref="artifact">Artifact</xref></i>, <i><xref keyref="asset">Asset</xref></i>
         </p>
     </glossdef>
     <glossBody>

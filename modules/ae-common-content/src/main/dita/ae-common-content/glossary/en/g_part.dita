@@ -7,7 +7,7 @@
             Parts are identifiable elements that a device can be disassembled into.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="device"/>
+            See also: <i><xref keyref="artifact">Artifact</xref></i>, <i><xref keyref="device">Device</xref></i>
         </p>
     </glossdef>
     <glossBody>

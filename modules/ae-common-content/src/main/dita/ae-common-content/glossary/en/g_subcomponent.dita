@@ -5,7 +5,7 @@
     <glossdef>
         A subcomponent is a component that is embedded in or linked by another component.
         <p>
-            See also: <abbreviated-form keyref="component"/>
+            See also: <i><xref keyref="component">Component</xref></i>
         </p>
     </glossdef>
     <glossBody>
