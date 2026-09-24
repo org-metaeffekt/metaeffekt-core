@@ -68,8 +68,9 @@ public class InventoryReport {
     public static final String TEMPLATE_GROUP_ANNEX_REPORT = "annex-report";
     public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT = "vulnerability-report";
     public static final String TEMPLATE_GROUP_SUMMARY_REPORT = "summary-report";
-    public static final String TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY = "statistics-report";
-    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "diff-report";
+    public static final String TEMPLATE_GROUP_VULNERABILITY_STATISTICS_VULNERABILITY = "vulnerability-statistics-report";
+    public static final String TEMPLATE_GROUP_EXPLOITABILITY_STATISTICS_VULNERABILITY = "exploitability-statistics-report";
+    public static final String TEMPLATE_GROUP_DIFF_REPORT = "diff-report";
     public static final String TEMPLATE_GROUP_ASSET_REPORT = "asset-report";
     public static final String TEMPLATE_GROUP_ASSESSMENT_REPORT = "assessment-report";
 
@@ -539,6 +540,8 @@ public class InventoryReport {
         final Inventory filteredInventory = projectInventory.getFilteredInventory();
 
         final boolean isVulnerabilityReport = configParams.isInventoryVulnerabilityReportEnabled() ||
+                configParams.isInventoryExploitabilityReportEnabled() ||
+                configParams.isInventoryExploitabilityStatisticsReportEnabled() ||
                 configParams.isInventoryVulnerabilityReportSummaryEnabled() ||
                 configParams.isInventoryVulnerabilityStatisticsReportEnabled() ||
                 configParams.isAssessmentReportEnabled();
@@ -559,7 +562,7 @@ public class InventoryReport {
                     TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_ANNEX_REPORT, reportContext);
         }
 
-        if (configParams.isInventoryVulnerabilityReportEnabled()) {
+        if (configParams.isInventoryVulnerabilityReportEnabled() || configParams.isInventoryExploitabilityReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_VULNERABILITY_REPORT, reportContext);
         }
@@ -571,7 +574,12 @@ public class InventoryReport {
 
         if (configParams.isInventoryVulnerabilityStatisticsReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY, reportContext);
+                    TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_VULNERABILITY_STATISTICS_VULNERABILITY, reportContext);
+        }
+
+        if (configParams.isInventoryExploitabilityStatisticsReportEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_EXPLOITABILITY_STATISTICS_VULNERABILITY, reportContext);
         }
 
         if (configParams.isAssetBomReportEnabled()) {
@@ -961,7 +969,7 @@ public class InventoryReport {
                 null,
                 new InventoryReportAdapter(baseFilteredInventory));
 
-        writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
+        writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, TEMPLATES_REPORTS_BASE_DIR, TEMPLATE_GROUP_DIFF_REPORT, reportContext);
     }
 
     /**
