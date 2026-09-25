@@ -342,9 +342,10 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                     String dynamicTargetFolder = "";
                     String successfulUrl = protocolEntry.getDownloadedLocation();
 
-                    if (successfulUrl != null && config != null && config.getTargetFolderMappings() != null) {
+                    if (config != null && config.getTargetFolderMappings() != null) {
                         for (SourceAggregationConfig.TargetFolderMapping mapping : config.getTargetFolderMappings()) {
-                            if (successfulUrl.matches(mapping.getUrlPattern())) {
+                            if (mapping.getUrlPattern() == null || mapping.getUrlPattern().isEmpty() || 
+                               (successfulUrl != null && successfulUrl.matches(mapping.getUrlPattern()))) {
                                 dynamicTargetFolder = mapping.getTargetFolder();
                                 break;
                             }
