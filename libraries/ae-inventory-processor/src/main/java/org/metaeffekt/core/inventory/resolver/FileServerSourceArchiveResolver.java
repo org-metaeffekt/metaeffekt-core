@@ -131,6 +131,12 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
             fileName = fileName.substring(0, fileName.indexOf("?"));
         }
 
+        File existingFile = findFile(targetDir, fileName);
+        if (existingFile != null) {
+            result.addFile(existingFile, url);
+            return true;
+        }
+
         final File destinationFile = new File(targetDir, fileName);
 
         try {
@@ -147,6 +153,30 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
             result.addAttemptedResourceLocation(url);
         }
         return false;
+    }
+
+    private File findFile(File dir, String fileName) {
+        if (dir == null || !dir.exists() || !dir.isDirectory()) {
+            return null;
+        }
+        
+        File directFile = new File(dir, fileName);
+        if (directFile.exists() && directFile.isFile()) {
+            return directFile;
+        }
+
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    File found = findFile(file, fileName);
+                    if (found != null) {
+                        return found;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private void loadPropertiesFromFile(Properties properties) {
