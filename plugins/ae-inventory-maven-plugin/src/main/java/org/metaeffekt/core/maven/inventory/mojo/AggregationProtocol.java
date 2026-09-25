@@ -61,6 +61,9 @@ public class AggregationProtocol {
                 writer.println("Artifact:  " + entry.getArtifactRepresentation());
                 writer.println("Inclusion: " + entry.getIncludeStatus() + " (Reason: " + entry.getIncludeReason() + ")");
                 writer.println("Download:  " + entry.getDownloadStatus());
+                if (entry.getTargetPath() != null) {
+                    writer.println("Target:    " + entry.getTargetPath());
+                }
                 
                 if ("INCLUDED".equals(entry.getIncludeStatus())) {
                     included++;

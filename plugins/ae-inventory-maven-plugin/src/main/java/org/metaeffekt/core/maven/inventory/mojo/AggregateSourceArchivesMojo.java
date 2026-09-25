@@ -362,6 +362,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                             }
                         }
                         File destinationFile = new File(effectiveTargetDir, file.getName());
+                        protocolEntry.setTargetPath(destinationFile.getAbsolutePath());
                         
                         if (file.equals(destinationFile)) {
                             continue;
