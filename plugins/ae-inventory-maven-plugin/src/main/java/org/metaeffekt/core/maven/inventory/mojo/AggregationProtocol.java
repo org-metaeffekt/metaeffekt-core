@@ -56,6 +56,7 @@ public class AggregationProtocol {
             int excluded = 0;
             int downloadSuccess = 0;
             int downloadFailed = 0;
+            int missingPlaceholders = 0;
 
             List<ArtifactProtocolEntry> succeededArtifacts = new ArrayList<>();
             List<ArtifactProtocolEntry> failedArtifacts = new ArrayList<>();
@@ -91,6 +92,9 @@ public class AggregationProtocol {
                             writer.println("  - " + location);
                         }
                     }
+                } else if ("FAILED".equals(entry.getDownloadStatus())) {
+                    writer.println("Note: No URL matched due to missing placeholders.");
+                    missingPlaceholders++;
                 }
 
                 writer.println();
@@ -125,7 +129,7 @@ public class AggregationProtocol {
             writer.println("================================================================================");
             writer.println("SUMMARY");
             writer.println("Total Artifacts: " + entries.size() + " | Included: " + included + " | Excluded: " + excluded + 
-                           " | Downloaded: " + downloadSuccess + " | Failed: " + downloadFailed);
+                           " | Downloaded: " + downloadSuccess + " | Failed: " + downloadFailed + " | Skipped: " + missingPlaceholders);
             writer.println("================================================================================");
         }
     }
