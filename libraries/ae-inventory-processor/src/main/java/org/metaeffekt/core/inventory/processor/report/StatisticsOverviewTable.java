@@ -136,6 +136,24 @@ public class StatisticsOverviewTable {
                 .allMatch(row -> row.getTotal() == 0);
     }
 
+    public void removeColumnIfEmpty(String columnName) {
+        if (columnName == null) return;
+        final String normalizedColumnName = normalize(columnName);
+        boolean isEmpty = true;
+        for (SeverityToStatusRow row : rows) {
+            if (row.getCount(normalizedColumnName) > 0) {
+                isEmpty = false;
+                break;
+            }
+        }
+
+        if (isEmpty) {
+            for (SeverityToStatusRow row : rows) {
+                row.getStatusCountMap().remove(normalizedColumnName);
+            }
+        }
+    }
+
     protected static String normalize(String s) {
         return s.toLowerCase();
     }
