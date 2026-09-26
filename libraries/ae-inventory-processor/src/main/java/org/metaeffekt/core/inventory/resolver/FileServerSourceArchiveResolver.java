@@ -100,14 +100,29 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
             while (matcher.find()) {
                 sb.append(resolvedUrl, lastEnd, matcher.start());
                 String pattern = matcher.group(1);
-                String resolvedValue = resolver.resolve(pattern);
+                
+                String placeholderName = pattern;
+                String defaultValue = null;
+                
+                int colonIndex = pattern.indexOf(':');
+                if (colonIndex != -1) {
+                    placeholderName = pattern.substring(0, colonIndex);
+                    defaultValue = pattern.substring(colonIndex + 1);
+                }
 
-                // if the resolver returns the exact pattern name, it failed to resolve it.
-                // in that case, we keep the original placeholder syntax.
-                if (resolvedValue != null && !resolvedValue.equals(pattern)) {
-                    sb.append(resolvedValue);
+                String resolvedValue = resolver.resolve(placeholderName);
+
+                boolean isMissing = (resolvedValue == null || resolvedValue.equals(placeholderName) || resolvedValue.trim().isEmpty());
+
+                if (isMissing) {
+                    if (defaultValue != null) {
+                        sb.append(defaultValue);
+                    } else {
+                        log.debug("URL placeholder '{}' is missing and has no default, skipping: {}", placeholderName, url);
+                        return false;
+                    }
                 } else {
-                    sb.append(matcher.group(0));
+                    sb.append(resolvedValue);
                 }
                 lastEnd = matcher.end();
             }
@@ -116,7 +131,6 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
 
             if (PROPERTY_PATTERN.matcher(resolvedUrl).find()) {
                 log.debug("URL still contains unresolved placeholders, skipping: {}", resolvedUrl);
-                result.addAttemptedResourceLocation(resolvedUrl);
                 return false;
             }
 
@@ -129,6 +143,12 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
         String fileName = url.substring(url.lastIndexOf('/') + 1);
         if (fileName.contains("?")) {
             fileName = fileName.substring(0, fileName.indexOf("?"));
+        }
+
+        File existingFile = findFile(targetDir, fileName);
+        if (existingFile != null) {
+            result.addFile(existingFile, url);
+            return true;
         }
 
         final File destinationFile = new File(targetDir, fileName);
@@ -147,6 +167,30 @@ public class FileServerSourceArchiveResolver implements SourceArchiveResolver {
             result.addAttemptedResourceLocation(url);
         }
         return false;
+    }
+
+    private File findFile(File dir, String fileName) {
+        if (dir == null || !dir.exists() || !dir.isDirectory()) {
+            return null;
+        }
+        
+        File directFile = new File(dir, fileName);
+        if (directFile.exists() && directFile.isFile()) {
+            return directFile;
+        }
+
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    File found = findFile(file, fileName);
+                    if (found != null) {
+                        return found;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private void loadPropertiesFromFile(Properties properties) {

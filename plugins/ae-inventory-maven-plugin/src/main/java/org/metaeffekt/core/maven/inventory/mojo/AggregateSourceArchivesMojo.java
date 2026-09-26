@@ -342,9 +342,10 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                     String dynamicTargetFolder = "";
                     String successfulUrl = protocolEntry.getDownloadedLocation();
 
-                    if (successfulUrl != null && config != null && config.getTargetFolderMappings() != null) {
+                    if (config != null && config.getTargetFolderMappings() != null) {
                         for (SourceAggregationConfig.TargetFolderMapping mapping : config.getTargetFolderMappings()) {
-                            if (successfulUrl.matches(mapping.getUrlPattern())) {
+                            if (mapping.getUrlPattern() == null || mapping.getUrlPattern().isEmpty() || 
+                               (successfulUrl != null && successfulUrl.matches(mapping.getUrlPattern()))) {
                                 dynamicTargetFolder = mapping.getTargetFolder();
                                 break;
                             }
@@ -352,7 +353,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                     }
 
                     for (File file : result.getFiles()) {
-                        // copy file to target folder if necessary
+                        // move or copy file to target folder if necessary
                         File effectiveTargetDir = targetPath;
                         if (dynamicTargetFolder != null && !dynamicTargetFolder.isEmpty()) {
                             effectiveTargetDir = new File(targetPath, dynamicTargetFolder);
@@ -360,9 +361,33 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareConfiguredM
                                 effectiveTargetDir.mkdirs();
                             }
                         }
-                        File destFile = new File(effectiveTargetDir, file.getName());
-                        if (!destFile.exists()) {
-                            FileUtils.copyFile(file, destFile);
+                        File destinationFile = new File(effectiveTargetDir, file.getName());
+                        protocolEntry.setTargetPath(destinationFile.getAbsolutePath());
+                        
+                        if (file.equals(destinationFile)) {
+                            continue;
+                        }
+
+                        boolean isInsideTarget = false;
+                        File current = file.getParentFile();
+                        while (current != null) {
+                            if (current.equals(targetPath)) {
+                                isInsideTarget = true;
+                                break;
+                            }
+                            current = current.getParentFile();
+                        }
+
+                        if (!destinationFile.exists()) {
+                            if (isInsideTarget) {
+                                FileUtils.moveFile(file, destinationFile);
+                            } else {
+                                FileUtils.copyFile(file, destinationFile);
+                            }
+                        } else {
+                            if (isInsideTarget) {
+                                FileUtils.deleteQuietly(file);
+                            }
                         }
                     }
                     return;

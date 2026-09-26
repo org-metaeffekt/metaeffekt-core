@@ -27,6 +27,7 @@ public class ArtifactProtocolEntry {
     private String downloadStatus = "SKIPPED";
     private List<String> attemptedLocations = new ArrayList<>();
     private String downloadedLocation;
+    private String targetPath;
 
     public void addAttemptedLocation(String location) {
         if (location != null && !this.attemptedLocations.contains(location)) {

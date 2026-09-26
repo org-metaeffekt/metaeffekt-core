@@ -56,11 +56,18 @@ public class AggregationProtocol {
             int excluded = 0;
             int downloadSuccess = 0;
             int downloadFailed = 0;
+            int missingPlaceholders = 0;
+
+            List<ArtifactProtocolEntry> succeededArtifacts = new ArrayList<>();
+            List<ArtifactProtocolEntry> failedArtifacts = new ArrayList<>();
 
             for (ArtifactProtocolEntry entry : entries) {
                 writer.println("Artifact:  " + entry.getArtifactRepresentation());
                 writer.println("Inclusion: " + entry.getIncludeStatus() + " (Reason: " + entry.getIncludeReason() + ")");
                 writer.println("Download:  " + entry.getDownloadStatus());
+                if (entry.getTargetPath() != null) {
+                    writer.println("Target:    " + entry.getTargetPath());
+                }
                 
                 if ("INCLUDED".equals(entry.getIncludeStatus())) {
                     included++;
@@ -70,8 +77,10 @@ public class AggregationProtocol {
 
                 if ("SUCCESS".equals(entry.getDownloadStatus())) {
                     downloadSuccess++;
+                    succeededArtifacts.add(entry);
                 } else if ("FAILED".equals(entry.getDownloadStatus())) {
                     downloadFailed++;
+                    failedArtifacts.add(entry);
                 }
 
                 if (!entry.getAttemptedLocations().isEmpty()) {
@@ -83,6 +92,9 @@ public class AggregationProtocol {
                             writer.println("  - " + location);
                         }
                     }
+                } else if ("FAILED".equals(entry.getDownloadStatus())) {
+                    writer.println("Note: No URL matched due to missing placeholders.");
+                    missingPlaceholders++;
                 }
 
                 writer.println();
@@ -91,9 +103,33 @@ public class AggregationProtocol {
             }
 
             writer.println("================================================================================");
+            writer.println("SUCCESSFUL DOWNLOADS");
+            writer.println("================================================================================");
+            if (succeededArtifacts.isEmpty()) {
+                writer.println("None.");
+            } else {
+                for (ArtifactProtocolEntry entry : succeededArtifacts) {
+                    writer.println("- " + entry.getArtifactRepresentation() + " -> " + (entry.getTargetPath() != null ? entry.getTargetPath() : "Unknown target"));
+                }
+            }
+            writer.println();
+
+            writer.println("================================================================================");
+            writer.println("FAILED DOWNLOADS");
+            writer.println("================================================================================");
+            if (failedArtifacts.isEmpty()) {
+                writer.println("None.");
+            } else {
+                for (ArtifactProtocolEntry entry : failedArtifacts) {
+                    writer.println("- " + entry.getArtifactRepresentation());
+                }
+            }
+            writer.println();
+
+            writer.println("================================================================================");
             writer.println("SUMMARY");
             writer.println("Total Artifacts: " + entries.size() + " | Included: " + included + " | Excluded: " + excluded + 
-                           " | Downloaded: " + downloadSuccess + " | Failed: " + downloadFailed);
+                           " | Downloaded: " + downloadSuccess + " | Failed: " + downloadFailed + " | Skipped: " + missingPlaceholders);
             writer.println("================================================================================");
         }
     }
