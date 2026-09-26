@@ -4,13 +4,10 @@
     <glossterm>Part</glossterm>
     <glossdef>
         <p>
-            Parts are identifiable elements that a device can be disassembled into.
+            A part is an identifiable element that a device can be disassembled into.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="device"/>
+            See also: <term keyref="artifact">Artifact</term>, <term keyref="device">Device</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>parts</glossSurfaceForm>
-    </glossBody>
 </glossentry>

@@ -3,11 +3,13 @@
 <glossentry id="epss">
     <glossterm>Exploit Prediction Scoring System</glossterm>
     <glossdef>
-        Das Exploit Prediction Scoring System (EPSS) ist ein datengetriebener Ansatz zur Vorhersage der
-        Exploit-Wahrscheinlichkeiten für Schwachstellen innerhalb der nächsten 30 Tage. Für jede abgedeckte
-        Schwachstelle stellt das System einen berechneten Score als Wert zwischen 0.0 und 1.0 bereit.
-        EPSS wird von first.org bereitgestellt und bietet fundierte Hintergrundinformationen sowie
-        Implementierungsdetails.
+        <p>
+            Das Exploit Prediction Scoring System (EPSS) ist ein datengetriebener Ansatz zur Vorhersage der
+            Exploit-Wahrscheinlichkeiten für Schwachstellen innerhalb der nächsten 30 Tage. Für jede abgedeckte
+            Schwachstelle stellt das System einen berechneten Score als Wert zwischen 0.0 und 1.0 bereit.
+            EPSS wird von first.org bereitgestellt und bietet fundierte Hintergrundinformationen sowie
+            Implementierungsdetails.
+        </p>
     </glossdef>
     <glossBody>
         <glossSurfaceForm>Exploit Prediction Scoring System (EPSS)</glossSurfaceForm>

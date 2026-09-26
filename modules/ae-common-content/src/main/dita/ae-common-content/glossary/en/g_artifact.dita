@@ -21,10 +21,7 @@
             identification and differentiation. Artifacts are classified and documented here according to defined artifact types.
         </p>
         <p>
-            See also: <abbreviated-form keyref="component"/>
+            See also: <term keyref="component"/>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>artifacts</glossSurfaceForm>
-    </glossBody>
 </glossentry>

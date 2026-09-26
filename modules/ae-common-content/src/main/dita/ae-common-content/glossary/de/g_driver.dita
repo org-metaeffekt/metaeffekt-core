@@ -8,10 +8,7 @@
             Betriebssystem zu kommunizieren.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="artifact"/>
+            Siehe auch: <term keyref="artifact"/>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Treiber</glossSurfaceForm>
-    </glossBody>
 </glossentry>

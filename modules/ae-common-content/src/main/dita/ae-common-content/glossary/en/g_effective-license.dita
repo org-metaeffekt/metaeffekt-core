@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
-<glossentry id="effective-licenses">
-    <glossterm>Effective Licenses</glossterm>
+<glossentry id="effective-license">
+    <glossterm>Effective License</glossterm>
     <glossdef>
-        There are several cases where a component is made available by a provider under multiple associated licenses.
-        The effective licenses are the selected licenses relevant for the software distribution:
+        <p>
+            There are several cases where a component is made available by a provider under multiple associated licenses.
+            The effective licenses are the selected licenses relevant for the software distribution:
+        </p>
         <ul>
             <li>
                 A component is provided with a licensing option (dual or multiple licensing), where either one or
@@ -25,10 +27,7 @@
             </li>
         </ul>
         <p>
-            See also: <abbreviated-form keyref="associated-licenses"/>, <abbreviated-form keyref="licenses"/>
+            See also: <term keyref="associated-license">Associated License</term>, <term keyref="license">License</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>effective licenses</glossSurfaceForm>
-    </glossBody>
 </glossentry>

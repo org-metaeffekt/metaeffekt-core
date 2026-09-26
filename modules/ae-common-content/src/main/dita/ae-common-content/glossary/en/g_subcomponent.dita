@@ -3,12 +3,11 @@
 <glossentry id="subcomponent">
     <glossterm>Subcomponent</glossterm>
     <glossdef>
-        A subcomponent is a component that is embedded in or linked by another component.
         <p>
-            See also: <abbreviated-form keyref="component"/>
+            A subcomponent is a component that is embedded in or linked by another component.
+        </p>
+        <p>
+            See also: <term keyref="component">Components</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>subcomponents</glossSurfaceForm>
-    </glossBody>
 </glossentry>

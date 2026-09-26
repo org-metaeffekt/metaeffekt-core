@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
-<glossentry id="licenses">
+<glossentry id="license">
     <glossterm>Lizenzbezeichner und -ausdrücke</glossterm>
     <glossdef>
-        Die verwendeten Lizenzbezeichner wurden – soweit möglich und sinnvoll – nach vereinheitlichten Regeln aus den
-        Lizenzen (Titel, Version und Inhalt) abgeleitet. Dabei wurde das Ziel nach der Vereinheitlichung verfolgt und
-        weitgehend auf Abkürzungen verzichtet.
+        <p>
+            Die verwendeten Lizenzbezeichner wurden – soweit möglich und sinnvoll – nach vereinheitlichten Regeln aus den
+            Lizenzen (Titel, Version und Inhalt) abgeleitet. Dabei wurde das Ziel nach der Vereinheitlichung verfolgt und
+            weitgehend auf Abkürzungen verzichtet.
+        </p>
         <p>
             Eine Besonderheit bilden hierbei Lizenzen oder Nutzungsbedingungen, die keinerlei Titel oder Namen
             tragen. Für solche Nutzungsbedingungen wurde der Bezeichner aus Inhalt und Kontext abgeleitet. Insbesondere
@@ -41,9 +43,8 @@
             Lizenzbezeichnern dargestellt. Etwa <i>GNU Lesser General Public License 2.1 (or any later version)</i>
             oder <i>GNU General Public License 2.0 (with classpath exception)</i>.
         </p>
-        <p>Siehe auch: <abbreviated-form keyref="associated-licenses"/>, <abbreviated-form keyref="effective-licenses"/></p>
+        <p>
+            Siehe auch: <term keyref="associated-license"/>, <term keyref="effective-license"/>
+        </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Lizenzbezeichner und -ausdrücke</glossSurfaceForm>
-    </glossBody>
 </glossentry>

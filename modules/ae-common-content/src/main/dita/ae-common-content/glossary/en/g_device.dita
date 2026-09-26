@@ -8,10 +8,7 @@
             computer-attached hardware. Devices can also be broken down into parts.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="part"/>
+            See also: <term keyref="artifact">Artifact</term>, <term keyref="part">Part</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>devices</glossSurfaceForm>
-    </glossBody>
 </glossentry>

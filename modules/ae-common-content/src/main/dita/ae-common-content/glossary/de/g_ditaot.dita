@@ -2,8 +2,11 @@
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="ditaot">
     <glossterm>DITA Open Toolkit</glossterm>
-    <glossdef>Das DITA-OT unterstützt die Übertratung von DITA-basierten Inhalten in verschiedene Ausgabeformate. Das
-              DITA-OT ist ein Open Source-Projekt, das alle verfügbaren Versionen der DITA-Spezifikation unterstützt.
+    <glossdef>
+        <p>
+            Das DITA-OT unterstützt die Übertratung von DITA-basierten Inhalten in verschiedene Ausgabeformate. Das
+            DITA-OT ist ein Open Source-Projekt, das alle verfügbaren Versionen der DITA-Spezifikation unterstützt.
+        </p>
     </glossdef>
     <glossBody>
         <glossSurfaceForm>DITA Open Toolkit (DITA-OT)</glossSurfaceForm>

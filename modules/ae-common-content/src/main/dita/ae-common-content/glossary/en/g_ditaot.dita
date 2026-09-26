@@ -2,8 +2,11 @@
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="ditaot">
     <glossterm>DITA Open Toolkit</glossterm>
-    <glossdef>The DITA-OT supports to render DITA-based content to different output formats. The DITA-OT is an open
-        source endeavor that supports all available versions of the DITA specification.
+    <glossdef>
+        <p>
+            The DITA-OT supports to render DITA-based content to different output formats. The DITA-OT is an open
+            source endeavor that supports all available versions of the DITA specification.
+        </p>
     </glossdef>
     <glossBody>
         <glossSurfaceForm>DITA Open Toolkit (DITA-OT)</glossSurfaceForm>

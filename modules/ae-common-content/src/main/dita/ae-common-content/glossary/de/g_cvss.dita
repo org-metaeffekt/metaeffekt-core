@@ -3,10 +3,11 @@
 <glossentry id="cvss">
     <glossterm>Common Vulnerability Scoring System</glossterm>
     <glossdef>
-        Der Schweregrad von Sicherheitslücken wird in der Regel mit dem CVSS-Bewertungssystem (Common Vulnerability
-        Scoring System) bestimmt.
-        Dabei werden einzelne Messgrößen verwendet, um verschiedene Faktoren einer Schwachstelle
-        zu erfassen.
+        <p>
+            Die Severity von Sicherheitslücken wird in der Regel mit dem CVSS-Bewertungssystem (Common Vulnerability
+            Scoring System) bestimmt.
+            Dabei werden einzelne Metriken verwendet, um verschiedene Faktoren einer Schwachstelle zu erfassen.
+        </p>
     </glossdef>
     <glossBody>
         <glossSurfaceForm>Common Vulnerability Scoring System (CVSS)</glossSurfaceForm>

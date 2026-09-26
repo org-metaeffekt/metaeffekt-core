@@ -7,10 +7,7 @@
             Teile sind identifizierbare Hardware-Elemente. Geräte können in Teilen erfasst werden.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="device"/>
+            Siehe auch: <term keyref="artifact"/>, <term keyref="device"/>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Teile</glossSurfaceForm>
-    </glossBody>
 </glossentry>

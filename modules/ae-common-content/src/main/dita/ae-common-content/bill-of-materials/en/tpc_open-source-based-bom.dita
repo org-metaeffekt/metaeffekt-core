@@ -4,13 +4,13 @@
     <title>${asset.name} ${asset.version}</title>
     <body>
         <p>
-            The <abbreviated-form keyref="software-distribution"/> covered by this document contains
-            <abbreviated-form keyref="component"/> and <abbreviated-form keyref="subcomponent"/> restricted
+            The <term keyref="software-distribution">software distribution</term> covered by this document contains
+            <term keyref="component">components</term> and <term keyref="subcomponent">subcomponents</term> restricted
             by individual license terms.
         </p>
         <p>
-            This document is part of the <abbreviated-form keyref="software-distribution-annex"/> which addresses
-            the obligations deduced from the <abbreviated-form keyref="effective-licenses"/>. The
+            This document is part of the <term keyref="software-distribution-annex"/> which addresses
+            the obligations deduced from the <term keyref="effective-license">effective licenses</term>. The
             software distribution is made available or transferred only in corresponding
             combination with the software distribution annex.
         </p>
