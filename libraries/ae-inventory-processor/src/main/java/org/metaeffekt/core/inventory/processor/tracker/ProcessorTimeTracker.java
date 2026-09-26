@@ -24,10 +24,7 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
 import org.metaeffekt.core.inventory.processor.report.adapter.IVulnerabilityReportAdapter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -151,6 +148,12 @@ public class ProcessorTimeTracker {
 
 
     public static String generatePropertiesString(String propertyPrefix, long first, long last) {
+        return generateProperties(propertyPrefix, first, last).entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.joining("\n"));
+    }
+
+    public static Map<String, String> generateProperties(String propertyPrefix, long first, long last) {
         if (first == Long.MAX_VALUE) first = 0;
         if (last == Long.MAX_VALUE) last = first;
         if (first == 0) first = last;
@@ -169,41 +172,37 @@ public class ProcessorTimeTracker {
         final String formattedTimeLastEn = formattedTimeLast.getEnTimeAndDate();
         final String formattedTimeLastDe = formattedTimeLast.getDeTimeAndDate();
 
-        final StringJoiner sj = new StringJoiner(propertyPrefix, propertyPrefix, "\n");
+        final Map<String, String> properties = new LinkedHashMap<>();
 
         if (last == 0 && first == 0) {
-            sj.add(".timestamp=n.a\n\n");
-
-            sj.add(".date.en=n.a\n");
-            sj.add(".date.de=n.a\n\n");
-
-            sj.add(".datetime.en=n.a\n");
-            sj.add(".datetime.de=n.a\n");
+            properties.put(propertyPrefix + ".timestamp", "n.a.");
+            properties.put(propertyPrefix + ".date.en", "n.a.");
+            properties.put(propertyPrefix + ".date.de", "n.a.");
+            properties.put(propertyPrefix + ".datetime.en", "n.a.");
+            properties.put(propertyPrefix + ".datetime.de", "n.a.");
 
         } else if (last == first) {
-            sj.add(String.format(".timestamp=%d\n\n", last));
-
-            sj.add(String.format(".date.en=%s\n", formattedFirstEn));
-            sj.add(String.format(".date.de=%s\n\n", formattedFirstDe));
-
-            sj.add(String.format(".datetime.en=%s\n", formattedTimeFirstEn));
-            sj.add(String.format(".datetime.de=%s\n", formattedTimeFirstDe));
+            properties.put(propertyPrefix + ".timestamp", String.valueOf(last));
+            properties.put(propertyPrefix + ".date.en", formattedFirstEn);
+            properties.put(propertyPrefix + ".date.de", formattedFirstDe);
+            properties.put(propertyPrefix + ".datetime.en", formattedTimeFirstEn);
+            properties.put(propertyPrefix + ".datetime.de", formattedTimeFirstDe);
 
         } else {
-            sj.add(String.format(".timestamp=%d - %d\n\n", first, last));
+            properties.put(propertyPrefix + ".timestamp", first + " - " + last);
 
             if (formattedFirstEn.equals(formattedLastEn)) {
-                sj.add(String.format(".date.en=%s\n", formattedLastEn));
-                sj.add(String.format(".date.de=%s\n\n", formattedLastDe));
+                properties.put(propertyPrefix + ".date.en", formattedLastEn);
+                properties.put(propertyPrefix + ".date.de", formattedLastDe);
             } else {
-                sj.add(String.format(".date.en=%s - %s\n", formattedFirstEn, formattedLastEn));
-                sj.add(String.format(".date.de=%s - %s\n\n", formattedFirstDe, formattedLastDe));
+                properties.put(propertyPrefix + ".date.en", formattedFirstEn + " - " + formattedLastEn);
+                properties.put(propertyPrefix + ".date.de", formattedFirstDe + " - " + formattedLastDe);
             }
 
-            sj.add(String.format(".datetime.en=%s - %s\n", formattedTimeFirstEn, formattedTimeLastEn));
-            sj.add(String.format(".datetime.de=%s - %s\n", formattedTimeFirstDe, formattedTimeLastDe));
+            properties.put(propertyPrefix + ".datetime.en", formattedTimeFirstEn + " - " + formattedTimeLastEn);
+            properties.put(propertyPrefix + ".datetime.de", formattedTimeFirstDe + " - " + formattedTimeLastDe);
         }
 
-        return sj.toString();
+        return properties;
     }
 }
