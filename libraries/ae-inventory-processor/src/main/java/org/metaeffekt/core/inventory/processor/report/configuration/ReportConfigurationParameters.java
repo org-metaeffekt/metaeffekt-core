@@ -29,6 +29,12 @@ public class ReportConfigurationParameters {
     private final boolean enableOpenCodeStatus = true;
 
     /**
+     * If true, includes the assessed column in the vulnerability overview tables.
+     */
+    @Builder.Default
+    private final boolean includeAssessedColumnInOverviewTables = true;
+
+    /**
      * If true, disables the priority label in the document (all areas), hides the priority score and hides
      * the priority label columns in the Vulnerability list.
      */
