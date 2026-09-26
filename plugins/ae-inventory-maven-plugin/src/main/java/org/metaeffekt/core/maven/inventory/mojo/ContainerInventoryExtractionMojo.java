@@ -52,10 +52,10 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     protected String[] excludes;
 
     private InventoryExtractor[] inventoryExtractors = new InventoryExtractor[]{
-            new DebianInventoryExtractor(),
-            new CentOSInventoryExtractor(),
-            new AlpineInventoryExtractor(),
-            new ArchInventoryExtractor(),
+            new DebianInventoryExtractor(), // -> AptBasedInventoryExtractor
+            new CentOSInventoryExtractor(), // -> RpmBasedInventoryExtractor
+            new AlpineInventoryExtractor(), // -> ApkBasedInventoryExtractor
+            new ArchInventoryExtractor(), // -> PacmanBasedInventoryExtractor
             new FallbackInventoryExtractor()
     };
 
@@ -110,7 +110,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
 
     private Inventory extractInventory(File analysisDir) throws IOException {
         InventoryExtractor extractor = Arrays.stream(inventoryExtractors).filter(e -> e
-                .applies(analysisDir))
+                        .applies(analysisDir))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No applicable inventory extractor found."));
 
@@ -120,8 +120,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         extractor.validate(analysisDir);
 
         // finally we run the extraction
-        return extractor.extractInventory(analysisDir,
-                artifactInventoryId, excludes == null ? Collections.emptyList() : Arrays.asList(excludes));
+        return extractor.extractInventory(analysisDir, artifactInventoryId, excludes == null ? Collections.emptyList() : Arrays.asList(excludes));
     }
 
     private void filterInventory(Inventory inventory) {

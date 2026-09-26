@@ -21,6 +21,7 @@ import org.eclipse.packagedrone.utils.rpm.RpmTag;
 import org.eclipse.packagedrone.utils.rpm.parse.RpmInputStream;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;
@@ -44,7 +45,11 @@ public class RpmMetadataInspector implements ArtifactInspector {
                 if (file.exists()) {
                     try {
                         try (RpmInputStream in = new RpmInputStream(Files.newInputStream(file.toPath()))) {
-                            artifact.set(Artifact.Attribute.LICENSE, (String) in.getPayloadHeader().getTag(RpmTag.LICENSE));
+                            // FIXME: check all data available (selected samples) is used
+
+                            artifact.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, (String) in.getPayloadHeader().getTag(RpmTag.LICENSE));
+
+                            // FIXME: consolidate vendor/supplier/provider/organization data
                             artifact.set(Artifact.Attribute.ORGANIZATION, (String) in.getPayloadHeader().getTag(RpmTag.VENDOR));
                             artifact.set(Artifact.Attribute.SOURCE, (String) in.getPayloadHeader().getTag(RpmTag.SOURCE_PACKAGE));
                         }
