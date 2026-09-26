@@ -5,8 +5,8 @@
         <chapter href="tpc_inventory-asset.dita">
             #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($documentPart.getIdentifier()))
 
-            # In case of an inventory that contains only a single artifact type, the nested document structure containing
-            an introductory topic is replaced by a single topic for the respective artifact type.
+            ## In case of an inventory that contains only a single artifact type, the nested document structure containing
+            ## an introductory topic is replaced by a single topic for the respective artifact type.
 
             #set($isSingleArtifactType = $inventoryContext.getInventory().hasSingleArtifactType())
             #if ($isSingleArtifactType)
