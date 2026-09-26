@@ -188,9 +188,7 @@ public class XlsxXSSFInventorySheetCellStylers {
                     final boolean isCorrectHeader = context.isHeaderEither(
                             VulnerabilityMetaData.Attribute.SCORE_CONTEXT_OVERALL,
                             VulnerabilityMetaData.Attribute.SCORE_INITIAL_OVERALL,
-                            VulnerabilityMetaData.Attribute.SCORE_BASE,
-                            VulnerabilityMetaData.Attribute.SCORE_EXPLOITABILITY,
-                            VulnerabilityMetaData.Attribute.SCORE_IMPACT
+                            VulnerabilityMetaData.Attribute.PRIORITY_SCORE
                     );
                     if (!isCorrectHeader) {
                         return false;
