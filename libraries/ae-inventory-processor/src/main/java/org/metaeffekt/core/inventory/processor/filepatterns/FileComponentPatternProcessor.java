@@ -101,29 +101,16 @@ public class FileComponentPatternProcessor {
                 final Artifact representativeArtifact = idToRepresentativeArtifactMap.get(artifactId);
                 if (representativeArtifact != null) {
                     // found an already matched artifact with the same id
-
-                    // if we were not successful before, we expect not to be successful now
-                    if (representativeArtifact == NULL_ARTIFACT) {
-                        continue;
-                    }
-
-                    // merge rootPaths with representative
-                    final Set<String> rootPaths = new HashSet<>(representativeArtifact.getRootPaths());
-                    rootPaths.addAll(artifact.getRootPaths());
-                    representativeArtifact.setRootPaths(rootPaths);
-
-                    // remove the artifact
-                    removableArtifacts.add(artifact);
+                    processRepresentativeArtifact(artifact, representativeArtifact, removableArtifacts);
                     continue;
                 }
 
                 // we have no representative yet...
-
                 final Set<String> projects = artifact.getRootPaths();
                 for (String path : projects) {
 
                     // skip files that we have anyway no pattern for; add to configuration; these files remain unprocessed in this inventory
-                    PatternSetMatcher unknownFilePatternSetMatcher = new PatternSetMatcher(unknownFilePatterns);
+                    final PatternSetMatcher unknownFilePatternSetMatcher = new PatternSetMatcher(unknownFilePatterns);
                     if (unknownFilePatternSetMatcher.matches(path)) {
                         continue;
                     }
@@ -161,7 +148,7 @@ public class FileComponentPatternProcessor {
                     if (!detected) {
                         // complain
                         if (path.endsWith(".jar")) {
-                            if (idToVersionMap.get(new File(path).getName()) == null) {
+                            if (idToVersionMap != null && idToVersionMap.get(new File(path).getName()) == null) {
                                 System.out.println("idToVersionMap.put(\"" + new File(path).getName() + "\", null); // " + path);
                                 fail = true;
                             }
@@ -203,6 +190,21 @@ public class FileComponentPatternProcessor {
 
         // add new derived artifacts
         inventory.getArtifacts().addAll(toBeAddedArtifacts);
+    }
+
+    private static void processRepresentativeArtifact(Artifact artifact, Artifact representativeArtifact, Set<Artifact> removableArtifacts) {
+        // if we were not successful before, we expect not to be successful now
+        if (representativeArtifact == NULL_ARTIFACT) {
+            return;
+        }
+
+        // merge rootPaths with representative
+        final Set<String> rootPaths = new HashSet<>(representativeArtifact.getRootPaths());
+        rootPaths.addAll(artifact.getRootPaths());
+        representativeArtifact.setRootPaths(rootPaths);
+
+        // remove the artifact
+        removableArtifacts.add(artifact);
     }
 
     public FileMetaData deriveFileMetaData(String path) {

@@ -94,7 +94,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             // convert files from filtered-files.txt to artifacts and add to inventory
             addFileArtifactsToInventory(inventory, filteredFile);
 
-            // read from filtered-files.txt and create artifacts
+            // read files from filtered-files.txt and enrich artifacts
             applyFileComponentPatterns(inventory, idToVersionMap, unknownFilePatterns);
 
             // try saving the excel file; may be too big
@@ -109,6 +109,14 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         }
     }
 
+    /**
+     * Derives the specific analysis directory from the input directory which either can have an archive as a direct child or can can have the unpacked analysis directory as any of its children.
+     *
+     * @param inputDir the input directory containing an archive as direct child or the analysis folder as any sub-child
+     * @return the analysis directory to analyze
+     * @throws IOException            if no analysis directory was found
+     * @throws MojoExecutionException if an error occurs during the execution of the mojo
+     */
     private File deriveAnalysisFolder(File inputDir) throws IOException, MojoExecutionException {
         if (!inputDir.isDirectory()) {
             throw new MojoExecutionException("Input Directory is not a directory: " + inputDir);
@@ -125,6 +133,13 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         return findAnalysisDirectory(inputDir);
     }
 
+    /**
+     * Finds the analysis directory recursively starting from a (extracted) directory .
+     *
+     * @param extractedDir the starting directory to search for the analysis directory
+     * @return the found analysis directory
+     * @throws IOException if no analysis directory was found
+     */
     private File findAnalysisDirectory(File extractedDir) throws IOException {
         try (Stream<Path> paths = Files.walk(extractedDir.toPath())) {
             return paths
