@@ -18,9 +18,14 @@ package org.metaeffekt.core.maven.inventory.extractor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.util.FileUtils;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 @Slf4j
@@ -33,18 +38,16 @@ public abstract class InventoryExtractorUtil {
 
     /**
      * Filters the file list and outputs a list of files that is not covered by the packages.
-     *
+     * <p>
      * Symlinks are or relevance if the source of a symlinked file is covered by a package file or exclude
      * pattern. We try to consistency delete target and source of symlinks if either one is covered.
-     *
+     * <p>
      * This procedure is rather time-consuming depending on the container/virtual machine being analyzed. Changes must
      * only be applied with care and thorough testing.
      *
-     * @param analysisDir The analysis base dir.
+     * @param analysisDir     The analysis base dir.
      * @param excludePatterns Additional exclude patterns.
-     *
-     * @return List of files not covered by package file lists or exclude patterns.
-     *
+     * @return Set of files not covered by package file lists or exclude patterns.
      * @throws IOException May throw an {@link IOException}.
      */
     public static Set<String> filterFileList(File analysisDir, List<String> excludePatterns) throws IOException {
@@ -88,6 +91,25 @@ public abstract class InventoryExtractorUtil {
         log.info("Filtering files completed resulting in [{}] files.", resultingFileSet.size());
 
         return resultingFileSet;
+    }
+
+    /**
+     * Loads exclude patterns from external YAML config file.
+     */
+    public static ExcludePatternsConfig loadExcludeConfigFromYamlFile(File yamlFile) throws IOException {
+        if (!yamlFile.isFile()) {
+            throw new IOException("File not found: " + yamlFile);
+        }
+        try (InputStream is = new FileInputStream(yamlFile)) {
+            return loadExcludeConfigFromStream(is);
+        }
+    }
+
+    private static ExcludePatternsConfig loadExcludeConfigFromStream(InputStream is) {
+        final Yaml yaml = new Yaml(new Constructor(ExcludePatternsConfig.class, new LoaderOptions()));
+        final ExcludePatternsConfig config = yaml.load(is);
+
+        return config != null ? config : new ExcludePatternsConfig();
     }
 
     private static Set<String> filterByExcludePatternsAndLinkedFiles(List<String> fileList, PatternSetMatcher patternSetMatcher, Map<String, String> symLinkMap) {

@@ -21,6 +21,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.metaeffekt.core.inventory.processor.filepatterns.FileComponentPatternProcessor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
@@ -53,7 +54,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     protected boolean filterArtifactsWithoutVersion = false;
 
     @Parameter
-    protected String[] excludes;
+    protected File excludePatternsFile;
 
     private final InventoryExtractor[] inventoryExtractors = new InventoryExtractor[]{
             new DebianInventoryExtractor(), // -> AptBasedInventoryExtractor
@@ -69,39 +70,32 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             final File analysisDir = deriveAnalysisFolder(inputDir);
             getLog().info("Found analysis directory: " + analysisDir.getAbsolutePath());
 
+            // derive exclude configs
+            final ExcludePatternsConfig excludePatternsConfig = InventoryExtractorUtil.loadExcludeConfigFromYamlFile(excludePatternsFile);
+            final List<String> fileExcludes = new ArrayList<>(excludePatternsConfig.getExcludes());
+            final Set<String> unknownFilePatterns = excludePatternsConfig.getUnknownFilePatterns();
+            final Map<String, String> idToVersionMap = excludePatternsConfig.getArtifactIdToVersionMap();
+
             // fill content derived from preprocessed files
-            final Inventory inventory = extractInventory(analysisDir);
+            final Inventory inventory = extractInventory(analysisDir, fileExcludes);
 
             filterInventory(inventory);
 
             // write inventory
             targetInventoryFile.getParentFile().mkdirs();
 
-            // write not covered file list
-            final StringBuilder sb = new StringBuilder();
-            for (Artifact artifact : new ArrayList<>(inventory.getArtifacts())) {
-                if (ARTIFACT_TYPE_FILE.equalsIgnoreCase(artifact.get(KEY_TYPE))) {
-                    Set<String> rootPaths = artifact.getRootPaths();
-                    if (rootPaths != null) {
-                        for (String project : rootPaths) {
-                            if (sb.length() > 0) {
-                                sb.append(DELIMITER_NEWLINE);
-                            }
-                            if (!project.startsWith("/")) {
-                                sb.append("/");
-                            }
-                            // we always normalize to linux paths
-                            sb.append(FileUtils.normalizePathToLinux(project));
-                        }
-                    }
-
-                    // remove not covered file from inventory; inventory was just a vehicle
-                    inventory.getArtifacts().remove(artifact);
-                }
-            }
+            // handle files to be excluded from inventory
+            final String filteredFilesData = writeNotCoveredFileList(inventory);
 
             // write list of filtered files
-            FileUtils.write(new File(inputDir, "filtered-files.txt"), sb.toString(), FileUtils.ENCODING_UTF_8);
+            final File filteredFile = new File(inputDir, "filtered-files.txt");
+            FileUtils.write(filteredFile, filteredFilesData, FileUtils.ENCODING_UTF_8);
+
+            // convert files from filtered-files.txt to artifacts and add to inventory
+            addFileArtifactsToInventory(inventory, filteredFile);
+
+            // read from filtered-files.txt and create artifacts
+            applyFileComponentPatterns(inventory, idToVersionMap, unknownFilePatterns);
 
             // try saving the excel file; may be too big
             try {
@@ -147,7 +141,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
                 && Files.exists(dir.resolve("release.txt"));
     }
 
-    private Inventory extractInventory(File analysisDir) throws IOException {
+    private Inventory extractInventory(File analysisDir, List<String> fileExcludes) throws IOException {
         InventoryExtractor extractor = Arrays.stream(inventoryExtractors).filter(e -> e
                         .applies(analysisDir))
                 .findFirst()
@@ -159,7 +153,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         extractor.validate(analysisDir);
 
         // finally we run the extraction
-        return extractor.extractInventory(analysisDir, artifactInventoryId, excludes == null ? Collections.emptyList() : Arrays.asList(excludes));
+        return extractor.extractInventory(analysisDir, artifactInventoryId, fileExcludes == null ? Collections.emptyList() : fileExcludes);
     }
 
     private void filterInventory(Inventory inventory) {
@@ -177,4 +171,43 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         inventory.getArtifacts().removeAll(toBeDeleted);
     }
 
+    private String writeNotCoveredFileList(Inventory inventory) throws IOException {
+        final StringBuilder sb = new StringBuilder();
+        for (Artifact artifact : new ArrayList<>(inventory.getArtifacts())) {
+            if (ARTIFACT_TYPE_FILE.equalsIgnoreCase(artifact.get(KEY_TYPE))) {
+                final Set<String> rootPaths = artifact.getRootPaths();
+                if (rootPaths != null) {
+                    for (String project : rootPaths) {
+                        // we always normalize to Linux paths
+                        final String line = project.startsWith("/") ? FileUtils.normalizePathToLinux(project) : FileUtils.normalizePathToLinux(FileUtils.SEPARATOR_SLASH + project);
+                        if (!sb.isEmpty()) {
+                            sb.append(DELIMITER_NEWLINE);
+                        }
+                        sb.append(line);
+                    }
+                }
+
+                // remove not covered file from inventory; inventory was just a vehicle
+                inventory.getArtifacts().remove(artifact);
+            }
+        }
+        return sb.toString();
+    }
+
+    private void addFileArtifactsToInventory(Inventory inventory, File filesFile) throws IOException {
+        final List<String> filePaths = FileUtils.readLines(filesFile, FileUtils.ENCODING_UTF_8);
+        for (final String filePath : filePaths) {
+            final File file = new File(filePath);
+            final Artifact fileArtifact = new Artifact();
+            fileArtifact.setId(file.getName());
+            fileArtifact.addRootPath(filePath);
+
+            inventory.getArtifacts().add(fileArtifact);
+        }
+    }
+
+    private void applyFileComponentPatterns(Inventory inventory, Map<String, String> idToVersionMap, Set<String> unknownFilePatterns) throws IOException {
+        FileComponentPatternProcessor fileComponentPatternProcessor = new FileComponentPatternProcessor(idToVersionMap, unknownFilePatterns);
+        fileComponentPatternProcessor.applyFileComponentPatterns(inventory);
+    }
 }
