@@ -3,11 +3,14 @@
 <glossentry id="supported">
     <glossterm>Supported</glossterm>
     <glossdef>
-        <p>A configuration labeled supported can be used in a production setup. ${organization.name}
+        <p>
+            A configuration labeled supported can be used in a production setup. ${organization.name}
             confirms that the software is running with this system configuration without impacting
             the functions of the software. ${organization.name} verifies this by using the
             configuration during quality assurance and regression testing of the software.
             Restrictions and limitations are fully documented to the best knowledge of
             ${organization.name}. Updates on known restrictions and limitations are actively
-            communicated by ${organization.name}.</p></glossdef>
+            communicated by ${organization.name}.
+        </p>
+    </glossdef>
 </glossentry>

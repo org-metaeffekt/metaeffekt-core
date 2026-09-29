@@ -7,10 +7,7 @@
             An installation package is a bundled set of files used to install software. Common formats include EXE, MSI, and DMG.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>
+            See also: <term keyref="artifact">Artifact</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>installation packages</glossSurfaceForm>
-    </glossBody>
 </glossentry>

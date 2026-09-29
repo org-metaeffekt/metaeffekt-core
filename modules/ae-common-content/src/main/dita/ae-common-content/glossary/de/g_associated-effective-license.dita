@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
-<glossentry id="associated-effective-licenses">
+<glossentry id="associated-effective-license">
     <glossterm>Assoziierte und effektive Lizenzen</glossterm>
     <glossdef>
         <p>
@@ -41,7 +41,4 @@
             </li>
         </ul>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Assoziierte und effektive Lizenzen</glossSurfaceForm>
-    </glossBody>
 </glossentry>

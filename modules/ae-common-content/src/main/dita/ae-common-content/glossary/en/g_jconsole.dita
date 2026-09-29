@@ -3,9 +3,9 @@
 <glossentry id="jconsole">
     <glossterm>JConsole</glossterm>
     <glossdef>
-    <p>
-    JMX client delivered together with JDK distributions.
-    Enables monitoring and administration of target applications at runtime using JMX (MBeans).
-    </p>
+        <p>
+            JMX client delivered together with JDK distributions.
+            Enables monitoring and administration of target applications at runtime using JMX (MBeans).
+        </p>
     </glossdef>
 </glossentry>
