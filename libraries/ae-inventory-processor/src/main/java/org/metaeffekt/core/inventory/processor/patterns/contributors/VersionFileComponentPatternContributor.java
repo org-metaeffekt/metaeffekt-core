@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 public class VersionFileComponentPatternContributor extends ComponentPatternContributor {
@@ -51,9 +52,11 @@ public class VersionFileComponentPatternContributor extends ComponentPatternCont
             final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
             final String relativeVersionAnchorPath = contextRelPath + "/" + anchorFile.getName();
 
-            String version = FileUtils.readFileToString(anchorFile, StandardCharsets.UTF_8).trim();
-
-            if (!version.matches("[0-9]+\\.[0-9]+\\.[0-9]+")) {
+            List<String> lines = FileUtils.readLines(anchorFile, StandardCharsets.UTF_8);
+            Optional<String> version = lines.stream()
+                    .filter(line -> !line.trim().startsWith("#"))
+                    .findFirst();
+            if (version.isEmpty() || !version.get().matches(VersionedFolderComponentPatternContributor.VERSION_PATTERN_STRING)) {
                 log.info("Skipping version file content:  " + version);
                 return Collections.emptyList();
             }
@@ -70,7 +73,7 @@ public class VersionFileComponentPatternContributor extends ComponentPatternCont
                 return Collections.emptyList();
             }
 
-            String subjectName = componentName.endsWith("-" + version) ? componentName : componentName + "-" + version;
+            String subjectName = componentName.endsWith("-" + version.get()) ? componentName : componentName + "-" + version;
             String semaphore = FileUtils.asRelativePath(baseDir, contextBaseDir) + ":" + subjectName;
 
             if (!evaluationContext.isProcessed(semaphore)) {
@@ -79,7 +82,7 @@ public class VersionFileComponentPatternContributor extends ComponentPatternCont
                 componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, componentName);
-                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
+                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version.get());
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, subjectName);
 
                 componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, contextRelPath + "/**/*");

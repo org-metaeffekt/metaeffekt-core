@@ -21,9 +21,7 @@ import lombok.Setter;
 import org.metaeffekt.core.inventory.processor.filescan.ArtifactFile;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Collects information for file aggregation and intersection management.
@@ -46,7 +44,7 @@ public class FilePatternQualifierMapper {
     /**
      * The list of files covered (single file or matching files for component-pattern-derived artifacts).
      */
-    private List<File> files;
+    private Set<File> files;
 
     /**
      * Mapping a boolean to a list of files.
@@ -55,7 +53,7 @@ public class FilePatternQualifierMapper {
      *
      * In the 'false' bucket all XXX are collected.
      */
-    private Map<Boolean, List<File>> fileMap;
+    private Map<Boolean, Set<File>> fileMap;
 
     /**
      * List of ComponentPatternData contributing to the artifact.
@@ -78,7 +76,7 @@ public class FilePatternQualifierMapper {
     private List<ArtifactFile> sharedIncludedPatternFiles;
 
     // FIXME: review and comment required.
-    private Map<String, List<File>> subSetMap;
+    private Map<String, Set<File>> subSetMap;
 
     /**
      * Used to prohibit mutual deletion.
@@ -86,7 +84,7 @@ public class FilePatternQualifierMapper {
     private boolean locked;
 
     public FilePatternQualifierMapper() {
-        this.files = new ArrayList<>();
+        this.files = new HashSet<>();
         this.componentPatternDataList = new ArrayList<>();
     }
 
