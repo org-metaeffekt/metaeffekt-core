@@ -59,7 +59,7 @@ public class AggregationProtocolTest {
         // Assert successful download formatting
         assertTrue(lines.stream().anyMatch(line -> line.contains("Artifact:  org.example:test-artifact:jar:1.0.0")));
         assertTrue(lines.stream().anyMatch(line -> line.contains("Inclusion: INCLUDED (Reason: pattern match)")));
-        assertTrue(lines.stream().anyMatch(line -> line.contains("Download:  SUCCESS")));
+        assertTrue(lines.stream().anyMatch(line -> line.contains("Download Status:  SUCCESS")));
         // Assert the redundant location line is absent
         assertFalse(lines.stream().anyMatch(line -> line.startsWith("Location:")));
         // Assert attempted locations formatting
@@ -69,10 +69,10 @@ public class AggregationProtocolTest {
         // Assert skipped artifact formatting
         assertTrue(lines.stream().anyMatch(line -> line.contains("Artifact:  org.example:skipped-artifact:jar:1.0.0")));
         assertTrue(lines.stream().anyMatch(line -> line.contains("Inclusion: EXCLUDED (Reason: no license)")));
-        assertTrue(lines.stream().anyMatch(line -> line.contains("Download:  SKIPPED")));
+        assertTrue(lines.stream().anyMatch(line -> line.contains("Download Status:  SKIPPED")));
 
         // Assert summary formatting
         assertTrue(lines.stream().anyMatch(line -> line.contains("SUMMARY")));
-        assertTrue(lines.stream().anyMatch(line -> line.contains("Total Artifacts: 2 | Included: 1 | Excluded: 1 | Downloaded: 1 | Failed: 0")));
+        assertTrue(lines.stream().anyMatch(line -> line.contains("Total Artifacts: 2 | Included: 1 | Excluded: 1 | Downloaded: 1 | Failed: 0 | Skipped: 0")));
     }
 }

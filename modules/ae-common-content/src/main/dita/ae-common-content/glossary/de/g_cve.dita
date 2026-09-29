@@ -3,8 +3,10 @@
 <glossentry id="cve">
     <glossterm>Common Vulnerability Exposure</glossterm>
     <glossdef>
-        Ein Common Vulnerability Exposure (CVE) ist eine öffentliche Darstellung einer Sicherheitslücke. Jede CVE
-        umfasst eine Beschreibung sowie maschinenlesbare Informationen für den Versionsabgleich.
+        <p>
+            Ein Common Vulnerability Exposure (CVE) ist eine öffentliche Darstellung einer Sicherheitslücke. Jede CVE
+            umfasst eine Beschreibung sowie maschinenlesbare Informationen für den Versionsabgleich.
+        </p>
     </glossdef>
     <glossBody>
         <glossSurfaceForm>Common Vulnerability Exposure (CVE)</glossSurfaceForm>

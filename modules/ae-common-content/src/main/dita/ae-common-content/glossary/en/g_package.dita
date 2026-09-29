@@ -8,10 +8,7 @@
             that is represented by one or more packages.
         </p>
         <p>
-            See also: <abbreviated-form keyref="artifact"/>
+            See also: <term keyref="artifact">Artifact</term>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>packages</glossSurfaceForm>
-    </glossBody>
 </glossentry>

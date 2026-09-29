@@ -18,6 +18,8 @@ package org.metaeffekt.core.inventory.processor.report.configuration;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.Map;
+
 @Builder
 @Getter
 public class ReportConfigurationParameters {
@@ -27,6 +29,12 @@ public class ReportConfigurationParameters {
      */
     @Builder.Default
     private final boolean enableOpenCodeStatus = true;
+
+    /**
+     * If true, includes the assessed column in the vulnerability overview tables.
+     */
+    @Builder.Default
+    private final boolean includeAssessedColumnInOverviewTables = true;
 
     /**
      * If true, disables the priority label in the document (all areas), hides the priority score and hides
@@ -148,6 +156,15 @@ public class ReportConfigurationParameters {
     private boolean assessmentReportEnabled = false;
 
     @Builder.Default
+    private boolean documentContextEnabled = false;
+
+    @Builder.Default
+    private boolean documentPurposeEnabled = false;
+
+    @Builder.Default
+    private boolean documentNoticeEnabled = false;
+
+    @Builder.Default
     private String inventoryAssetPrefix = null;
 
     @Builder.Default
@@ -167,6 +184,14 @@ public class ReportConfigurationParameters {
 
     @Builder.Default
     private int licenseNoticeTableLicenseColumnWidth = 35;
+
+
+    /**
+     * Custom parameters passed from the document descriptor or parts.
+     */
+    @Builder.Default
+    private Map<String, String> customParams = new java.util.HashMap<>();
+
 
     public void setAllFailConditions(boolean shouldFail) {
         failOnError = shouldFail;
