@@ -1,0 +1,8 @@
+artifactIdToVersionMap:
+  abc.file.def.xyz-123.jar: "123"
+
+unknownFilePatterns:
+  # Ending with
+  - "/**/*.dat"
+  - "/**/*.py"
+  - "/**/*.pyc"
