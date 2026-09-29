@@ -73,7 +73,9 @@ public class InventoryReport {
     public static final String TEMPLATE_GROUP_DIFF_REPORT = "diff-report";
     public static final String TEMPLATE_GROUP_ASSET_REPORT = "asset-report";
     public static final String TEMPLATE_GROUP_ASSESSMENT_REPORT = "assessment-report";
-
+    public static final String TEMPLATE_GROUP_PURPOSE = "purpose";
+    public static final String TEMPLATE_GROUP_CONTEXT = "context";
+    public static final String TEMPLATE_GROUP_NOTICE = "notice";
     public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
 
 
@@ -544,7 +546,8 @@ public class InventoryReport {
                 configParams.isInventoryExploitabilityStatisticsReportEnabled() ||
                 configParams.isInventoryVulnerabilityReportSummaryEnabled() ||
                 configParams.isInventoryVulnerabilityStatisticsReportEnabled() ||
-                configParams.isAssessmentReportEnabled();
+                configParams.isAssessmentReportEnabled() ||
+                configParams.isDocumentPurposeEnabled();
 
         // build adapters
         InventoryReportAdapter inventoryReportAdapter = new InventoryReportAdapter(filteredInventory);
@@ -599,6 +602,21 @@ public class InventoryReport {
         if (configParams.isInventoryPomEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_TECHNICAL_BASE_DIR, TEMPLATE_GROUP_INVENTORY_POM, reportContext);
+        }
+
+        if (configParams.isDocumentContextEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_CONTEXT, reportContext);
+        }
+
+        if (configParams.isDocumentPurposeEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_PURPOSE, reportContext);
+        }
+
+        if (configParams.isDocumentNoticeEnabled()) {
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_NOTICE, reportContext);
         }
 
         // evaluate licenses only for managed artifacts
@@ -713,6 +731,7 @@ public class InventoryReport {
         properties.put("resource.loader.class.class", ClasspathResourceLoader.class.getName());
         properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
         properties.put(Velocity.RUNTIME_REFERENCES_STRICT, configParams.isFailOnMissingVelocityRuntimeReferences());
+        properties.put("directive.set.null.allowed", true);
         //https://velocity.apache.org/engine/1.7/developer-guide.html#velocimacro
         properties.put("velocimacro.arguments.strict", "true");
 

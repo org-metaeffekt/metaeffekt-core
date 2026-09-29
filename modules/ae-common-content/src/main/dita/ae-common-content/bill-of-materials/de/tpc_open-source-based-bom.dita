@@ -4,12 +4,12 @@
     <title>${asset.name} ${asset.version}</title>
     <body>
         <p>
-            Die in diesem Dokument behandelte <abbreviated-form keyref="software-distribution"/> enthält
-            <abbreviated-form keyref="component"/> und <abbreviated-form keyref="subcomponent"/>, die entsprechend der
+            Die in diesem Dokument behandelte <term keyref="software-distribution">Software-Distribution</term> enthält
+            <term keyref="component">Komponenten</term> und <term keyref="subcomponent">Unterkomponenten</term>, die entsprechend der
             jeweils zugeordneten Lizenzen und/oder Verträgen in den Nutzungsbedingungen eingeschränkt sind.
         </p>
         <p>
-            Dieses Dokument ist Teil des <abbreviated-form keyref="software-distribution-annex"/>, in dem die aus den
+            Dieses Dokument ist Teil des <term keyref="software-distribution-annex"/>, in dem die aus den
             effektiven Lizenzen abgeleiteten Rechte und Verpflichtungen behandelt werden. Die Software-Distribution wird
             nur in entsprechender Kombination mit dem Software Distribution Annex zur Verfügung gestellt oder übertragen.
         </p>

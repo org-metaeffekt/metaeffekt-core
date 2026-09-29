@@ -15,17 +15,31 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Setter
+@Getter
 @Slf4j
 public class StatisticsOverviewTable extends AbstractStatisticsOverviewTable<StatisticsOverviewTable.SeverityToStatusRow> {
 
+    private boolean includeAssessedColumn = true;
+
     public StatisticsOverviewTable(boolean usesEffectiveSeverity) {
         super(usesEffectiveSeverity);
+    }
+
+    public List<SeverityToStatusRow> getRows() {
+        return rows;
+    }
+
+    public boolean isUsesEffectiveSeverity() {
+        return usesEffectiveSeverity;
     }
 
     @Override
@@ -58,7 +72,9 @@ public class StatisticsOverviewTable extends AbstractStatisticsOverviewTable<Sta
         headers.addAll(severityHeadersFromRows);
 
         headers.add("total");
-        headers.add("assessed");
+        if (includeAssessedColumn) {
+            headers.add("assessed");
+        }
 
         return headers.stream().map(AbstractStatisticsOverviewTable::capitalizeWords).collect(Collectors.toList());
     }
@@ -75,6 +91,30 @@ public class StatisticsOverviewTable extends AbstractStatisticsOverviewTable<Sta
         values.add(String.valueOf(row.getTotal()));
         values.add(row.getAssessed());
         return values;
+    }
+
+    /**
+     * Checks if the table is empty.<br>
+     * The table is considered empty if all cells have the value "0".
+     *
+     * @return true if the table is empty, false otherwise.
+     */
+    public boolean isEmpty() {
+        return rows.stream()
+                .allMatch(row -> row.getTotal() == 0);
+    }
+
+    protected static String normalize(String s) {
+        return s.toLowerCase();
+    }
+
+    public static String capitalizeWords(String s) {
+        if (s == null || s.isEmpty()) {
+            return s;
+        }
+        return Arrays.stream(s.split(" "))
+                .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
+                .collect(Collectors.joining(" "));
     }
 
     @Override
@@ -96,8 +136,12 @@ public class StatisticsOverviewTable extends AbstractStatisticsOverviewTable<Sta
             for (int j = 1; j < headers.size() - 2; j++) {
                 cells[i][j] = String.valueOf(row.getCount(headers.get(j)));
             }
-            cells[i][cells[i].length - 2] = String.valueOf(row.getTotal());
-            cells[i][cells[i].length - 1] = row.getAssessed();
+            if (includeAssessedColumn) {
+                cells[i][cells[i].length - 2] = String.valueOf(row.getTotal());
+                cells[i][cells[i].length - 1] = row.getAssessed();
+            } else {
+                cells[i][cells[i].length - 1] = String.valueOf(row.getTotal());
+            }
         }
 
         // calculate column widths
