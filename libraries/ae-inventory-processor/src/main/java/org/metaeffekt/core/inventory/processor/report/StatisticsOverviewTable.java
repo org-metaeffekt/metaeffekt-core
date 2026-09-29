@@ -36,9 +36,18 @@ public class StatisticsOverviewTable {
 
     private final List<SeverityToStatusRow> rows = new ArrayList<>();
     private final boolean usesEffectiveSeverity;
+    private boolean includeAssessedColumn = true;
 
     public StatisticsOverviewTable(boolean usesEffectiveSeverity) {
         this.usesEffectiveSeverity = usesEffectiveSeverity;
+    }
+
+    public boolean isIncludeAssessedColumn() {
+        return includeAssessedColumn;
+    }
+
+    public void setIncludeAssessedColumn(boolean includeAssessedColumn) {
+        this.includeAssessedColumn = includeAssessedColumn;
     }
 
     public List<SeverityToStatusRow> getRows() {
@@ -93,7 +102,9 @@ public class StatisticsOverviewTable {
         headers.addAll(severityHeadersFromRows);
 
         headers.add("total");
-        headers.add("assessed");
+        if (includeAssessedColumn) {
+            headers.add("assessed");
+        }
 
         return headers.stream().map(StatisticsOverviewTable::capitalizeWords).collect(Collectors.toList());
     }
@@ -168,8 +179,12 @@ public class StatisticsOverviewTable {
             for (int j = 1; j < headers.size() - 2; j++) {
                 cells[i][j] = String.valueOf(row.getCount(headers.get(j)));
             }
-            cells[i][cells[i].length - 2] = String.valueOf(row.getTotal());
-            cells[i][cells[i].length - 1] = row.getAssessed();
+            if (includeAssessedColumn) {
+                cells[i][cells[i].length - 2] = String.valueOf(row.getTotal());
+                cells[i][cells[i].length - 1] = row.getAssessed();
+            } else {
+                cells[i][cells[i].length - 1] = String.valueOf(row.getTotal());
+            }
         }
 
         // calculate column widths
@@ -345,8 +360,8 @@ public class StatisticsOverviewTable {
     public String getColumnWidth(int index) {
         if (index <= 0) return "1*";
         if (index == 1) return "12*"; // Severity
-        if (index == getHeaders().size()) return "10*"; // Assessed
-        int width = 88 / (getHeaders().size() - 2);
+        if (includeAssessedColumn && index == getHeaders().size()) return "10*"; // Assessed
+        int width = (100 - 12 - (includeAssessedColumn ? 10 : 0)) / (getHeaders().size() - (includeAssessedColumn ? 2 : 1));
         return String.format("%d*", width);
     }
 
@@ -360,7 +375,7 @@ public class StatisticsOverviewTable {
     public String getHeaderAlignment(int index) {
         if (index <= 0) return "left";
         if (index == 1) return "left";
-        if (index == getHeaders().size()) return "right";
+        if (includeAssessedColumn && index == getHeaders().size()) return "right";
         return "center";
     }
 
@@ -374,7 +389,7 @@ public class StatisticsOverviewTable {
     public String getAlignment(int index) {
         if (index <= 0) return "left";
         if (index == 1) return "left";
-        if (index == getHeaders().size()) return "right";
+        if (includeAssessedColumn && index == getHeaders().size()) return "right";
         return "right";
     }
 
