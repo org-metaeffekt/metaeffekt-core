@@ -250,6 +250,25 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             .put(new JSONObject().put("src", "*").put("impl", "*").put("st", "*")).toString();
 
     /**
+     * Orders the providers of equivalent vulnerability representations, CVE from NVD, an entry from EUVD, or a custom vulnerability, by preference.<br>
+     * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
+     * Each entry uses three keys: <code>src</code> (source/provider name), <code>impl</code> (implementation), and <code>st</code> (store: <code>vu</code> for vulnerability).
+     * Order matters here, unlike the filters above, the first entry a representation matches is its priority, the earliest match across all representations of a group is preferred for display.
+     * A representation that matches no entry is treated as lowest priority.<p>
+     * Defaults to preferring CVE, the only distinct provider registered in {@code VulnerabilityTypeStore} today, EUVD and other providers get their own separate entries once they are registered there too.<p>
+     * Example:
+     * <pre>
+     *     [{"src":"CVE","impl":"*","st":"vu"},
+     *      {"src":"EUVD","impl":"*","st":"vu"}]
+     * </pre>
+     */
+    @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
+    private String vulnerabilityRepresentationProviderPriority = new JSONArray()
+            .put(new JSONObject().put("src", "NVD").put("impl", "CVE").put("st", "vu"))
+            .put(new JSONObject().put("src", "EUVD").put("impl", "EUVD").put("st", "vu"))
+            .toString();
+
+    /**
      * Used by the <code>AbstractInventoryReportCreationMojo</code> in all the vulnerability PDF report generations.<br>
      * Triggers the generation of specific overview tables for the provided advisory sources.<br>
      * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
@@ -400,6 +419,15 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public JSONArray getIncludeVulnerabilitiesWithAdvisoryProviders() {
         return new JSONArray(this.includeVulnerabilitiesWithAdvisoryProviders);
+    }
+
+    public CentralSecurityPolicyConfiguration setVulnerabilityRepresentationProviderPriority(JSONArray vulnerabilityRepresentationProviderPriority) {
+        this.vulnerabilityRepresentationProviderPriority = vulnerabilityRepresentationProviderPriority.toString();
+        return this;
+    }
+
+    public JSONArray getVulnerabilityRepresentationProviderPriority() {
+        return new JSONArray(this.vulnerabilityRepresentationProviderPriority);
     }
 
     public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryReviewStatus(List<String> includeVulnerabilitiesWithAdvisoryReviewStatus) {
@@ -685,9 +713,13 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
+                    // ENISA EUVD
+                    new SourceSelectorEntry(KnownCvssEntities.EUVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
                     // MSRC
                     new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.MSRC),
+
                     // GHSA
                     new SourceSelectorEntry(KnownCvssEntities.GHSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA),
@@ -716,6 +748,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
+                    // ENISA EUVD
+                    new SourceSelectorEntry(KnownCvssEntities.EUVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
 
                     // MSRC
                     new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
@@ -1028,4 +1062,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             return new JSONObject(internal).toString();
         }
     }
+
+    /**
+     * Shared default instance returned wherever no more specific policy is available.
+     * Must not be mutated, callers needing a modifiable policy should construct their own instance instead.
+     */
+    public final static CentralSecurityPolicyConfiguration DEFAULT = new CentralSecurityPolicyConfiguration();
 }
