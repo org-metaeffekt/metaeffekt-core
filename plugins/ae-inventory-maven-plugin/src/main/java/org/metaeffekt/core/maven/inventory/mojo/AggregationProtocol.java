@@ -64,9 +64,9 @@ public class AggregationProtocol {
             for (ArtifactProtocolEntry entry : entries) {
                 writer.println("Artifact:  " + entry.getArtifactRepresentation());
                 writer.println("Inclusion: " + entry.getIncludeStatus() + " (Reason: " + entry.getIncludeReason() + ")");
-                writer.println("Download:  " + entry.getDownloadStatus());
-                if (entry.getTargetPath() != null) {
-                    writer.println("Target:    " + entry.getTargetPath());
+                writer.println("Download Status:  " + entry.getDownloadStatus());
+                if (entry.getDownloadPath() != null) {
+                    writer.println("Download Path:    " + entry.getDownloadPath());
                 }
                 
                 if ("INCLUDED".equals(entry.getIncludeStatus())) {
@@ -109,7 +109,7 @@ public class AggregationProtocol {
                 writer.println("None.");
             } else {
                 for (ArtifactProtocolEntry entry : succeededArtifacts) {
-                    writer.println("- " + entry.getArtifactRepresentation() + " -> " + (entry.getTargetPath() != null ? entry.getTargetPath() : "Unknown target"));
+                    writer.println("- " + entry.getArtifactRepresentation() + " -> " + (entry.getDownloadPath() != null ? entry.getDownloadPath() : "Unknown target"));
                 }
             }
             writer.println();
