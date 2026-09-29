@@ -79,6 +79,6 @@ public class FileServerSourceArchiveResolverTest {
 
         assertFalse(success, "Should fail because placeholders remain unresolved");
         assertNull(resolver.lastAttemptedResolvedUrl, "Should not attempt to download");
-        assertTrue(result.getAttemptedResourceLocations().get(0).contains("$[host]"), "Attempted locations should record the failed URL");
+        assertTrue(result.getAttemptedResourceLocations().isEmpty(), "Attempted locations should be empty because the URL was silently skipped");
     }
 }
