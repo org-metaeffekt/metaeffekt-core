@@ -15,14 +15,9 @@
  */
 package org.metaeffekt.core.itest.common.setup;
 
-import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.asserts.AnalysisAsserts;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 
 public abstract class AbstractCompositionAnalysisTest implements AnalysisAsserts {
 
@@ -32,14 +27,6 @@ public abstract class AbstractCompositionAnalysisTest implements AnalysisAsserts
     private Inventory inventory;
 
     private Analysis analysis;
-
-    protected Analysis getTemplate(String templatepath) throws IOException {
-        final URL templateurl = this.getClass().getResource(templatepath);
-        final File file = new File(templateurl.getFile());
-        final Inventory template = InventoryUtils.readInventory(file, "*.xls");
-        final Analysis analysis = new Analysis(template, templatepath);
-        return analysis;
-    }
 
     public Inventory getInventory() throws Exception {
         if (inventory == null) {
