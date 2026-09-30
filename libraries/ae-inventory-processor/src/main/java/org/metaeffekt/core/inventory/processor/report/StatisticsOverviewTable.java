@@ -60,6 +60,18 @@ public class StatisticsOverviewTable extends AbstractStatisticsOverviewTable<Sta
         return super.findRowBySeverity(severity);
     }
 
+    public void removeColumnIfEmpty(String columnName) {
+        if (columnName == null) return;
+        final String normalizedColumnName = normalize(columnName);
+        boolean isEmpty = true;
+        for (SeverityToStatusRow row : rows) {
+            if (row.getCount(normalizedColumnName) > 0) {
+                isEmpty = false;
+                break;
+            }
+        }
+    }
+
     @Override
     public List<String> getHeaders() {
         final List<String> headers = new ArrayList<>();
