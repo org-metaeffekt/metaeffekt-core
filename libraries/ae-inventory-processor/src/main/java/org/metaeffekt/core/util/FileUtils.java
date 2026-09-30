@@ -333,6 +333,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         scanner.setBasedir(targetDir);
         scanner.setIncludes(includes);
         scanner.setCaseSensitive(false);
+        scanner.setFollowSymlinks(false);
         scanner.scan();
         return scanner.getIncludedDirectories();
     }
@@ -350,6 +351,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         scanner.setBasedir(targetDir);
         scanner.setIncludes(includes);
         scanner.setCaseSensitive(false);
+        scanner.setFollowSymlinks(false);
         scanner.scan();
         return scanner.getIncludedFiles();
     }
@@ -360,6 +362,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         scanner.setIncludes(includes);
         scanner.setExcludes(excludes);
         scanner.setCaseSensitive(false);
+        scanner.setFollowSymlinks(false);
         scanner.scan();
         return scanner.getIncludedFiles();
     }

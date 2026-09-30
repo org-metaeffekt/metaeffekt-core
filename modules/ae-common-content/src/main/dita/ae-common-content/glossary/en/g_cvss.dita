@@ -3,9 +3,11 @@
 <glossentry id="cvss">
     <glossterm>Common Vulnerability Scoring System</glossterm>
     <glossdef>
-        The severity of vulnerabilities is commonly measured applying the Common Vulnerability Scoring System (CVSS)
-        scoring system.
-        The scheme uses several individual metrics to capture different aspects of a vulnerability.
+        <p>
+            The severity of vulnerabilities is commonly measured applying the Common Vulnerability Scoring System (CVSS)
+            scoring system.
+            The scheme uses several individual metrics to capture different aspects of a vulnerability.
+        </p>
     </glossdef>
     <glossBody>
         <glossSurfaceForm>Common Vulnerability Scoring System (CVSS)</glossSurfaceForm>
