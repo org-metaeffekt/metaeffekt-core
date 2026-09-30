@@ -80,14 +80,14 @@
         </p>
 
         <p>
-            The report may use or reference external third-party vulnerability data. Specifically the following applies.
+            The report may use or reference external third-party vulnerability data. Specifically the following applies:
         </p>
 
         <section>
             <title>Third-Party Component Vulnerabilities</title>
             <p id="vulnerabilities">
                 The vulnerabilities enlisted within this document are primarily vulnerabilities of third-party software
-                or hardware components that are included within or integrated with assets of #[[${organization.name}]]#. The
+                or hardware components that are included within or integrated with assets of ${organization.name}. The
                 fact that such a component is affected by a known vulnerability must not necessarily imply that the
                 vulnerability can effectively be exploited. To determine the relevance and potential risks,
                 vulnerabilities are categorized and assessed within the context of the assets using or integrating the
@@ -100,10 +100,10 @@
             <title>External Vulnerability Materials</title>
             <p id="external-data">
                 Materials - including data, content, and references - covering vulnerability information from external
-                sources are presented in this documentation 'AS IS'. #[[${organization.name}]]# does not claim any copyright
-                on the included external materials nor is #[[${organization.name}]]# liable for the correctness and completeness
+                sources are presented in this documentation 'AS IS'. ${organization.name} does not claim any copyright
+                on the included external materials nor is ${organization.name} liable for the correctness and completeness
                 of the presented external materials. Materials from external sources are included herein for informational
-                purposes only. #[[${organization.name}]]# is not responsible for the availability and content provided by
+                purposes only. ${organization.name} is not responsible for the availability and content provided by
                 external links.
             </p>
             <p>
