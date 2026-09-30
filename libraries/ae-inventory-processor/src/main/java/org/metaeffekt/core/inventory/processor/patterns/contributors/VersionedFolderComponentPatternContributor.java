@@ -30,8 +30,17 @@ import java.util.regex.Pattern;
 @Slf4j
 public class VersionedFolderComponentPatternContributor extends ComponentPatternContributor {
 
+    public static String VERSION_PATTERN_STRING =
+            "([0-9]+:)?" +
+            "[0-9]+\\.[0-9]+([.p][0-9]+)*" +
+            "([.+]dfsg)?" +
+            "(-x86_64-linux-gnu)?" +
+            "(-[0-9.]+)?" +
+            "(~[0-9a-zA-Z+-.]+)?" +
+            "(\\+[a-zA-Z0-9+-.]+)?";
+
     public static final Pattern FOLDER_VERSION_PATTERN =
-            Pattern.compile(".*/([a-zA-Z0-9-_]+)-([0-9]+\\.[0-9]+(\\.[0-9]+)*(-x86_64-linux-gnu){0,1})/.*");
+            Pattern.compile("(.*/){0,1}([a-zA-Z0-9-_.]+)([-_]{1})(" + VERSION_PATTERN_STRING + ")/.*");
 
     @Override
     public boolean applies(String pathInContext) {
@@ -59,20 +68,22 @@ public class VersionedFolderComponentPatternContributor extends ComponentPattern
                     componentPatternDataList = new ArrayList<>();
                 }
 
-                String name = matcher.group(1);
-                String version = matcher.group(2);
+                String name = matcher.group(2);
+                String separator = matcher.group(3);
+                String version = matcher.group(4);
 
-                String subjectFolderName = name + "-" + version;
-                int index = relativeAnchorPath.indexOf("/" + subjectFolderName + "/");
+                String subjectFolderName = name + separator + version;
+                String contextAnchorPath = "/" + relativeAnchorPath;
+                final int index = contextAnchorPath.indexOf("/" + subjectFolderName + "/");
 
                 if (index == -1) {
                     throw new IllegalStateException("Matched folder not found: " + relativeAnchorPath);
                 }
 
-                String contextBaseDir = relativeAnchorPath.substring(0, index + subjectFolderName.length() + 1);
-                String relativeVersionAnchorPath = subjectFolderName + relativeAnchorPath.substring(contextBaseDir.length());
+                String contextBaseDir = contextAnchorPath.substring(0, index + subjectFolderName.length() + 1);
+                String relativeVersionAnchorPath = subjectFolderName + contextAnchorPath.substring(contextBaseDir.length());
 
-                String semaphore = relativeAnchorPath.substring(0, index) + ":" + subjectFolderName;
+                String semaphore = contextAnchorPath.substring(0, index) + ":" + subjectFolderName;
 
                 if (!context.isProcessed(semaphore)) {
                     final ComponentPatternData componentPatternData = new ComponentPatternData();

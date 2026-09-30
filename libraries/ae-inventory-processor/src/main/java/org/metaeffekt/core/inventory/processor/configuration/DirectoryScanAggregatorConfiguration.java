@@ -90,14 +90,14 @@ public class DirectoryScanAggregatorConfiguration {
             // iterate found component patterns for artifact
             if (componentPatternMatches.list != null) {
 
-                final Map<Boolean, List<File>> booleanListMap = mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper, fileSystemMap);
-                final Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>(booleanListMap);
+                final Map<Boolean, Set<File>> booleanListMap = mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper, fileSystemMap);
+                final Map<Boolean, Set<File>> duplicateToComponentPatternFilesMap = new HashMap<>(booleanListMap);
 
                 filePatternQualifierMapper.setFileMap(duplicateToComponentPatternFilesMap);
 
                 // collect component-pattern-covered files
-                final List<File> componentPatternFiles = new ArrayList<>();
-                for (List<File> files : duplicateToComponentPatternFilesMap.values()) {
+                final Set<File> componentPatternFiles = new HashSet<>();
+                for (Set<File> files : duplicateToComponentPatternFilesMap.values()) {
                     componentPatternFiles.addAll(files);
                 }
 
@@ -106,7 +106,7 @@ public class DirectoryScanAggregatorConfiguration {
                 // handle artifacts that cannot be mapped to files by component patterns; we need that the inventory is
                 // completely represented even in case no files are directly or indirectly associated
                 filePatternQualifierMapper.setFileMap(Collections.emptyMap());
-                filePatternQualifierMapper.setFiles(Collections.emptyList());
+                filePatternQualifierMapper.setFiles(Collections.emptySet());
             }
 
             // add mapper
@@ -120,18 +120,18 @@ public class DirectoryScanAggregatorConfiguration {
         return filePatternQualifierMapperList;
     }
 
-    private Map<Boolean, List<File>> mapCoveredFilesByDuplicateStatus(Artifact artifact,
+    private Map<Boolean, Set<File>> mapCoveredFilesByDuplicateStatus(Artifact artifact,
               ComponentPatternMatches componentPatternMatches, FilePatternQualifierMapper filePatternQualifierMapper,
               FileSystemMap fileSystemMap) {
 
         // initialize map
-        final Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>();
+        final Map<Boolean, Set<File>> duplicateToComponentPatternFilesMap = new HashMap<>();
 
         // iterate all component pattern matches
         for (ComponentPatternData cpd : componentPatternMatches.list) {
 
             // aggregate all component-pattern-covered files into one directory
-            final List<File> componentPatternCoveredFiles = new ArrayList<>();
+            final Set<File> componentPatternCoveredFiles = new HashSet<>();
             final String includes = cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN);
             final String excludes = cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN);
             filePatternQualifierMapper.getComponentPatternDataList().add(cpd);
@@ -193,7 +193,7 @@ public class DirectoryScanAggregatorConfiguration {
     }
 
     private void aggregateComponentFiles(final File baseDir, final File componentBaseDir,
-            final String includes, final String excludes, final List<File> componentPatternCoveredFiles,
+            final String includes, final String excludes, final Set<File> componentPatternCoveredFiles,
             final FileSystemMap fileSystemMap, final ComponentPatternData cpd) {
 
         // split includes/excludes in relative and absolute paths
@@ -238,13 +238,13 @@ public class DirectoryScanAggregatorConfiguration {
         }
 
         if (count == 0) {
-            // NOTE: this is very verbose, when logging; needs further inspection
-            // FIXME: activate exception or at least log a warning; perhaps control by parameter
-            // throw new IllegalStateException("Identified component pattern does not match any file: " + cpd.deriveQualifier());
+            if (log.isTraceEnabled()) {
+                log.trace("Identified component pattern does not match any file: {}", cpd.deriveQualifier());
+            }
         }
     }
 
-    private void aggregateFiles(File baseDir, String[] coveredFiles, List<File> componentPatternCoveredFiles) {
+    private void aggregateFiles(File baseDir, String[] coveredFiles, Set<File> componentPatternCoveredFiles) {
         for (String file : coveredFiles) {
             final File srcFile = new File(baseDir, file);
             if (!srcFile.isDirectory()) {
@@ -439,8 +439,8 @@ public class DirectoryScanAggregatorConfiguration {
             boolean contentDetected = false;
 
             // loop over each entry in the file map
-            for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
-                final List<File> files = entry.getValue();
+            for (Map.Entry<Boolean, Set<File>> entry : mapper.getFileMap().entrySet()) {
+                final Set<File> files = entry.getValue();
                 if (foundArtifact != null) {
                     String noFileMatchAttribute = foundArtifact.get(KEY_NO_FILE_MATCH_REQUIRED);
                     if (files.isEmpty() && noFileMatchAttribute == null) {
@@ -525,12 +525,12 @@ public class DirectoryScanAggregatorConfiguration {
         return AGGREGATE_DIRECTIVE_SKIP.equalsIgnoreCase(directive);
     }
 
-    private String determineCommonRootPath(String canonicalScanBasePath, List<File> files) {
+    private String determineCommonRootPath(String canonicalScanBasePath, Set<File> files) {
         if (files == null || files.isEmpty()) {
             return canonicalScanBasePath;
         }
 
-        String candidatePath = FileUtils.normalizeToLinuxPathAndCanonicalizePath(files.get(0).getParentFile().getAbsolutePath());
+        String candidatePath = FileUtils.normalizeToLinuxPathAndCanonicalizePath(files.iterator().next().getParentFile().getAbsolutePath());
         boolean commonRoot;
         do {
             // presume the candidate path is a common root
@@ -665,7 +665,7 @@ public class DirectoryScanAggregatorConfiguration {
 
         for (String leftQualifier : qualifiers) {
             final FilePatternQualifierMapper leftMapper = qualifierToMapperMap.get(leftQualifier);
-            final List<File> leftFiles = leftMapper.getFiles();
+            final Set<File> leftFiles = leftMapper.getFiles();
 
             if (leftFiles.isEmpty()) continue;
 
@@ -674,7 +674,7 @@ public class DirectoryScanAggregatorConfiguration {
                 if (leftQualifier.equals(rightQualifier)) break;
 
                 final FilePatternQualifierMapper rightMapper = qualifierToMapperMap.get(rightQualifier);
-                final List<File> rightFiles = rightMapper.getFiles();
+                final Set<File> rightFiles = rightMapper.getFiles();
 
                 if (rightFiles.isEmpty()) continue;
 
@@ -778,7 +778,7 @@ public class DirectoryScanAggregatorConfiguration {
 
         final FilePatternQualifierMapper parentMapper = qualifierToMapperMap.get(parentQualifier);
         final FilePatternQualifierMapper childMapper = qualifierToMapperMap.get(childQualifier);
-        final Map<String, List<File>> subsetMap = new HashMap<>();
+        final Map<String, Set<File>> subsetMap = new HashMap<>();
 
         // extract version agnostic name as we do not want to cannibalize components on the same level sharing files
         // do not remove, when nothing should be removed. A module may have different representations or false versioning
@@ -800,9 +800,9 @@ public class DirectoryScanAggregatorConfiguration {
             // the lock prevents that files symmetrically being part of two components are bidirectionally removed
             parentMapper.setLocked(true);
 
-            subsetMap.put(childQualifier, new ArrayList<>(childFileSet));
+            subsetMap.put(childQualifier, new HashSet<>(childFileSet));
 
-            final List<File> parentMapperFileList_false = parentMapper.getFileMap().get(false);
+            final Set<File> parentMapperFileList_false = parentMapper.getFileMap().get(false);
             parentMapperFileList_false.removeAll(childFileSet);
 
             parentMapper.setSubSetMap(subsetMap);
