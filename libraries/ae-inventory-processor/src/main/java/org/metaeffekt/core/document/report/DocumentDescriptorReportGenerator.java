@@ -452,6 +452,7 @@ public class DocumentDescriptorReportGenerator {
                 } else if (documentDescriptor.getDocumentType() == DocumentType.EXPLOITABILITY_REPORT) {
                     mergedParams.putIfAbsent("document.context.intro.key", "document.context.intro.exploitability.report");
                     mergedParams.putIfAbsent("document.context.assessment.status.enabled", "false");
+                    mergedParams.putIfAbsent("document.context.exploitability.enabled", "true");
                     mergedParams.putIfAbsent("document.context.remediation.enabled", "true");
                     mergedParams.putIfAbsent("document.context.prioritization.enabled", "true");
                     mergedParams.putIfAbsent("document.context.metrics.epss.enabled", "true");
