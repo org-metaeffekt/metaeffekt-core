@@ -19,14 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.metaeffekt.core.maven.inventory.extractor.ExcludePatternsConfig;
 import org.metaeffekt.core.maven.inventory.extractor.InventoryExtractorUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 public class InventoryExtractorUtilTest {
@@ -218,6 +216,106 @@ public class InventoryExtractorUtilTest {
         filteredFiles.forEach(log::debug);
 
         Assertions.assertEquals(expectedResultSize, filteredFiles.size());
+    }
+
+    @Test
+    public void testLoadExcludeConfigFromYamlFile_complete_exclude_config() throws IOException {
+        final ExcludePatternsConfig excludePatternsConfig = InventoryExtractorUtil.loadExcludeConfigFromYamlFile(new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/complete-exclude-config.yaml"));
+        Assertions.assertNotNull(excludePatternsConfig);
+
+        final Set<String> excludes = excludePatternsConfig.getExcludes();
+        final Map<String, String> idToVersionMap = excludePatternsConfig.getArtifactIdToVersionMap();
+        final Set<String> unknownFilePatterns = excludePatternsConfig.getUnknownFilePatterns();
+
+        Assertions.assertNotNull(excludes);
+        Assertions.assertFalse(excludes.isEmpty(), "Excludes are empty");
+        Assertions.assertEquals(6, excludes.size());
+
+        Assertions.assertNotNull(idToVersionMap);
+        Assertions.assertFalse(idToVersionMap.isEmpty(), "ArtifactIdToVersionMap is empty");
+        Assertions.assertEquals(1, idToVersionMap.size());
+
+        Assertions.assertNotNull(unknownFilePatterns);
+        Assertions.assertFalse(unknownFilePatterns.isEmpty(), "UnknownFilePatterns are empty");
+        Assertions.assertEquals(3, unknownFilePatterns.size());
+    }
+
+    @Test
+    public void testLoadExcludeConfigFromYamlFile_exclude_config_with_missing_excludes() throws IOException {
+        final List<File> excludeConfigFiles = List.of(new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-excludes.yaml"),
+                new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-exclude-values.yaml"));
+
+        for (File excludeConfigFile : excludeConfigFiles) {
+            final ExcludePatternsConfig excludePatternsConfig = InventoryExtractorUtil.loadExcludeConfigFromYamlFile(excludeConfigFile);
+            Assertions.assertNotNull(excludePatternsConfig);
+
+            final Set<String> excludes = excludePatternsConfig.getExcludes();
+            final Map<String, String> idToVersionMap = excludePatternsConfig.getArtifactIdToVersionMap();
+            final Set<String> unknownFilePatterns = excludePatternsConfig.getUnknownFilePatterns();
+
+            Assertions.assertNotNull(excludes);
+            Assertions.assertTrue(excludes.isEmpty());
+
+            Assertions.assertNotNull(idToVersionMap);
+            Assertions.assertEquals(1, idToVersionMap.size());
+            Assertions.assertFalse(idToVersionMap.isEmpty(), "ArtifactIdToVersionMap is empty");
+
+            Assertions.assertNotNull(unknownFilePatterns);
+            Assertions.assertFalse(unknownFilePatterns.isEmpty(), "UnknownFilePatterns are empty");
+            Assertions.assertEquals(3, unknownFilePatterns.size());
+        }
+    }
+
+    @Test
+    public void testLoadExcludeConfigFromYamlFile_exclude_config_with_missing_artifact_id_to_version_map() throws IOException {
+        final List<File> excludeConfigFiles = List.of(new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-artifact-id-to-version-map.yaml"),
+                new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-artifact-id-to-version-map-values.yaml"));
+
+        for (File excludeConfigFile : excludeConfigFiles) {
+            final ExcludePatternsConfig excludePatternsConfig = InventoryExtractorUtil.loadExcludeConfigFromYamlFile(excludeConfigFile);
+            Assertions.assertNotNull(excludePatternsConfig);
+
+            final Set<String> excludes = excludePatternsConfig.getExcludes();
+            final Map<String, String> idToVersionMap = excludePatternsConfig.getArtifactIdToVersionMap();
+            final Set<String> unknownFilePatterns = excludePatternsConfig.getUnknownFilePatterns();
+
+            Assertions.assertNotNull(excludes);
+            Assertions.assertFalse(excludes.isEmpty(), "Excludes are empty");
+            Assertions.assertEquals(6, excludes.size());
+
+            Assertions.assertNotNull(idToVersionMap);
+            Assertions.assertTrue(idToVersionMap.isEmpty());
+
+            Assertions.assertNotNull(unknownFilePatterns);
+            Assertions.assertFalse(unknownFilePatterns.isEmpty(), "UnknownFilePatterns are empty");
+            Assertions.assertEquals(3, unknownFilePatterns.size());
+        }
+    }
+
+    @Test
+    public void testLoadExcludeConfigFromYamlFile_exclude_config_with_missing_unknown_file_patterns() throws IOException {
+        final List<File> excludeConfigFiles = List.of(new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-unknown-file-patterns.yaml"),
+                new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-unknown-file-patterns-values.yaml"));
+
+        for (File excludeConfigFile : excludeConfigFiles) {
+            final ExcludePatternsConfig excludePatternsConfig = InventoryExtractorUtil.loadExcludeConfigFromYamlFile(excludeConfigFile);
+            Assertions.assertNotNull(excludePatternsConfig);
+
+            final Set<String> excludes = excludePatternsConfig.getExcludes();
+            final Map<String, String> idToVersionMap = excludePatternsConfig.getArtifactIdToVersionMap();
+            final Set<String> unknownFilePatterns = excludePatternsConfig.getUnknownFilePatterns();
+
+            Assertions.assertNotNull(excludes);
+            Assertions.assertFalse(excludes.isEmpty(), "Excludes are empty");
+            Assertions.assertEquals(6, excludes.size());
+
+            Assertions.assertNotNull(idToVersionMap);
+            Assertions.assertEquals(1, idToVersionMap.size());
+            Assertions.assertFalse(idToVersionMap.isEmpty(), "ArtifactIdToVersionMap is empty");
+
+            Assertions.assertNotNull(unknownFilePatterns);
+            Assertions.assertTrue(unknownFilePatterns.isEmpty());
+        }
     }
 
 }

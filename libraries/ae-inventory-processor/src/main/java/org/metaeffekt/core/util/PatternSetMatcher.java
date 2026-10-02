@@ -72,9 +72,8 @@ public class PatternSetMatcher {
      * The AntPathMatcher has the unexpected behavior to treat absolute paths differently. These would only match in
      * case the pattern is also absolute. This method adapts pattern and path to reach the anticipated results.
      *
-     * @param normalizedPath Normalized path to match.
+     * @param normalizedPath    Normalized path to match.
      * @param normalizedPattern Normalized pattern to match.
-     *
      * @return <code>true</code> in case the pattern matches the path.
      */
     public static boolean internalMatching(final String normalizedPath, final String normalizedPattern) {
@@ -130,5 +129,4 @@ public class PatternSetMatcher {
         // return null to indicate that match was not evaluated
         return null;
     }
-
 }
