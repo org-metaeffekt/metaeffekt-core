@@ -12,7 +12,7 @@
         <section>
             <title>Vulnerability Severity Metrics</title>
             <p id="scoring">
-                Generally, vulnerability severity is measured using the <abbreviated-form keyref="cvss"/> scoring system.
+                Generally, vulnerability severity is measured using the <abbreviated-form keyref="cvss"/>.
                 Currently, three versions (2.0, 3.1 and 4.0) of the CVSS scoring system are commonly applied and
                 supported by the <abbreviated-form keyref="nvd"/>.
             </p>
@@ -98,68 +98,65 @@
             </p>
             #if($configParams.getCustomParams().get("document.context.metrics.epss.enabled") == 'true')
             <p>
-                An alternative scoring system for vulnerabilities is <abbreviated-form keyref="epss"/>. The EPSS system
+                An alternative scoring system for vulnerabilities is the <abbreviated-form keyref="epss"/>. The EPSS system
                 provides an exploit probability (as value between 0.0 and 1.0) for a vulnerability within the
-                next 30 days. Available EPSS scores are documented in this report in the vulnerabilities' priority
-                section combined with further aspects including <abbreviated-form keyref="kev"/>.
+                next 30 days. This report documents the available EPSS scores within the vulnerability priority section,
+                combining them with other metrics like <abbreviated-form keyref="kev"/>.
             </p>
             #end
         </section>
 
+        #if($configParams.getCustomParams().get("document.context.assessment.status.enabled") == 'true')
         <section>
             <title>Vulnerability Assessment Status</title>
             <p id="status">
-                On the individual level of a vulnerability in a specific usage, integration and deployment
-                context the vulnerability assessment status can be determined:
-                <ul>
-                    <li><b>Applicable</b> - A vulnerability is found to be included and to be potentially
-                        exploitable in the scope of an asset. In particular, no justification can
-                        be provided arguing that the vulnerability cannot be exploited.
-                    </li>
-                    <li><b>Not Applicable</b> - A vulnerability is considered not applicable
-                        in case evidence can be provided, constituting the vulnerability either as
-                        not accessible or as not reachable in the context of an asset. Especially,
-                        vulnerabilities in functions or interfaces not in use or deactivated are
-                        considered not applicable.
-                    </li>
-                    <li><b>Insignificant</b> - A vulnerability is regarded as insignificant
-                        in case the original severity does not exceed a predetermined
-                        score or a vulnerability has been assessed and is explicitly marked
-                        as insignificant in the given context. The status supports to
-                        prioritize assessments, while providing a comprehensive view.
-                    </li>
-                    <li><b>Void</b> - Void vulnerabilities are vulnerabilities that have been reported and assessed
-                        for other versions of the assets considered in scope. Void vulnerabilities affect
-                        component versions that are not included in the current asset version. The affected components
-                        have either been patched or are not included in the currently provided assets.
-                        Void vulnerabilities are reported to provide continuity over a product's life cycle.
-                    </li>
-                    <li><b>In Review</b> - A vulnerability is in review in case
-                        assessment details are insufficient or not available.
-                    </li>
-                </ul>
+                At the individual vulnerability level, within a specific usage, integration, and deployment context, the
+                following assessment statuses can be determined:
+            <ul>
+                <li><b>Applicable</b> - The vulnerability is present and potentially exploitable within the scope of
+                    the asset. Specifically, there is no justification or evidence to prove that the vulnerability cannot
+                    be exploited.
+                </li>
+                <li><b>Not Applicable</b> - The vulnerability is considered not applicable if evidence can be provided
+                    showing that it is neither accessible nor reachable within the asset's context. This typically applies
+                    to vulnerabilities in unused or deactivated functions and interfaces.
+                </li>
+                <li><b>Insignificant</b> - A vulnerability is regarded as insignificant if its original severity
+                    does not exceed a predetermined score, or if it has been assessed and explicitly marked as insignificant
+                    in the given context. This status helps prioritize assessments while still providing a comprehensive view.
+                </li>
+                <li><b>Void</b> - A vulnerability is considered void if it was reported and assessed for other versions
+                    of the asset but affects component versions not included in the current asset version. The affected
+                    components have either been patched or removed. These are reported to provide continuity over the
+                    product's life cycle.
+                </li>
+                <li><b>In Review</b> - A vulnerability is placed in review when assessment details are insufficient
+                    or currently unavailable.
+                </li>
+            </ul>
             </p>
         </section>
+        #end
 
         #if($configParams.getCustomParams().get("document.context.remediation.enabled") == 'true')
         <section>
             <title>Vulnerability Remediation</title>
             <p id="remediation">
-                Vulnerability assessment is performed to remediate vulnerabilities in the given context. During an
-                assessment it is possible to capture a rationale to justify the assessment status and to add further
-                assessment details. In particular:
-                <ul>
-                    <li>
-                        The CVSS vector may be adjusted to reflect the integration or deployment context. This may
-                        result in a context-specific severity Score<sub>ctx</sub> deviating from the initial score.
-                    </li>
-                    <li>
-                        Identified risks can be captured and disclosed.
-                    </li>
-                    <li>
-                        Measures can be concluded to mitigate risks.
-                    </li>
-                </ul>
+                Vulnerability assessments are performed to guide the remediation of vulnerabilities in a given context.
+                During an assessment, it is possible to document a rationale justifying the assessment status and to add
+                further details. Specifically:
+            <ul>
+                <li>
+                    The CVSS vector may be adjusted to reflect the integration or deployment context. This may
+                    result in a context-specific severity score (Score<sub>ctx</sub>) that deviates from the initial score.
+                </li>
+                <li>
+                    Identified risks can be documented and disclosed.
+                </li>
+                <li>
+                    Measures can be defined to mitigate these risks.
+                </li>
+            </ul>
             </p>
         </section>
         #end
@@ -169,84 +166,111 @@
             <title>Vulnerability Prioritization</title>
             <p>
                 The Vulnerability Priority Score automates the ranking of vulnerabilities based on their relevance
-                within a specific context.
-                The score is computed based on the contextualized CVSS score as a base score with additional
-                metrics applied. These additional metrics are detailed in the priority sections of the vulnerability
-                details chapters. A priority label is derived for each vulnerability indicating whether - due to an
-                increased Priority Score - a timely treatment is due.
+                within a specific context.The score is computed using the contextualized CVSS score as a base score, with
+                additional metrics applied. These additional metrics are detailed in the priority sections of the vulnerability
+                details chapters. A priority label is derived for each vulnerability, indicating whether, due to an elevated
+                Priority Score, timely treatment is required.
             </p>
             <p>
-                The Vulnerability Priority Score covers different aspects regarding a vulnerable software or the
-                vulnerability itself. Specifically, the priority score computation is taking
-                <abbreviated-form keyref="epss"/>, <abbreviated-form keyref="kev"/> and Software Life Cycle details
-                into account.
+                The Vulnerability Priority Score covers different aspects related to vulnerable software components or
+                the vulnerability itself. Specifically, the priority score computation takes <abbreviated-form keyref="epss"/>,
+                <abbreviated-form keyref="kev"/>, and Software Life Cycle details into account.
             </p>
             <p>
-                The Priority Score is a non-normalized, non-continuous metric. It is not capped in order to
-                provide a relative measurement for ranking vulnerabilities applying a policy-driven prioritization.
+                The Priority Score is a non-normalized, non-continuous metric. It is not capped, in order to
+                provide a relative measurement for ranking vulnerabilities using a policy-driven prioritization approach.
             </p>
             <p>
-                The following table shows the priority label scheme.
-            </p>
-            <p>
-                <table id="priority_scheme">
-                    <title>Priority Scheme</title>
-                    <tgroup cols="5">
-                        <colspec colname="COLSPEC0" colnum="1" colwidth="15*" />
-                        <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
-                        <colspec colname="COLSPEC2" colnum="3" colwidth="65*" />
-                        <thead>
-                            <row>
-                                <entry colname="COLSPEC0" valign="middle">Priority Rating</entry>
-                                <entry colname="COLSPEC1" valign="middle">Priority Score</entry>
-                                <entry colname="COLSPEC2" valign="middle">Description</entry>
-                            </row>
-                        </thead>
+                The following table shows the priority label scheme:
+            <table id="priority_scheme">
+                <title>Priority Scheme</title>
+                <tgroup cols="5">
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="15*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
+                    <colspec colname="COLSPEC2" colnum="3" colwidth="65*" />
+                    <thead>
+                    <row>
+                        <entry colname="COLSPEC0" valign="middle">Priority Rating</entry>
+                        <entry colname="COLSPEC1" valign="middle">Priority Score</entry>
+                        <entry colname="COLSPEC2" valign="middle">Description</entry>
+                    </row>
+                    </thead>
 
-                        <tbody>
-                            <row>
-                                <entry valign="middle"><svg-container><svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="56px" height="17px">
-                                    <svg:rect x="0" y="0" rx="3" ry="3" width="56" height="17" style="fill:#cacecf" />
-                                    <svg:text text-anchor="middle" alignment-baseline="central" fill="black">
-                                        <svg:tspan x="28" y="12" font-weight="bold">Default</svg:tspan>
-                                    </svg:text>
-                                </svg:svg></svg-container></entry>
-                                <entry valign="middle">0.0</entry>
-                                <entry valign="middle">No raised priority.</entry>
-                            </row>
-                            <row>
-                                <entry valign="middle"><svg-container><svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="56px" height="17px">
-                                    <svg:rect x="0" y="0" rx="3" ry="3" width="56" height="17" style="fill:#ff9b05" />
-                                    <svg:text text-anchor="middle" alignment-baseline="central" fill="black">
-                                        <svg:tspan x="28" y="12" font-weight="bold">Elevated</svg:tspan>
-                                    </svg:text>
-                                </svg:svg></svg-container></entry>
-                                <entry valign="middle">0.1 - 6.9</entry>
-                                <entry valign="middle">The priority is elevated. An assessment is regarded recommended.</entry>
-                            </row>
-                            <row>
-                                <entry valign="middle"><svg-container><svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="56px" height="17px">
-                                    <svg:rect x="0" y="0" rx="3" ry="3" width="56" height="17" style="fill:#ff5a0e" />
-                                    <svg:text text-anchor="middle" alignment-baseline="central" fill="white">
-                                        <svg:tspan x="28" y="12" font-weight="bold">Due</svg:tspan>
-                                    </svg:text>
-                                </svg:svg></svg-container></entry>
-                                <entry valign="middle">7.0 - 8.9</entry>
-                                <entry valign="middle">Priority is due implying planned assessment activities.</entry>
-                            </row>
-                            <row>
-                                <entry valign="middle"><svg-container><svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="56px" height="17px">
-                                    <svg:rect x="0" y="0" rx="3" ry="3" width="56" height="17" style="fill:#ff172d" />
-                                    <svg:text text-anchor="middle" alignment-baseline="central" fill="white">
-                                        <svg:tspan x="28" y="12" font-weight="bold">Escalate</svg:tspan>
-                                    </svg:text>
-                                </svg:svg></svg-container></entry>
-                                <entry valign="middle">9.0 or &gt;9.0</entry>
-                                <entry valign="middle">The vulnerability is escalated requiring immediate coordination of activities.</entry>
-                            </row>
-                        </tbody>
-                    </tgroup>
-                </table>
+                    <tbody>
+                    <row>
+                        <entry valign="middle"><svg-container><svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="56px" height="17px">
+                            <svg:rect x="0" y="0" rx="3" ry="3" width="56" height="17" style="fill:#cacecf" />
+                            <svg:text text-anchor="middle" alignment-baseline="central" fill="black">
+                                <svg:tspan x="28" y="12" font-weight="bold">Default</svg:tspan>
+                            </svg:text>
+                        </svg:svg></svg-container></entry>
+                        <entry valign="middle">0.0</entry>
+                        <entry valign="middle">No raised priority.</entry>
+                    </row>
+                    <row>
+                        <entry valign="middle"><svg-container><svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="56px" height="17px">
+                            <svg:rect x="0" y="0" rx="3" ry="3" width="56" height="17" style="fill:#ff9b05" />
+                            <svg:text text-anchor="middle" alignment-baseline="central" fill="black">
+                                <svg:tspan x="28" y="12" font-weight="bold">Elevated</svg:tspan>
+                            </svg:text>
+                        </svg:svg></svg-container></entry>
+                        <entry valign="middle">0.1 - 6.9</entry>
+                        <entry valign="middle">The priority is elevated. An assessment is recommended.</entry>
+                    </row>
+                    <row>
+                        <entry valign="middle"><svg-container><svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="56px" height="17px">
+                            <svg:rect x="0" y="0" rx="3" ry="3" width="56" height="17" style="fill:#ff5a0e" />
+                            <svg:text text-anchor="middle" alignment-baseline="central" fill="white">
+                                <svg:tspan x="28" y="12" font-weight="bold">Due</svg:tspan>
+                            </svg:text>
+                        </svg:svg></svg-container></entry>
+                        <entry valign="middle">7.0 - 8.9</entry>
+                        <entry valign="middle">This priority level requires planned assessment activities.</entry>
+                    </row>
+                    <row>
+                        <entry valign="middle"><svg-container><svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="56px" height="17px">
+                            <svg:rect x="0" y="0" rx="3" ry="3" width="56" height="17" style="fill:#ff172d" />
+                            <svg:text text-anchor="middle" alignment-baseline="central" fill="white">
+                                <svg:tspan x="28" y="12" font-weight="bold">Escalate</svg:tspan>
+                            </svg:text>
+                        </svg:svg></svg-container></entry>
+                        <entry valign="middle">9.0 or &gt;9.0</entry>
+                        <entry valign="middle">The vulnerability is escalated, requiring immediate coordination of activities.</entry>
+                    </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            </p>
+        </section>
+        #end
+
+        #if($configParams.getCustomParams().get("document.context.exploitability.enabled") == 'true')
+        <section>
+            <title>Vulnerability Exploitability</title>
+            <p>
+                There are three distinct sources for exploitability information:
+            <ul>
+                <li><abbreviated-form keyref="epss"/> - Provides a probability score estimating the likelihood of a vulnerability being exploited in the next 30 days.</li>
+                <li><abbreviated-form keyref="cvss"/> - Includes various "Exploitability" (E) metrics across different versions that indicate the current state of exploit techniques or code availability.</li>
+                <li><abbreviated-form keyref="kev"/> - A catalog of vulnerabilities that have been confirmed to be exploited in the wild.</li>
+            </ul>
+            </p>
+            <p>
+                While the Vulnerability Priority Score evaluates most of these sources, it also incorporates additional
+                factors such as the component lifecycle (end-of-life dates), context assessments, and specific keywords.
+                To provide a focused view, the Exploitability label isolates the exploitability metrics. It utilizes a
+                worst-case ruleset, evaluating a prioritized list of rules to assign the highest applicable exploitability label
+                to a vulnerability. These rules assess conditions such as minimum and maximum EPSS probabilities, specific
+                CVSS vector metrics, and the presence of KEV or ransomware campaign entries.
+            </p>
+            <p>
+                By default, the exploitability labels are assigned as follows:
+            <ul>
+                <li><b>Evident</b> - Assigned when there is clear evidence of an exploit from at least one source. Criteria include a KEV entry, an EPSS probability greater than 80%, or specific CVSS metrics (e.g., CVSS 4.0 <code>AU:Y</code>, <code>E:A</code>, or <code>E:H</code> in previous CVSS versions).</li>
+                <li><b>Unconfirmed</b> - Assigned when there is some indication of exploit information. This includes an EPSS probability between 10% and 80%, or CVSS exploitability vector metrics such as <code>E:P</code> (Proof-of-Concept) or <code>E:F</code> (Functional), but no concrete evidence of an active attack.</li>
+                <li><b>Not Evident</b> - Assigned when exploitability data (such as EPSS or CVSS) is present, but provides no indication of an exploit.</li>
+                <li><b>Undefined</b> - Assigned in case there is no EPSS, CVSS, and KEV information.</li>
+            </ul>
             </p>
         </section>
         #end
@@ -257,6 +281,5 @@
             <p>$utils.getText("inventory-report-vulnerability.vulnerability-threshold")</p>
         </section>
         #end
-
     </body>
 </topic>
