@@ -144,10 +144,16 @@ public class ReportConfigurationParameters {
     private boolean inventoryVulnerabilityReportEnabled = false;
 
     @Builder.Default
+    private boolean inventoryExploitabilityReportEnabled = false;
+
+    @Builder.Default
     private boolean inventoryVulnerabilityReportSummaryEnabled = false;
 
     @Builder.Default
     private boolean inventoryVulnerabilityStatisticsReportEnabled = false;
+
+    @Builder.Default
+    private boolean inventoryExploitabilityStatisticsReportEnabled = false;
 
     @Builder.Default
     private boolean assetBomReportEnabled = false;
