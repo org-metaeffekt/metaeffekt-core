@@ -3,8 +3,10 @@
 <glossentry id="cpe">
     <glossterm>Common Product Enumeration</glossterm>
     <glossdef>
-        Common Product Enumeration (CPE) is a scheme used by the <abbreviated-form keyref="nvd"/> to identify
-        vulnerable products (software and hardware). A CPE has a defined structure consisting of several parts:
+        <p>
+            Common Product Enumeration (CPE) is a scheme used by the <abbreviated-form keyref="nvd"/> to identify
+            vulnerable products (software and hardware). A CPE has a defined structure consisting of several parts:
+        </p>
         <p>
             <codeblock>cpe:&lt;cpe_version&gt;:&lt;part&gt;:&lt;vendor&gt;:&lt;product&gt;:&lt;version&gt;:&lt;update&gt;:&lt;edition&gt;:
     &lt;language&gt;:&lt;sw_edition&gt;:&lt;target_sw&gt;:

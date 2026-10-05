@@ -2,7 +2,10 @@
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="pdf">
     <glossterm>PDF</glossterm>
-    <glossdef>Portable Document Format von Adobe® entwickelt.
+    <glossdef>
+        <p>
+            Portable Document Format von Adobe® entwickelt.
+        </p>
     </glossdef>
     <glossBody>
         <glossSurfaceForm>Portable Document Format (PDF)</glossSurfaceForm>

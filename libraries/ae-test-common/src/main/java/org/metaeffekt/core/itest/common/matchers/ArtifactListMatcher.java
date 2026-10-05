@@ -30,8 +30,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ArtifactListMatcher {
 
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
     private Cardinality cardinality;
 
     private List<String> attributeList;

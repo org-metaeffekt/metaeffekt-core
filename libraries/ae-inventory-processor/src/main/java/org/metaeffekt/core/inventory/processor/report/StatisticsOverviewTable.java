@@ -15,30 +15,23 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * <pre>
- * Severity │ Applicable │ Not Applicable │ In Review │ Insignificant │ Void │ Total │ Assessed
- * ─────────┼────────────┼────────────────┼───────────┼───────────────┼──────┼───────┼─────────
- * Critical │          0 │              0 │         0 │             0 │    0 │     0 │      n/a
- *     High │          0 │              0 │         9 │             0 │    1 │    10 │   10,0 %
- *   Medium │          0 │              0 │       184 │             0 │    0 │   184 │    0,0 %
- *      Low │          0 │              0 │        38 │             0 │    0 │    38 │    0,0 %
- * </pre>
- */
+@Setter
+@Getter
 @Slf4j
-public class StatisticsOverviewTable {
+public class StatisticsOverviewTable extends AbstractStatisticsOverviewTable<StatisticsOverviewTable.SeverityToStatusRow> {
 
-    private final List<SeverityToStatusRow> rows = new ArrayList<>();
-    private final boolean usesEffectiveSeverity;
+    private boolean includeAssessedColumn = true;
 
     public StatisticsOverviewTable(boolean usesEffectiveSeverity) {
-        this.usesEffectiveSeverity = usesEffectiveSeverity;
+        super(usesEffectiveSeverity);
     }
 
     public List<SeverityToStatusRow> getRows() {
@@ -49,6 +42,7 @@ public class StatisticsOverviewTable {
         return usesEffectiveSeverity;
     }
 
+    @Override
     public SeverityToStatusRow findOrCreateRowBySeverity(CentralSecurityPolicyConfiguration securityPolicy, String severity) {
         final String normalizedSeverity = normalize(severity);
         return rows.stream()
@@ -61,27 +55,24 @@ public class StatisticsOverviewTable {
                 });
     }
 
+    @Override
     public SeverityToStatusRow findRowBySeverity(String severity) {
-        final String normalizedSeverity = normalize(severity);
-        return rows.stream()
-                .filter(row -> row.isSeverity(normalizedSeverity))
-                .findFirst()
-                .orElse(null);
+        return super.findRowBySeverity(severity);
     }
 
-    public void incrementCount(CentralSecurityPolicyConfiguration securityPolicy, String severity, String status) {
-        if (severity == null || status == null) {
-            log.warn("Severity [{}] or status [{}] is null. Skipping incrementCount.", severity, status);
-            return;
+    public void removeColumnIfEmpty(String columnName) {
+        if (columnName == null) return;
+        final String normalizedColumnName = normalize(columnName);
+        boolean isEmpty = true;
+        for (SeverityToStatusRow row : rows) {
+            if (row.getCount(normalizedColumnName) > 0) {
+                isEmpty = false;
+                break;
+            }
         }
-
-        final String normalizedSeverity = normalize(severity);
-        final String normalizedStatus = normalize(status);
-
-        final SeverityToStatusRow row = findOrCreateRowBySeverity(securityPolicy, normalizedSeverity);
-        row.incrementCount(normalizedStatus);
     }
 
+    @Override
     public List<String> getHeaders() {
         final List<String> headers = new ArrayList<>();
         headers.add("severity");
@@ -93,25 +84,14 @@ public class StatisticsOverviewTable {
         headers.addAll(severityHeadersFromRows);
 
         headers.add("total");
-        headers.add("assessed");
+        if (includeAssessedColumn) {
+            headers.add("assessed");
+        }
 
-        return headers.stream().map(StatisticsOverviewTable::capitalizeWords).collect(Collectors.toList());
+        return headers.stream().map(AbstractStatisticsOverviewTable::capitalizeWords).collect(Collectors.toList());
     }
 
-    public List<String> getSeverityCategories() {
-        return rows.stream().map(SeverityToStatusRow::getSeverity).map(StatisticsOverviewTable::capitalizeWords).collect(Collectors.toList());
-    }
-
-    public int getIntersectionCount(String severity, String status) {
-        final SeverityToStatusRow row = findRowBySeverity(severity);
-        if (row == null) return 0;
-        return row.getCount(status);
-    }
-
-    public int getStatusCount(String status) {
-        return rows.stream().mapToInt(row -> row.getCount(status)).sum();
-    }
-
+    @Override
     public List<String> getTableRowValues(String severity) {
         final SeverityToStatusRow row = findRowBySeverity(severity);
         if (row == null) return Collections.emptyList();
@@ -168,8 +148,12 @@ public class StatisticsOverviewTable {
             for (int j = 1; j < headers.size() - 2; j++) {
                 cells[i][j] = String.valueOf(row.getCount(headers.get(j)));
             }
-            cells[i][cells[i].length - 2] = String.valueOf(row.getTotal());
-            cells[i][cells[i].length - 1] = row.getAssessed();
+            if (includeAssessedColumn) {
+                cells[i][cells[i].length - 2] = String.valueOf(row.getTotal());
+                cells[i][cells[i].length - 1] = row.getAssessed();
+            } else {
+                cells[i][cells[i].length - 1] = String.valueOf(row.getTotal());
+            }
         }
 
         // calculate column widths
@@ -206,42 +190,40 @@ public class StatisticsOverviewTable {
         return sb.toString();
     }
 
-    public static class SeverityToStatusRow {
-        private final String severity;
-        private final Map<String, Integer> statusCountMap = new LinkedHashMap<>();
-        private int total = 0;
+    @Override
+    public String getColumnWidth(int index) {
+        if (index <= 0) return "1*";
+        if (index == 1) return "12*"; // Severity
+        if (index == getHeaders().size()) return "10*"; // Assessed
+        int width = 88 / (getHeaders().size() - 2);
+        return String.format("%d*", width);
+    }
+
+    @Override
+    public String getHeaderAlignment(int index) {
+        if (index <= 0) return "left";
+        if (index == 1) return "left";
+        if (index == getHeaders().size()) return "right";
+        return "center";
+    }
+
+    @Override
+    public String getAlignment(int index) {
+        if (index <= 0) return "left";
+        if (index == 1) return "left";
+        if (index == getHeaders().size()) return "right";
+        return "right";
+    }
+
+    public static class SeverityToStatusRow extends AbstractStatisticsOverviewTable.AbstractSeverityToStatusRow {
         private int assessedCount = 0;
         private String assessed = "undefined";
 
         public SeverityToStatusRow(CentralSecurityPolicyConfiguration securityPolicy, String severity) {
-            if (severity == null) {
-                throw new IllegalArgumentException("Severity must not be null when constructing row.");
-            }
-            this.severity = severity;
-
+            super(severity);
             for (String requiredCategories : securityPolicy.getVulnerabilityStatusDisplayMapper().getStatusNames()) {
                 this.statusCountMap.put(requiredCategories, 0);
             }
-        }
-
-        public String getSeverity() {
-            return this.severity;
-        }
-
-        public String getCapitalizedSeverity() {
-            return capitalizeWords(this.severity);
-        }
-
-        public Map<String, Integer> getStatusCountMap() {
-            return this.statusCountMap;
-        }
-
-        public Set<String> keySet() {
-            return this.statusCountMap.keySet();
-        }
-
-        public int getTotal() {
-            return this.total;
         }
 
         public int getAssessedCount() {
@@ -252,19 +234,11 @@ public class StatisticsOverviewTable {
             return this.assessed;
         }
 
-        public int getCount(String status) {
-            final String normalizedStatus = normalize(status);
-            return this.statusCountMap.getOrDefault(normalizedStatus, 0);
-        }
-
+        @Override
         public void updateCalculatedColumns(CentralSecurityPolicyConfiguration securityPolicy) {
             this.assessed = calculateAssessed(securityPolicy);
             this.assessedCount = getExactAssessedCount(securityPolicy);
             this.total = calculateTotal();
-        }
-
-        private int calculateTotal() {
-            return this.statusCountMap.values().stream().mapToInt(Integer::intValue).sum();
         }
 
         protected String calculateAssessed(CentralSecurityPolicyConfiguration securityPolicy) {
@@ -291,30 +265,7 @@ public class StatisticsOverviewTable {
             return assessed;
         }
 
-        public boolean isSeverity(String severity) {
-            return Objects.equals(this.severity, severity);
-        }
-
-        public int incrementCount(String status) {
-            final int newValue = this.statusCountMap.getOrDefault(status, 0) + 1;
-            this.statusCountMap.put(status, newValue);
-            return newValue;
-        }
-
-        public void rearrangeStatusCategories(List<String> statusCategories) {
-            final Map<String, Integer> rearrangedStatusCountMap = new LinkedHashMap<>();
-            for (String statusCategory : statusCategories) {
-                rearrangedStatusCountMap.put(statusCategory, this.statusCountMap.getOrDefault(statusCategory, 0));
-            }
-            for (String statusCategory : this.statusCountMap.keySet()) {
-                if (!rearrangedStatusCountMap.containsKey(statusCategory)) {
-                    rearrangedStatusCountMap.put(statusCategory, this.statusCountMap.getOrDefault(statusCategory, 0));
-                }
-            }
-            this.statusCountMap.clear();
-            this.statusCountMap.putAll(rearrangedStatusCountMap);
-        }
-
+        @Override
         public List<String> getTableRowValues() {
             final List<String> values = new ArrayList<>();
             values.add(getCapitalizedSeverity());
@@ -325,57 +276,5 @@ public class StatisticsOverviewTable {
             values.add(getAssessed());
             return values;
         }
-
-        @Override
-        public String toString() {
-            return "SeverityToStatusRow{" +
-                    "severity='" + severity + '\'' +
-                    ", statusCountMap=" + statusCountMap +
-                    '}';
-        }
     }
-
-    /**
-     * Used by the velocity templates to determine the dynamic width of columns.
-     *
-     * @param index index of the column. Starting with 1.
-     *
-     * @return Width string for use in dita columnspecs.
-     */
-    public String getColumnWidth(int index) {
-        if (index <= 0) return "1*";
-        if (index == 1) return "12*"; // Severity
-        if (index == getHeaders().size()) return "10*"; // Assessed
-        int width = 88 / (getHeaders().size() - 2);
-        return String.format("%d*", width);
-    }
-
-    /**
-     * Used by the velocity templates to determine the dynamic alignment of column headers.
-     *
-     * @param index index of the column. Starting with 1.
-     *
-     * @return Alignment string for use in dita columnspecs.
-     */
-    public String getHeaderAlignment(int index) {
-        if (index <= 0) return "left";
-        if (index == 1) return "left";
-        if (index == getHeaders().size()) return "right";
-        return "center";
-    }
-
-    /**
-     * Used by the velocity templates to determine the dynamic alignment of columns.
-     *
-     * @param index index of the column. Starting with 1.
-     *
-     * @return Alignment string for use in dita columnspecs.
-     */
-    public String getAlignment(int index) {
-        if (index <= 0) return "left";
-        if (index == 1) return "left";
-        if (index == getHeaders().size()) return "right";
-        return "right";
-    }
-
 }

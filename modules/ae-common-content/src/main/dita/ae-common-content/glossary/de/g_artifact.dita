@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="artifact">
-    <glossterm>Artefakte</glossterm>
+    <glossterm>Artefakt</glossterm>
     <glossdef>
         <p>
             Hard- und Software-Assets sind aus verschiedenen Bestandteilen aufgebaut. Dabei werden diese Bestandteile
@@ -22,10 +22,7 @@
             Daher werden Artefakte hier nach Artefakt-Typen eingeordnet und dokumentiert.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="component"/>
+            Siehe auch: <term keyref="component"/>
         </p>
     </glossdef>
-    <glossBody>
-        <glossSurfaceForm>Artefakte</glossSurfaceForm>
-    </glossBody>
 </glossentry>

@@ -5,7 +5,7 @@
     <body>
         <p>
             Im Allgemeinen gelten für jede Open-Source-Komponente die individuellen Bedingungen der
-            <abbreviated-form keyref="associated-licenses"/>. Dem Lizenznehmer einer Open-Source-Komponente wird von
+            <term keyref="associated-license">assoziierten Lizenzen</term>. Dem Lizenznehmer einer Open-Source-Komponente wird von
             den jeweiligen Rechteinhabern ein nicht ausschließliches Nutzungsrecht gewährt, das durch die in der
             zugehörigen Lizenz festgelegten Bedingungen eingeschränkt ist. Insbesondere gelten die Haftungs- und
             Gewährleistungsbestimmungen der einzelnen Open-Source-Lizenzen.
