@@ -40,14 +40,6 @@ public class FileComponentPatternProcessor {
         public Pattern pattern;
     }
 
-    // FIXME: consolidate usage
-    public FileComponentPatternProcessor(Map<String, FileMetaData> fileDataMap, List<FileComponentPattern> patterns) {
-        this.pathDataMap = fileDataMap;
-        this.patterns = compile(patterns);
-        this.idToVersionMap = new HashMap<>();
-        this.unknownFilePatterns = new ArrayList<>();
-    }
-
     public FileComponentPatternProcessor(Map<String, String> idToVersionMap, Set<String> unknownFilePatterns) {
         this.pathDataMap = new HashMap<>();
         this.patterns = compile(DefaultFileComponentPatterns.PATTERNS);
