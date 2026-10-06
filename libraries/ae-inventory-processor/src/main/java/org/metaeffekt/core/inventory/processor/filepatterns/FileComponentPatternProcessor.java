@@ -164,15 +164,14 @@ public class FileComponentPatternProcessor {
             if (type == null || Constants.ARTIFACT_TYPE_FILE.equals(type)) {
                 final Set<String> projects = artifact.getRootPaths();
                 for (String path : projects) {
-                    // FIXME: may remove to much; only remove paths; in case no paths remain; remove artifact --> done, re-check
                     for (String removableSubPaths : removableMatches) {
                         if (path.contains(removableSubPaths)) {
                             artifact.getRootPaths().remove(path);
-                            if (artifact.getRootPaths().isEmpty()) {
-                                removableArtifacts.add(artifact);
-                            }
                         }
                     }
+                }
+                if (artifact.getRootPaths().isEmpty()) {
+                    removableArtifacts.add(artifact);
                 }
             }
         }
