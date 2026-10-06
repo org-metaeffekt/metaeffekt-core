@@ -303,8 +303,8 @@ public class DocumentDescriptorReport {
                 case VULNERABILITY_SUMMARY_REPORT:
                     break;
 
-                    case PURPOSE:
-                        break;
+                case PURPOSE:
+                    break;
 
                     default:
                         // enforce this list is completed for new part types

@@ -547,6 +547,7 @@ public class InventoryReport {
                 configParams.isInventoryVulnerabilityReportSummaryEnabled() ||
                 configParams.isInventoryVulnerabilityStatisticsReportEnabled() ||
                 configParams.isAssessmentReportEnabled() ||
+                configParams.isDocumentContextEnabled() ||
                 configParams.isDocumentPurposeEnabled();
 
         // build adapters
