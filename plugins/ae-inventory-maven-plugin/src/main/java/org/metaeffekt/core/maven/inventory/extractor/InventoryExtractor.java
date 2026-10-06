@@ -30,7 +30,6 @@ public interface InventoryExtractor {
      * Checks whether the extractor is applicable to the content in analysisDir.
      *
      * @param analysisDir The analysisDir.
-     *
      * @return Boolean indicating whether the extractor can be applied to the content in analysisDir.
      */
     boolean applies(File analysisDir);
@@ -39,7 +38,6 @@ public interface InventoryExtractor {
      * Validates that the content in analysisDir is as anticipated.
      *
      * @param analysisDir The analysisDir.
-     *
      * @throws IllegalStateException In case the content is not expected an {@link IllegalStateException} is thrown.
      */
     void validate(File analysisDir) throws IllegalStateException;
@@ -50,11 +48,10 @@ public interface InventoryExtractor {
      * @param analysisDir The analysisDir.
      * @param inventoryId The identifier or discriminator for the inventory.
      * @param excludePatterns List of exclude patterns (ant style).
-     *
+     * @param extendNotCoveredFiles Whether files should also be listed in the inventory or not.
      * @return The extracted inventory.
-     *
      * @throws IOException May throw an {@link IOException}.
      */
-    Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns) throws IOException;
+    Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns, boolean extendNotCoveredFiles) throws IOException;
 
 }

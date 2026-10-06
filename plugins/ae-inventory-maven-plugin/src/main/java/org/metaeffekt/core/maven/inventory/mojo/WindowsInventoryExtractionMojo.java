@@ -52,8 +52,10 @@ public class WindowsInventoryExtractionMojo extends AbstractInventoryExtractionM
         }
 
         final Inventory extractedInventory;
+        // FIXME: should be configurable externally; this solution is temporary
+        final boolean extendNotCoveredFiles = true;
         try {
-            extractedInventory = extractor.extractInventory(this.analysisDir, super.artifactInventoryId, this.excludePatterns == null ? Collections.emptyList() : this.excludePatterns);
+            extractedInventory = extractor.extractInventory(this.analysisDir, super.artifactInventoryId, this.excludePatterns == null ? Collections.emptyList() : this.excludePatterns, extendNotCoveredFiles);
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to extract Windows inventory: " + e.getMessage(), e);
         }
