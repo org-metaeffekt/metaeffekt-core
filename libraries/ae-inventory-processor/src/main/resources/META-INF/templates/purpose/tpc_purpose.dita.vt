@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_purpose" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>Purpose</title>
+    <title>$utils.getText("document.purpose.title")</title>
     <body>
         #if($configParams.getCustomParams().get("document.purpose.intro"))
         <p>$configParams.getCustomParams().get("document.purpose.intro")</p>
@@ -11,34 +11,34 @@
 
         <p>
             <table id="context">
-                <title>Report Subject</title>
+                <title>$utils.getText("document.purpose.subject.title")</title>
                 <tgroup cols="2">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="27*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="73*" />
 
                     <thead>
                         <row>
-                            <entry colname="COLSPEC0" valign="middle">Attribute</entry>
-                            <entry colname="COLSPEC1" valign="middle">Value</entry>
+                            <entry colname="COLSPEC0" valign="middle">$utils.getText("document.purpose.subject.attribute")</entry>
+                            <entry colname="COLSPEC1" valign="middle">$utils.getText("document.purpose.subject.value")</entry>
                         </row>
                     </thead>
 
                     <tbody>
                         <row>
-                            <entry valign="middle">Component Name</entry>
+                            <entry valign="middle">$utils.getText("document.purpose.subject.component.name")</entry>
                             <entry valign="middle">#[[${product.name}]]#</entry>
                         </row>
                         <row>
-                            <entry valign="middle">Component Version</entry>
+                            <entry valign="middle">$utils.getText("document.purpose.subject.component.version")</entry>
                             <entry valign="middle">#[[${product.version}]]#</entry>
                         </row>
                         #if($configParams.getCustomParams().get("document.purpose.subcomponent.enabled") == 'true')
                         <row>
-                            <entry valign="middle">Subcomponent Name</entry>
+                            <entry valign="middle">$utils.getText("document.purpose.subject.subcomponent.name")</entry>
                             <entry valign="middle">#[[${asset.name}]]#</entry>
                         </row>
                         <row>
-                            <entry valign="middle">Subcomponent Version</entry>
+                            <entry valign="middle">$utils.getText("document.purpose.subject.subcomponent.version")</entry>
                             <entry valign="middle">#[[${asset.version}]]#</entry>
                         </row>
                         #end
@@ -75,55 +75,40 @@
         </p>
 
         <p>
-            This report is part of a series of documents to convey the vulnerability status on various levels.
+            $utils.getText("document.purpose.series.note")
             #[[${document.purpose.note}]]#
         </p>
 
         <p>
-            The report may use or reference external third-party vulnerability data. Specifically the following applies:
+            $utils.getText("document.purpose.external.reference.note")
         </p>
 
         <section>
-            <title>Third-Party Component Vulnerabilities</title>
+            <title>$utils.getText("document.purpose.tpc.vulnerabilities.title")</title>
             <p id="vulnerabilities">
-                The vulnerabilities enlisted within this document are primarily vulnerabilities of third-party software
-                or hardware components that are included within or integrated with assets of #[[${organization.name}]]#. The
-                fact that such a component is affected by a known vulnerability must not necessarily imply that the
-                vulnerability can effectively be exploited. To determine the relevance and potential risks,
-                vulnerabilities are categorized and assessed within the context of the assets using or integrating the
-                components.
+                $utils.getText("document.purpose.tpc.vulnerabilities.text")
             </p>
         </section>
 
         #if($configParams.getCustomParams().get("document.purpose.external.data.enabled") == 'true')
         <section>
-            <title>External Vulnerability Materials</title>
+            <title>$utils.getText("document.purpose.external.materials.title")</title>
             <p id="external-data">
-                Materials - including data, content, and references - covering vulnerability information from external
-                sources are presented in this documentation 'AS IS'. #[[${organization.name}]]# does not claim any copyright
-                on the included external materials nor is #[[${organization.name}]]# liable for the correctness and completeness
-                of the presented external materials. Materials from external sources are included herein for informational
-                purposes only. #[[${organization.name}]]# is not responsible for the availability and content provided by
-                external links.
+                $utils.getText("document.purpose.external.materials.text.1")
             </p>
             <p>
-                The <abbreviated-form keyref="nvd" /> is the primary data source for vulnerability information utilized.
-                A vulnerable product is represented within NVD as <abbreviated-form keyref="cpe" />; an individual
-                vulnerability as <abbreviated-form keyref="cve" />.
+                $utils.getText("document.purpose.external.materials.text.2")
             </p>
             <p>
-                Advisory information is included from additional sources. These vary dependent on the product domain
-                and target audience.
+                $utils.getText("document.purpose.external.materials.text.3")
             </p>
         </section>
         #end
 
         <section>
-            <title>Names and Trademarks</title>
+            <title>$utils.getText("document.purpose.trademarks.title")</title>
             <p id="trademarks">
-                All company names, organization names, and product names mentioned in this documentation
-                are used for identification purposes only. A trademark is explicitly identified as registered or
-                unregistered trademark only if required by appropriate guidelines or license terms.
+                $utils.getText("document.purpose.trademarks.text")
             </p>
         </section>
     </body>
