@@ -141,7 +141,7 @@ public class FileComponentPatternProcessor {
                         // complain
                         if (path.endsWith(".jar")) {
                             if (idToVersionMap != null && idToVersionMap.get(new File(path).getName()) == null) {
-                                System.out.println("idToVersionMap.put(\"" + new File(path).getName() + "\", null); // " + path);
+                                log.info("idToVersionMap.put(\"" + new File(path).getName() + "\", null); // " + path);
                                 fail = true;
                             }
                         }

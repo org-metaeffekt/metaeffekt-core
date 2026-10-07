@@ -86,7 +86,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     }
 
     @Override
-    public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns, boolean extendNotCoveredFiles) throws IOException {
+    public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
         final String issue = extractIssue(analysisDir);
 
         // use specific inventory implementation to extract inventory
@@ -94,7 +94,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
 
         extendInventory(analysisDir, inventory);
 
-        if (extendNotCoveredFiles) {
+        if (includeNotCoveredFiles) {
             extendNotCoveredFiles(analysisDir, inventory, excludePatterns);
         }
 
