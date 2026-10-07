@@ -1,0 +1,18 @@
+excludes:
+  # Starting
+  - "/proc/**"
+  - "/sys/**"
+  # Ending
+  - "/**/*.py"
+  - "/**/*.pyc"
+  # Containing
+  - "/**/__pycache__/**"
+  - "/**/.kube/cache/**"
+
+artifactIdToVersionMap:
+
+unknownFilePatterns:
+  # Ending with
+  - "/**/*.dat"
+  - "/**/*.py"
+  - "/**/*.pyc"

@@ -55,7 +55,7 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
     }
 
     @Override
-    public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns) throws IOException {
+    public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
         log.info("Windows inventory extraction [{}] started with analysis directory: {}", inventoryId, analysisDir);
 
         final Inventory inventory = new Inventory();

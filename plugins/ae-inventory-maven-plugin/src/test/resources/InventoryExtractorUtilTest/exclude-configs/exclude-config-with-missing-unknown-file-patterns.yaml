@@ -1,0 +1,13 @@
+excludes:
+  # Starting
+  - "/proc/**"
+  - "/sys/**"
+  # Ending
+  - "/**/*.py"
+  - "/**/*.pyc"
+  # Containing
+  - "/**/__pycache__/**"
+  - "/**/.kube/cache/**"
+
+artifactIdToVersionMap:
+  abc-file-def-xyz-123.jar: "123"

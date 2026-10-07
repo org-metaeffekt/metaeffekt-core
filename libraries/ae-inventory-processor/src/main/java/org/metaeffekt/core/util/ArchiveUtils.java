@@ -16,8 +16,11 @@
 package org.metaeffekt.core.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.archivers.cpio.CpioArchiveEntry;
+import org.apache.commons.compress.archivers.cpio.CpioArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.zstandard.ZstdCompressorInputStream;
@@ -32,8 +35,10 @@ import org.metaeffekt.bundle.sevenzip.SevenZipExecutableUtils;
 import org.metaeffekt.core.util.ExecUtils.ExecMonitor;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -166,7 +171,6 @@ public class ArchiveUtils {
      *
      * @param file      The file to untar.
      * @param targetDir The directory to untar the file into.
-     *
      * @throws IOException If the file could not be untared
      */
     public static void untar(File file, File targetDir) throws IOException {
@@ -236,39 +240,49 @@ public class ArchiveUtils {
 
         } catch (Exception e) {
             log.warn(e.getMessage());
-            for (File intermediateFile : intermediateFiles) {
-                if (intermediateFile.exists()) {
-                    log.trace("Deleting intermediate [{}]", intermediateFile.getAbsolutePath());
-                    FileUtils.forceDelete(intermediateFile);
-                }
-            }
+            deleteIntermediateFiles(intermediateFiles);
         }
 
         // we may already have expanded something; the new file may have a different extension
         final String extension = FilenameUtils.getExtension(file.getName()).toLowerCase(Locale.US);
         if (tarExtensions.contains(extension) || StringUtils.isEmpty(extension)) {
             try {
-                // untar internal is the preferred approach
-                untarInternal(file, targetDir);
+                if ("rpm".equals(extension)) {
+                    unpackRpmInternal(file, targetDir);
+                } else if ("cpio".equals(extension)) {
+                    unpackCpioInternal(file, targetDir);
+                } else {
+                    // untar internal is the preferred approach
+                    untarInternal(file, targetDir);
+                }
             } catch (Exception e) {
-                log.warn("Cannot untar [{}]. Attempting 7zip untar to compensate [{}].", file.getAbsolutePath(), e.getMessage());
-                try {
-                    FileUtils.forceMkdir(targetDir);
-                    extractFileWithSevenZip(file, targetDir, true);
-                } catch (Exception ex) {
-                    log.warn("Cannot untar [{}]. Attempting native untar to compensate [{}].", file.getAbsolutePath(), ex.getMessage());
-                    try {
-                        nativeUntar(file, targetDir);
-                    } catch(Exception exc) {
-                        throw new IllegalStateException(format("Cannot untar [%s] using native untar command.", file.getAbsolutePath()), exc);
-                    }
-                }
+                log.warn("Cannot unpack [{}]. Attempting 7zip to compensate [{}].", file.getAbsolutePath(), e.getMessage());
+                unpackWithFallbacks(file, targetDir);
             } finally {
-                for (File intermediateFile : intermediateFiles) {
-                    log.trace("Deleting intermediate [{}]", intermediateFile.getAbsolutePath());
-                    FileUtils.forceDelete(intermediateFile);
-                }
+                deleteIntermediateFiles(intermediateFiles);
             }
+        }
+    }
+
+    private static void unpackWithFallbacks(File file, File targetDir) {
+        try {
+            FileUtils.forceMkdir(targetDir);
+            extractFileWithSevenZip(file, targetDir, true);
+        } catch (Exception e) {
+            log.warn("Cannot unpack [{}] with 7zip. Attempting native untar to compensate [{}].",
+                    file.getAbsolutePath(), e.getMessage());
+            try {
+                nativeUntar(file, targetDir);
+            } catch (Exception ex) {
+                throw new IllegalStateException(format("Cannot unpack [%s] using native untar command.", file.getAbsolutePath()), ex);
+            }
+        }
+    }
+
+    private static void deleteIntermediateFiles(Collection<File> intermediateFiles) throws IOException {
+        for (File intermediateFile : intermediateFiles) {
+            log.trace("Deleting intermediate [{}]", intermediateFile.getAbsolutePath());
+            FileUtils.forceDelete(intermediateFile);
         }
     }
 
@@ -290,7 +304,7 @@ public class ArchiveUtils {
     private static void expandBzip2(File file, File targetFile) throws IOException {
         final InputStream fin = Files.newInputStream(file.toPath());
         final BufferedInputStream in = new BufferedInputStream(fin);
-        final BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(in);
+        final BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(in, true);
 
         unpackAndClose(bzIn, Files.newOutputStream(targetFile.toPath()));
     }
@@ -306,9 +320,8 @@ public class ArchiveUtils {
     /**
      * This untar method supports the desired handling of symbolic links. This method should be preferred.
      *
-     * @param file The file to untar.
+     * @param file      The file to untar.
      * @param targetDir The target directory to untar to.
-     *
      * @throws IOException Throws {@link IOException}s in case of an issue.
      */
     private static void untarInternal(File file, File targetDir) throws IOException {
@@ -325,21 +338,46 @@ public class ArchiveUtils {
         }
     }
 
-    private static void unpackAndClose(InputStream in, OutputStream out) throws IOException {
+    private static void unpackRpmInternal(File file, File targetDir) throws IOException {
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
+            FileUtils.forceMkdir(targetDir);
+            skipToPayload(in); // skip Lead + Signature Header + Header
+
+            final File cpioFile = new File(targetDir, FilenameUtils.getBaseName(file.getName()) + ".cpio");
+            try (InputStream payload = new CompressorStreamFactory().createCompressorInputStream(in)) {
+                Files.copy(payload, cpioFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
+            throw new IOException("Could not unpack rpm file [" + file.getAbsolutePath() + "]", e);
+        }
+    }
+
+    private static void unpackCpioInternal(File file, File targetDir) throws IOException {
         try {
+            final InputStream fin = Files.newInputStream(file.toPath());
+            final BufferedInputStream in = new BufferedInputStream(fin);
+            final CpioArchiveInputStream cpioIn = new CpioArchiveInputStream(in);
+            if (!targetDir.exists()) {
+                FileUtils.forceMkdir(targetDir);
+            }
+            unpackAndClose(cpioIn, targetDir);
+        } catch (Exception e) {
+            throw new IOException("Could not unpack cpio file [" + file.getAbsolutePath() + "]", e);
+        }
+    }
+
+    private static void unpackAndClose(InputStream in, OutputStream out) throws IOException {
+        try (in; out) {
             final byte[] buffer = new byte[1024];
             int n;
             while (-1 != (n = in.read(buffer))) {
                 out.write(buffer, 0, n);
             }
-        } finally {
-            out.close();
-            in.close();
         }
     }
 
     private static void unpackAndClose(TarArchiveInputStream in, File targetDir) throws IOException {
-        try {
+        try (in) {
             // we need to check the os we are running on
             boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
@@ -365,33 +403,152 @@ public class ArchiveUtils {
                         FileUtils.forceDelete(targetFile);
                     }
                     if (entry.isSymbolicLink()) {
-                        Path linkTarget;
-                        if (entry.getLinkName().startsWith("/")) {
-                            // handle absolute paths
-                            linkTarget = targetDir.toPath().resolve(entry.getLinkName().substring(1));
-                        } else {
-                            // handle relative paths
-                            linkTarget = targetFile.toPath().getParent().resolve(entry.getLinkName()).normalize();
-                        }
-
-                        try {
-                            Files.createSymbolicLink(targetFile.toPath(), linkTarget);
-                        } catch (UnsupportedOperationException | IOException e) {
-                            log.warn("Symbolic links not supported or insufficient permissions. Skipping symbolic link creation.");
-                        }
+                        final String linkName = entry.getLinkName();
+                        createSymlink(targetFile, targetDir, linkName);
                     } else {
-                        final File parentFile = targetFile.getParentFile();
-                        if (!parentFile.exists()) {
-                            FileUtils.forceMkdir(parentFile);
-                        }
-                        try (OutputStream out = Files.newOutputStream(targetFile.toPath())) {
-                            IOUtils.copy(in, out);
-                        }
+                        writeFile(in, targetFile);
                     }
                 }
             }
-        } finally {
-            in.close();
+        }
+    }
+
+    /**
+     * Overloaded method for unpacking cpio archives.
+     *
+     * @param in        the cpio archive input stream
+     * @param targetDir the target directory
+     * @throws IOException error if an I/O exception occurs
+     */
+    private static void unpackAndClose(CpioArchiveInputStream in, File targetDir) throws IOException {
+        try (in) {
+            // hardlinks without data: the content is in the last entry of the inode
+            final Map<String, List<File>> pendingLinks = new HashMap<>();
+
+            CpioArchiveEntry entry;
+            while ((entry = in.getNextEntry()) != null) {
+                final File targetFile = new File(targetDir, entry.getName());
+
+                if (entry.isDirectory()) {
+                    FileUtils.forceMkdir(targetFile);
+                    continue;
+                }
+
+                if (targetFile.exists() || Files.isSymbolicLink(targetFile.toPath())) {
+                    FileUtils.forceDelete(targetFile);
+                }
+                FileUtils.forceMkdir(targetFile.getParentFile());
+
+                if (entry.isSymbolicLink()) {
+                    // In cpio the link name is the content of the entry. To get it, read the entry's content (entry size bytes)
+                    final String linkName = new String(IOUtils.toByteArray(in, (int) entry.getSize()), StandardCharsets.UTF_8);
+                    createSymlink(targetFile, targetDir, linkName);
+                    continue;
+                }
+
+                // A file can exist in the file system under several names (hardlinks in cpio).
+                // e.g. /usr/bin/foo and /usr/bin/bar are the same file. They share the same inode (the unique number of the file on a device).
+                // CPIO stores a separate entry for EVERY name of the file, all with the same inode.
+                // The data, however, is stored only ONCE in the archive, in the LAST entry of that inode. The earlier entries have getSize() == 0
+                // even though the file is not actually empty.
+
+                // Key that uniquely identifies a file: device (major/minor) + inode.
+                // All names of the same file produce the same key. The device numbers are included because inode numbers are only unique within one device.
+                final String key = entry.getDeviceMaj() + ":" + entry.getDeviceMin() + ":" + entry.getInode();
+
+                // If the file has several names (NumberOfLinks > 1) & this entry carries no data (Size == 0), this is one of the early entries
+                // whose content comes later in the archive.
+                if (entry.getNumberOfLinks() > 1 && entry.getSize() == 0) {
+                    // no data yet, create the file once the last entry of this inode arrives
+                    pendingLinks.computeIfAbsent(key, k -> new ArrayList<>()).add(targetFile);
+                    continue;
+                }
+
+                // write file
+                try (OutputStream out = Files.newOutputStream(targetFile.toPath())) {
+                    IOUtils.copy(in, out);
+                }
+
+                // Were there names with the same inode waiting (identified by key), then this is the last entry of that inode (the one with the data).
+                final List<File> waitingLinkFiles = pendingLinks.remove(key);
+                if (waitingLinkFiles != null) {
+                    for (File linkFile : waitingLinkFiles) {
+                        // The parent directory of the waiting name may not exist yet.
+                        FileUtils.forceMkdir(linkFile.getParentFile());
+                        // Put the file that was just written under the waiting link file name as a copy.
+                        // A copy instead of a real hardlink (Files.createLink), so it also works on systems without hardlink support (e.g. some Windows setups).
+                        Files.copy(targetFile.toPath(), linkFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            }
+
+            // Names that never received data (last entry did not have data and size was 0) are empty files and will be written as empty files.
+            for (List<File> rest : pendingLinks.values()) {
+                for (File f : rest) {
+                    FileUtils.forceMkdir(f.getParentFile());
+                    Files.write(f.toPath(), new byte[0]);
+                }
+            }
+        }
+    }
+
+    private static void createSymlink(File targetFile, File targetDir, String linkName) {
+        if (linkName != null) {
+            final Path linkTarget;
+            if (linkName.startsWith("/")) {
+                // handle absolute paths
+                linkTarget = targetDir.toPath().resolve(linkName.substring(1));
+            } else {
+                // handle relative paths
+                linkTarget = targetFile.toPath().getParent().resolve(linkName).normalize();
+            }
+
+            try {
+                Files.createSymbolicLink(targetFile.toPath(), linkTarget);
+            } catch (UnsupportedOperationException | IOException e) {
+                log.warn("Symbolic links not supported or insufficient permissions. Skipping symbolic link creation.");
+            }
+        }
+    }
+
+    private static void writeFile(InputStream in, File targetFile) throws IOException {
+        final File parentFile = targetFile.getParentFile();
+        if (!parentFile.exists()) {
+            FileUtils.forceMkdir(parentFile);
+        }
+        try (OutputStream out = Files.newOutputStream(targetFile.toPath())) {
+            IOUtils.copy(in, out);
+        }
+    }
+
+    private static void skipToPayload(InputStream in) throws IOException {
+        final DataInputStream din = new DataInputStream(in);
+
+        // lead: 96 Bytes
+        din.skipNBytes(96);
+
+        // signature header (8 Byte aligned), following main header (not aligned)
+        skipHeader(din, true);
+        skipHeader(din, false);
+    }
+
+    private static void skipHeader(DataInputStream din, boolean align8) throws IOException {
+        // Magic (3 Bytes: 8E AD E8) + Version (1) + Reserved (4)
+        final byte[] magic = new byte[8];
+        din.readFully(magic);
+        if ((magic[0] & 0xFF) != 0x8E || (magic[1] & 0xFF) != 0xAD || (magic[2] & 0xFF) != 0xE8) {
+            throw new IOException("Invalid rpm header");
+        }
+
+        final int indexCount = din.readInt();   // number of index entries
+        final int dataSize = din.readInt();   // size of data section
+
+        final long toSkip = 16L * indexCount + dataSize;   // every index entry = 16 Bytes
+        din.skipNBytes(toSkip);
+
+        if (align8) {
+            final long pad = (8 - (toSkip % 8)) % 8;       // signature header is 8 byte aligned
+            din.skipNBytes(pad);
         }
     }
 
@@ -520,7 +677,7 @@ public class ArchiveUtils {
 
         final File jmodExecutable = new File(jdkPath, "bin/jmod");
         if (jmodExecutable.exists()) {
-            final String[] commandParts = new String[] { jmodExecutable.getAbsolutePath(), "extract", file.getAbsolutePath() };
+            final String[] commandParts = new String[]{jmodExecutable.getAbsolutePath(), "extract", file.getAbsolutePath()};
             executeExtraction(commandParts, file, targetFile, true, false);
         } else {
             log.error("Cannot unpack jmod executable: " + jmodExecutable +
@@ -542,7 +699,7 @@ public class ArchiveUtils {
 
         final File jImageExecutable = new File(jdkPath, "bin/jimage");
         if (jImageExecutable.exists()) {
-            final String[] commandParts = new String[] { jImageExecutable.getAbsolutePath(), "extract", file.getAbsolutePath() };
+            final String[] commandParts = new String[]{jImageExecutable.getAbsolutePath(), "extract", file.getAbsolutePath()};
             executeExtraction(commandParts, file, targetFile, true, false);
         } else {
             log.error("Cannot unpack jimage executable: " + jImageExecutable +
@@ -554,8 +711,8 @@ public class ArchiveUtils {
         // this requires 7zip to perform the extraction
         final File sevenZipBinaryFile = SevenZipExecutableUtils.getBinaryFile();
         if (sevenZipBinaryFile.exists()) {
-            final String[] commandParts = { sevenZipBinaryFile.getAbsolutePath(), "x",
-                    file.getAbsolutePath(), "-aoa", "-o" + targetFile.getAbsolutePath() };
+            final String[] commandParts = {sevenZipBinaryFile.getAbsolutePath(), "x",
+                    file.getAbsolutePath(), "-aoa", "-o" + targetFile.getAbsolutePath()};
             return executeExtraction(commandParts, file, targetFile, throwExceptionOnError, true);
         } else {
             log.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
@@ -586,9 +743,9 @@ public class ArchiveUtils {
         //  this also means that prepareScanDirectory may fail on rescan.
         //  we should probably just make sure that the java-native unwrao doesn't fail instead of relying on
         //  this last-ditch effort to give good support.
-        String[] commandParts = new String[] {
+        String[] commandParts = new String[]{
                 "tar", "-x", "-f", file.getAbsolutePath(),
-                "--no-same-permissions", "-C", targetFile.getAbsolutePath() };
+                "--no-same-permissions", "-C", targetFile.getAbsolutePath()};
         executeExtraction(commandParts, file, targetFile, true, false);
     }
 
@@ -602,7 +759,7 @@ public class ArchiveUtils {
         execParam.setWorkingDir(targetFile);
         execParam.timeoutAfter(EXTRACT_DURATION, EXTRACT_DURATION_TIMEOUT_UNIT);
 
-        ExecMonitor execMonitor = throwExceptionOnError ? executeAndThrowIOExceptionOnFailure(execParam): executeCommand(execParam);
+        ExecMonitor execMonitor = throwExceptionOnError ? executeAndThrowIOExceptionOnFailure(execParam) : executeCommand(execParam);
         if (sevenZipContext) {
             attemptUnpackingIntermediateArchive(targetFile);
         }
