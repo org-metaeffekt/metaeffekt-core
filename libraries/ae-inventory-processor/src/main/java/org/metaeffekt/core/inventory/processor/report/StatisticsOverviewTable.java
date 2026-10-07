@@ -202,7 +202,7 @@ public class StatisticsOverviewTable extends AbstractStatisticsOverviewTable<Sta
     @Override
     public String getHeaderAlignment(int index) {
         if (index <= 0) return "left";
-        if (index == 1) return "left";
+        if (index == 1) return "center";
         if (index == getHeaders().size()) return "right";
         return "center";
     }
@@ -210,7 +210,7 @@ public class StatisticsOverviewTable extends AbstractStatisticsOverviewTable<Sta
     @Override
     public String getAlignment(int index) {
         if (index <= 0) return "left";
-        if (index == 1) return "left";
+        if (index == 1) return "center";
         if (index == getHeaders().size()) return "right";
         return "right";
     }
