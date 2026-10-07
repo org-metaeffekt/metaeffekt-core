@@ -304,7 +304,7 @@ public class ArchiveUtils {
     private static void expandBzip2(File file, File targetFile) throws IOException {
         final InputStream fin = Files.newInputStream(file.toPath());
         final BufferedInputStream in = new BufferedInputStream(fin);
-        final BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(in);
+        final BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(in, true);
 
         unpackAndClose(bzIn, Files.newOutputStream(targetFile.toPath()));
     }
