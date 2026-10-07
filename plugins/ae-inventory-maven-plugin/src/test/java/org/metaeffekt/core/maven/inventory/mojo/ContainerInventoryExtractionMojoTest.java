@@ -39,7 +39,7 @@ public class ContainerInventoryExtractionMojoTest {
 
     /**
      * Tests whether the files to be excluded having the specified patterns in the yaml config are not in the inventory.
-     * To run the test, edit the exclude-config (src/test/resources/ContainerInventoryExtractionMojoTest/analysis-001/config/exclude-config.yaml) and specify file patterns to exclude files matching them.
+     * To run the test, edit the exclude-config (src/test/resources/ContainerInventoryExtractionMojoTest/analysis-001/config/file-exclude-patterns-config.yaml) and specify file patterns to exclude files matching them.
      * Also provide an "analysis" folder under src/test/resources/ContainerInventoryExtractionMojoTest/analysis-001 containing the extracted data.
      *
      * @throws MojoExecutionException if an exception during the execution of the mojo occurs.
@@ -50,7 +50,7 @@ public class ContainerInventoryExtractionMojoTest {
     @Test
     public void testExecute_excluded_files() throws MojoExecutionException, MojoFailureException, IOException {
         final ContainerInventoryExtractionMojo mojo = new ContainerInventoryExtractionMojo();
-        final File yamlExcludeConfigFile = new File("src/test/resources/ContainerInventoryExtractionMojoTest/analysis-001/config", "exclude-config.yaml");
+        final File yamlExcludeConfigFile = new File("src/test/resources/ContainerInventoryExtractionMojoTest/analysis-001/config", "file-exclude-patterns-config.yaml");
         final File inventoryFile = new File("src/test/resources/ContainerInventoryExtractionMojoTest/01_extracted", "ubuntu-linux-extraction.xlsx");
 
         mojo.inputDir = new File("src/test/resources/ContainerInventoryExtractionMojoTest/analysis-001");

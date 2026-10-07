@@ -57,7 +57,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     @Parameter(defaultValue = "true")
     protected boolean activateFileLevelProcessing = true;
 
-    @Parameter
+    @Parameter(required = true)
     protected File excludePatternsFile;
 
     private final InventoryExtractor[] inventoryExtractors = new InventoryExtractor[]{
