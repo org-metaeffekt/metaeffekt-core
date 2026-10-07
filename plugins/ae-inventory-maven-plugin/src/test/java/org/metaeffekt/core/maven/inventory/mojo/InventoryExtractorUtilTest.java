@@ -219,7 +219,7 @@ public class InventoryExtractorUtilTest {
     }
 
     @Test
-    public void testLoadExcludeConfigFromYamlFile_complete_exclude_config() throws IOException {
+    public void testLoadExcludeConfigFromYamlFile_completeExcludeConfig() throws IOException {
         final ExcludePatternsConfig excludePatternsConfig = InventoryExtractorUtil.loadExcludeConfigFromYamlFile(new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/complete-exclude-config.yaml"));
         Assertions.assertNotNull(excludePatternsConfig);
 
@@ -241,7 +241,7 @@ public class InventoryExtractorUtilTest {
     }
 
     @Test
-    public void testLoadExcludeConfigFromYamlFile_exclude_config_with_missing_excludes() throws IOException {
+    public void testLoadExcludeConfigFromYamlFile_excludeConfigWithMissingExcludes() throws IOException {
         final List<File> excludeConfigFiles = List.of(new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-excludes.yaml"),
                 new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-exclude-values.yaml"));
 
@@ -267,7 +267,7 @@ public class InventoryExtractorUtilTest {
     }
 
     @Test
-    public void testLoadExcludeConfigFromYamlFile_exclude_config_with_missing_artifact_id_to_version_map() throws IOException {
+    public void testLoadExcludeConfigFromYamlFile_excludeConfigWithMissingArtifactIdToVersionMap() throws IOException {
         final List<File> excludeConfigFiles = List.of(new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-artifact-id-to-version-map.yaml"),
                 new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-artifact-id-to-version-map-values.yaml"));
 
@@ -293,7 +293,7 @@ public class InventoryExtractorUtilTest {
     }
 
     @Test
-    public void testLoadExcludeConfigFromYamlFile_exclude_config_with_missing_unknown_file_patterns() throws IOException {
+    public void testLoadExcludeConfigFromYamlFile_excludeConfigWithMissingUnknownFilePatterns() throws IOException {
         final List<File> excludeConfigFiles = List.of(new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-unknown-file-patterns.yaml"),
                 new File("src/test/resources/InventoryExtractorUtilTest/exclude-configs/exclude-config-with-missing-unknown-file-patterns-values.yaml"));
 

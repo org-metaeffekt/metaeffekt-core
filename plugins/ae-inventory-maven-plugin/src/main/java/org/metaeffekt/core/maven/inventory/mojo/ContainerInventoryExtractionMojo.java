@@ -44,6 +44,7 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 @Mojo(name = "extract-container-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractionMojo {
 
+    // use legacy property to configure inputDir
     @Parameter(required = true, defaultValue = "${ae.extractor.analysis.dir}")
     protected File inputDir;
 
@@ -53,7 +54,10 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     @Parameter(defaultValue = "false")
     protected boolean filterArtifactsWithoutVersion = false;
 
-    @Parameter
+    @Parameter(defaultValue = "true")
+    protected boolean activateFileLevelProcessing = true;
+
+    @Parameter(required = true)
     protected File excludePatternsFile;
 
     private final InventoryExtractor[] inventoryExtractors = new InventoryExtractor[]{
@@ -70,11 +74,9 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             final File analysisDir = deriveAnalysisFolder(inputDir);
             getLog().info("Found analysis directory: " + analysisDir.getAbsolutePath());
 
-            // derive exclude configs
-            final ExcludePatternsConfig excludePatternsConfig = InventoryExtractorUtil.loadExcludeConfigFromYamlFile(excludePatternsFile);
-            final List<String> fileExcludes = new ArrayList<>(excludePatternsConfig.getExcludes());
-            final Set<String> unknownFilePatterns = excludePatternsConfig.getUnknownFilePatterns();
-            final Map<String, String> idToVersionMap = excludePatternsConfig.getArtifactIdToVersionMap();
+            // derive exclude configs and set if activateFileLevelProcessing is true, otherwise set to null
+            final ExcludePatternsConfig excludePatternsConfig = activateFileLevelProcessing ? InventoryExtractorUtil.loadExcludeConfigFromYamlFile(excludePatternsFile) : null;
+            final List<String> fileExcludes = excludePatternsConfig != null ? new ArrayList<>(excludePatternsConfig.getExcludes()) : null;
 
             // fill content derived from preprocessed files
             final Inventory inventory = extractInventory(analysisDir, fileExcludes);
@@ -84,18 +86,10 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             // write inventory
             targetInventoryFile.getParentFile().mkdirs();
 
-            // handle files to be excluded from inventory
-            final String filteredFilesData = writeNotCoveredFileList(inventory);
-
-            // write list of filtered files
-            final File filteredFile = new File(inputDir, "filtered-files.txt");
-            FileUtils.write(filteredFile, filteredFilesData, FileUtils.ENCODING_UTF_8);
-
-            // convert files from filtered-files.txt to artifacts and add to inventory
-            addFileArtifactsToInventory(inventory, filteredFile);
-
-            // read files from filtered-files.txt and enrich artifacts
-            applyFileComponentPatterns(inventory, idToVersionMap, unknownFilePatterns);
+            // check whether file level processing is active and handle files to be added/excluded from inventory
+            if (activateFileLevelProcessing && excludePatternsConfig != null) {
+                processFiles(excludePatternsConfig, inventory);
+            }
 
             // try saving the excel file; may be too big
             try {
@@ -107,6 +101,23 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    private void processFiles(ExcludePatternsConfig excludePatternsConfig, Inventory inventory) throws IOException {
+        final Set<String> unknownFilePatterns = excludePatternsConfig.getUnknownFilePatterns();
+        final Map<String, String> idToVersionMap = excludePatternsConfig.getArtifactIdToVersionMap();
+
+        final String filteredFilesData = writeNotCoveredFileList(inventory);
+
+        // write list of filtered files to dedicated file
+        final File filteredFile = new File(inputDir, "filtered-files.txt");
+        FileUtils.write(filteredFile, filteredFilesData, FileUtils.ENCODING_UTF_8);
+
+        // convert files from filtered-files.txt to artifacts and add to inventory
+        addFileArtifactsToInventory(inventory, filteredFile);
+
+        // read files from filtered-files.txt and enrich artifacts
+        applyFileComponentPatterns(inventory, idToVersionMap, unknownFilePatterns);
     }
 
     /**
@@ -168,7 +179,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         extractor.validate(analysisDir);
 
         // finally we run the extraction
-        return extractor.extractInventory(analysisDir, artifactInventoryId, fileExcludes == null ? Collections.emptyList() : fileExcludes);
+        return extractor.extractInventory(analysisDir, artifactInventoryId, fileExcludes == null ? Collections.emptyList() : fileExcludes, activateFileLevelProcessing);
     }
 
     private void filterInventory(Inventory inventory) {
