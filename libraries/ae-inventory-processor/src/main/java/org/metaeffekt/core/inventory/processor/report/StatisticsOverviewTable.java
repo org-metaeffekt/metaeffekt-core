@@ -70,6 +70,11 @@ public class StatisticsOverviewTable extends AbstractStatisticsOverviewTable<Sta
                 break;
             }
         }
+        if (isEmpty) {
+            for (SeverityToStatusRow row : rows) {
+                row.getStatusCountMap().remove(normalizedColumnName);
+            }
+        }
     }
 
     @Override
