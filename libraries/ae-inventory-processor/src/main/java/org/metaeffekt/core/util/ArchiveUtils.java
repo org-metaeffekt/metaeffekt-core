@@ -248,7 +248,9 @@ public class ArchiveUtils {
         if (tarExtensions.contains(extension) || StringUtils.isEmpty(extension)) {
             try {
                 if ("rpm".equals(extension)) {
-                    unRpmInternal(file, targetDir);
+                    unpackRpmInternal(file, targetDir);
+                } else if ("cpio".equals(extension)) {
+                    unpackCpioInternal(file, targetDir);
                 } else {
                     // untar internal is the preferred approach
                     untarInternal(file, targetDir);
@@ -336,17 +338,31 @@ public class ArchiveUtils {
         }
     }
 
-    private static void unRpmInternal(File file, File targetDir) throws IOException {
+    private static void unpackRpmInternal(File file, File targetDir) throws IOException {
         try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
+            FileUtils.forceMkdir(targetDir);
+            skipToPayload(in); // skip Lead + Signature Header + Header
+
+            final File cpioFile = new File(targetDir, FilenameUtils.getBaseName(file.getName()) + ".cpio");
+            try (InputStream payload = new CompressorStreamFactory().createCompressorInputStream(in)) {
+                Files.copy(payload, cpioFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
+            throw new IOException("Could not unpack rpm file [" + file.getAbsolutePath() + "]", e);
+        }
+    }
+
+    private static void unpackCpioInternal(File file, File targetDir) throws IOException {
+        try {
+            final InputStream fin = Files.newInputStream(file.toPath());
+            final BufferedInputStream in = new BufferedInputStream(fin);
+            final CpioArchiveInputStream cpioIn = new CpioArchiveInputStream(in);
             if (!targetDir.exists()) {
                 FileUtils.forceMkdir(targetDir);
             }
-            skipToPayload(in); // skip Lead + Signature Header + Header
-            final InputStream cpioStream = new CompressorStreamFactory().createCompressorInputStream(in);
-            final CpioArchiveInputStream cpioArchiveIn = new CpioArchiveInputStream(cpioStream);
-            unpackAndClose(cpioArchiveIn, targetDir);
+            unpackAndClose(cpioIn, targetDir);
         } catch (Exception e) {
-            throw new IOException("Could not unpack rpm file [" + file.getAbsolutePath() + "]", e);
+            throw new IOException("Could not unpack cpio file [" + file.getAbsolutePath() + "]", e);
         }
     }
 
@@ -432,8 +448,7 @@ public class ArchiveUtils {
 
                 // A file can exist in the file system under several names (hardlinks in cpio).
                 // e.g. /usr/bin/foo and /usr/bin/bar are the same file. They share the same inode (the unique number of the file on a device).
-                //
-                // CPIO stores a separate entry for EVERY name, all with the same inode.
+                // CPIO stores a separate entry for EVERY name of the file, all with the same inode.
                 // The data, however, is stored only ONCE in the archive, in the LAST entry of that inode. The earlier entries have getSize() == 0
                 // even though the file is not actually empty.
 
@@ -460,14 +475,14 @@ public class ArchiveUtils {
                     for (File linkFile : waitingLinkFiles) {
                         // The parent directory of the waiting name may not exist yet.
                         FileUtils.forceMkdir(linkFile.getParentFile());
-                        // Put the file that was just written under the waiting name as a copy.
+                        // Put the file that was just written under the waiting link file name as a copy.
                         // A copy instead of a real hardlink (Files.createLink), so it also works on systems without hardlink support (e.g. some Windows setups).
                         Files.copy(targetFile.toPath(), linkFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     }
                 }
             }
 
-            // Names that never received data are empty files and will be written as empty files.
+            // Names that never received data (last entry did not have data and size was 0) are empty files and will be written as empty files.
             for (List<File> rest : pendingLinks.values()) {
                 for (File f : rest) {
                     FileUtils.forceMkdir(f.getParentFile());
