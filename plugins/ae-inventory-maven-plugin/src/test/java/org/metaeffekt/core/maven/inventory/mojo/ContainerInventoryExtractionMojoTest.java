@@ -53,7 +53,7 @@ public class ContainerInventoryExtractionMojoTest {
         final File yamlExcludeConfigFile = new File("src/test/resources/ContainerInventoryExtractionMojoTest/analysis-001/config", "file-exclude-patterns-config.yaml");
         final File inventoryFile = new File("src/test/resources/ContainerInventoryExtractionMojoTest/01_extracted", "ubuntu-linux-extraction.xlsx");
 
-        mojo.inputDir = new File("src/test/resources/ContainerInventoryExtractionMojoTest/analysis-001");
+        mojo.inputArchiveFile = new File("src/test/resources/ContainerInventoryExtractionMojoTest/analysis-001");
         mojo.excludePatternsFile = yamlExcludeConfigFile;
         mojo.targetInventoryFile = inventoryFile;
 

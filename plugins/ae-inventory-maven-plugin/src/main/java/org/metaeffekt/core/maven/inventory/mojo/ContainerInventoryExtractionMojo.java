@@ -44,9 +44,13 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 @Mojo(name = "extract-container-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractionMojo {
 
+    // the mojo ingest an archive as primary input
+    @Parameter
+    protected File inputArchiveFile;
+
     // use legacy property to configure inputDir
     @Parameter(required = true, defaultValue = "${ae.extractor.analysis.dir}")
-    protected File inputDir;
+    protected File analysisDir;
 
     @Parameter(defaultValue = "false")
     protected boolean filterPackagesWithoutVersion = false;
@@ -71,7 +75,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            final File analysisDir = deriveAnalysisFolder(inputDir);
+            final File analysisDir = deriveAnalysisFolder(inputArchiveFile);
             getLog().info("Found analysis directory: " + analysisDir.getAbsolutePath());
 
             // derive exclude configs and set if activateFileLevelProcessing is true, otherwise set to null
@@ -110,7 +114,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         final String filteredFilesData = writeNotCoveredFileList(inventory);
 
         // write list of filtered files to dedicated file
-        final File filteredFile = new File(inputDir, "filtered-files.txt");
+        final File filteredFile = new File(targetInventoryFile.getParentFile(), "filtered-files.txt");
         FileUtils.write(filteredFile, filteredFilesData, FileUtils.ENCODING_UTF_8);
 
         // convert files from filtered-files.txt to artifacts and add to inventory
@@ -123,32 +127,29 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     /**
      * Derives the specific analysis directory from the input directory which either can have an archive as a direct child or can can have the unpacked analysis directory as any of its children.
      *
-     * @param inputDir the input directory containing an archive as direct child or the analysis folder as any sub-child
+     * @param archiveFile the input directory containing an archive as direct child or the analysis folder as any sub-child
      * @return the analysis directory to analyze
      * @throws IOException            if no analysis directory was found
      * @throws MojoExecutionException if an error occurs during the execution of the mojo
      */
-    private File deriveAnalysisFolder(File inputDir) throws IOException, MojoExecutionException {
-        if (!inputDir.isDirectory()) {
-            throw new MojoExecutionException("Input Directory is not a directory: " + inputDir);
+    private File deriveAnalysisFolder(File archiveFile) throws IOException, MojoExecutionException {
+        if (!archiveFile.isFile()) {
+            throw new MojoExecutionException("Archive file is not a file: " + archiveFile + ".");
         }
 
-        final File tarGzArchive = FileUtils.findSingleFile(inputDir, "**/*.tar", "**/*.gz");
-        // the input directory contains a tar archive
-        if (tarGzArchive != null) {
-            ArchiveUtils.untar(tarGzArchive, inputDir);
-            FileUtils.deleteDirectoryQuietly(tarGzArchive);
-        }
+        ArchiveUtils.unpackIfPossible(archiveFile, analysisDir, new ArrayList<>());
 
         // determine the analysis directory
-        return findAnalysisDirectory(inputDir);
+        return findAnalysisDirectory(analysisDir);
     }
 
     /**
      * Finds the analysis directory recursively starting from a (extracted) directory .
      *
      * @param extractedDir the starting directory to search for the analysis directory
+     *
      * @return the found analysis directory
+     *
      * @throws IOException if no analysis directory was found
      */
     private File findAnalysisDirectory(File extractedDir) throws IOException {
@@ -158,7 +159,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
                     .filter(this::isAnalysisDirectory)
                     .map(Path::toFile)
                     .findFirst()
-                    .orElseThrow(() -> new IOException("No analysis directory found"));
+                    .orElseThrow(() -> new IOException(String.format("No analysis files found in directory [%s]", extractedDir)));
         }
     }
 
