@@ -48,6 +48,16 @@ public class ReportContext {
     private String reportInventoryName;
     private String reportInventoryVersion;
 
+    /**
+     * The identifier of the current document part being processed.
+     */
+    private String documentPartId;
+
+    /**
+     * Map of document part types to their identifiers.
+     */
+    private Map<String, String> documentPartIds = new java.util.HashMap<>();
+
     public ReportContext(String id, String title, String context) {
         this.id = id;
         this.title = title;

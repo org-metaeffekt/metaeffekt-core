@@ -196,6 +196,18 @@ public class DocumentDescriptorReportGenerator {
      * @throws IOException if there is an error accessing inventory files or generating reports
      */
     private static void generateInventoryReports(DocumentDescriptor documentDescriptor) throws IOException {
+        Map<String, String> partIdMap = new HashMap<>();
+        for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
+            final String type = documentPart.getDocumentPartType().name().toLowerCase().replace("_", ".");
+            String key = type;
+            if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT || documentPart.getDocumentPartType() == DocumentPartType.EXPLOITABILITY_STATISTICS_REPORT) {
+                if (Boolean.parseBoolean(documentPart.getParams().get("statisticsReportAll"))) {
+                    key = type + ".all";
+                }
+            }
+            partIdMap.put(key, documentPart.getIdentifier());
+        }
+
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             documentPart.validate();
 
@@ -217,7 +229,10 @@ public class DocumentDescriptorReportGenerator {
                 ReportConfigurationParameters configParams = buildReportConfiguration(documentPart, documentDescriptor, mergedParams);
 
                 InventoryReport report = new InventoryReport(configParams);
-                report.setReportContext(new ReportContext(documentPart.getIdentifier(), null, null));
+                ReportContext reportContext = new ReportContext(documentPart.getIdentifier(), null, null);
+                reportContext.setDocumentPartId(documentPart.getIdentifier());
+                reportContext.setDocumentPartIds(partIdMap);
+                report.setReportContext(reportContext);
                 report.setTargetReportDir(new File(new File(documentDescriptor.getTargetDocumentDir(), "parts"), documentPart.getIdentifier()));
 
                 if (!report.createReport()) {
@@ -244,7 +259,10 @@ public class DocumentDescriptorReportGenerator {
                     ReportConfigurationParameters configParams = buildReportConfiguration(documentPart, documentDescriptor, mergedParams);
 
                     InventoryReport report = new InventoryReport(configParams);
-                    report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));
+                    ReportContext reportContext = new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName());
+                    reportContext.setDocumentPartId(documentPart.getIdentifier());
+                    reportContext.setDocumentPartIds(partIdMap);
+                    report.setReportContext(reportContext);
 
                     setPolicy(mergedParams, report, documentDescriptor);
 
@@ -295,7 +313,6 @@ public class DocumentDescriptorReportGenerator {
                         report.setTargetComponentsDir(targetComponentsDir);
                     }
 
-                    report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));
 
                     report.getReportContext().setReportInventoryName(inventoryContext.getAssetName());
 
