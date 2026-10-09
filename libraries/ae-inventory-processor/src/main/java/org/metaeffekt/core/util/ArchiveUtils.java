@@ -620,8 +620,6 @@ public class ArchiveUtils {
         final Project project = new Project();
         project.setBaseDir(archiveFile.getParentFile());
 
-        log.info("Attempting unpacking: " + archiveFile.getAbsolutePath());
-
         final String archiveFileName = archiveFile.getName().toLowerCase();
         final String extension = FilenameUtils.getExtension(archiveFileName);
 
