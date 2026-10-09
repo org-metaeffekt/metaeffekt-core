@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Checksum;
+import org.apache.tools.ant.taskdefs.Delete;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 
@@ -266,6 +267,25 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
             forceDelete(directory);
         } catch (UncheckedIOException | IOException e) {
             // ignore
+        }
+    }
+
+    public static void deleteDir(File dir) {
+        if (dir.exists()) {
+            Delete delete = new Delete();
+            Project project = new Project();
+            project.setBaseDir(dir);
+            delete.setProject(project);
+            delete.setDir(dir);
+            delete.execute();
+        }
+    }
+
+    public static void forceMkDirQuietly(File file) {
+        try {
+            FileUtils.forceMkdir(file);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot create folder [" + file + "].");
         }
     }
 

@@ -26,7 +26,6 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.maven.inventory.extractor.*;
-import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
@@ -34,7 +33,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -42,27 +40,13 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
  * Extracts a container inventory from pre-preprocessed container information.
  */
 @Mojo(name = "extract-container-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractionMojo {
-
-    // the mojo ingest an archive as primary input
-    @Parameter
-    protected File inputArchiveFile;
-
-    // use legacy property to configure inputDir
-    @Parameter(required = true, defaultValue = "${ae.extractor.analysis.dir}")
-    protected File analysisDir;
+public class ContainerInventoryExtractionMojo extends AbstractApplianceInventoryExtractionMojo {
 
     @Parameter(defaultValue = "false")
     protected boolean filterPackagesWithoutVersion = false;
 
     @Parameter(defaultValue = "false")
     protected boolean filterArtifactsWithoutVersion = false;
-
-    @Parameter(defaultValue = "true")
-    protected boolean activateFileLevelProcessing = true;
-
-    @Parameter(required = true)
-    protected File excludePatternsFile;
 
     private final InventoryExtractor[] inventoryExtractors = new InventoryExtractor[]{
             new DebianInventoryExtractor(), // -> AptBasedInventoryExtractor
@@ -75,15 +59,15 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            final File analysisDir = deriveAnalysisFolder(inputArchiveFile);
-            getLog().info("Found analysis directory: " + analysisDir.getAbsolutePath());
+            final File deriveAnalysisDir = deriveAnalysisFolder(inputArchiveFile, analysisDir);
+            getLog().info("Found analysis directory: " + deriveAnalysisDir.getAbsolutePath());
 
             // derive exclude configs and set if activateFileLevelProcessing is true, otherwise set to null
             final ExcludePatternsConfig excludePatternsConfig = activateFileLevelProcessing ? InventoryExtractorUtil.loadExcludeConfigFromYamlFile(excludePatternsFile) : null;
             final List<String> fileExcludes = excludePatternsConfig != null ? new ArrayList<>(excludePatternsConfig.getExcludes()) : null;
 
             // fill content derived from preprocessed files
-            final Inventory inventory = extractInventory(analysisDir, fileExcludes);
+            final Inventory inventory = extractInventory(deriveAnalysisDir, fileExcludes);
 
             filterInventory(inventory);
 
@@ -124,46 +108,8 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         applyFileComponentPatterns(inventory, idToVersionMap, unknownFilePatterns);
     }
 
-    /**
-     * Derives the specific analysis directory from the input directory which either can have an archive as a direct child or can can have the unpacked analysis directory as any of its children.
-     *
-     * @param archiveFile the input directory containing an archive as direct child or the analysis folder as any sub-child
-     * @return the analysis directory to analyze
-     * @throws IOException            if no analysis directory was found
-     * @throws MojoExecutionException if an error occurs during the execution of the mojo
-     */
-    private File deriveAnalysisFolder(File archiveFile) throws IOException, MojoExecutionException {
-        if (!archiveFile.isFile()) {
-            throw new MojoExecutionException("Archive file is not a file: " + archiveFile + ".");
-        }
-
-        ArchiveUtils.unpackIfPossible(archiveFile, analysisDir, new ArrayList<>());
-
-        // determine the analysis directory
-        return findAnalysisDirectory(analysisDir);
-    }
-
-    /**
-     * Finds the analysis directory recursively starting from a (extracted) directory .
-     *
-     * @param extractedDir the starting directory to search for the analysis directory
-     *
-     * @return the found analysis directory
-     *
-     * @throws IOException if no analysis directory was found
-     */
-    private File findAnalysisDirectory(File extractedDir) throws IOException {
-        try (Stream<Path> paths = Files.walk(extractedDir.toPath())) {
-            return paths
-                    .filter(Files::isDirectory)
-                    .filter(this::isAnalysisDirectory)
-                    .map(Path::toFile)
-                    .findFirst()
-                    .orElseThrow(() -> new IOException(String.format("No analysis files found in directory [%s]", extractedDir)));
-        }
-    }
-
-    private boolean isAnalysisDirectory(Path dir) {
+    @Override
+    protected boolean isAnalysisDirectory(Path dir) {
         return Files.exists(dir.resolve("issue.txt"))
                 && Files.exists(dir.resolve("release.txt"));
     }

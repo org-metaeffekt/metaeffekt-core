@@ -552,6 +552,65 @@ public class ArchiveUtils {
         }
     }
 
+    /**
+     * Recursively unpacks all archives in the baseDir to the given analysis directory.
+     *
+     * @param baseDir     The baseDir to start in.
+     * @param analysisDir The analysisDir to unpack to.
+     * @param issues      The list of issues to add to.
+     * @throws IOException If the file could not be unpacked.
+     */
+    public static void recursiveUnpack(File baseDir, File analysisDir, List<String> issues) throws IOException {
+        final String[] files = FileUtils.scanDirectoryForFiles(baseDir, "**/*.tar", "**/*.tgz", "**/*.bz2",
+                "**/*.gz", "**/*.xz", "**/*.tar", "**/*.deb", "**/*.rpm", "**/*.apk", "**/*.zip", "**/*.war", "**/*.cpio",
+                "**/*.jar", "**/*.mbizip", "**/*.nupkg", "**/*.nupack", "**/*.aar", "**/*.dll", "**/*.pyd", "**/*.exe",
+                "**/*.jmod", "**/modules, **/*.ez");
+        for (String file : files) {
+            File archiveFile = new File(baseDir, file);
+            if (!analysisDir.exists()) {
+                FileUtils.forceMkDirQuietly(analysisDir);
+                if (unpackIfPossible(archiveFile, analysisDir, new ArrayList<>())) {
+                    // recurse into just unpacked folder
+                    recursiveUnpack(analysisDir, issues);
+                } else {
+                    FileUtils.deleteDir(analysisDir);
+                    issues.add("Cannot unpack " + archiveFile);
+                }
+            }
+        }
+    }
+
+    /**
+     * Recursively unpacks all archives in the given directory.
+     *
+     * @param baseDir The baseDir to start in.
+     * @param issues  The list of issues to add to.
+     * @throws IOException If the file could not be unpacked.
+     */
+    public static void recursiveUnpack(File baseDir, List<String> issues) throws IOException {
+        final String[] files = FileUtils.scanDirectoryForFiles(baseDir, "**/*.tar", "**/*.tgz", "**/*.bz2",
+                "**/*.gz", "**/*.xz", "**/*.tar", "**/*.deb", "**/*.rpm", "**/*.apk", "**/*.zip", "**/*.war", "**/*.cpio",
+                "**/*.jar", "**/*.mbizip", "**/*.nupkg", "**/*.nupack", "**/*.aar", "**/*.dll", "**/*.pyd", "**/*.exe",
+                "**/*.jmod", "**/modules, **/*.ez");
+        for (String file : files) {
+            File archiveFile = new File(baseDir, file);
+            File targetPath = new File(archiveFile.getParentFile(), "[" + archiveFile.getName() + "]");
+            if (!targetPath.exists()) {
+                FileUtils.forceMkDirQuietly(targetPath);
+                if (unpackIfPossible(archiveFile, targetPath, new ArrayList<>())) {
+                    // delete the file after successful expansion
+                    FileUtils.forceDelete(archiveFile);
+
+                    // recurse into just unpacked folder
+                    recursiveUnpack(targetPath, issues);
+                } else {
+                    FileUtils.deleteDir(targetPath);
+                    issues.add("Cannot unpack " + archiveFile);
+                }
+            }
+        }
+    }
+
     public static boolean unpackIfPossible(File archiveFile, File targetDir, List<String> issues) {
         if (!archiveFile.exists() || !archiveFile.getParentFile().exists()) {
             log.warn("Trying to unpack a file, which does not exists (anymore): {}", archiveFile);
@@ -560,6 +619,8 @@ public class ArchiveUtils {
 
         final Project project = new Project();
         project.setBaseDir(archiveFile.getParentFile());
+
+        log.info("Attempting unpacking: " + archiveFile.getAbsolutePath());
 
         final String archiveFileName = archiveFile.getName().toLowerCase();
         final String extension = FilenameUtils.getExtension(archiveFileName);
