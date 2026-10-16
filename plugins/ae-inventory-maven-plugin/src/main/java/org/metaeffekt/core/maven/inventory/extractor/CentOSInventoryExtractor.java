@@ -17,6 +17,7 @@ package org.metaeffekt.core.maven.inventory.extractor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistribution;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
 
@@ -38,35 +39,35 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     @Override
-    public void extendInventory(File analysisDir, Inventory inventory) throws IOException {
+    public void extendInventory(File analysisDir, Inventory inventory, LinuxDistribution linuxDistribution) throws IOException {
         // find packages from the provided inputs
-        List<PackageInfo> packageReferences = scan(analysisDir);
+        List<PackageInfo> packageReferences = scan(analysisDir, linuxDistribution);
         packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, p));
     }
 
-    public List<PackageInfo> scan(File analysisDir) throws IOException {
+    public List<PackageInfo> scan(File analysisDir, LinuxDistribution linuxDistribution) throws IOException {
         Map<String, PackageInfo> idToPackageReferenceMap = new HashMap<>();
 
         // NOTE: primary content driver is the package list and package meta files
 
         // generate (complementary) package list from scripts output
-        parseRpmPackageList(analysisDir, idToPackageReferenceMap);
+        parseRpmPackageList(analysisDir, linuxDistribution, idToPackageReferenceMap);
 
         // NOTE: secondary content are the content in the doc and license folders
 
         // generate package list from files in documentation dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), idToPackageReferenceMap, true);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), linuxDistribution, idToPackageReferenceMap, true);
 
         // generate package list from directories in dedicated licenses dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), idToPackageReferenceMap, false);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), linuxDistribution, idToPackageReferenceMap, false);
 
         // add additional details from package metadata files
-        parseRpmPackageFiles(analysisDir, idToPackageReferenceMap);
+        parseRpmPackageFiles(analysisDir, linuxDistribution, idToPackageReferenceMap);
 
         return new ArrayList<>(idToPackageReferenceMap.values());
     }
 
-    private void parseRpmPackageFiles(File analysisDir, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
+    private void parseRpmPackageFiles(File analysisDir, LinuxDistribution linuxDistribution, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
         for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
             PackageInfo packageInfo = entry.getValue();
             String packageId = entry.getKey();
@@ -90,6 +91,7 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
                 // include reading release and source rpm
                 packageInfo.release = ParsingUtils.getValue(fileContentLines, "Release     :");
                 packageInfo.sourcePackage = ParsingUtils.getValue(fileContentLines, "Source RPM  :");
+                packageInfo.linuxDistribution = linuxDistribution;
             } else {
                 log.info("File {} does not exist.", packageFile);
             }
@@ -97,7 +99,7 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
     }
 
 
-    public void parseRpmPackageList(File shareDir, Map<String, PackageInfo> idToPackageInfoMap) throws IOException {
+    public void parseRpmPackageList(File shareDir, LinuxDistribution linuxDistribution, Map<String, PackageInfo> idToPackageInfoMap) throws IOException {
         File rpmPackagesFile = new File(shareDir, FILE_PACKAGES_RPM_TXT);
         String packageFileContent = FileUtils.readFileToString(rpmPackagesFile, FileUtils.ENCODING_UTF_8);
         String[] lines = packageFileContent.split("\\n");
@@ -120,6 +122,7 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
             packageInfo.component = name;
             packageInfo.name = name;
             packageInfo.version = version;
+            packageInfo.linuxDistribution = linuxDistribution;
             packageInfo.license = elements[3].trim();
             if (elements.length > 4)
                 packageInfo.url = elements[4].trim();

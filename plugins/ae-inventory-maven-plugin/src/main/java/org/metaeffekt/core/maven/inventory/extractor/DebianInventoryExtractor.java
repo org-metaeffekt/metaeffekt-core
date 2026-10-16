@@ -16,15 +16,13 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistribution;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class DebianInventoryExtractor extends AbstractInventoryExtractor {
@@ -44,33 +42,33 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     @Override
-    public void extendInventory(File analysisDir, Inventory inventory) throws IOException {
+    public void extendInventory(File analysisDir, Inventory inventory, LinuxDistribution linuxDistribution) throws IOException {
         // find packages from the provided inputs
-        final List<PackageInfo> packageReferences = scan(analysisDir);
+        final List<PackageInfo> packageReferences = scan(analysisDir, linuxDistribution);
 
         // process each
         packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, p));
     }
 
-    public List<PackageInfo> scan(File analysisDir) throws IOException {
+    public List<PackageInfo> scan(File analysisDir, LinuxDistribution linuxDistribution) throws IOException {
         final Map<String, PackageInfo> packageInfoMap = new HashMap<>();
 
         // generate (complementary) package list from scripts output
-        parseDebianPackageList(analysisDir, packageInfoMap);
+        parseDebianPackageList(analysisDir, linuxDistribution, packageInfoMap);
 
         // generate package list from files in dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), packageInfoMap, true);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), linuxDistribution, packageInfoMap, true);
 
         // generate package list from directories in dedicated licenses dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), packageInfoMap, false);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), linuxDistribution, packageInfoMap, false);
 
         // parse / merge package metadata
-        parseDebianPackageFiles(analysisDir, packageInfoMap);
+        parseDebianPackageFiles(analysisDir, linuxDistribution, packageInfoMap);
 
         return new ArrayList<>(packageInfoMap.values());
     }
 
-    private void parseDebianPackageFiles(File analysisDir, Map<String, PackageInfo> idToPackageInfoMap) throws IOException {
+    private void parseDebianPackageFiles(File analysisDir, LinuxDistribution linuxDistribution, Map<String, PackageInfo> idToPackageInfoMap) throws IOException {
         final File packageMetaDir = new File(analysisDir, "package-meta");
         if (!packageMetaDir.exists()) return;
 
@@ -96,6 +94,7 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
             packageInfo.id = concludedName;
             packageInfo.name = parsedPackageName;
             packageInfo.version = parsedPackageVersion;
+            packageInfo.linuxDistribution = linuxDistribution;
 
             parseAttributes(packageInfo, fileContentLines);
 
@@ -125,7 +124,7 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
 
     }
 
-    private static void parseDebianPackageList(File shareDir, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
+    private static void parseDebianPackageList(File shareDir, LinuxDistribution linuxDistribution, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
         File dpkgPackagesFile = new File(shareDir, "packages_dpkg.txt");
         String packageFile = FileUtils.readFileToString(dpkgPackagesFile, FileUtils.ENCODING_UTF_8);
         String[] lines = packageFile.split("\\n");
@@ -157,6 +156,7 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
                 packageInfo.name = name;
                 packageInfo.version = line.substring(elementIndex[1], Math.min(line.length(), elementIndex[2])).trim();
                 packageInfo.id = name + "-" + packageInfo.version;
+                packageInfo.linuxDistribution = linuxDistribution;
 
                 if (elementIndex.length == 3) {
                     packageInfo.arch = line.substring(elementIndex[2], elementIndex[3]).trim();

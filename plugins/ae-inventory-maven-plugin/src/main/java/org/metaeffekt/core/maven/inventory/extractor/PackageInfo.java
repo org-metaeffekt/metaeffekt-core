@@ -16,7 +16,9 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistribution;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 
@@ -41,6 +43,7 @@ class PackageInfo {
     String documentationDir;
     String licenseDir;
     String group;
+    LinuxDistribution linuxDistribution;
 
     String status;
 
@@ -74,6 +77,7 @@ class PackageInfo {
         artifact.set(KEY_STATUS_PACKAGE, status);
         artifact.set(KEY_RELEASE, release);
         artifact.set(KEY_SOURCE_PACKAGE, sourcePackage);
+        artifact.set(KEY_PURL, PurlUtils.buildPurl(org.metaeffekt.core.util.purl.PackageInfo.of(linuxDistribution.getPackageManager(), name).namespace(linuxDistribution.getPurlNamespace()).version(version).arch(arch).build()));
         return artifact;
     }
 

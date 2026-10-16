@@ -22,6 +22,9 @@ import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +41,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
     protected static final Pattern hexStringPattern = Pattern.compile("^[a-fA-F0-9]+$");
 
-    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("/status");
         add(".md5sums");
     }});
@@ -104,6 +107,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         });
 
         AtomicBoolean hasChecked = new AtomicBoolean(false);
+
         public DpkgStatusFileEntry() {
             if (hasChecked.getAndSet(true)) {
                 // check this object for inconsistencies between the map and fields
@@ -312,7 +316,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     }
 
     public ComponentPatternData createComponentPattern(String versionAnchor, DpkgStatusFileEntry entry,
-           String checksum, String includePatterns, LinuxDistributionUtil.LinuxDistro distro) {
+                                                       String checksum, String includePatterns, LinuxDistributionUtil.LinuxDistro distro) {
 
         ComponentPatternData componentPatternData = new ComponentPatternData();
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, entry.packageName);
@@ -354,13 +358,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     /**
      * Reads list of files that were in this package and tries to create an include pattern.
      *
-     * @param entry the entry in the corresponding status file
+     * @param entry                    the entry in the corresponding status file
      * @param correspondingMd5sumsFile the corresponding md5sums file
-     *
      * @return a joiner with resulting include patterns or null on failure
      */
     public StringJoiner createIncludePatternsFromHashFile(
-              DpkgStatusFileEntry entry, File correspondingMd5sumsFile) {
+            DpkgStatusFileEntry entry, File correspondingMd5sumsFile) {
 
         // prepare file list
         final StringJoiner fileJoiner = new StringJoiner(", ");
@@ -546,15 +549,15 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     /**
      * Tries to get metadata from dpkg status.d. Useful for "distroless" images.<br>
      * Hacked together to support a system that didn't have a status file but only a status.d.
-     * @param baseDir same as {@link ComponentPatternContributor#contribute(File, String, String)}
-     * @param relativeAnchorFilePath same as {@link ComponentPatternContributor#contribute(File, String, String)}
-     * @param checksum same as {@link ComponentPatternContributor#contribute(File, String, String)}
-     * @param virtualRootPath same as {@link ComponentPatternContributor#contribute(File, String, String)}
      *
+     * @param baseDir                same as {@link ComponentPatternContributor#contribute(File, String, String)}
+     * @param relativeAnchorFilePath same as {@link ComponentPatternContributor#contribute(File, String, String)}
+     * @param checksum               same as {@link ComponentPatternContributor#contribute(File, String, String)}
+     * @param virtualRootPath        same as {@link ComponentPatternContributor#contribute(File, String, String)}
      * @return same as {@link ComponentPatternContributor#contribute(File, String, String)}
      */
     public List<ComponentPatternData> contributeStatusDirectoryBased(File baseDir,
-                 String virtualRootPath, String relativeAnchorFilePath, String checksum) {
+                                                                     String virtualRootPath, String relativeAnchorFilePath, String checksum) {
 
         final File md5sumsFile = new File(baseDir, relativeAnchorFilePath);
 
@@ -590,7 +593,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         if (entries.size() != 1) {
             log.warn("Skipping potential status.d anchor with multiple entries: expected 1 but got [{}] from [{}].",
-                entries.size(), fileWithoutMd5sums.getAbsoluteFile());
+                    entries.size(), fileWithoutMd5sums.getAbsoluteFile());
         }
 
         DpkgStatusFileEntry entry = entries.get(0);
@@ -643,10 +646,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     }
 
     private String buildPurl(LinuxDistributionUtil.LinuxDistro distro, String packageName, String version, String arch) {
-        if (distro != null && distro.id != null) {
-            return String.format("pkg:deb/%s/%s@%s?arch=%s", distro.id, packageName, version, arch);
+        if (distro == null || distro.id == null || StringUtils.isBlank(packageName)) {
+            return null;
         }
-        return null;
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.DEBIAN, packageName).namespace(distro.id).version(version).arch(arch).build());
     }
 
 }

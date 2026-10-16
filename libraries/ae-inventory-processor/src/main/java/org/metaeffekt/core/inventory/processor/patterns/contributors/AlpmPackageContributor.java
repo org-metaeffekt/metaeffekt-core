@@ -16,10 +16,15 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistribution;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -183,7 +188,11 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
     }
 
     private String buildPurl(String name, String version, String architecture) {
-        return "pkg:alpm/arch/" + name + "@" + version + "?arch=" + architecture;
+        if (StringUtils.isBlank(name)) {
+            return null;
+        }
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.ALPM, name).namespace(LinuxDistribution.ARCH.getPurlNamespace()).version(version).arch(architecture).build());
     }
 }
 

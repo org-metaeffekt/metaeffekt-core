@@ -34,7 +34,13 @@ import java.util.stream.Stream;
 public class LinuxDistributionUtil {
 
     private static final Pattern CPE_PATTERN = Pattern.compile("cpe:/o:(.*?):.*?:(.*?):.*?$");
+
     private static final List<String> VERSION_ID_KEYS = List.of("DEBIAN_VERSION_FULL", "VERSION_ID");
+    private static final String KEY_DISTRO_NAME = "NAME";
+    private static final String KEY_DISTRO_ID = "ID";
+    private static final String KEY_DISTRO_VERSION_CODENAME = "VERSION_CODENAME";
+    private static final List<String> DISTRO_VERSION_KEYS = List.of("VERSION_ID", "VERSION");
+
 
     public static final String ISSUE = "issue";
     public static final String ISSUE_NET = "issue.net";
@@ -210,6 +216,48 @@ public class LinuxDistributionUtil {
         return null;
     }
 
+    public static boolean applies(String pathInContext) {
+        pathInContext = "/" + pathInContext;
+        for (String contextPath : CONTEXT_PATHS) {
+            if (pathInContext.endsWith(contextPath)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String[] getContextPaths() {
+        return CONTEXT_PATHS;
+    }
+
+    public static String getVersionIdWithFallbacks(Properties properties) {
+        for (final String versionKey : VERSION_ID_KEYS) {
+            final String versionId = properties.getProperty(versionKey);
+            if (!StringUtils.isBlank(versionId)) {
+                return versionId;
+            }
+        }
+        log.debug("No version id found in any of the fallback keys: {}", VERSION_ID_KEYS);
+        return null;
+    }
+
+    /**
+     * Derives the Linux Distribution corresponding to the ID field on the os-release.txt file.
+     *
+     * @param osReleaseFileProperties the osReleaseProperties from the os-release.txt file containing the ID
+     * @return the derived Linux Distro
+     */
+    public static LinuxDistribution deriveLinuxDistro(Properties osReleaseFileProperties) {
+        return LinuxDistribution.fromId(osReleaseFileProperties.getProperty(KEY_DISTRO_ID)).orElse(null);
+    }
+
+    public static String populateNameWithVersionCodename(Properties properties) {
+        String name = properties.getProperty(KEY_DISTRO_NAME);
+        String versionCodename = resolveCodename(properties);
+
+        return versionCodename != null ? name + " (" + versionCodename + ")" : name;
+    }
+
     private static void parseDebianVersion(File distroBaseDir, LinuxDistro linuxDistro) {
         File file = new File(distroBaseDir, "etc/" + DEBIAN_VERSION);
         if (!file.exists()) {
@@ -261,20 +309,6 @@ public class LinuxDistributionUtil {
         }
     }
 
-    public static boolean applies(String pathInContext) {
-        pathInContext = "/" + pathInContext;
-        for (String contextPath : CONTEXT_PATHS) {
-            if (pathInContext.endsWith(contextPath)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static String[] getContextPaths() {
-        return CONTEXT_PATHS;
-    }
-
     private static void parseUsrBinOsRelease(File distroBaseDir, LinuxDistro linuxDistro) {
         parseOsRelease(distroBaseDir, linuxDistro, "usr/lib/" + OS_RELEASE);
     }
@@ -301,21 +335,30 @@ public class LinuxDistributionUtil {
         }
     }
 
-    private static String populateNameWithVersionCodename(Properties properties) {
-        String name = properties.getProperty("NAME");
-        String versionCodename = properties.getProperty("VERSION_CODENAME");
-
-        return versionCodename != null ? name + " (" + versionCodename + ")" : name;
+    private static String resolveCodename(Properties osReleaseProperties) {
+        String codename = osReleaseProperties.getProperty(KEY_DISTRO_VERSION_CODENAME);
+        if (codename == null && osReleaseProperties.getProperty(KEY_DISTRO_ID).equals("ubuntu")) {
+            codename = osReleaseProperties.getProperty("UBUNTU_CODENAME");
+        }
+        if (codename == null) {
+            codename = deriveCodenameFromVersion(osReleaseProperties);
+        }
+        return codename;
     }
 
-    private static String getVersionIdWithFallbacks(Properties properties) {
-        for (final String versionKey : VERSION_ID_KEYS) {
-            final String versionId = properties.getProperty(versionKey);
-            if (!StringUtils.isBlank(versionId)) {
-                return versionId;
+    private static String deriveCodenameFromVersion(Properties osReleaseProperties) {
+        for (String versionKey : DISTRO_VERSION_KEYS) {
+            final String version = osReleaseProperties.getProperty(versionKey);
+            if (version != null && !version.isBlank()) {
+                final int open = version.indexOf('(');
+                final int close = version.indexOf(')', open + 1);
+                if (!(open >= 0 && close > open)) {
+                    continue;
+                }
+                return version.substring(open + 1, close).trim();
             }
         }
-        log.debug("No version id found in any of the fallback keys: {}", VERSION_ID_KEYS);
+        log.debug("Cannot derive version codename from version keys [{}].", DISTRO_VERSION_KEYS);
         return null;
     }
 

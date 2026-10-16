@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistribution;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
 
@@ -35,9 +36,9 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     @Override
-    public void extendInventory(File analysisDir, Inventory inventory) throws IOException {
+    public void extendInventory(File analysisDir, Inventory inventory, LinuxDistribution linuxDistribution) throws IOException {
         // find packages from the provided inputs
-        List<PackageInfo> packageReferences = scan(analysisDir);
+        List<PackageInfo> packageReferences = scan(analysisDir, linuxDistribution);
         packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, p));
     }
 
@@ -46,30 +47,31 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
         return null;
     }
 
-    public List<PackageInfo> scan(File analysisDir) throws IOException {
+    public List<PackageInfo> scan(File analysisDir, LinuxDistribution linuxDistribution) throws IOException {
         Map<String, PackageInfo> idToPackageReferenceMap = new HashMap<>();
 
         // generate (complementary) package list from scripts output
-        parseArchPackageList(analysisDir, idToPackageReferenceMap);
+        parseArchPackageList(analysisDir, linuxDistribution, idToPackageReferenceMap);
 
         // generate package list from files in dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), idToPackageReferenceMap, true);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), linuxDistribution, idToPackageReferenceMap, true);
 
         // generate package list from directories in dedicated licenses dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), idToPackageReferenceMap, false);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), linuxDistribution, idToPackageReferenceMap, false);
 
-        parseArchPackages(analysisDir, idToPackageReferenceMap);
+        parseArchPackages(analysisDir, linuxDistribution, idToPackageReferenceMap);
 
         return new ArrayList<>(idToPackageReferenceMap.values());
     }
 
-    private void parseArchPackages(File analysisDir, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
+    private void parseArchPackages(File analysisDir, LinuxDistribution linuxDistribution, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
         for (Map.Entry<String, PackageInfo> entry : idToPackageReferenceMap.entrySet()) {
             String name = entry.getKey();
             PackageInfo p = entry.getValue();
             File file = new File(analysisDir, "package-meta/" + name + "_arch.txt");
             if (file.exists()) {
                 List<String> content = FileUtils.readLines(file, FileUtils.ENCODING_UTF_8);
+                p.linuxDistribution = linuxDistribution;
                 for (String line : content) {
                     int colonIndex = line.indexOf(":");
                     if (colonIndex > 0) {
@@ -92,7 +94,7 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
         }
     }
 
-    private void parseArchPackageList(File shareDir, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
+    private void parseArchPackageList(File shareDir, LinuxDistribution linuxDistribution, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
         File archPackagesFile = new File(shareDir, FILE_PACKAGES_ARCH_TXT);
         String packageFile = FileUtils.readFileToString(archPackagesFile, FileUtils.ENCODING_UTF_8);
         String[] lines = packageFile.split("\\n");
@@ -110,6 +112,7 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
                 p.id = name + "-" + version;
                 p.component = name;
                 p.version = version;
+                p.linuxDistribution = linuxDistribution;
 
                 registerPackageInfo(p, idToPackageReferenceMap);
             }

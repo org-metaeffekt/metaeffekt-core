@@ -16,6 +16,7 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistribution;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
@@ -36,7 +37,7 @@ public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     @Override
-    public void extendInventory(File analysisDir, Inventory inventory) throws IOException {
+    public void extendInventory(File analysisDir, Inventory inventory, LinuxDistribution linuxDistribution) throws IOException {
         List<String> packages = parsePackages(analysisDir);
 
         initializeInventory(packages, inventory);
