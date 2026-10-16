@@ -20,6 +20,7 @@ import org.metaeffekt.core.inventory.processor.adapter.npm.NpmLockParserFactory;
 import org.metaeffekt.core.inventory.processor.adapter.npm.PackageLockParser;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class NpmPackageLockAdapter extends AbstractLockAdapter {
     }
 
     protected String buildPurl(ResolvedModule module) {
-        return String.format("pkg:npm/%s@%s", module.getName(), module.getVersion());
+        return PurlUtils.buildNpmPurl(module.getName(), module.getVersion());
     }
 
     /**
