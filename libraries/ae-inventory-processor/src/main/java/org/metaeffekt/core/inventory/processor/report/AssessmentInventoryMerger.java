@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
@@ -22,6 +24,7 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.processor.tracker.ProcessorTimeTracker;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 
@@ -32,6 +35,8 @@ import java.util.*;
 /**
  * Is also being tested in {@code AssessmentInventoryMergerCompatibilityTest} in artifact analysis.
  */
+@Setter
+@Getter
 @Slf4j
 public class AssessmentInventoryMerger {
 
@@ -138,6 +143,17 @@ public class AssessmentInventoryMerger {
             }
         }
 
+        // merge processor time trackers from input inventories if present
+        final List<ProcessorTimeTracker> timeTrackers = new ArrayList<>();
+        for (Inventory inputInventory : collectedInventories.keySet()) {
+            if (inputInventory.findInventoryInfo(ProcessorTimeTracker.TIME_TRACKING_INVENTORY_INFO_ROW_KEY) != null) {
+                timeTrackers.add(ProcessorTimeTracker.fromInventory(inputInventory));
+            }
+        }
+        if (!timeTrackers.isEmpty()) {
+            ProcessorTimeTracker.merge(outputInventory, timeTrackers);
+        }
+
         return outputInventory;
     }
 
@@ -174,23 +190,8 @@ public class AssessmentInventoryMerger {
         this.inputInventoryFiles.add(inputInventory);
     }
 
-    public void setInputInventoryFiles(List<File> inputInventoryFiles) {
-        this.inputInventoryFiles = inputInventoryFiles;
-    }
-
-    public List<File> getInputInventoryFiles() {
-        return inputInventoryFiles;
-    }
-
     public void addInputInventory(Inventory inputInventory) {
         this.inputInventories.add(inputInventory);
     }
 
-    public void setInputInventories(List<Inventory> inputInventories) {
-        this.inputInventories = inputInventories;
-    }
-
-    public List<Inventory> getInputInventories() {
-        return inputInventories;
-    }
 }

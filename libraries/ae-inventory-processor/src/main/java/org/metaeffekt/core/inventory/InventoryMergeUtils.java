@@ -24,6 +24,7 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.processor.tracker.ProcessorTimeTracker;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,6 +68,16 @@ public class InventoryMergeUtils {
             mergeAssetMetaData(source, target);
             mergeLicenseData(source, target);
             mergeLicenseMetaData(source, target);
+            mergeProcessorTimeTracker(source, target);
+        }
+    }
+
+    private void mergeProcessorTimeTracker(Inventory sourceInventory, Inventory targetInventory) {
+        if (sourceInventory.findInventoryInfo(ProcessorTimeTracker.TIME_TRACKING_INVENTORY_INFO_ROW_KEY) != null) {
+            final ProcessorTimeTracker sourceTracker = ProcessorTimeTracker.fromInventory(sourceInventory);
+            if (!sourceTracker.getEntries().isEmpty()) {
+                ProcessorTimeTracker.fromInventory(targetInventory).merge(sourceTracker);
+            }
         }
     }
 
