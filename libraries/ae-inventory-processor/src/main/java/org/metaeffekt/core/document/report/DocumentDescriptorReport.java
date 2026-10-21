@@ -70,6 +70,8 @@ public class DocumentDescriptorReport {
     private static final String TEMPLATES_BOOKMAPS_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "bookmaps";
 
     public static final String TEMPLATE_GROUP_DOCUMENT_BOOKMAP = "document-bookmap";
+    public static final String TEMPLATE_GROUP_CONTEXT_BOOKMAP = "context-bookmap";
+    public static final String TEMPLATE_GROUP_PURPOSE_BOOKMAP = "purpose-bookmap";
     public static final String TEMPLATE_GROUP_ANNEX_BOOKMAP = "annex-bookmap";
     public static final String TEMPLATE_GROUP_INITIAL_LICENSE_DOCUMENTATION_BOOKMAP = "initial-license-documentation-bookmap";
     public static final String TEMPLATE_GROUP_LICENSE_DOCUMENTATION_BOOKMAP = "license-documentation-bookmap";
@@ -88,6 +90,12 @@ public class DocumentDescriptorReport {
      */
     protected void createPartBookMap(DocumentDescriptor documentDescriptor) throws IOException {
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
+            if (documentPart.getDocumentPartType() == DocumentPartType.CONTEXT) {
+                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_CONTEXT_BOOKMAP);
+            }
+            if (documentPart.getDocumentPartType() == DocumentPartType.PURPOSE) {
+                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_PURPOSE_BOOKMAP);
+            }
             if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
                 writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
             }
