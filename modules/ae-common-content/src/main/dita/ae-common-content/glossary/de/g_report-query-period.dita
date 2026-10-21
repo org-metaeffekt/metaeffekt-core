@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="report-query-period">
+    <glossterm>Abfragezeitraum des Berichts</glossterm>
+    <glossdef>
+        <p>
+            Der <i>Abfragezeitraum des Berichts</i> bezeichnet die Zeitspanne, in der Änderungen an externen
+            Informationen – wie aktualisierte Schwachstellendetails oder neue Sicherheitshinweise (Advisories) – als
+            relevant berücksichtigt werden.
+            Schwachstellen- oder Sicherheitshinweisinformationen, die außerhalb des <i>Abfragezeitraums des Berichts</i>
+            erstellt oder aktualisiert wurden, sind nicht Gegenstand dieses Dokuments.
+        </p>
+    </glossdef>
+</glossentry>
