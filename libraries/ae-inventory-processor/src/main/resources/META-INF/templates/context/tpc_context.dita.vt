@@ -65,6 +65,20 @@
             #end
         </section>
 
+        #if($configParams.getCustomParams().get("document.context.remediation.enabled") == 'true')
+        <section>
+            <title>$utils.getText("document.context.remediation.title")</title>
+            <p id="remediation">
+                $utils.getText("document.context.remediation.intro")
+            <ul>
+                <li>$utils.getText("document.context.remediation.step.1")</li>
+                <li>$utils.getText("document.context.remediation.step.2")</li>
+                <li>$utils.getText("document.context.remediation.step.3")</li>
+            </ul>
+            </p>
+        </section>
+        #end
+
         #if($configParams.getCustomParams().get("document.context.assessment.status.enabled") == 'true')
         <section>
             <title>$utils.getText("document.context.assessment.status.title")</title>
@@ -76,20 +90,6 @@
                 <li><b>$utils.getText("document.context.status.insignificant.title")</b> - $utils.getText("document.context.status.insignificant.desc")</li>
                 <li><b>$utils.getText("document.context.status.void.title")</b> - $utils.getText("document.context.status.void.desc")</li>
                 <li><b>$utils.getText("document.context.status.in.review.title")</b> - $utils.getText("document.context.status.in.review.desc")</li>
-            </ul>
-            </p>
-        </section>
-        #end
-
-        #if($configParams.getCustomParams().get("document.context.remediation.enabled") == 'true')
-        <section>
-            <title>$utils.getText("document.context.remediation.title")</title>
-            <p id="remediation">
-                $utils.getText("document.context.remediation.intro")
-            <ul>
-                <li>$utils.getText("document.context.remediation.step.1")</li>
-                <li>$utils.getText("document.context.remediation.step.2")</li>
-                <li>$utils.getText("document.context.remediation.step.3")</li>
             </ul>
             </p>
         </section>
