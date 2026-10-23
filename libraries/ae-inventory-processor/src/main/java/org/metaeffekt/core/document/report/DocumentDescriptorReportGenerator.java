@@ -438,6 +438,36 @@ public class DocumentDescriptorReportGenerator {
 
             case VULNERABILITY_STATISTICS_REPORT:
                 builder.inventoryVulnerabilityStatisticsReportEnabled(true);
+                if (Boolean.parseBoolean(mergedParams.get("statisticsReportAll"))) {
+                    mergedParams.putIfAbsent("vulnerability-overview.title.key", "vulnerability-overview.title.periodic.report.overall");
+                    mergedParams.putIfAbsent("vulnerability-overview.none.text.key", "vulnerability-overview.none.text.periodic.report.overall");
+                    mergedParams.putIfAbsent("vulnerability-overview.initial.charts-intro.key", "vulnerability-overview.initial.charts-intro.periodic.report.overall");
+                    mergedParams.putIfAbsent("vulnerability-overview.report.charts-intro.key", "vulnerability-overview.report.charts-intro.periodic.report.overall");
+                    mergedParams.putIfAbsent("vulnerability-overview.report.derived-status.key", "vulnerability-overview.report.derived-status.periodic.report.overall");
+                } else if (documentDescriptor.getDocumentType() == DocumentType.PERIODIC_VULNERABILITY_REPORT) {
+                    mergedParams.putIfAbsent("vulnerability-overview.title.key", "vulnerability-overview.title.periodic.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.none.text.key", "vulnerability-overview.none.text.periodic.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.initial.charts-intro.key", "vulnerability-overview.initial.charts-intro.periodic.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.report.charts-intro.key", "vulnerability-overview.report.charts-intro.periodic.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.report.derived-status.key", "vulnerability-overview.report.derived-status.periodic.report");
+                } else if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+                    mergedParams.putIfAbsent("vulnerability-overview.title.key", "vulnerability-overview.title.summary.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.none.text.key", "vulnerability-overview.none.text.summary.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.initial.charts-intro.key", "vulnerability-overview.initial.charts-intro.summary.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.report.charts-intro.key", "vulnerability-overview.report.charts-intro.summary.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.report.derived-status.key", "vulnerability-overview.report.derived-status.summary.report");
+                } else if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT ||
+                        documentDescriptor.getDocumentType() == DocumentType.EXPLOITABILITY_REPORT) {
+                    mergedParams.putIfAbsent("vulnerability-overview.title.key", "vulnerability-overview.title.vulnerability.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.none.text.key", "vulnerability-overview.none.text.vulnerability.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.initial.charts-intro.key", "vulnerability-overview.initial.charts-intro.vulnerability.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.report.charts-intro.key", "vulnerability-overview.report.charts-intro.vulnerability.report");
+                    mergedParams.putIfAbsent("vulnerability-overview.report.derived-status.key", "vulnerability-overview.report.derived-status.vulnerability.report");
+                }
+                mergedParams.putIfAbsent("vulnerability-overview.initial.charts-based-on.key", "vulnerability-overview.initial.charts-based-on");
+                mergedParams.putIfAbsent("vulnerability-overview.initial.derived-info.key", "vulnerability-overview.initial.derived-info");
+                mergedParams.putIfAbsent("vulnerability-overview.report.charts-based-on.key", "vulnerability-overview.report.charts-based-on");
+                mergedParams.putIfAbsent("vulnerability-overview.report.derived-info.key", "vulnerability-overview.report.derived-info");
                 break;
 
             case CONTEXT:
@@ -566,7 +596,6 @@ public class DocumentDescriptorReportGenerator {
         final DocumentType documentType = documentDescriptor.getDocumentType();
         if (documentType != DocumentType.VULNERABILITY_REPORT &&
                 documentType != DocumentType.EXPLOITABILITY_REPORT &&
-                documentType != DocumentType.VULNERABILITY_STATISTICS_REPORT &&
                 documentType != DocumentType.PERIODIC_VULNERABILITY_REPORT &&
                 documentType != DocumentType.VULNERABILITY_SUMMARY_REPORT) {
             return;

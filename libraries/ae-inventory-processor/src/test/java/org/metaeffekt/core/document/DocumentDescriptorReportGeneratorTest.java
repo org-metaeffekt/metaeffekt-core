@@ -179,7 +179,7 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptor.setDocumentParts(documentParts);
         documentDescriptor.setTargetDocumentDir(targetReportDir);
-        documentDescriptor.setDocumentType(DocumentType.VULNERABILITY_STATISTICS_REPORT);
+        documentDescriptor.setDocumentType(DocumentType.VULNERABILITY_REPORT);
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
@@ -189,7 +189,7 @@ public class DocumentDescriptorReportGeneratorTest {
         assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
 
         File labelsDir = new File(targetReportDir, "resources/svg/labels");
-        assertTrue(labelsDir.exists(), "Labels directory should exist for VULNERABILITY_STATISTICS_REPORT");
+        assertTrue(labelsDir.exists(), "Labels directory should exist for VULNERABILITY_REPORT");
     }
 
     @Test
