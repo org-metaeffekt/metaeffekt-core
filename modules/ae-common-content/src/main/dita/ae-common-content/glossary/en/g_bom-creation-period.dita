@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="sbom-creation-date">
+    <glossterm>BOM Creation Period</glossterm>
+    <glossdef>
+        <p>
+            This document is based on one or more Bills of Materials (BOMs). Each BOM may contain only software
+            (SBOM), only hardware (HBOM or MBOM) or a combination of software components and hardware parts.
+            The <i>BOM Creation Period</i> indicates the timeframe during which the BOMs were created.
+            An older <i>BOM Creation Period</i> only affects the content of this report with respect to the software
+            components and hardware parts used. It does not reflect the accuracy of the conveyed vulnerability and
+            advisory data.
+        </p>
+    </glossdef>
+</glossentry>

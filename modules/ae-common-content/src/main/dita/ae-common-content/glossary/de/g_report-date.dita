@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="report-date">
+    <glossterm>Berichtsdatum</glossterm>
+    <glossdef>
+        <p>
+            Dieses Dokument wird automatisch auf Grundlage der zum Zeitpunkt der Erstellung verfügbaren Daten
+            generiert. Das <i>Berichtsdatum</i> gibt das Datum an, an dem das Dokument erstellt wurde.
+        </p>
+    </glossdef>
+</glossentry>
