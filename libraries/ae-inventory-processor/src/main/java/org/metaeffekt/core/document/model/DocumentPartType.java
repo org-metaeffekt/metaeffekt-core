@@ -52,6 +52,9 @@ public enum DocumentPartType {
     PURPOSE,
 
     // Notice part of a document
-    NOTICE
+    NOTICE,
+
+    // Fully custom content part
+    CUSTOM_CONTENT
 
 }
