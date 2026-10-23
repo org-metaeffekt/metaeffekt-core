@@ -16,15 +16,17 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.apache.tools.ant.DirectoryScanner;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistribution;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.PropertiesUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -40,6 +42,45 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     public static final String FOLDER_USR_SHARE_DOC = "usr-share-doc";
     public static final String FOLDER_USR_SHARE_LICENSE = "usr-share-licenses";
 
+    @Override
+    public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
+        final String issue = extractIssue(analysisDir);
+        final Properties osReleaseFileProperties = readOSReleaseFile(analysisDir);
+
+        final LinuxDistribution linuxDistribution = LinuxDistributionUtil.deriveLinuxDistro(Objects.requireNonNull(osReleaseFileProperties));
+
+        // use specific inventory implementation to extract inventory
+        final Inventory inventory = new Inventory();
+
+        extendInventory(analysisDir, inventory, linuxDistribution);
+
+        if (includeNotCoveredFiles) {
+            extendNotCoveredFiles(analysisDir, inventory, excludePatterns);
+        }
+
+        // FIXME: combine with asset information
+        for (final Artifact artifact : inventory.getArtifacts()) {
+            artifact.set(Constants.KEY_DISTRO_NAME, LinuxDistributionUtil.populateNameWithVersionCodename(osReleaseFileProperties));
+            artifact.set(Constants.KEY_DISTRO_VERSION, LinuxDistributionUtil.getVersionIdWithFallbacks(osReleaseFileProperties));
+
+            artifact.set(KEY_SOURCE_PROJECT, inventoryId);
+            // TODO extract container id
+            // artifact.set(KEY_ATTRIBUTE_CONTAINER, analysisDir.getName());
+            artifact.set(KEY_ISSUE, issue);
+        }
+
+        return inventory;
+    }
+
+    @Override
+    public void validate(File analysisDir) throws IllegalStateException {
+        // here the common aspects are validated
+        validateFileExists(new File(analysisDir, "filesystem/files.txt"));
+        validateFileHasContent(new File(analysisDir, "uname.txt"));
+    }
+
+    protected abstract void extendInventory(File analysisDir, Inventory inventory, LinuxDistribution linuxDistribution) throws IOException;
+
     /**
      * Anticipates a directory for each package in packageDir. The directory contains the
      * package name only (no other attribute is derived).
@@ -49,8 +90,8 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
      * @param idToPackageInfoMap The resulting {@link PackageInfo} instances are added to the map.
      * @param docDir             The documentation dir.
      */
-    protected static void packagesFromDocumentationDir(File analysisDir, File packageDir, Map<String,
-            PackageInfo> idToPackageInfoMap, boolean docDir) {
+    protected static void packagesFromDocumentationDir(File analysisDir, File packageDir, LinuxDistribution linuxDistribution,
+                                                       Map<String, PackageInfo> idToPackageInfoMap, boolean docDir) {
         if (packageDir.exists()) {
             DirectoryScanner scanner = new DirectoryScanner();
             scanner.setBasedir(packageDir);
@@ -68,6 +109,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
                     packageInfo.id = path;
                     packageInfo.component = path;
                     packageInfo.status = "documented";
+                    packageInfo.linuxDistribution = linuxDistribution;
                 }
                 if (docDir) {
                     packageInfo.documentationDir = new File(packageDir, path).getAbsolutePath();
@@ -84,46 +126,6 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         idToPackageInfoMap.put(packageInfo.id, packageInfo);
         idToPackageInfoMap.put(packageInfo.name, packageInfo);
     }
-
-    @Override
-    public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
-        final String issue = extractIssue(analysisDir);
-
-        // use specific inventory implementation to extract inventory
-        final Inventory inventory = new Inventory();
-
-        extendInventory(analysisDir, inventory);
-
-        if (includeNotCoveredFiles) {
-            extendNotCoveredFiles(analysisDir, inventory, excludePatterns);
-        }
-
-        // FIXME: combine with asset information
-        for (final Artifact artifact : inventory.getArtifacts()) {
-            artifact.set(KEY_SOURCE_PROJECT, inventoryId);
-            // TODO extract container id
-            // artifact.set(KEY_ATTRIBUTE_CONTAINER, analysisDir.getName());
-            artifact.set(KEY_ISSUE, issue);
-        }
-
-        return inventory;
-    }
-
-    private void extendNotCoveredFiles(File analysisDir, Inventory inventory, List<String> excludePatterns) throws IOException {
-        if (excludePatterns.contains("**/*")) return;
-        final Collection<String> notCoveredFiles = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
-        for (String fileName : notCoveredFiles) {
-            Artifact artifact = new Artifact();
-            File file = new File(fileName);
-            artifact.setId(file.getName());
-            // file.getPath() is the absolute path in the container
-            artifact.addRootPath(file.getPath().substring(1));
-            artifact.set(KEY_TYPE, ARTIFACT_TYPE_FILE);
-            inventory.getArtifacts().add(artifact);
-        }
-    }
-
-    protected abstract void extendInventory(File analysisDir, Inventory inventory) throws IOException;
 
     protected String extractIssue(File analysisDir) throws IOException {
         final File issueFile = new File(analysisDir, "issue.txt");
@@ -161,20 +163,6 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         }
     }
 
-    private boolean versionEquals(Artifact derivedFromPackage, Artifact referenceArtifact) {
-        if (derivedFromPackage != null && derivedFromPackage.getVersion() != null && referenceArtifact != null) {
-            return derivedFromPackage.getVersion().equals(referenceArtifact.getVersion());
-        }
-        return false;
-    }
-
-    @Override
-    public void validate(File analysisDir) throws IllegalStateException {
-        // here the common aspects are validated
-        validateFileExists(new File(analysisDir, "filesystem/files.txt"));
-        validateFileHasContent(new File(analysisDir, "uname.txt"));
-    }
-
     protected void validateFileExists(File file) {
         if (!file.exists()) {
             throw new IllegalStateException(
@@ -196,4 +184,52 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         }
     }
 
+    private void extendNotCoveredFiles(File analysisDir, Inventory inventory, List<String> excludePatterns) throws IOException {
+        if (excludePatterns.contains("**/*")) return;
+        final Collection<String> notCoveredFiles = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
+        for (String fileName : notCoveredFiles) {
+            Artifact artifact = new Artifact();
+            File file = new File(fileName);
+            artifact.setId(file.getName());
+            // file.getPath() is the absolute path in the container
+            artifact.addRootPath(file.getPath().substring(1));
+            artifact.set(KEY_TYPE, ARTIFACT_TYPE_FILE);
+            inventory.getArtifacts().add(artifact);
+        }
+    }
+
+    private boolean versionEquals(Artifact derivedFromPackage, Artifact referenceArtifact) {
+        if (derivedFromPackage != null && derivedFromPackage.getVersion() != null && referenceArtifact != null) {
+            return derivedFromPackage.getVersion().equals(referenceArtifact.getVersion());
+        }
+        return false;
+    }
+
+    private Properties readOSReleaseFile(File analysisDir) throws IOException {
+        final File osReleaseFile = new File(analysisDir, "os-release.txt");
+        if (osReleaseFile.exists()) {
+            Properties properties = PropertiesUtils.loadPropertiesFile(osReleaseFile);
+            for (String key : properties.stringPropertyNames()) {
+                final String value = normalizePropertyValue(properties.getProperty(key));
+                if (value == null) {
+                    properties.remove(key);
+                } else {
+                    properties.setProperty(key, value);
+                }
+            }
+            return properties;
+        }
+        return null;
+    }
+
+    private static String normalizePropertyValue(String rawValue) {
+        if (rawValue == null) {
+            return null;
+        }
+        String v = rawValue.trim();
+        if (v.length() >= 2 && ((v.startsWith("\"") && v.endsWith("\"")) || (v.startsWith("'") && v.endsWith("'")))) {
+            v = v.substring(1, v.length() - 1);
+        }
+        return v.isEmpty() ? null : v;
+    }
 }
