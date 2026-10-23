@@ -2,6 +2,6 @@
 <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/bookmap.dtd">
 <bookmap id="map_purpose">
     #foreach($inventoryContext in $documentPart.getInventoryContexts())
-        <topicref href="tpc_purpose.dita" />
+        <chapter href="tpc_purpose.dita" />
     #end
 </bookmap>
