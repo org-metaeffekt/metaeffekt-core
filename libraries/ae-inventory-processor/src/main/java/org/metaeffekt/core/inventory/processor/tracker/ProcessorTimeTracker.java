@@ -61,9 +61,10 @@ public class ProcessorTimeTracker {
                 return entry;
             }
         }
-        entries.add(newEntry);
+        final ProcessTimeEntry copy = new ProcessTimeEntry(newEntry);
+        entries.add(copy);
         this.writeBack();
-        return newEntry;
+        return copy;
     }
 
     public ProcessTimeEntry getTimestamp(ProcessType processType) {
@@ -91,9 +92,9 @@ public class ProcessorTimeTracker {
                 .orElseGet(() -> addTimestamp(new ProcessTimeEntry(processType, processName, creationTimestamp)));
     }
 
-    private boolean parse() {
+    private void parse() {
         if (StringUtils.isBlank(inventoryInfo.get(TIME_TRACKING_INVENTORY_INFO_COL_KEY))) {
-            return true;
+            return;
         }
 
         try {
@@ -109,10 +110,8 @@ public class ProcessorTimeTracker {
             }
         } catch (Exception e) {
             log.warn("Failed to parse process timestamps: {}", e.getMessage(), e);
-            return false;
         }
 
-        return true;
     }
 
     public void writeBack() {
@@ -127,13 +126,34 @@ public class ProcessorTimeTracker {
         return new JSONArray(entries.stream().map(ProcessTimeEntry::toJson).collect(Collectors.toList()));
     }
 
-    public static ProcessorTimeTracker merge(Inventory inventory, ProcessorTimeTracker tracker1, ProcessorTimeTracker tracker2) {
+    public void merge(ProcessorTimeTracker... others) {
+        if (others != null) {
+            merge(Arrays.asList(others));
+        }
+    }
+
+    public void merge(Collection<ProcessorTimeTracker> others) {
+        if (others == null) {
+            return;
+        }
+        for (ProcessorTimeTracker other : others) {
+            if (other == null || other == this) {
+                continue;
+            }
+            for (ProcessTimeEntry entry : other.getEntries()) {
+                this.addTimestamp(new ProcessTimeEntry(entry));
+            }
+        }
+    }
+
+    public static ProcessorTimeTracker merge(Inventory inventory, Collection<ProcessorTimeTracker> trackers) {
         final ProcessorTimeTracker merged = new ProcessorTimeTracker(inventory);
-
-        tracker1.getEntries().forEach(merged::addTimestamp);
-        tracker2.getEntries().forEach(merged::addTimestamp);
-
+        merged.merge(trackers);
         return merged;
+    }
+
+    public static ProcessorTimeTracker merge(Inventory inventory, ProcessorTimeTracker tracker1, ProcessorTimeTracker tracker2) {
+        return merge(inventory, Arrays.asList(tracker1, tracker2));
     }
 
     public static String trackedProcessToPropertyName(String prefix, ProcessType processType, String processName, String indexName) {

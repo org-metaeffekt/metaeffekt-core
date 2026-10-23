@@ -25,9 +25,11 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Slf4j
 public class ProcessTimeTrackerTest {
@@ -105,5 +107,40 @@ public class ProcessTimeTrackerTest {
         advise.addIndexTimestamp("index", 10);
 
         log.info(String.valueOf(tracker.toJson()));
+    }
+
+    @Test
+    public void mergeTrackersTest() {
+        final Inventory inv1 = new Inventory();
+        final ProcessorTimeTracker tracker1 = ProcessorTimeTracker.fromInventory(inv1);
+        final ProcessTimeEntry entry1 = new ProcessTimeEntry(ProcessType.INVENTORY_ENRICHMENT, "advise", 100L);
+        entry1.addIndexTimestamp("nvd", 50L);
+        tracker1.addTimestamp(entry1);
+
+        final Inventory inv2 = new Inventory();
+        final ProcessorTimeTracker tracker2 = ProcessorTimeTracker.fromInventory(inv2);
+        final ProcessTimeEntry entry2 = new ProcessTimeEntry(ProcessType.INVENTORY_ENRICHMENT, "advise", 200L);
+        entry2.addIndexTimestamp("nvd", 150L);
+        tracker2.addTimestamp(entry2);
+
+        final Inventory inv3 = new Inventory();
+        final ProcessorTimeTracker tracker3 = ProcessorTimeTracker.fromInventory(inv3);
+        tracker3.addTimestamp(new ProcessTimeEntry(ProcessType.SBOM_CREATION, 300L));
+
+        final Inventory targetInventory = new Inventory();
+        final ProcessorTimeTracker merged = ProcessorTimeTracker.merge(targetInventory, Arrays.asList(tracker1, tracker2, tracker3));
+
+        // verify merged tracker contains combined ranges
+        final ProcessTimeEntry mergedAdvise = merged.getTimestamp(ProcessType.INVENTORY_ENRICHMENT, "advise");
+        assertNotNull(mergedAdvise);
+        assertEquals(100L, mergedAdvise.getTimestamp().getFirst());
+        assertEquals(200L, mergedAdvise.getTimestamp().getLast());
+        assertEquals(50L, mergedAdvise.getIndexTimestamps().get("nvd").getFirst());
+        assertEquals(150L, mergedAdvise.getIndexTimestamps().get("nvd").getLast());
+
+        final ProcessTimeEntry mergedSbom = merged.getTimestamp(ProcessType.SBOM_CREATION);
+        assertNotNull(mergedSbom);
+        assertEquals(0L, mergedSbom.getTimestamp().getFirst());
+        assertEquals(300L, mergedSbom.getTimestamp().getLast());
     }
 }
