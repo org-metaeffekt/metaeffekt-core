@@ -55,12 +55,21 @@ public class DocumentPart {
      */
     private String parentIdentifier;
 
+    /**
+     * List of file paths (relative to basePath or absolute) for CUSTOM_CONTENT parts.
+     */
+    private List<String> files;
+
     public DocumentPart(String identifier, List<InventoryContext> inventoryContexts, DocumentPartType documentPartType, Map<String, String> params) {
+        this(identifier, inventoryContexts, documentPartType, params, null);
+    }
+
+    public DocumentPart(String identifier, List<InventoryContext> inventoryContexts, DocumentPartType documentPartType, Map<String, String> params, List<String> files) {
         this.inventoryContexts = inventoryContexts;
         this.documentPartType = documentPartType;
         this.params = params;
         this.identifier = identifier;
-
+        this.files = files;
     }
 
     public void validate() {
@@ -76,6 +85,17 @@ public class DocumentPart {
         // check if document type is set
         if (documentPartType == null) {
             throw new IllegalStateException("The part type must be specified.");
+        }
+
+        if (documentPartType == DocumentPartType.CUSTOM_CONTENT) {
+            if (files == null || files.isEmpty()) {
+                throw new IllegalStateException("The part '" + identifier + "' of type '" + documentPartType + "' must specify at least one file in 'files'.");
+            }
+            for (String file : files) {
+                if (file == null || file.trim().isEmpty()) {
+                    throw new IllegalStateException("The part '" + identifier + "' of type '" + documentPartType + "' contains an empty file path.");
+                }
+            }
         }
 
         if (inventoryContexts != null && inventoryContexts.size() > 1 && documentPartType == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
