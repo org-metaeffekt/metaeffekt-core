@@ -93,6 +93,11 @@ public class DocumentDescriptorReportGenerator {
         List<DocumentPart> newParts = new ArrayList<>();
 
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
+            if (documentPart.getDocumentPartType() == DocumentPartType.CUSTOM_CONTENT || documentPart.getInventoryContexts() == null) {
+                newParts.add(documentPart);
+                continue;
+            }
+
             final List<InventoryContext> inventoryContexts = new ArrayList<>();
 
             boolean reportWithoutAsset = false;
@@ -201,7 +206,7 @@ public class DocumentDescriptorReportGenerator {
             final String type = documentPart.getDocumentPartType().name().toLowerCase().replace("_", ".");
             String key = type;
             if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT || documentPart.getDocumentPartType() == DocumentPartType.EXPLOITABILITY_STATISTICS_REPORT) {
-                if (Boolean.parseBoolean(documentPart.getParams().get("statisticsReportAll"))) {
+                if (documentPart.getParams() != null && Boolean.parseBoolean(documentPart.getParams().get("statisticsReportAll"))) {
                     key = type + ".all";
                 }
             }
@@ -212,7 +217,18 @@ public class DocumentDescriptorReportGenerator {
             documentPart.validate();
 
             List<InventoryContext> contexts = documentPart.getInventoryContexts();
-            if (documentPart.getDocumentPartType() == DocumentPartType.CONTEXT) {
+            if (documentPart.getDocumentPartType() == DocumentPartType.CUSTOM_CONTENT) {
+                File targetPartDir = new File(new File(documentDescriptor.getTargetDocumentDir(), "parts"), documentPart.getIdentifier());
+                if (!targetPartDir.exists() && !targetPartDir.mkdirs()) {
+                    throw new IOException("Failed to create directory: " + targetPartDir.getAbsolutePath());
+                }
+                for (String filePath : documentPart.getFiles()) {
+                    String resolvedPath = resolveAgainstBasePath(filePath, documentDescriptor.getBasePath());
+                    File sourceFile = new File(resolvedPath);
+                    File targetFile = new File(targetPartDir, sourceFile.getName());
+                    FileUtils.copyFile(sourceFile, targetFile);
+                }
+            } else if (documentPart.getDocumentPartType() == DocumentPartType.CONTEXT) {
                 // For parts like CONTEXT that do not require an inventory
                 Map<String, String> mergedParams;
 

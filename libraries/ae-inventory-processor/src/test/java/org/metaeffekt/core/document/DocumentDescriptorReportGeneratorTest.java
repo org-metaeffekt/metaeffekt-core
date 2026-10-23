@@ -29,12 +29,17 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.metaeffekt.core.inventory.InventoryUtils.readInventory;
 
@@ -267,6 +272,67 @@ public class DocumentDescriptorReportGeneratorTest {
         assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
         File expectedFile03 = new File(targetReportDir, "map_test-document.ditamap");
         assertTrue(expectedFile03.exists(), "Expected file does not exist: " + expectedFile03.getAbsolutePath());
+    }
+
+    @Test
+    public void testCustomContentTemplates() throws IOException {
+        File targetReportDir = new File("target/test-document-descriptor-report-generator/custom-content");
+        File baseDir = new File("target/test-document-descriptor-report-generator/custom-content-source");
+        File relativeDita = new File(baseDir, "dita/tpc_intro.dita");
+        File absoluteDita = new File(baseDir, "dita/tpc_methodology.dita");
+
+        String velocityLikeContent = "<topic id=\"intro\"><title>Intro $unparsedVelocityVariable #if(true)verbatim#end</title></topic>";
+        String secondContent = "<topic id=\"methodology\"><title>Methodology</title></topic>";
+        FileUtils.writeStringToFile(relativeDita, velocityLikeContent, StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(absoluteDita, secondContent, StandardCharsets.UTF_8);
+
+        List<String> files = Arrays.asList("dita/tpc_intro.dita", absoluteDita.getAbsolutePath());
+        DocumentPart customPart = new DocumentPart("custom-intro", null, DocumentPartType.CUSTOM_CONTENT, Collections.emptyMap(), files);
+        DocumentPart annexPart = new DocumentPart("annex-part", inventoryContexts, DocumentPartType.ANNEX, Collections.emptyMap());
+
+        documentParts.add(customPart);
+        documentParts.add(annexPart);
+
+        documentDescriptor.setBasePath(baseDir.getAbsolutePath());
+        documentDescriptor.setDocumentParts(documentParts);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
+        documentDescriptor.setDocumentType(DocumentType.ANNEX);
+
+        documentDescriptorReportGenerator.generate(documentDescriptor);
+
+        File copiedIntro = new File(targetReportDir, "parts/custom-intro/tpc_intro.dita");
+        File copiedMethodology = new File(targetReportDir, "parts/custom-intro/tpc_methodology.dita");
+        assertTrue(copiedIntro.exists(), "Copied relative DITA file should exist");
+        assertTrue(copiedMethodology.exists(), "Copied absolute DITA file should exist");
+
+        File partBookmap = new File(targetReportDir, "parts/custom-intro/map_custom-intro.ditamap");
+        assertTrue(partBookmap.exists(), "Part bookmap should exist");
+        String partBookmapContent = FileUtils.readFileToString(partBookmap, StandardCharsets.UTF_8);
+        assertTrue(partBookmapContent.contains("<chapter>"), "Part bookmap should wrap topicrefs in <chapter>");
+        assertTrue(partBookmapContent.contains("<topicref href=\"tpc_intro.dita\" />"), "Part bookmap should reference tpc_intro.dita");
+        assertTrue(partBookmapContent.contains("<topicref href=\"tpc_methodology.dita\" />"), "Part bookmap should reference tpc_methodology.dita");
+
+        File documentBookmap = new File(targetReportDir, "map_test-document.ditamap");
+        assertTrue(documentBookmap.exists(), "Document bookmap should exist");
+        String docBookmapContent = FileUtils.readFileToString(documentBookmap, StandardCharsets.UTF_8);
+        int customIdx = docBookmapContent.indexOf("parts/custom-intro/map_custom-intro.ditamap");
+        int annexIdx = docBookmapContent.indexOf("parts/annex-part/map_annex-part.ditamap");
+        assertTrue(customIdx > 0 && annexIdx > customIdx, "CUSTOM_CONTENT part should appear before annex-part in document bookmap");
+    }
+
+    @Test
+    public void testCustomContentMissingFileValidation() {
+        File targetReportDir = new File("target/test-document-descriptor-report-generator/custom-content-missing");
+        List<String> files = Collections.singletonList("non-existent/file.dita");
+        DocumentPart customPart = new DocumentPart("custom-missing", null, DocumentPartType.CUSTOM_CONTENT, Collections.emptyMap(), files);
+        documentParts.add(customPart);
+
+        documentDescriptor.setBasePath(targetTestDir.getAbsolutePath());
+        documentDescriptor.setDocumentParts(documentParts);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
+        documentDescriptor.setDocumentType(DocumentType.ANNEX);
+
+        assertThrows(IllegalStateException.class, () -> documentDescriptorReportGenerator.generate(documentDescriptor));
     }
 
 
