@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="report-query-period">
+    <glossterm>Report Query Period</glossterm>
+    <glossdef>
+        <p>
+            The <i>Report Query Period</i> refers to the timespan during which changes to external information, such as
+             updated vulnerability details or new advisories, are considered relevant.
+             Any advisory or vulnerability information created or updated outside the <i>Report Query Period</i> is not
+             covered by this document.
+        </p>
+    </glossdef>
+</glossentry>
