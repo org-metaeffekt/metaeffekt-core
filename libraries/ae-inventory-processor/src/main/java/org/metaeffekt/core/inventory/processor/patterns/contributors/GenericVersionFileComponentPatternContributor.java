@@ -17,9 +17,13 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -102,8 +106,12 @@ public class GenericVersionFileComponentPatternContributor extends ComponentPatt
     }
 
     private String buildPurl(String pluginName, String pluginVersion) {
+        if (StringUtils.isBlank(pluginName)) {
+            return null;
+        }
+
         // this is self-made, not a real purl
-        return "pkg:generic/" + pluginName + "@" + pluginVersion;
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.GENERIC, pluginName).version(pluginVersion).build());
     }
 }
 

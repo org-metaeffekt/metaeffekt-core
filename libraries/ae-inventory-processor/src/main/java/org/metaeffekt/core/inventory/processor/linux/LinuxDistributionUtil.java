@@ -337,9 +337,14 @@ public class LinuxDistributionUtil {
 
     private static String resolveCodename(Properties osReleaseProperties) {
         String codename = osReleaseProperties.getProperty(KEY_DISTRO_VERSION_CODENAME);
-        if (codename == null && osReleaseProperties.getProperty(KEY_DISTRO_ID).equals("ubuntu")) {
-            codename = osReleaseProperties.getProperty("UBUNTU_CODENAME");
+
+        if (codename == null) {
+            final String distroId = osReleaseProperties.getProperty(KEY_DISTRO_ID);
+            if (distroId != null && distroId.equals("ubuntu")) {
+                codename = osReleaseProperties.getProperty("UBUNTU_CODENAME");
+            }
         }
+
         if (codename == null) {
             codename = deriveCodenameFromVersion(osReleaseProperties);
         }

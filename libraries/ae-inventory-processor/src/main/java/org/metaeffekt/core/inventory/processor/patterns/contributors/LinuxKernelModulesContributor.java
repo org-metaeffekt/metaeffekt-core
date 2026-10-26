@@ -20,9 +20,13 @@ import lombok.extern.slf4j.Slf4j;
 import net.fornwall.jelf.ElfFile;
 import net.fornwall.jelf.ElfSection;
 import net.fornwall.jelf.ElfStringTable;
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -134,7 +138,11 @@ public class LinuxKernelModulesContributor extends ComponentPatternContributor {
     }
 
     private String buildPurl(String moduleName, String moduleVersion) {
-        return "pkg:generic/linux-kernel-module/" + moduleName + "@" + moduleVersion;
+        if (StringUtils.isBlank(moduleName)) {
+            return null;
+        }
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.GENERIC, moduleName).namespace("linux-kernel-module").version(moduleVersion).build());
     }
 }
 
