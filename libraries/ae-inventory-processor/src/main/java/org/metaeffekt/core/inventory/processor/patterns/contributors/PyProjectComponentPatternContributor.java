@@ -231,17 +231,11 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
     }
 
     private String buildPurl(String name, String version) {
-        // first we have to handle that the name should not be case sensitive and underscore should be replaced by dash
-        // see: https://github.com/package-url/purl-spec/blob/master/PURL-TYPES.rst#pypi
         if (StringUtils.isBlank(name)) {
             return null;
         }
 
-        // first we have to handle that the name should not be case sensitive and underscore should be replaced by dash
-        // see: https://github.com/package-url/purl-spec/blob/master/PURL-TYPES.rst#pypi
-        final String normalizedName = name.toLowerCase(Locale.ENGLISH).replace("_", "-");
-
-        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.PYPI, normalizedName).version(StringUtils.isBlank(version) ? null : version).build());
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.PYPI, name).version(version).build());
     }
 
 }

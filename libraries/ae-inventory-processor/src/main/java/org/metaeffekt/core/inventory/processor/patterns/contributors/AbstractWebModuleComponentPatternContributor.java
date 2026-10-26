@@ -334,9 +334,12 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
             return PurlUtils.buildNpmPurl(name, version);
         }
 
-        return PurlUtils.buildPurl(PackageInfo.of(type, name)
-                .version(PurlUtils.normalizeVersion(version))
-                .build());
+        // composer has to be handled as a special case because the name consists of package name and namespace
+        if (type == PackageManager.COMPOSER) {
+            return PurlUtils.buildComposerPurl(name, version);
+        }
+
+        return PurlUtils.buildPurl(PackageInfo.of(type, name).version(PurlUtils.normalizeVersion(version)).build());
     }
 }
 

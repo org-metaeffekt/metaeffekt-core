@@ -109,6 +109,18 @@ public class PurlUtilsTest {
     }
 
     @Test
+    void nullVersionIgnored() {
+        final PackageInfo packageInfo = PackageInfo.of(PackageManager.CARGO, "serde").version(null).build();
+        assertEquals("pkg:cargo/serde", PurlUtils.buildPurl(packageInfo));
+    }
+
+    @Test
+    void blankVersionIgnored() {
+        final PackageInfo packageInfo = PackageInfo.of(PackageManager.CARGO, "serde").version("  ").build();
+        assertEquals("pkg:cargo/serde", PurlUtils.buildPurl(packageInfo));
+    }
+
+    @Test
     void optionalQualifiers() {
         final PackageInfo packageInfo = PackageInfo.of(PackageManager.DEBIAN, "curl").namespace(LinuxDistribution.DEBIAN.getPurlNamespace()).version("7.88.1-10").build();
         assertEquals("pkg:deb/debian/curl@7.88.1-10", PurlUtils.buildPurl(packageInfo));

@@ -754,12 +754,7 @@ public class JarInspector extends AbstractJarInspector {
             return null;
         }
 
-        final PackageInfo.PackageInfoBuilder builder = PackageInfo.of(PackageManager.MAVEN, name).namespace(namespace).version(version);
-        if (StringUtils.isNotBlank(type)) {
-            builder.qualifier("type", type);
-        }
-
-        return PurlUtils.buildPurl(builder.build());
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.MAVEN, name).namespace(namespace).version(version).qualifier("type", type).build());
     }
 
     public static String deriveSuffix(String packaging) {

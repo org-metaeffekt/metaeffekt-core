@@ -21,22 +21,29 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Enum describing package manager representations in a PURL.
+ * Enum defining package manager name representations in a PURL.
  */
 @Getter
 public enum PackageManager {
-    DEBIAN("deb"),
-    RPM("rpm"),
-    APK("apk"),
     ALPM("alpm"),
+    APK("apk"),
+    BOWER("bower"),
+    CARGO("cargo"),
+    COCOAPODS("cocoapods"),
+    COMPOSER("composer"),
+    CONAN("conan"),
+    DEBIAN("deb"),
+    GEM("gem"),
+    GENERIC("generic"),
+    GOLANG("golang"),
+    HEX("hex"),
+    JENKINS("jenkins"),
     MAVEN("maven"),
     NPM("npm"),
-    CARGO("cargo"),
-    PYPI("pypi"),
-    COCOAPODS("cocoapods"),
-    CONAN("conan"),
     NUGET("nuget"),
-    GEM("gem");
+    PUB("pub"),
+    PYPI("pypi"),
+    RPM("rpm");
 
     private final String purlType;
 
@@ -45,7 +52,7 @@ public enum PackageManager {
     }
 
     /**
-     * Return the enum with the corresponding purl package manager type
+     * Returns the enum with the corresponding purl package manager type
      *
      * @param purlType the package manager type
      * @return the enum representing the specified package manager type

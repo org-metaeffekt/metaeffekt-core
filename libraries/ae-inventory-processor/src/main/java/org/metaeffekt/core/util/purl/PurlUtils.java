@@ -21,6 +21,7 @@ import com.github.packageurl.PackageURLBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -56,22 +57,32 @@ public class PurlUtils {
      * @return the PURL for the npm package
      */
     public static String buildNpmPurl(String name, String version) {
-        if (StringUtils.isBlank(name)) {
-            return null;
-        }
+        // For npm only names with scope (@scope/name) have a namespace.
+        final boolean scoped = name != null && name.startsWith("@");
+        return buildNamespacedPurl(PackageManager.NPM, name, version, scoped, name.indexOf('/'));
+    }
 
-        String namespace = null;
-        String pkgName = name;
-        if (name.startsWith("@")) {
-            final int slash = name.indexOf('/');
-            if (slash > 0) {
-                // split name into package namespace and package name
-                namespace = name.substring(0, slash);
-                pkgName = name.substring(slash + 1);
-            }
-        }
+    /**
+     * Additional method for building PURLs for composer where the name contains both the package name and the namespace which have to be extracted.
+     *
+     * @param name    the name containing the namespace and package name
+     * @param version the version of the package
+     * @return the PURL for the composer package
+     */
+    public static String buildComposerPurl(String name, String version) {
+        // For composer names have the format vendor/name and vendor is the namespace.
+        return buildNamespacedPurl(PackageManager.COMPOSER, name, version, true, name.indexOf('/'));
+    }
 
-        return buildPurl(PackageInfo.of(PackageManager.NPM, pkgName).namespace(namespace).version(normalizeVersion(version)).build());
+    /**
+     * Additional method for building PURLs for golang where the name contains both the package name and the namespace which have to be extracted.
+     *
+     * @param name    the name containing the namespace and package name
+     * @param version the version of the package
+     * @return the PURL for the golang package
+     */
+    public static String buildGolangPurl(String name, String version) {
+        return buildNamespacedPurl(PackageManager.GOLANG, name, version, true, name.lastIndexOf('/'));
     }
 
     /**
@@ -88,23 +99,51 @@ public class PurlUtils {
         return version.startsWith("v") ? version.substring(1) : version;
     }
 
+    private static String buildNamespacedPurl(PackageManager type, String name, String version, boolean splitNamespace, int slashIndex) {
+        if (StringUtils.isBlank(name)) {
+            return null;
+        }
+
+        String namespace = null;
+        String pkgName = name;
+        if (splitNamespace) {
+            if (slashIndex > 0) {
+                // split name into package namespace and package name
+                namespace = name.substring(0, slashIndex);
+                pkgName = name.substring(slashIndex + 1);
+            }
+        }
+
+        return buildPurl(PackageInfo.of(type, pkgName).namespace(namespace).version(normalizeVersion(version)).build());
+    }
+
     private static PackageURL buildPackageUrl(PackageInfo packageInfo) {
+        Objects.requireNonNull(packageInfo, "packageInfo");
         final PackageManager type = packageInfo.getType();
 
         try {
             final PackageURLBuilder builder = PackageURLBuilder.aPackageURL()
                     .withType(type.getPurlType())
-                    .withNamespace(packageInfo.getNamespace())
                     .withName(packageInfo.getName())
-                    .withVersion(packageInfo.getVersion());
+                    .withVersion(StringUtils.isBlank(packageInfo.getVersion()) ? null : packageInfo.getVersion());
 
-            if (packageInfo.getDistro() != null) {
+            if (StringUtils.isNotBlank(packageInfo.getNamespace())) {
+                builder.withNamespace(packageInfo.getNamespace());
+            }
+
+            if (StringUtils.isNotBlank(packageInfo.getDistro())) {
                 builder.withQualifier("distro", packageInfo.getDistro());
             }
-            if (packageInfo.getArch() != null) {
+
+            if (StringUtils.isNotBlank(packageInfo.getArch())) {
                 builder.withQualifier("arch", packageInfo.getArch());
             }
-            packageInfo.getQualifiers().forEach(builder::withQualifier);
+
+            packageInfo.getQualifiers().forEach((key, value) -> {
+                if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(value)) {
+                    builder.withQualifier(key, value);
+                }
+            });
 
             return builder.build();
         } catch (MalformedPackageURLException e) {

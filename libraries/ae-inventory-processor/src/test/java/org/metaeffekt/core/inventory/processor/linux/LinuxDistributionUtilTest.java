@@ -26,7 +26,7 @@ public class LinuxDistributionUtilTest {
     public void test001() {
         File folder = new File("src/test/resources/component-pattern-contributor/linux-distro-001");
         LinuxDistributionUtil.LinuxDistro distro = LinuxDistributionUtil.parseDistro(folder);
-        Assertions.assertThat(distro.issue).isEqualTo("Red Hat Enterprise Linux");
+        Assertions.assertThat(distro.issue).isEqualTo("Red Hat Enterprise Linux (Plow)");
         Assertions.assertThat(distro.version).isEqualTo("9.4 (Plow)");
         Assertions.assertThat(distro.id).isEqualTo("rhel");
         Assertions.assertThat(distro.versionId).isEqualTo("9.4");

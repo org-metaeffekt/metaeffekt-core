@@ -16,10 +16,14 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -147,9 +151,16 @@ public class GemMetadataContributor extends ComponentPatternContributor {
     }
 
     private String buildPurl(String name, String version, String platform) {
-        if (platform.equals("ruby")) {
-            return String.format("pkg:gem/%s@%s", name, version);
+        if (StringUtils.isBlank(name)) {
+            return null;
         }
-        return String.format("pkg:gem/%s@%s?platform=%s", name, version, platform);
+
+        final PackageInfo.PackageInfoBuilder builder = PackageInfo.of(PackageManager.GEM, name).version(version);
+
+        if (StringUtils.isNotBlank(platform) && !"ruby".equals(platform)) {
+            builder.qualifier("platform", platform);
+        }
+
+        return PurlUtils.buildPurl(builder.build());
     }
 }
