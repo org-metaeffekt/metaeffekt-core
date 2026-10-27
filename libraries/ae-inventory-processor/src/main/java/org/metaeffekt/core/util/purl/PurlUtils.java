@@ -118,7 +118,7 @@ public class PurlUtils {
     }
 
     private static PackageURL buildPackageUrl(PackageInfo packageInfo) {
-        Objects.requireNonNull(packageInfo, "packageInfo");
+        Objects.requireNonNull(packageInfo, "packageInfo is null");
         final PackageManager type = packageInfo.getType();
 
         try {
