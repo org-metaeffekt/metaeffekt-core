@@ -18,10 +18,14 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -127,17 +131,15 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
     }
 
     private String buildPurl(VersionFileData versionFileData, String exeNameWithoutExtensionAndVersion) {
-        final String version = versionFileData.getProductVersion();
-        final String componentName = versionFileData.getProductName() == null ? null :
-                versionFileData.getProductName().toLowerCase(Locale.US).replace(" ", "-");
-        if (componentName == null && version == null) {
-            return "pkg:generic/" + exeNameWithoutExtensionAndVersion;
-        } else if (version == null) {
-            return "pkg:generic/" + componentName +  "/" + exeNameWithoutExtensionAndVersion;
-        } else if (componentName == null) {
-            return "pkg:generic/" + exeNameWithoutExtensionAndVersion + "@" + version;
+        if (StringUtils.isBlank(exeNameWithoutExtensionAndVersion)) {
+            return null;
         }
-        return "pkg:generic/" + componentName +  "/" + exeNameWithoutExtensionAndVersion + "@" + version;
+
+        final String productName = versionFileData.getProductName();
+        final String componentName = StringUtils.isBlank(productName) ? null : productName.toLowerCase(Locale.US).replace(" ", "-");
+        final String version = StringUtils.isBlank(versionFileData.getProductVersion()) ? null : versionFileData.getProductVersion();
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.GENERIC, exeNameWithoutExtensionAndVersion).namespace(componentName).version(version).build());
     }
 
     private List<ComponentPatternData> deriveComponents(File baseDir, File versionFile, File unpackedExeDir, String relativeAnchorPath, String anchorChecksum) {

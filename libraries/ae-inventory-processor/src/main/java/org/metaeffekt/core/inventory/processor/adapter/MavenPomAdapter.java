@@ -16,12 +16,16 @@
 package org.metaeffekt.core.inventory.processor.adapter;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -90,10 +94,11 @@ public class MavenPomAdapter {
     }
 
     public static String buildPurl(String groupId, String artifactId, String version) {
-        if (groupId != null && artifactId != null && version != null) {
-            return String.format("pkg:maven/%s/%s@%s", groupId, artifactId, version);
+        if (StringUtils.isBlank(groupId) || StringUtils.isBlank(artifactId) || StringUtils.isBlank(version)) {
+            return null;
         }
-        return null;
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.MAVEN, artifactId).namespace(groupId).version(version).build());
     }
 
 }

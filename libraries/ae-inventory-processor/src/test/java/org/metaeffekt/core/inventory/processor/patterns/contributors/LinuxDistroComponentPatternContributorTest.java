@@ -39,7 +39,7 @@ public class LinuxDistroComponentPatternContributorTest {
 
         final ComponentPatternData cpd = cpdList.get(0);
         Assertions.assertThat(cpd.get(COMPONENT_PART)).isEqualTo("rhel-9.4");
-        Assertions.assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("Red Hat Enterprise Linux");
+        Assertions.assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("Red Hat Enterprise Linux (Plow)");
         Assertions.assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("9.4");
     }
 

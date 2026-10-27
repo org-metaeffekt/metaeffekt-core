@@ -31,6 +31,9 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -309,8 +312,7 @@ public class JarInspector extends AbstractJarInspector {
      * Iterates throw the entries in the jar file and produced an artifact for every pom.properties or pom.xml file.
      *
      * @param artifact The artifact carrying data.
-     * @param jarFile The file being inspected.
-     *
+     * @param jarFile  The file being inspected.
      * @return List of artifacts created from pom.properties or pom.xml entries in the jar file.
      */
     protected List<Artifact> collectArtifactCandidates(Artifact artifact, File jarFile) {
@@ -405,7 +407,8 @@ public class JarInspector extends AbstractJarInspector {
 
     /**
      * Check if the information in the dummy artifact matches the given fileName.<br>
-     * @param fileName The file's name to check against.
+     *
+     * @param fileName      The file's name to check against.
      * @param dummyArtifact Dummy artifact containing the id and version that will be checked.
      * @return Returns whether the dummy artifact's data directly relates to the filename.
      */
@@ -427,9 +430,9 @@ public class JarInspector extends AbstractJarInspector {
         }
 
         final Pattern pattern1 = Pattern.compile(
-          ".*\\.?" +    // filter groupId or any other prefix; <artifactId>-<version> is enough evidence
-                Pattern.quote(dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID) + "-" + dummyArtifact.getVersion()) +
-                "[-._].*");
+                ".*\\.?" +    // filter groupId or any other prefix; <artifactId>-<version> is enough evidence
+                        Pattern.quote(dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID) + "-" + dummyArtifact.getVersion()) +
+                        "[-._].*");
         if (pattern1.matcher(fileName).matches()) {
             return true;
         }
@@ -615,7 +618,7 @@ public class JarInspector extends AbstractJarInspector {
                 final List<Integer> indexList = new ArrayList<>();
                 for (int i = 0; i < id.length(); i++) {
                     final char c = id.charAt(i);
-                    if (c == '_' || c =='-') {
+                    if (c == '_' || c == '-') {
                         indexList.add(i);
                     }
                 }
@@ -672,7 +675,7 @@ public class JarInspector extends AbstractJarInspector {
 
     // TODO: special steps to take for artifacts added in this fashion? maybe write a separate Inspector for this?
     private void includeEmbedded(Inventory inventory, Artifact containingArtifact,
-             List<Artifact> embeddedArtifacts, Set<String> alreadyReported) {
+                                 List<Artifact> embeddedArtifacts, Set<String> alreadyReported) {
 
         if (embeddedArtifacts != null && !embeddedArtifacts.isEmpty()) {
             final String assetId = "AID-" + containingArtifact.getId() + "-" + containingArtifact.getChecksum();
@@ -747,14 +750,11 @@ public class JarInspector extends AbstractJarInspector {
     }
 
     private String buildPurl(String namespace, String name, String version, String type) {
-        if (namespace != null && name != null && version != null) {
-            if (StringUtils.isBlank(type)) {
-                return String.format("pkg:maven/%s/%s@%s", namespace, name, version);
-            } else {
-                return String.format("pkg:maven/%s/%s@%s?type=%s", namespace, name, version, type);
-            }
+        if (StringUtils.isBlank(namespace) || StringUtils.isBlank(name) || StringUtils.isBlank(version)) {
+            return null;
         }
-        return null;
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.MAVEN, name).namespace(namespace).version(version).qualifier("type", type).build());
     }
 
     public static String deriveSuffix(String packaging) {

@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.PyProjectData;
@@ -23,6 +24,9 @@ import org.metaeffekt.core.inventory.processor.adapter.pyproject.shared.PyProjec
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.AbstractTomlParser;
 import org.metaeffekt.core.inventory.processor.adapter.pyproject.toml.TomlParserFactory;
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -227,10 +231,11 @@ public class PyProjectComponentPatternContributor extends ComponentPatternContri
     }
 
     private String buildPurl(String name, String version) {
-        // first we have to handle that the name should not be case sensitive and underscore should be replaced by dash
-        // see: https://github.com/package-url/purl-spec/blob/master/PURL-TYPES.rst#pypi
-        name = name.toLowerCase(Locale.ENGLISH).replace("_", "-");
-        return "pkg:pypi/" + name + "@" + version;
+        if (StringUtils.isBlank(name)) {
+            return null;
+        }
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.PYPI, name).version(version).build());
     }
 
 }

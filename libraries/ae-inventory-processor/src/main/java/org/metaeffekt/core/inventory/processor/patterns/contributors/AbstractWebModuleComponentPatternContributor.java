@@ -24,6 +24,9 @@ import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModuleDependency;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -85,7 +88,7 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
 
             return Collections.singletonList(componentPatternData);
         } catch (IOException e) {
-        log.warn("Unable to parse web module parts: {}", e.getMessage(), e);
+            log.warn("Unable to parse web module parts: {}", e.getMessage(), e);
             return Collections.emptyList();
         }
     }
@@ -94,7 +97,6 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
      * Collects an ordered list of definition files. The method uses the ordering as provided by getDefinitionFiles().
      *
      * @param parentDir The folder to inspect.
-     *
      * @return An ordered list of files representing the definition files.
      */
     protected List<File> collectDefinitionFiles(File parentDir) {
@@ -112,7 +114,6 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
      * Select the representative anchor from the available definition files.
      *
      * @param definitionFiles The priority-ordered list of definition files.
-     *
      * @return The selected representative definition file, which will be used as anchor.
      */
     protected File selectRepresentativeAnchorFile(List<File> definitionFiles) {
@@ -139,7 +140,6 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
      * Creates an artifact from the given webModule.
      *
      * @param webModule The web module to create the artifact for.
-     *
      * @return The implementation-specific, derived artifact.
      */
     protected abstract Artifact createArtifact(WebModule webModule);
@@ -322,24 +322,24 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
     }
 
     public static String buildPurl(String packageManager, String name, String version) {
-        if (name == null || name.isEmpty()) {
+        if (StringUtils.isBlank(packageManager) || StringUtils.isBlank(name)) {
             return null;
         }
 
-        String normalizedName = name.toLowerCase();
-        if (packageManager.equals("npm") && name.startsWith("@")) {
-            normalizedName = name;
+        final PackageManager type = PackageManager.fromPurlType(packageManager)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown Package Manager: " + packageManager));
+
+        // npm has to be handled as a special case because the name (scope) consists of package name and namespace
+        if (type == PackageManager.NPM) {
+            return PurlUtils.buildNpmPurl(name, version);
         }
 
-        if (version == null || version.isEmpty() || "unspecific".equalsIgnoreCase(version)) {
-            return String.format("pkg:%s/%s", packageManager.toLowerCase(), normalizedName);
+        // composer has to be handled as a special case because the name consists of package name and namespace
+        if (type == PackageManager.COMPOSER) {
+            return PurlUtils.buildComposerPurl(name, version);
         }
 
-        if (version.startsWith("v")) {
-            version = version.substring(1);
-        }
-
-        return String.format("pkg:%s/%s@%s", packageManager.toLowerCase(), normalizedName, version);
+        return PurlUtils.buildPurl(PackageInfo.of(type, name).version(PurlUtils.normalizeVersion(version)).build());
     }
-
 }
+
