@@ -45,9 +45,9 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     @Override
     public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
         final String issue = extractIssue(analysisDir);
-        final Properties osReleaseFileProperties = readOSReleaseFile(analysisDir);
+        final Properties osReleaseFileProperties = Objects.requireNonNull(readOSReleaseFile(analysisDir), "Missing os-release.txt file in dir: " + analysisDir);
 
-        final LinuxDistribution linuxDistribution = LinuxDistributionUtil.deriveLinuxDistro(Objects.requireNonNull(osReleaseFileProperties));
+        final LinuxDistribution linuxDistribution = LinuxDistributionUtil.deriveLinuxDistro(osReleaseFileProperties);
 
         // use specific inventory implementation to extract inventory
         final Inventory inventory = new Inventory();
@@ -205,7 +205,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         return false;
     }
 
-    private Properties readOSReleaseFile(File analysisDir) throws IOException {
+    private Properties readOSReleaseFile(File analysisDir) {
         final File osReleaseFile = new File(analysisDir, "os-release.txt");
         if (osReleaseFile.exists()) {
             Properties properties = PropertiesUtils.loadPropertiesFile(osReleaseFile);
