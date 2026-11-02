@@ -354,7 +354,7 @@ public class Cvss4P0MacroVector {
      *   <tr>
      *     <td>0</td>
      *     <td>MSI:S or MSA:S</td>
-     *     <td>SC:H/SI:S/SA:S</td>
+     *     <td>SC:H/SI:H/SA:H/MSI:S/MSA:S</td>
      *   </tr>
      *   <tr>
      *     <td>1</td>
@@ -371,11 +371,13 @@ public class Cvss4P0MacroVector {
     public static final EQ[] EQ4_DEFINITIONS = {
             new EQ("0",
                     6,
-                    new String[]{"SC:H/SI:S/SA:S"},
+                    new String[]{"SC:H/SI:H/SA:H/MSI:S/MSA:S"},
                     Collections.singletonList(vector -> {
                         vector.setSubConfidentialityImpact(Cvss4P0.SubsequentCia.HIGH);
-                        vector.setSubIntegrityImpact(Cvss4P0.SubsequentCia.SAFETY);
-                        vector.setSubAvailabilityImpact(Cvss4P0.SubsequentCia.SAFETY);
+                        vector.setSubIntegrityImpact(Cvss4P0.SubsequentCia.HIGH);
+                        vector.setSubAvailabilityImpact(Cvss4P0.SubsequentCia.HIGH);
+                        vector.setModifiedSubIntegrityImpact(Cvss4P0.ModifiedSubsequentIntegrityAvailability.SAFETY);
+                        vector.setModifiedSubAvailabilityImpact(Cvss4P0.ModifiedSubsequentIntegrityAvailability.SAFETY);
                     }),
                     vector -> is(vector, "MSI", "S") || is(vector, "MSA", "S")),
             new EQ("1",
@@ -859,17 +861,6 @@ public class Cvss4P0MacroVector {
         // CR:X, IR:X, AR:X are the same as CR:H, IR:H, AR:H
         if (("CR".equals(attribute) || "IR".equals(attribute) || "AR".equals(attribute)) && Cvss4P0.RequirementsCia.NOT_DEFINED.equals(selected)) {
             return Cvss4P0.RequirementsCia.HIGH;
-        }
-
-        // Special cases for MSI and MSA
-        // the SI:S cannot happen in reality, but the reference implementation checks for it, so we do too
-        if ("MSI".equals(attribute) && Cvss4P0.ModifiedSubsequentIntegrityAvailability.NOT_DEFINED.equals(selected)
-                && "S".equals(vector.getVectorArgument("SI").getShortIdentifier())) {
-            return Cvss4P0.ModifiedSubsequentIntegrityAvailability.SAFETY;
-        }
-        if ("MSA".equals(attribute) && Cvss4P0.ModifiedSubsequentIntegrityAvailability.NOT_DEFINED.equals(selected)
-                && "S".equals(vector.getVectorArgument("SA").getShortIdentifier())) {
-            return Cvss4P0.ModifiedSubsequentIntegrityAvailability.SAFETY;
         }
 
         // All other environmental metrics just overwrite base score values,
