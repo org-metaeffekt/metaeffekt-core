@@ -76,7 +76,8 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
 
                 ComponentPatternData cpd = new ComponentPatternData();
 
-                cpd.set(COMPONENT_NAME, linuxDistro.issue);
+                cpd.set(KEY_ISSUE, linuxDistro.issue);
+                cpd.set(COMPONENT_NAME, linuxDistro.name);
                 cpd.set(COMPONENT_VERSION, linuxDistro.versionId);
 
                 if (linuxDistro.versionId != null) {
@@ -126,6 +127,7 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
         assetMetaData.set("Distro - VersionId", linuxDistro.versionId);
         assetMetaData.set("Distro - CPE", linuxDistro.cpe);
         assetMetaData.set("Distro - Issue", linuxDistro.issue);
+        assetMetaData.set("Distro - Name", linuxDistro.name);
         assetMetaData.set("Distro - Version", linuxDistro.version);
         assetMetaData.set("Distro - URL", linuxDistro.url);
 
