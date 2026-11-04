@@ -16,7 +16,7 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.apache.tools.ant.DirectoryScanner;
-import org.metaeffekt.core.inventory.processor.linux.LinuxDistribution;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -47,12 +47,12 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         final String issue = extractIssue(analysisDir);
         final Properties osReleaseFileProperties = Objects.requireNonNull(readOSReleaseFile(analysisDir), "Missing os-release.txt file in dir: " + analysisDir);
 
-        final LinuxDistribution linuxDistribution = LinuxDistributionUtil.deriveLinuxDistro(osReleaseFileProperties);
+        final LinuxDistributionInfo linuxDistributionInfo = LinuxDistributionUtil.deriveLinuxDistro(osReleaseFileProperties);
 
         // use specific inventory implementation to extract inventory
         final Inventory inventory = new Inventory();
 
-        extendInventory(analysisDir, inventory, linuxDistribution);
+        extendInventory(analysisDir, inventory, linuxDistributionInfo);
 
         if (includeNotCoveredFiles) {
             extendNotCoveredFiles(analysisDir, inventory, excludePatterns);
@@ -79,7 +79,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         validateFileHasContent(new File(analysisDir, "uname.txt"));
     }
 
-    protected abstract void extendInventory(File analysisDir, Inventory inventory, LinuxDistribution linuxDistribution) throws IOException;
+    protected abstract void extendInventory(File analysisDir, Inventory inventory, LinuxDistributionInfo linuxDistributionInfo) throws IOException;
 
     /**
      * Anticipates a directory for each package in packageDir. The directory contains the
@@ -90,7 +90,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
      * @param idToPackageInfoMap The resulting {@link PackageInfo} instances are added to the map.
      * @param docDir             The documentation dir.
      */
-    protected static void packagesFromDocumentationDir(File analysisDir, File packageDir, LinuxDistribution linuxDistribution,
+    protected static void packagesFromDocumentationDir(File analysisDir, File packageDir, LinuxDistributionInfo linuxDistributionInfo,
                                                        Map<String, PackageInfo> idToPackageInfoMap, boolean docDir) {
         if (packageDir.exists()) {
             DirectoryScanner scanner = new DirectoryScanner();
@@ -109,7 +109,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
                     packageInfo.id = path;
                     packageInfo.component = path;
                     packageInfo.status = "documented";
-                    packageInfo.linuxDistribution = linuxDistribution;
+                    packageInfo.linuxDistributionInfo = linuxDistributionInfo;
                 }
                 if (docDir) {
                     packageInfo.documentationDir = new File(packageDir, path).getAbsolutePath();

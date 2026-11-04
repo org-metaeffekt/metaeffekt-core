@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
@@ -31,10 +32,14 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_DOCUMENTATION_PATH_PACKAGE;
+import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_ISSUE;
 
 @Slf4j
 public class DpkgPackageContributor extends ComponentPatternContributor {
@@ -342,12 +347,16 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, versionAnchor);
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
+        componentPatternData.set(Constants.KEY_ARCHITECTURE, entry.architecture);
+        componentPatternData.set(Constants.KEY_URL, entry.homepage);
+        componentPatternData.set(Constants.KEY_DESCRIPTION, entry.description);
+        componentPatternData.set(Constants.KEY_GROUP_PACKAGE, entry.source != null ? entry.source.replaceAll("(.*) \\(.*\\)", "$1") : null);
+        componentPatternData.set(Constants.KEY_STATUS_PACKAGE, entry.status);
 
         // FIXME: how do we handle symlinks? they are not included in the md5sums file but can be part of the package
         // componentPatternData.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
         try {
-            componentPatternData.set(Artifact.Attribute.PURL.getKey(),
-                    buildPurl(distro, entry.packageName, entry.version, entry.architecture));
+            componentPatternData.set(Artifact.Attribute.PURL.getKey(), buildPurl(distro, entry.packageName, entry.version, entry.architecture));
         } catch (Exception e) {
             log.error("Could not create PURL for package [{}].", entry.packageName);
         }
@@ -531,13 +540,17 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 continue;
             }
 
-
             final String relativePath = org.metaeffekt.core.util.FileUtils.asRelativePath(virtualRootPath, relativeAnchorFilePath);
-            final ComponentPatternData cpd = createComponentPattern(
-                    relativePath, entry, checksum, includePatternsJoiner.toString(), distro);
+            final ComponentPatternData cpd = createComponentPattern(relativePath, entry, checksum, includePatternsJoiner.toString(), distro);
 
+            cpd.set(Constants.KEY_ISSUE, distro != null ? distro.issue : null);
             cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
-            cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "dpkg");
+            final String docPath = "/usr/share/doc/" + entry.packageName;
+            final Path usrShareDocPath = new File(baseDir, virtualRootPath + docPath).toPath();
+            if (Files.exists(usrShareDocPath)) {
+                cpd.set(Constants.KEY_DOCUMENTATION_PATH_PACKAGE, String.valueOf(usrShareDocPath));
+            }
+            cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, LinuxDistributionInfo.DEBIAN.getPackageTool());
 
             // add created patterns
             componentPatterns.add(cpd);

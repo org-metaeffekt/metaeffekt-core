@@ -18,7 +18,7 @@ package org.metaeffekt.core.util;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import org.metaeffekt.core.inventory.processor.linux.LinuxDistribution;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.util.purl.PackageInfo;
 import org.metaeffekt.core.util.purl.PackageManager;
 import org.metaeffekt.core.util.purl.PurlUtils;
@@ -34,19 +34,19 @@ public class PurlUtilsTest {
     Stream<DynamicTest> buildPurl_forEachPackageType() {
         return Stream.of(
                 purlTest("debian",
-                        PackageInfo.of(PackageManager.DEBIAN, "curl").namespace(LinuxDistribution.DEBIAN.getPurlNamespace()).version("7.88.1-10").distro("debian-12").arch("amd64").build(),
+                        PackageInfo.of(PackageManager.DEBIAN, "curl").namespace(LinuxDistributionInfo.DEBIAN.getPurlNamespace()).version("7.88.1-10").distro("debian-12").arch("amd64").build(),
                         "pkg:deb/debian/curl@7.88.1-10?arch=amd64&distro=debian-12",
                         "pkg:deb/debian/curl@7.88.1-10?arch=amd64&distro=debian-12"),
                 purlTest("rpm",
-                        PackageInfo.of(PackageManager.RPM, "bash").namespace(LinuxDistribution.RHEL.getPurlNamespace()).version("5.1.8-6.el9").distro("rhel-9").arch("x86_64").build(),
+                        PackageInfo.of(PackageManager.RPM, "bash").namespace(LinuxDistributionInfo.RHEL.getPurlNamespace()).version("5.1.8-6.el9").distro("rhel-9").arch("x86_64").build(),
                         "pkg:rpm/redhat/bash@5.1.8-6.el9?arch=x86_64&distro=rhel-9",
                         "pkg:rpm/redhat/bash@5.1.8-6.el9?arch=x86_64&distro=rhel-9"),
                 purlTest("apk",
-                        PackageInfo.of(PackageManager.APK, "busybox").namespace(LinuxDistribution.ALPINE.getPurlNamespace()).version("1.36.1-r5").distro("alpine-3.19").arch("x86_64").build(),
+                        PackageInfo.of(PackageManager.APK, "busybox").namespace(LinuxDistributionInfo.ALPINE.getPurlNamespace()).version("1.36.1-r5").distro("alpine-3.19").arch("x86_64").build(),
                         "pkg:apk/alpine/busybox@1.36.1-r5?arch=x86_64&distro=alpine-3.19",
                         "pkg:apk/alpine/busybox@1.36.1-r5?arch=x86_64&distro=alpine-3.19"),
                 purlTest("alpm",
-                        PackageInfo.of(PackageManager.ALPM, "pacman").namespace(LinuxDistribution.ARCH.getPurlNamespace()).version("6.0.2-1").arch("x86_64").build(),
+                        PackageInfo.of(PackageManager.ALPM, "pacman").namespace(LinuxDistributionInfo.ARCH.getPurlNamespace()).version("6.0.2-1").arch("x86_64").build(),
                         "pkg:alpm/arch/pacman@6.0.2-1?arch=x86_64",
                         "pkg:alpm/arch/pacman@6.0.2-1?arch=x86_64"),
                 purlTest("maven",
@@ -122,7 +122,7 @@ public class PurlUtilsTest {
 
     @Test
     void optionalQualifiers() {
-        final PackageInfo packageInfo = PackageInfo.of(PackageManager.DEBIAN, "curl").namespace(LinuxDistribution.DEBIAN.getPurlNamespace()).version("7.88.1-10").build();
+        final PackageInfo packageInfo = PackageInfo.of(PackageManager.DEBIAN, "curl").namespace(LinuxDistributionInfo.DEBIAN.getPurlNamespace()).version("7.88.1-10").build();
         assertEquals("pkg:deb/debian/curl@7.88.1-10", PurlUtils.buildPurl(packageInfo));
     }
 
