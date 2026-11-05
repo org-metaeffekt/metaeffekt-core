@@ -143,7 +143,11 @@ public class RpmPackageContributor extends ComponentPatternContributor {
 
                     cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar,**/node_modules/**/*");
 
-                    cpd.set(Constants.KEY_ISSUE, distro != null ? distro.issue : null);
+                    if (distro != null) {
+                        cpd.set(Constants.KEY_ISSUE, distro.issue);
+                        cpd.set(Constants.KEY_DISTRO_NAME, distro.name);
+                        cpd.set(Constants.KEY_DISTRO_VERSION, distro.versionId);
+                    }
                     cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, packageInfo.getLicense());
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                     cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, LinuxDistributionInfo.RHEL.getPackageTool());

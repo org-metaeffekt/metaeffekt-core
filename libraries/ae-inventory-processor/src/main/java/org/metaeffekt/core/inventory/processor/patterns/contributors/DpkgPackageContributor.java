@@ -38,9 +38,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_DOCUMENTATION_PATH_PACKAGE;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_ISSUE;
-
 @Slf4j
 public class DpkgPackageContributor extends ComponentPatternContributor {
 
@@ -320,9 +317,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return entries;
     }
 
-    public ComponentPatternData createComponentPattern(String versionAnchor, DpkgStatusFileEntry entry,
-                                                       String checksum, String includePatterns, LinuxDistributionUtil.LinuxDistro distro) {
-
+    public ComponentPatternData createComponentPattern(String versionAnchor, DpkgStatusFileEntry entry, String checksum, String includePatterns, LinuxDistributionUtil.LinuxDistro distro) {
         ComponentPatternData componentPatternData = new ComponentPatternData();
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, entry.packageName);
         // add list of comma-separated paths
@@ -352,6 +347,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         componentPatternData.set(Constants.KEY_DESCRIPTION, entry.description);
         componentPatternData.set(Constants.KEY_GROUP_PACKAGE, entry.source != null ? entry.source.replaceAll("(.*) \\(.*\\)", "$1") : null);
         componentPatternData.set(Constants.KEY_STATUS_PACKAGE, entry.status);
+
+        if (distro != null) {
+            componentPatternData.set(Constants.KEY_ISSUE, distro.issue);
+            componentPatternData.set(Constants.KEY_DISTRO_NAME, distro.name);
+            componentPatternData.set(Constants.KEY_DISTRO_VERSION, distro.versionId);
+        }
 
         // FIXME: how do we handle symlinks? they are not included in the md5sums file but can be part of the package
         // componentPatternData.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
@@ -543,13 +544,14 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             final String relativePath = org.metaeffekt.core.util.FileUtils.asRelativePath(virtualRootPath, relativeAnchorFilePath);
             final ComponentPatternData cpd = createComponentPattern(relativePath, entry, checksum, includePatternsJoiner.toString(), distro);
 
-            cpd.set(Constants.KEY_ISSUE, distro != null ? distro.issue : null);
-            cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
+            // populate package documentation path
             final String docPath = "/usr/share/doc/" + entry.packageName;
             final Path usrShareDocPath = new File(baseDir, virtualRootPath + docPath).toPath();
             if (Files.exists(usrShareDocPath)) {
                 cpd.set(Constants.KEY_DOCUMENTATION_PATH_PACKAGE, String.valueOf(usrShareDocPath));
             }
+
+            cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
             cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, LinuxDistributionInfo.DEBIAN.getPackageTool());
 
             // add created patterns
@@ -569,9 +571,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
      * @param virtualRootPath        same as {@link ComponentPatternContributor#contribute(File, String, String)}
      * @return same as {@link ComponentPatternContributor#contribute(File, String, String)}
      */
-    public List<ComponentPatternData> contributeStatusDirectoryBased(File baseDir,
-                                                                     String virtualRootPath, String relativeAnchorFilePath, String checksum) {
-
+    public List<ComponentPatternData> contributeStatusDirectoryBased(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
         final File md5sumsFile = new File(baseDir, relativeAnchorFilePath);
 
         // maybe this check should be moved to applies but it also requires a constructed File so...
@@ -588,8 +588,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         final List<ComponentPatternData> createdComponentPatterns = new ArrayList<>();
 
-        File fileWithoutMd5sums = new File(md5sumsFile.getParentFile(),
-                md5sumsFile.getName().replaceAll("\\.md5sums$", ""));
+        File fileWithoutMd5sums = new File(md5sumsFile.getParentFile(), md5sumsFile.getName().replaceAll("\\.md5sums$", ""));
 
         if (!fileWithoutMd5sums.exists()) {
             // no metadata is not that useful. i'll just expect them to have valid metadata for now.
@@ -623,9 +622,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         StringJoiner includesJoiner = createIncludePatternsFromHashFile(entry, md5sumsFile);
 
-        ComponentPatternData cpd = createComponentPattern(
-                org.metaeffekt.core.util.FileUtils.asRelativePath(virtualRoot, md5sumsFile),
-                entry, checksum,
+        ComponentPatternData cpd = createComponentPattern(org.metaeffekt.core.util.FileUtils.asRelativePath(virtualRoot, md5sumsFile), entry, checksum,
                 includesJoiner.toString(), LinuxDistributionUtil.parseDistro(new File(baseDir, virtualRootPath)));
 
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
