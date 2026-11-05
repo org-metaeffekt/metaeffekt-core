@@ -36,8 +36,8 @@ public class FallbackInventoryExtractor extends AlpineInventoryExtractor {
     }
 
     @Override
-    public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
-        return super.extractInventory(analysisDir, inventoryId, excludePatterns, includeNotCoveredFiles);
+    public Inventory extractInventory(File baseDir, File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
+        return super.extractInventory(baseDir, analysisDir, inventoryId, excludePatterns, includeNotCoveredFiles);
     }
 
     @Override

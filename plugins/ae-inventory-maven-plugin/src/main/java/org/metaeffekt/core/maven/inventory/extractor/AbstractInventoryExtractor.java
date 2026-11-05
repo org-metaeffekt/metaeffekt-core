@@ -19,6 +19,7 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
@@ -43,7 +44,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     public static final String FOLDER_USR_SHARE_LICENSE = "usr-share-licenses";
 
     @Override
-    public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
+    public Inventory extractInventory(File baseDir, File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
         final String issue = extractIssue(analysisDir);
         final Properties osReleaseFileProperties = Objects.requireNonNull(readOSReleaseFile(analysisDir), "Missing os-release.txt file in dir: " + analysisDir);
 
@@ -58,7 +59,9 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
             extendNotCoveredFiles(analysisDir, inventory, excludePatterns);
         }
 
-        // FIXME: combine with asset information
+        // FIXME: extend asset information
+        final LinuxDistributionUtil.LinuxDistro linuxDistro = LinuxDistributionUtil.parseDistroByOsReleaseFile(osReleaseFileProperties);
+        inventory.getAssetMetaData().add(createAssetMetaData(baseDir, analysisDir, linuxDistro));
         for (final Artifact artifact : inventory.getArtifacts()) {
             artifact.set(Constants.KEY_DISTRO_NAME, LinuxDistributionUtil.populateNameWithVersionCodename(osReleaseFileProperties));
             artifact.set(Constants.KEY_DISTRO_VERSION, LinuxDistributionUtil.getVersionIdWithFallbacks(osReleaseFileProperties));
@@ -231,5 +234,28 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
             v = v.substring(1, v.length() - 1);
         }
         return v.isEmpty() ? null : v;
+    }
+
+    private AssetMetaData createAssetMetaData(File baseDir, File distroBaseDir, LinuxDistributionUtil.LinuxDistro linuxDistro) {
+        final String relativePathToDistroRoot = FileUtils.asRelativePath(baseDir, distroBaseDir);
+
+        AssetMetaData assetMetaData = new AssetMetaData();
+        assetMetaData.set(KEY_TYPE, "os");
+
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, "OSID-" + relativePathToDistroRoot);
+        assetMetaData.set(AssetMetaData.Attribute.NAME, linuxDistro.id);
+        assetMetaData.set(AssetMetaData.Attribute.VERSION, linuxDistro.versionId);
+
+        assetMetaData.set("Distro - Id", linuxDistro.id);
+        assetMetaData.set("Distro - VersionId", linuxDistro.versionId);
+        assetMetaData.set("Distro - CPE", linuxDistro.cpe);
+        assetMetaData.set("Distro - Issue", linuxDistro.issue);
+        assetMetaData.set(KEY_DISTRO_NAME, linuxDistro.name);
+        assetMetaData.set(KEY_DISTRO_VERSION, linuxDistro.version);
+        assetMetaData.set("Distro - URL", linuxDistro.url);
+
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativePathToDistroRoot);
+
+        return assetMetaData;
     }
 }
