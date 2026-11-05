@@ -209,7 +209,11 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, path);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
-        cpd.set(Constants.KEY_ISSUE, distro != null ? distro.issue : null);
+        if (distro != null) {
+            cpd.set(Constants.KEY_ISSUE, distro.issue);
+            cpd.set(Constants.KEY_DISTRO_NAME, distro.name);
+            cpd.set(Constants.KEY_DISTRO_VERSION, distro.versionId);
+        }
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, ALPM_PACKAGE_TYPE);
         cpd.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
