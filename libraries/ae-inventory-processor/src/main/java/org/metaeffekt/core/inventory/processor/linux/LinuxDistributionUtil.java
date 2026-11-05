@@ -98,6 +98,7 @@ public class LinuxDistributionUtil {
 
         public String url;
 
+        // FIXME: No usage, consider removing
         public String release;
 
         public String vendor;
@@ -159,7 +160,6 @@ public class LinuxDistributionUtil {
     }
 
     public static LinuxDistro parseDistro(File distroBaseDir) {
-
         final File challengeBaseDir = new File(distroBaseDir, "etc");
         if (!challengeBaseDir.exists()) {
             log.warn("Received base directory for detecting linux distro does not have expected structure: " + distroBaseDir.getAbsolutePath());
@@ -202,13 +202,7 @@ public class LinuxDistributionUtil {
             }
         }
 
-        if (linuxDistro.id != null) {
-            if ("rhel".equals(linuxDistro.id)) {
-                linuxDistro.vendor = "redhat";
-            } else {
-                linuxDistro.vendor = linuxDistro.id;
-            }
-        }
+        specifyVendor(linuxDistro);
 
         if (linuxDistro.issue != null) {
             return linuxDistro;
@@ -243,17 +237,8 @@ public class LinuxDistributionUtil {
     }
 
     /**
-     * Derives the {@link LinuxDistributionInfo} corresponding to the ID field in the os-release.txt file.
-     *
-     * @param osReleaseFileProperties the osReleaseProperties from the os-release.txt file containing the ID
-     * @return the derived Linux Distro
-     */
-    public static LinuxDistributionInfo deriveLinuxDistro(Properties osReleaseFileProperties) {
-        return LinuxDistributionInfo.fromId(osReleaseFileProperties.getProperty(KEY_DISTRO_ID)).orElse(null);
-    }
-
-    /**
      * Populates the issue by combining the distro name and version id from the distro from osReleaseFileProperties and
+     *
      * @param osReleaseFileProperties the os release file properties
      * @return the issue
      */
@@ -266,6 +251,7 @@ public class LinuxDistributionUtil {
 
     /**
      * Populates the Distro Name with the version codename.
+     *
      * @param osReleaseFileProperties the os release file properties
      * @return the distro name with its version codename
      */
@@ -274,6 +260,40 @@ public class LinuxDistributionUtil {
         String versionCodename = resolveCodename(osReleaseFileProperties);
 
         return versionCodename != null ? name + " (" + versionCodename + ")" : name;
+    }
+
+    public static LinuxDistro parseDistroByOsReleaseFile(Properties osReleaseFileProperties) {
+        final LinuxDistro linuxDistro = new LinuxDistro();
+        linuxDistro.id = modulateValue(osReleaseFileProperties.getProperty("ID"), linuxDistro.id);
+        linuxDistro.name = modulateValue(populateNameWithVersionCodename(osReleaseFileProperties), linuxDistro.name);
+        linuxDistro.issue = modulateValue(populateNameWithFullVersion(osReleaseFileProperties), linuxDistro.issue);
+        linuxDistro.versionId = modulateValue(getVersionIdWithFallbacks(osReleaseFileProperties), linuxDistro.versionId);
+        linuxDistro.version = modulateValue(osReleaseFileProperties.getProperty("VERSION"), linuxDistro.version);
+        linuxDistro.cpe = modulateValue(osReleaseFileProperties.getProperty("CPE_NAME"), linuxDistro.cpe);
+        linuxDistro.url = modulateValue(osReleaseFileProperties.getProperty("HOME_URL"), linuxDistro.url);
+        specifyVendor(linuxDistro);
+
+        return linuxDistro;
+    }
+
+    /**
+     * Derives the {@link LinuxDistributionInfo} corresponding to the ID field in the os-release.txt file.
+     *
+     * @param osReleaseFileProperties the osReleaseProperties from the os-release.txt file containing the ID
+     * @return the derived Linux Distro
+     */
+    public static LinuxDistributionInfo deriveLinuxDistro(Properties osReleaseFileProperties) {
+        return LinuxDistributionInfo.fromId(osReleaseFileProperties.getProperty(KEY_DISTRO_ID)).orElse(null);
+    }
+
+    private static void specifyVendor(LinuxDistro linuxDistro) {
+        if (linuxDistro.id != null) {
+            if ("rhel".equals(linuxDistro.id)) {
+                linuxDistro.vendor = "redhat";
+            } else {
+                linuxDistro.vendor = linuxDistro.id;
+            }
+        }
     }
 
     private static void parseDebianVersion(File distroBaseDir, LinuxDistro linuxDistro) {
