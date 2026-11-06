@@ -262,6 +262,12 @@ public class LinuxDistributionUtil {
         return versionCodename != null ? name + " (" + versionCodename + ")" : name;
     }
 
+    /**
+     * Creates a {@link LinuxDistro} object by parsing data from osReleaseFile (used for appliance extracted linux distros).
+     *
+     * @param osReleaseFileProperties the parsed os-release file containing the distro information
+     * @return the {@link LinuxDistro} object
+     */
     public static LinuxDistro parseDistroByOsReleaseFile(Properties osReleaseFileProperties) {
         final LinuxDistro linuxDistro = new LinuxDistro();
         linuxDistro.id = modulateValue(osReleaseFileProperties.getProperty("ID"), linuxDistro.id);
@@ -280,7 +286,7 @@ public class LinuxDistributionUtil {
      * Derives the {@link LinuxDistributionInfo} corresponding to the ID field in the os-release.txt file.
      *
      * @param osReleaseFileProperties the osReleaseProperties from the os-release.txt file containing the ID
-     * @return the derived Linux Distro
+     * @return the derived {@link LinuxDistributionInfo}
      */
     public static LinuxDistributionInfo deriveLinuxDistro(Properties osReleaseFileProperties) {
         return LinuxDistributionInfo.fromId(osReleaseFileProperties.getProperty(KEY_DISTRO_ID)).orElse(null);
