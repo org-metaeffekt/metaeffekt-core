@@ -67,7 +67,6 @@ class PackageInfo {
         artifact.setVersion(version);
         artifact.setUrl(url);
 
-        artifact.set(KEY_COMPONENT_SOURCE_TYPE, linuxDistributionInfo.getPackageTool());
         artifact.set(KEY_ARCHITECTURE, arch);
         artifact.set(KEY_SUMMARY, summary);
         artifact.set(KEY_DESCRIPTION, description);
@@ -78,8 +77,10 @@ class PackageInfo {
         artifact.set(KEY_STATUS_PACKAGE, status);
         artifact.set(KEY_RELEASE, release);
         artifact.set(KEY_SOURCE_PACKAGE, sourcePackage);
-        artifact.set(KEY_COMPONENT_SOURCE_TYPE, linuxDistributionInfo.getPackageTool());
-        artifact.set(KEY_PURL, PurlUtils.buildPurl(org.metaeffekt.core.util.purl.PackageInfo.of(linuxDistributionInfo.getPackageManager(), name).namespace(linuxDistributionInfo.getPurlNamespace()).version(version).arch(arch).build()));
+        if (linuxDistributionInfo != null) {
+            artifact.set(KEY_COMPONENT_SOURCE_TYPE, linuxDistributionInfo.getPackageTool());
+            artifact.set(KEY_PURL, PurlUtils.buildPurl(org.metaeffekt.core.util.purl.PackageInfo.of(linuxDistributionInfo.getPackageManager(), name).namespace(linuxDistributionInfo.getPurlNamespace()).version(version).arch(arch).build()));
+        }
         return artifact;
     }
 
