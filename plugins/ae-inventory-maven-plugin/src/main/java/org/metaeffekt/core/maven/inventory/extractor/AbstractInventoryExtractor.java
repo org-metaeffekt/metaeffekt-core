@@ -61,12 +61,19 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
 
         // FIXME: extend asset information
         final LinuxDistributionUtil.LinuxDistro linuxDistro = LinuxDistributionUtil.parseDistroByOsReleaseFile(osReleaseFileProperties);
-        inventory.getAssetMetaData().add(createAssetMetaData(baseDir, analysisDir, linuxDistro));
+        final AssetMetaData assetMetaData = createAssetMetaData(baseDir, analysisDir, linuxDistro);
+        final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+
+        inventory.getAssetMetaData().add(assetMetaData);
         for (final Artifact artifact : inventory.getArtifacts()) {
             artifact.set(Constants.KEY_DISTRO_NAME, LinuxDistributionUtil.populateNameWithVersionCodename(osReleaseFileProperties));
             artifact.set(Constants.KEY_DISTRO_VERSION, LinuxDistributionUtil.getVersionIdWithFallbacks(osReleaseFileProperties));
-
             artifact.set(KEY_SOURCE_PROJECT, inventoryId);
+
+            if (assetId != null && artifact.get(assetId) == null) {
+                artifact.set(assetId, Constants.MARKER_CONTAINS);
+            }
+
             // TODO extract container id
             // artifact.set(KEY_ATTRIBUTE_CONTAINER, analysisDir.getName());
             artifact.set(KEY_ISSUE, issue);
