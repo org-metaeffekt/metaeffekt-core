@@ -15,9 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.adapter.npm.ComposerLockParser;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,15 +52,11 @@ public class ComposerLockAdapter extends AbstractLockAdapter {
 
     @Override
     protected String buildPurl(ResolvedModule module) {
-        final String name = module.getName();
-        final String version = module.getVersion();
-        if (name == null || name.isEmpty()) {
+        if (StringUtils.isBlank(module.getName())) {
             return null;
         }
-        if (version == null || version.isEmpty()) {
-            return String.format("pkg:composer/%s", name);
-        }
-        return String.format("pkg:composer/%s@%s", name, version);
+
+        return PurlUtils.buildComposerPurl(module.getName(), module.getVersion());
     }
 
     protected String getComponentSourceType() {

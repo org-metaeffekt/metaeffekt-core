@@ -24,7 +24,6 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
-import java.util.List;
 import java.util.Set;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
@@ -51,7 +50,7 @@ public class MatchResult {
         this.assetIdChain = assetIdChain;
     }
 
-    public Artifact deriveArtifact(String distroName, String distroVersion) {
+    public Artifact deriveArtifact() {
         final Artifact derivedArtifact = new Artifact();
 
         derivedArtifact.setId(componentPatternData.get(COMPONENT_PART));
@@ -62,10 +61,6 @@ public class MatchResult {
 
         final String relativePath = asRelativePath(scanRootDir.getPath(), FileUtils.normalizePathToLinux(versionAnchorRootDir));
         final String virtualRootPath = asRelativePath(scanRootDir.getPath(), versionAnchorRootDir.getPath());
-
-        if (distroName != null && distroVersion != null) {
-            setDistroNameAndVersionForCorrespondingArtifacts(distroName, distroVersion, derivedArtifact);
-        }
 
         derivedArtifact.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativePath);
         derivedArtifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, assetIdChain);
@@ -92,6 +87,15 @@ public class MatchResult {
         derivedArtifact.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, componentPatternData.get(Constants.KEY_SPECIFIED_PACKAGE_LICENSE));
         derivedArtifact.set(Constants.KEY_SPECIFIED_PACKAGE_CONCLUDED_LICENSE, componentPatternData.get(Constants.KEY_SPECIFIED_PACKAGE_CONCLUDED_LICENSE));
         derivedArtifact.set(Constants.KEY_SCOPE, componentPatternData.get(Constants.KEY_SCOPE));
+        derivedArtifact.set(Constants.KEY_DISTRO_NAME, componentPatternData.get(Constants.KEY_DISTRO_NAME));
+        derivedArtifact.set(Constants.KEY_DISTRO_VERSION, componentPatternData.get(Constants.KEY_DISTRO_VERSION));
+        derivedArtifact.set(Constants.KEY_ISSUE, componentPatternData.get(Constants.KEY_ISSUE));
+        derivedArtifact.set(Constants.KEY_ARCHITECTURE, componentPatternData.get(Constants.KEY_ARCHITECTURE));
+        derivedArtifact.set(Artifact.Attribute.URL, componentPatternData.get(Constants.KEY_URL));
+        derivedArtifact.set(Constants.KEY_DESCRIPTION, componentPatternData.get(Constants.KEY_DESCRIPTION));
+        derivedArtifact.set(Constants.KEY_GROUP_PACKAGE, componentPatternData.get(Constants.KEY_GROUP_PACKAGE));
+        derivedArtifact.set(Constants.KEY_DOCUMENTATION_PATH_PACKAGE, componentPatternData.get(Constants.KEY_DOCUMENTATION_PATH_PACKAGE));
+        derivedArtifact.set(Constants.KEY_STATUS_PACKAGE, componentPatternData.get(Constants.KEY_STATUS_PACKAGE));
         derivedArtifact.set(Artifact.Attribute.URL, componentPatternData.get(Artifact.Attribute.URL.getKey()));
         derivedArtifact.set(Artifact.Attribute.PURL, componentPatternData.get(Artifact.Attribute.PURL.getKey()));
 
@@ -107,12 +111,5 @@ public class MatchResult {
         }
 
         return derivedArtifact;
-    }
-
-    private void setDistroNameAndVersionForCorrespondingArtifacts(String distroName, String distroVersion, Artifact derivedArtifact) {
-        if (List.of(Constants.ARTIFACT_TYPE_PACKAGE, Constants.ARTIFACT_TYPE_DISTRO).contains(componentPatternData.get(Constants.KEY_TYPE))) {
-            derivedArtifact.set(Constants.KEY_DISTRO_NAME, distroName);
-            derivedArtifact.set(Constants.KEY_DISTRO_VERSION, distroVersion);
-        }
     }
 }

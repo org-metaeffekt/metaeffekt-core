@@ -15,11 +15,19 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +47,18 @@ public class ApkPackageContributor extends ComponentPatternContributor {
 
     private static final List<String> suffixes = Collections.singletonList("lib/apk/db/installed");
 
+    @Getter
+    @Setter
+    public static class ApkDbFileEntry {
+        private String packageName;
+        private String version;
+        private String architecture;
+        private String license;
+        private String url;
+        private String description;
+        private String group;
+    }
+
     @Override
     public boolean applies(String pathInContext) {
         // this contributor applies if it's the APK package database
@@ -55,6 +75,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
         }
 
         String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, suffixes);
+        final LinuxDistributionUtil.LinuxDistro distro = LinuxDistributionUtil.parseDistro(new File(baseDir, virtualRootPath));
 
         try (Stream<String> lineStream = Files.lines(apkDbFile.toPath(), StandardCharsets.UTF_8)) {
 
@@ -64,22 +85,26 @@ public class ApkPackageContributor extends ComponentPatternContributor {
             final Path virtualRoot = new File(virtualRootPath).toPath();
             final Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
 
-            String packageName = null;
-            String version = null;
-            String architecture = null;
-            String license = null;
             StringJoiner includePatterns = new StringJoiner(", ");
             includePatterns.add("lib/apk/db/**/*");
             String currentFolder = null;
             List<String> lines = lineStream.collect(Collectors.toList());
+            ApkDbFileEntry apkDbFileEntry = new ApkDbFileEntry();
             for (int i = 0; i < lines.size(); i++) {
                 String line = lines.get(i);
                 if (line.startsWith("P:")) {
-                    packageName = line.substring(2).trim();
+                    apkDbFileEntry.setPackageName(line.substring(2).trim());
                 } else if (line.startsWith("V:")) {
-                    version = line.substring(2).trim();
+                    apkDbFileEntry.setVersion(line.substring(2).trim());
                 } else if (line.startsWith("A:")) {
-                    architecture = line.substring(2).trim();
+                    apkDbFileEntry.setArchitecture(line.substring(2).trim());
+                } else if (line.startsWith("U:")) {
+                    apkDbFileEntry.setUrl(line.substring(2).trim());
+                } else if (line.startsWith("T:")) {
+                    apkDbFileEntry.setDescription(line.substring(2).trim());
+                } else if (line.startsWith("o:")) {
+                    // use the source information (if available) as group (like in Debian extraction)
+                    apkDbFileEntry.setGroup(line.substring(2).trim());
                 } else if (line.startsWith("F:")) {
                     String folder = line.substring(2).trim();
                     if (currentFolder != null && folder.contains(currentFolder)) {
@@ -129,7 +154,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                         i--; // adjust the index back since the loop increment will move it forward
                     }
                 } else if (line.startsWith("L:")) {
-                    license = line.substring(2).trim();
+                    apkDbFileEntry.setLicense(line.substring(2).trim());
                 } else if (line.isEmpty()) {
                     // end of package block, process collected data
 
@@ -137,25 +162,23 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                     final String modulatedPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, suffixes);
                     final String modulatedAnchorPath = FileUtils.asRelativePath(modulatedPath, relativeAnchorPath);
 
-                    if (packageName != null && version != null && architecture != null) {
+                    final String packageName = apkDbFileEntry.getPackageName();
+                    if (packageName != null && apkDbFileEntry.getVersion() != null && apkDbFileEntry.getArchitecture() != null) {
                         if (includePatterns.length() > 0) {
-                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), modulatedAnchorPath, anchorChecksum, license);
+                            processCollectedData(components, apkDbFileEntry, includePatterns.toString(), modulatedAnchorPath, anchorChecksum, distro);
                             includePatterns = new StringJoiner(", ");
                         } else {
-                            log.warn("No include patterns found for package: [{}-{}-{}]", packageName, version, architecture);
+                            log.warn("No include patterns found for package: [{}-{}-{}]", packageName, apkDbFileEntry.getVersion(), apkDbFileEntry.getArchitecture());
                             // FIXME: collect only package-specific folders
                             // FIXME: check names of folder (distribution-specific)
                             includePatterns.add("usr/share/doc/" + packageName + "/**/*");
                             includePatterns.add("usr/share/licenses/" + packageName + "/**/*");
                             includePatterns.add("usr/share/man/" + packageName + "/**/*");
-                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), modulatedAnchorPath, anchorChecksum, license);
+                            processCollectedData(components, apkDbFileEntry, includePatterns.toString(), modulatedAnchorPath, anchorChecksum, distro);
                         }
                     }
-                    packageName = null;
-                    version = null;
-                    architecture = null;
                     currentFolder = null;
-                    license = null;
+                    apkDbFileEntry = new ApkDbFileEntry();
                 }
             }
             return components;
@@ -165,26 +188,33 @@ public class ApkPackageContributor extends ComponentPatternContributor {
         }
     }
 
-    private void processCollectedData(List<ComponentPatternData> components, String packageName, String version,
-                                      String architecture, String includePatterns, String path, String checksum,
-                                      String license) {
-
+    private void processCollectedData(List<ComponentPatternData> components, ApkDbFileEntry apkDbFileEntry, String includePatterns, String path, String checksum, LinuxDistributionUtil.LinuxDistro distro) {
         ComponentPatternData cpd = new ComponentPatternData();
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, packageName + "-" + version);
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, apkDbFileEntry.getPackageName());
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, apkDbFileEntry.getVersion());
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, apkDbFileEntry.getPackageName() + "-" + apkDbFileEntry.getVersion());
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, path);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
-        cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, license);
+        if (distro != null) {
+            cpd.set(Constants.KEY_ISSUE, distro.issue);
+            cpd.set(Constants.KEY_DISTRO_NAME, distro.name);
+            cpd.set(Constants.KEY_DISTRO_VERSION, distro.versionId);
+        }
+        cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, apkDbFileEntry.getLicense());
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
-        cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, APK_PACKAGE_TYPE);
+        cpd.set(Constants.KEY_URL, apkDbFileEntry.getUrl());
+        cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, LinuxDistributionInfo.ALPINE.getPackageTool());
         cpd.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
+        cpd.set(Constants.KEY_ARCHITECTURE, apkDbFileEntry.getArchitecture());
+        cpd.set(Constants.KEY_DESCRIPTION, apkDbFileEntry.getDescription());
+        cpd.set(Constants.KEY_GROUP_PACKAGE, apkDbFileEntry.getGroup());
+        cpd.set(Constants.KEY_STATUS_PACKAGE, "installed");
+        cpd.set(Artifact.Attribute.PURL, buildPurl(apkDbFileEntry.getPackageName(), apkDbFileEntry.getVersion(), apkDbFileEntry.getArchitecture()));
 
         cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
         cpd.set(ComponentPatternData.Attribute.SHARED_EXCLUDE_PATTERN, "**/dad, **/*.pub");
 
-        cpd.set(Artifact.Attribute.PURL, buildPurl(packageName, version, architecture));
         components.add(cpd);
     }
 
@@ -199,6 +229,10 @@ public class ApkPackageContributor extends ComponentPatternContributor {
     }
 
     private String buildPurl(String name, String version, String architecture) {
-        return "pkg:apk/alpine/" + name + "@" + version + "?arch=" + architecture;
+        if (StringUtils.isBlank(name)) {
+            return null;
+        }
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.APK, name).namespace(LinuxDistributionInfo.ALPINE.getPurlNamespace()).version(version).arch(architecture).build());
     }
 }

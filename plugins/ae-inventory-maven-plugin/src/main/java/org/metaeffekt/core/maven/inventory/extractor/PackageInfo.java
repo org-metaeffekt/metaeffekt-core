@@ -16,14 +16,16 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
- * Simple container to aggregate information of an package.
+ * Simple container to aggregate information of a package.
  */
 class PackageInfo {
 
@@ -41,6 +43,7 @@ class PackageInfo {
     String documentationDir;
     String licenseDir;
     String group;
+    LinuxDistributionInfo linuxDistributionInfo;
 
     String status;
 
@@ -62,11 +65,11 @@ class PackageInfo {
         }
 
         artifact.setVersion(version);
+        artifact.setUrl(url);
 
         artifact.set(KEY_ARCHITECTURE, arch);
         artifact.set(KEY_SUMMARY, summary);
         artifact.set(KEY_DESCRIPTION, description);
-        artifact.setUrl(url);
         artifact.set(KEY_DERIVED_LICENSE_PACKAGE, license);
         artifact.set(KEY_DOCUMENTATION_PATH_PACKAGE, documentationDir);
         artifact.set(KEY_LICENSE_PATH_PACKAGE, licenseDir);
@@ -74,6 +77,10 @@ class PackageInfo {
         artifact.set(KEY_STATUS_PACKAGE, status);
         artifact.set(KEY_RELEASE, release);
         artifact.set(KEY_SOURCE_PACKAGE, sourcePackage);
+        if (linuxDistributionInfo != null) {
+            artifact.set(KEY_COMPONENT_SOURCE_TYPE, linuxDistributionInfo.getPackageTool());
+            artifact.set(KEY_PURL, PurlUtils.buildPurl(org.metaeffekt.core.util.purl.PackageInfo.of(linuxDistributionInfo.getPackageManager(), name).namespace(linuxDistributionInfo.getPurlNamespace()).version(version).arch(arch).build()));
+        }
         return artifact;
     }
 

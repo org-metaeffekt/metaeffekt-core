@@ -197,18 +197,11 @@ public class ComponentPatternProducer {
         // track used suppliers to not apply multiple times
         final Set<Object> consumedObjects = new HashSet<>();
 
-        // FIXME: this currently anticipates that we only get one linux distro at a time. In the future we may want to integrate this within the respective contributors
-        final MatchResult distroAssetMatchResult = componentPatterns.stream().filter(mr -> mr.componentPatternData.getContext().equals(LinuxDistributionAssetContributor.class.getName())).findFirst().orElse(null);
-        final String distroName = distroAssetMatchResult != null ? distroAssetMatchResult.componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_NAME) : null;
-        final String distroVersion = distroAssetMatchResult != null ? distroAssetMatchResult.componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION) : null;
-
         for (MatchResult matchResult : componentPatterns) {
-
-            final Artifact derivedArtifact = matchResult.deriveArtifact(distroName, distroVersion);
+            final Artifact derivedArtifact = matchResult.deriveArtifact();
             fileSystemScanContext.contribute(derivedArtifact);
 
-            final Supplier<Inventory> expansionInventorySupplier =
-                    matchResult.componentPatternData.getExpansionInventorySupplier();
+            final Supplier<Inventory> expansionInventorySupplier = matchResult.componentPatternData.getExpansionInventorySupplier();
 
             if (expansionInventorySupplier != null && !consumedObjects.contains(expansionInventorySupplier)) {
 
@@ -268,7 +261,6 @@ public class ComponentPatternProducer {
         final Inventory inventory = fileSystemScanContext.getInventory();
 
         synchronized (inventory) {
-
             log.info("Evaluating [{}] match results against [{}] artifacts...",
                     matchedComponentDataOnAnchor.size(), inventory.getArtifacts().size());
 
@@ -286,7 +278,6 @@ public class ComponentPatternProducer {
                 boolean matchedComponentPattern = false;
 
                 for (final Artifact artifact : inventory.getArtifacts()) {
-
                     // skip artifacts that are already identified as separate
                     if (!StringUtils.isBlank(artifact.getVersion())) continue;
 
@@ -350,9 +341,7 @@ public class ComponentPatternProducer {
                 }
             }
 
-            log.info("Evaluating [{}] match results against [{}] artifacts completed.",
-                    matchedComponentDataOnAnchor.size(), inventory.getArtifacts().size());
-
+            log.info("Evaluating [{}] match results against [{}] artifacts completed.", matchedComponentDataOnAnchor.size(), inventory.getArtifacts().size());
         }
     }
 
@@ -441,7 +430,6 @@ public class ComponentPatternProducer {
         final List<MatchResult> matchedComponentPatterns = new ArrayList<>();
 
         final File rootDir = fileSystemScanContext.getBaseDir().getFile();
-
         final String path = fileSystemScanContext.getBaseDir().getPath();
 
         if (log.isDebugEnabled()) {

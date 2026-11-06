@@ -15,13 +15,22 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -35,6 +44,18 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
     private static final List<String> SUFFIXES = Collections.singletonList("/desc");
 
     private static final List<String> PATHS = Collections.singletonList("var/lib");
+
+    @Getter
+    @Setter
+    public static class AlpmDescFileEntry {
+        private String packageName;
+        private String version;
+        private String architecture;
+        private String license;
+        private String url;
+        private String description;
+        private String group;
+    }
 
     @Override
     public boolean applies(String pathInContext) {
@@ -55,13 +76,11 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
             final List<ComponentPatternData> components = new ArrayList<>();
             final String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, PATHS);
             final File distroBaseDir = new File(baseDir, virtualRootPath);
+            final AlpmDescFileEntry alpmDescFileEntry = new AlpmDescFileEntry();
+            final LinuxDistributionUtil.LinuxDistro distro = LinuxDistributionUtil.parseDistro(distroBaseDir);
 
             Path virtualRoot = new File(virtualRootPath).toPath();
             Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
-
-            String packageName = null;
-            String version = null;
-            String architecture = null;
             StringJoiner includePatterns = new StringJoiner(", ");
 
             // add the parent directory of the package directory to the include patterns
@@ -69,83 +88,24 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
             includePatterns.add("**/*");
 
             // read the desc file
-            File descFile = new File(packageDir, "desc");
+            final File descFile = new File(packageDir, "desc");
             if (descFile.exists()) {
-                try (Stream<String> lines = Files.lines(descFile.toPath())) {
-                    Iterator<String> iterator = lines.iterator();
-                    while (iterator.hasNext()) {
-                        String line = iterator.next();
-                        if (line.startsWith("%NAME%")) {
-                            if (iterator.hasNext()) {
-                                String nextLine = iterator.next();
-                                packageName = nextLine.trim();
-                            }
-                        } else if (line.startsWith("%VERSION%")) {
-                            if (iterator.hasNext()) {
-                                String nextLine = iterator.next();
-                                version = nextLine.trim();
-                            }
-                        } else if (line.startsWith("%ARCH%")) {
-                            if (iterator.hasNext()) {
-                                String nextLine = iterator.next();
-                                architecture = nextLine.trim();
-                            }
-                        }
-                    }
-                }
+                parseDescFile(descFile, alpmDescFileEntry);
             }
 
             // read the files file
-            File filesFile = new File(packageDir, "files");
+            final File filesFile = new File(packageDir, "files");
             if (filesFile.exists()) {
-                try (Stream<String> lines = Files.lines(filesFile.toPath())) {
-                    Iterator<String> iterator = lines.iterator();
-                    List<String> specificPaths = new ArrayList<>();
-
-                    while (iterator.hasNext()) {
-                        String currentLine = iterator.next().trim();
-
-                        if (!currentLine.startsWith("%FILES%") && !currentLine.startsWith("%BACKUP%")) {
-                            boolean isMostSpecific = true;
-                            Iterator<String> existingPathsIterator = specificPaths.iterator();
-
-                            while (existingPathsIterator.hasNext()) {
-                                String existingPath = existingPathsIterator.next();
-
-                                if (currentLine.startsWith(existingPath)) {
-                                    // if currentLine is more specific, remove the broader existing path
-                                    existingPathsIterator.remove();
-                                } else if (existingPath.startsWith(currentLine)) {
-                                    // if an existing path is more specific, skip adding currentLine
-                                    isMostSpecific = false;
-                                    break;
-                                }
-                            }
-
-                            if (isMostSpecific) {
-                                specificPaths.add(currentLine);
-                            }
-                        }
-                    }
-
-                    // Include specificPaths in includePatterns
-                    for (String specificPath : specificPaths) {
-                        File specificFile = new File(distroBaseDir, specificPath);
-                        // check if the specific file exists and is not a symlink
-                        if (specificFile.exists() && specificFile.isFile() && !FileUtils.isSymlink(specificFile)) {
-                            includePatterns.add(specificPath);
-                        }
-                    }
-                }
+                parseFilesFile(filesFile, distroBaseDir, includePatterns);
             }
 
             if (includePatterns.length() == 0) {
-                log.warn("No include patterns found for package: [{}]-[{}]-[{}]", packageName, version, architecture);
+                log.warn("No include patterns found for package: [{}]-[{}]-[{}]", alpmDescFileEntry.getPackageName(), alpmDescFileEntry.getVersion(), alpmDescFileEntry.getArchitecture());
                 includePatterns.add(relativeAnchorPath);
             }
 
-            if (packageName != null && version != null && architecture != null) {
-                processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum);
+            if (alpmDescFileEntry.getPackageName() != null && alpmDescFileEntry.getVersion() != null && alpmDescFileEntry.getArchitecture() != null) {
+                processCollectedData(components, alpmDescFileEntry, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, distro);
             }
             return components;
         } catch (Exception e) {
@@ -154,21 +114,118 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
         }
     }
 
-    private void processCollectedData(List<ComponentPatternData> components, String packageName, String version, String architecture, String includePatterns, String path, String checksum) {
+    private static void parseDescFile(File descFile, AlpmDescFileEntry alpmDescFileEntry) throws IOException {
+        try (Stream<String> lines = Files.lines(descFile.toPath())) {
+            Iterator<String> iterator = lines.iterator();
+            while (iterator.hasNext()) {
+                String line = iterator.next();
+                if (line.startsWith("%NAME%")) {
+                    if (iterator.hasNext()) {
+                        String nextLine = iterator.next();
+                        alpmDescFileEntry.setPackageName(nextLine.trim());
+                    }
+                } else if (line.startsWith("%VERSION%")) {
+                    if (iterator.hasNext()) {
+                        String nextLine = iterator.next();
+                        alpmDescFileEntry.setVersion(nextLine.trim());
+                    }
+                } else if (line.startsWith("%ARCH%")) {
+                    if (iterator.hasNext()) {
+                        String nextLine = iterator.next();
+                        alpmDescFileEntry.setArchitecture(nextLine.trim());
+                    }
+                } else if (line.startsWith("%LICENSE%")) {
+                    if (iterator.hasNext()) {
+                        String nextLine = iterator.next();
+                        alpmDescFileEntry.setLicense(nextLine.trim());
+                    }
+                } else if (line.startsWith("%URL%")) {
+                    if (iterator.hasNext()) {
+                        String nextLine = iterator.next();
+                        alpmDescFileEntry.setUrl(nextLine.trim());
+                    }
+                } else if (line.startsWith("%DESC%")) {
+                    if (iterator.hasNext()) {
+                        String nextLine = iterator.next();
+                        alpmDescFileEntry.setDescription(nextLine.trim());
+                    }
+                } else if (line.startsWith("%GROUPS%")) {
+                    if (iterator.hasNext()) {
+                        String nextLine = iterator.next();
+                        alpmDescFileEntry.setGroup(nextLine.trim());
+                    }
+                }
+            }
+        }
+    }
+
+    private static void parseFilesFile(File filesFile, File distroBaseDir, StringJoiner includePatterns) throws IOException {
+        try (Stream<String> lines = Files.lines(filesFile.toPath())) {
+            Iterator<String> iterator = lines.iterator();
+            List<String> specificPaths = new ArrayList<>();
+
+            while (iterator.hasNext()) {
+                String currentLine = iterator.next().trim();
+
+                if (!currentLine.startsWith("%FILES%") && !currentLine.startsWith("%BACKUP%")) {
+                    boolean isMostSpecific = true;
+                    Iterator<String> existingPathsIterator = specificPaths.iterator();
+
+                    while (existingPathsIterator.hasNext()) {
+                        String existingPath = existingPathsIterator.next();
+
+                        if (currentLine.startsWith(existingPath)) {
+                            // if currentLine is more specific, remove the broader existing path
+                            existingPathsIterator.remove();
+                        } else if (existingPath.startsWith(currentLine)) {
+                            // if an existing path is more specific, skip adding currentLine
+                            isMostSpecific = false;
+                            break;
+                        }
+                    }
+
+                    if (isMostSpecific) {
+                        specificPaths.add(currentLine);
+                    }
+                }
+            }
+
+            // Include specificPaths in includePatterns
+            for (String specificPath : specificPaths) {
+                File specificFile = new File(distroBaseDir, specificPath);
+                // check if the specific file exists and is not a symlink
+                if (specificFile.exists() && specificFile.isFile() && !FileUtils.isSymlink(specificFile)) {
+                    includePatterns.add(specificPath);
+                }
+            }
+        }
+    }
+
+    private void processCollectedData(List<ComponentPatternData> components, AlpmDescFileEntry alpmDescFileEntry, String includePatterns, String path, String checksum, LinuxDistributionUtil.LinuxDistro distro) {
         final ComponentPatternData cpd = new ComponentPatternData();
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, packageName + "-" + version);
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, alpmDescFileEntry.getPackageName());
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, alpmDescFileEntry.getVersion());
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, alpmDescFileEntry.getPackageName() + "-" + alpmDescFileEntry.getVersion());
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, path);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
+        if (distro != null) {
+            cpd.set(Constants.KEY_ISSUE, distro.issue);
+            cpd.set(Constants.KEY_DISTRO_NAME, distro.name);
+            cpd.set(Constants.KEY_DISTRO_VERSION, distro.versionId);
+        }
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, ALPM_PACKAGE_TYPE);
         cpd.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
+        cpd.set(Constants.KEY_ARCHITECTURE, alpmDescFileEntry.getArchitecture());
+        cpd.set(Constants.KEY_URL, alpmDescFileEntry.getUrl());
+        cpd.set(Constants.KEY_DESCRIPTION, alpmDescFileEntry.getDescription());
+        cpd.set(Constants.KEY_GROUP_PACKAGE, alpmDescFileEntry.getGroup());
+        cpd.set(Constants.KEY_STATUS_PACKAGE, "installed");
 
         cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
 
-        cpd.set(Artifact.Attribute.PURL, buildPurl(packageName, version, architecture));
+        cpd.set(Artifact.Attribute.PURL, buildPurl(alpmDescFileEntry.getPackageName(), alpmDescFileEntry.getVersion(), alpmDescFileEntry.getArchitecture()));
         components.add(cpd);
     }
 
@@ -183,7 +240,11 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
     }
 
     private String buildPurl(String name, String version, String architecture) {
-        return "pkg:alpm/arch/" + name + "@" + version + "?arch=" + architecture;
+        if (StringUtils.isBlank(name)) {
+            return null;
+        }
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.ALPM, name).namespace(LinuxDistributionInfo.ARCH.getPurlNamespace()).version(version).arch(architecture).build());
     }
 }
 

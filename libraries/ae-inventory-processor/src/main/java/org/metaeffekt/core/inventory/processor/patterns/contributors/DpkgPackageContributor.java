@@ -18,16 +18,21 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -38,7 +43,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
     protected static final Pattern hexStringPattern = Pattern.compile("^[a-fA-F0-9]+$");
 
-    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("/status");
         add(".md5sums");
     }});
@@ -104,6 +109,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         });
 
         AtomicBoolean hasChecked = new AtomicBoolean(false);
+
         public DpkgStatusFileEntry() {
             if (hasChecked.getAndSet(true)) {
                 // check this object for inconsistencies between the map and fields
@@ -311,9 +317,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return entries;
     }
 
-    public ComponentPatternData createComponentPattern(String versionAnchor, DpkgStatusFileEntry entry,
-           String checksum, String includePatterns, LinuxDistributionUtil.LinuxDistro distro) {
-
+    public ComponentPatternData createComponentPattern(String versionAnchor, DpkgStatusFileEntry entry, String checksum, String includePatterns, LinuxDistributionUtil.LinuxDistro distro) {
         ComponentPatternData componentPatternData = new ComponentPatternData();
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, entry.packageName);
         // add list of comma-separated paths
@@ -338,12 +342,22 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, versionAnchor);
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
+        componentPatternData.set(Constants.KEY_ARCHITECTURE, entry.architecture);
+        componentPatternData.set(Constants.KEY_URL, entry.homepage);
+        componentPatternData.set(Constants.KEY_DESCRIPTION, entry.description);
+        componentPatternData.set(Constants.KEY_GROUP_PACKAGE, entry.source != null ? entry.source.replaceAll("(.*) \\(.*\\)", "$1") : null);
+        componentPatternData.set(Constants.KEY_STATUS_PACKAGE, entry.status);
+
+        if (distro != null) {
+            componentPatternData.set(Constants.KEY_ISSUE, distro.issue);
+            componentPatternData.set(Constants.KEY_DISTRO_NAME, distro.name);
+            componentPatternData.set(Constants.KEY_DISTRO_VERSION, distro.versionId);
+        }
 
         // FIXME: how do we handle symlinks? they are not included in the md5sums file but can be part of the package
         // componentPatternData.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
         try {
-            componentPatternData.set(Artifact.Attribute.PURL.getKey(),
-                    buildPurl(distro, entry.packageName, entry.version, entry.architecture));
+            componentPatternData.set(Artifact.Attribute.PURL.getKey(), buildPurl(distro, entry.packageName, entry.version, entry.architecture));
         } catch (Exception e) {
             log.error("Could not create PURL for package [{}].", entry.packageName);
         }
@@ -354,13 +368,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     /**
      * Reads list of files that were in this package and tries to create an include pattern.
      *
-     * @param entry the entry in the corresponding status file
+     * @param entry                    the entry in the corresponding status file
      * @param correspondingMd5sumsFile the corresponding md5sums file
-     *
      * @return a joiner with resulting include patterns or null on failure
      */
     public StringJoiner createIncludePatternsFromHashFile(
-              DpkgStatusFileEntry entry, File correspondingMd5sumsFile) {
+            DpkgStatusFileEntry entry, File correspondingMd5sumsFile) {
 
         // prepare file list
         final StringJoiner fileJoiner = new StringJoiner(", ");
@@ -528,13 +541,18 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 continue;
             }
 
-
             final String relativePath = org.metaeffekt.core.util.FileUtils.asRelativePath(virtualRootPath, relativeAnchorFilePath);
-            final ComponentPatternData cpd = createComponentPattern(
-                    relativePath, entry, checksum, includePatternsJoiner.toString(), distro);
+            final ComponentPatternData cpd = createComponentPattern(relativePath, entry, checksum, includePatternsJoiner.toString(), distro);
+
+            // populate package documentation path
+            final String docPath = "/usr/share/doc/" + entry.packageName;
+            final Path usrShareDocPath = new File(baseDir, virtualRootPath + docPath).toPath();
+            if (Files.exists(usrShareDocPath)) {
+                cpd.set(Constants.KEY_DOCUMENTATION_PATH_PACKAGE, String.valueOf(usrShareDocPath));
+            }
 
             cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
-            cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "dpkg");
+            cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, LinuxDistributionInfo.DEBIAN.getPackageTool());
 
             // add created patterns
             componentPatterns.add(cpd);
@@ -546,16 +564,14 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     /**
      * Tries to get metadata from dpkg status.d. Useful for "distroless" images.<br>
      * Hacked together to support a system that didn't have a status file but only a status.d.
-     * @param baseDir same as {@link ComponentPatternContributor#contribute(File, String, String)}
-     * @param relativeAnchorFilePath same as {@link ComponentPatternContributor#contribute(File, String, String)}
-     * @param checksum same as {@link ComponentPatternContributor#contribute(File, String, String)}
-     * @param virtualRootPath same as {@link ComponentPatternContributor#contribute(File, String, String)}
      *
+     * @param baseDir                same as {@link ComponentPatternContributor#contribute(File, String, String)}
+     * @param relativeAnchorFilePath same as {@link ComponentPatternContributor#contribute(File, String, String)}
+     * @param checksum               same as {@link ComponentPatternContributor#contribute(File, String, String)}
+     * @param virtualRootPath        same as {@link ComponentPatternContributor#contribute(File, String, String)}
      * @return same as {@link ComponentPatternContributor#contribute(File, String, String)}
      */
-    public List<ComponentPatternData> contributeStatusDirectoryBased(File baseDir,
-                 String virtualRootPath, String relativeAnchorFilePath, String checksum) {
-
+    public List<ComponentPatternData> contributeStatusDirectoryBased(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
         final File md5sumsFile = new File(baseDir, relativeAnchorFilePath);
 
         // maybe this check should be moved to applies but it also requires a constructed File so...
@@ -572,8 +588,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         final List<ComponentPatternData> createdComponentPatterns = new ArrayList<>();
 
-        File fileWithoutMd5sums = new File(md5sumsFile.getParentFile(),
-                md5sumsFile.getName().replaceAll("\\.md5sums$", ""));
+        File fileWithoutMd5sums = new File(md5sumsFile.getParentFile(), md5sumsFile.getName().replaceAll("\\.md5sums$", ""));
 
         if (!fileWithoutMd5sums.exists()) {
             // no metadata is not that useful. i'll just expect them to have valid metadata for now.
@@ -590,7 +605,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         if (entries.size() != 1) {
             log.warn("Skipping potential status.d anchor with multiple entries: expected 1 but got [{}] from [{}].",
-                entries.size(), fileWithoutMd5sums.getAbsoluteFile());
+                    entries.size(), fileWithoutMd5sums.getAbsoluteFile());
         }
 
         DpkgStatusFileEntry entry = entries.get(0);
@@ -607,9 +622,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         StringJoiner includesJoiner = createIncludePatternsFromHashFile(entry, md5sumsFile);
 
-        ComponentPatternData cpd = createComponentPattern(
-                org.metaeffekt.core.util.FileUtils.asRelativePath(virtualRoot, md5sumsFile),
-                entry, checksum,
+        ComponentPatternData cpd = createComponentPattern(org.metaeffekt.core.util.FileUtils.asRelativePath(virtualRoot, md5sumsFile), entry, checksum,
                 includesJoiner.toString(), LinuxDistributionUtil.parseDistro(new File(baseDir, virtualRootPath)));
 
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
@@ -643,10 +656,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     }
 
     private String buildPurl(LinuxDistributionUtil.LinuxDistro distro, String packageName, String version, String arch) {
-        if (distro != null && distro.id != null) {
-            return String.format("pkg:deb/%s/%s@%s?arch=%s", distro.id, packageName, version, arch);
+        if (distro == null || distro.id == null || StringUtils.isBlank(packageName)) {
+            return null;
         }
-        return null;
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.DEBIAN, packageName).namespace(distro.id).version(version).arch(arch).build());
     }
 
 }

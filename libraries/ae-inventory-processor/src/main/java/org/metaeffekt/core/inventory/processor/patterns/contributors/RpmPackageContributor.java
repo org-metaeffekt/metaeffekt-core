@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
@@ -31,18 +32,16 @@ import org.metaeffekt.core.inventory.processor.patterns.contributors.util.bdb.RP
 import org.metaeffekt.core.inventory.processor.patterns.contributors.util.ndb.NDB;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.util.sqlite3.SQLite3;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
 @Slf4j
 public class RpmPackageContributor extends ComponentPatternContributor {
-    private static final String RPM_TYPE = "rpm";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("/packages");
         add("/rpmdb.sqlite");
@@ -144,15 +143,24 @@ public class RpmPackageContributor extends ComponentPatternContributor {
 
                     cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar,**/node_modules/**/*");
 
+                    if (distro != null) {
+                        cpd.set(Constants.KEY_ISSUE, distro.issue);
+                        cpd.set(Constants.KEY_DISTRO_NAME, distro.name);
+                        cpd.set(Constants.KEY_DISTRO_VERSION, distro.versionId);
+                    }
                     cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, packageInfo.getLicense());
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
-                    cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, RPM_TYPE);
+                    cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, LinuxDistributionInfo.RHEL.getPackageTool());
                     cpd.set(Artifact.Attribute.PURL, buildPurl(packageInfo.getName(),
-                            ((StringUtils.isNotBlank(packageInfo.getRelease())) ?
-                                packageInfo.getVersion() + "-" + packageInfo.getRelease() :
-                                packageInfo.getVersion()),
+                            ((StringUtils.isNotBlank(packageInfo.getRelease())) ? packageInfo.getVersion() + "-" + packageInfo.getRelease() : packageInfo.getVersion()),
                             packageInfo.getArch(), packageInfo.getEpoch(),
                             packageInfo.getSourceRpm(), distro));
+
+                    cpd.set(Constants.KEY_ARCHITECTURE, packageInfo.getArch());
+                    cpd.set(Constants.KEY_URL, packageInfo.getUrl());
+                    cpd.set(Constants.KEY_DESCRIPTION, packageInfo.getSummary());
+                    cpd.set(Constants.KEY_GROUP_PACKAGE, packageInfo.getSourceRpm());
+                    cpd.set(Constants.KEY_STATUS_PACKAGE, "installed");
 
                     components.add(cpd);
                 }
@@ -190,34 +198,25 @@ public class RpmPackageContributor extends ComponentPatternContributor {
     }
 
     private String buildPurl(String name, String version, String arch, Integer epoch, String upstream, LinuxDistributionUtil.LinuxDistro distro) {
-        if (distro == null || distro.id == null) {
+        if (distro == null || distro.id == null || StringUtils.isBlank(name)) {
             return null;
         }
 
-        final StringBuilder sb = new StringBuilder();
-        sb.append("pkg:rpm/");
+        // known distributions provide their namespace from enum (rhel -> redhat),
+        // unknown distributions use the distro id as specified
+        final String namespace = LinuxDistributionInfo.fromId(distro.id).map(LinuxDistributionInfo::getPurlNamespace).orElse(distro.id);
 
-        // FIXME: this is a hack; we should use the distro id as is or have a dedicated mapping con
-        if ("rhel".equals(distro.id)) {
-            sb.append("redhat/");
-        } else {
-            sb.append(distro.id).append("/");
-        }
-        sb.append(name).append("@");
-        sb.append(version);
-        if (StringUtils.isNotBlank(arch)) {
-            sb.append("?arch=").append(arch);
-        }
-        if (epoch != null) {
-            sb.append("&epoch=").append(epoch);
-        }
-        if (StringUtils.isNotBlank(upstream)) {
-            sb.append("&upstream=").append(upstream);
-        }
+        final org.metaeffekt.core.util.purl.PackageInfo.PackageInfoBuilder builder = org.metaeffekt.core.util.purl.PackageInfo.of(PackageManager.RPM, name)
+                .namespace(namespace).version(version).arch(arch)
+                .qualifier("epoch", Objects.toString(epoch, null))
+                .qualifier("upstream", upstream);
+        ;
+
         if (StringUtils.isNotBlank(distro.versionId)) {
-            sb.append("&distro=").append(distro.id).append("-").append(distro.versionId);
+            builder.distro(distro.id + "-" + distro.versionId);
         }
-        return sb.toString();
+
+        return PurlUtils.buildPurl(builder.build());
     }
 
 }

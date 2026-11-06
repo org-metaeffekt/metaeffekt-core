@@ -17,6 +17,7 @@ package org.metaeffekt.core.maven.inventory.extractor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
 
@@ -38,35 +39,71 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     @Override
-    public void extendInventory(File analysisDir, Inventory inventory) throws IOException {
+    public void extendInventory(File analysisDir, Inventory inventory, LinuxDistributionInfo linuxDistributionInfo) throws IOException {
         // find packages from the provided inputs
-        List<PackageInfo> packageReferences = scan(analysisDir);
+        List<PackageInfo> packageReferences = scan(analysisDir, linuxDistributionInfo);
         packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, p));
     }
 
-    public List<PackageInfo> scan(File analysisDir) throws IOException {
+    public List<PackageInfo> scan(File analysisDir, LinuxDistributionInfo linuxDistributionInfo) throws IOException {
         Map<String, PackageInfo> idToPackageReferenceMap = new HashMap<>();
 
         // NOTE: primary content driver is the package list and package meta files
 
         // generate (complementary) package list from scripts output
-        parseRpmPackageList(analysisDir, idToPackageReferenceMap);
+        parseRpmPackageList(analysisDir, linuxDistributionInfo, idToPackageReferenceMap);
 
         // NOTE: secondary content are the content in the doc and license folders
 
         // generate package list from files in documentation dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), idToPackageReferenceMap, true);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), linuxDistributionInfo, idToPackageReferenceMap, true);
 
         // generate package list from directories in dedicated licenses dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), idToPackageReferenceMap, false);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), linuxDistributionInfo, idToPackageReferenceMap, false);
 
         // add additional details from package metadata files
-        parseRpmPackageFiles(analysisDir, idToPackageReferenceMap);
+        parseRpmPackageFiles(analysisDir, linuxDistributionInfo, idToPackageReferenceMap);
 
         return new ArrayList<>(idToPackageReferenceMap.values());
     }
 
-    private void parseRpmPackageFiles(File analysisDir, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
+    public void parseRpmPackageList(File shareDir, LinuxDistributionInfo linuxDistributionInfo, Map<String, PackageInfo> idToPackageInfoMap) throws IOException {
+        File rpmPackagesFile = new File(shareDir, FILE_PACKAGES_RPM_TXT);
+        String packageFileContent = FileUtils.readFileToString(rpmPackagesFile, FileUtils.ENCODING_UTF_8);
+        String[] lines = packageFileContent.split("\\n");
+
+        for (String line : lines) {
+            if (StringUtils.isEmpty(line)) continue;
+
+            String[] elements = line.split("\\|");
+
+            String name = elements[1].trim();
+            String version = elements[2].trim();
+
+            PackageInfo packageInfo = idToPackageInfoMap.get(name);
+            if (packageInfo == null) {
+                packageInfo = new PackageInfo();
+            }
+
+            packageInfo.version = version;
+            packageInfo.id = name + "-" + version;
+            packageInfo.component = name;
+            packageInfo.name = name;
+            packageInfo.version = version;
+            packageInfo.linuxDistributionInfo = linuxDistributionInfo;
+            packageInfo.license = elements[3].trim();
+            if (elements.length > 4)
+                packageInfo.url = elements[4].trim();
+            if (elements.length > 5)
+                packageInfo.arch = elements[5].trim();
+            if (elements.length > 6)
+                packageInfo.description = elements[6].trim();
+
+            registerPackageInfo(packageInfo, idToPackageInfoMap);
+        }
+    }
+
+    private void parseRpmPackageFiles(File analysisDir, LinuxDistributionInfo linuxDistributionInfo, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
         for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
             PackageInfo packageInfo = entry.getValue();
             String packageId = entry.getKey();
@@ -90,46 +127,10 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
                 // include reading release and source rpm
                 packageInfo.release = ParsingUtils.getValue(fileContentLines, "Release     :");
                 packageInfo.sourcePackage = ParsingUtils.getValue(fileContentLines, "Source RPM  :");
+                packageInfo.linuxDistributionInfo = linuxDistributionInfo;
             } else {
                 log.info("File {} does not exist.", packageFile);
             }
         }
     }
-
-
-    public void parseRpmPackageList(File shareDir, Map<String, PackageInfo> idToPackageInfoMap) throws IOException {
-        File rpmPackagesFile = new File(shareDir, FILE_PACKAGES_RPM_TXT);
-        String packageFileContent = FileUtils.readFileToString(rpmPackagesFile, FileUtils.ENCODING_UTF_8);
-        String[] lines = packageFileContent.split("\\n");
-
-        for (String line : lines) {
-            if (StringUtils.isEmpty(line)) continue;
-
-            String[] elements = line.split("\\|");
-
-            String name = elements[1].trim();
-            String version = elements[2].trim();
-
-            PackageInfo packageInfo = idToPackageInfoMap.get(name);
-            if (packageInfo == null) {
-                packageInfo = new PackageInfo();
-            }
-
-            packageInfo.version = version;
-            packageInfo.id = name + "-" + version;
-            packageInfo.component = name;
-            packageInfo.name = name;
-            packageInfo.version = version;
-            packageInfo.license = elements[3].trim();
-            if (elements.length > 4)
-                packageInfo.url = elements[4].trim();
-            if (elements.length > 5)
-                packageInfo.arch = elements[5].trim();
-            if (elements.length > 6)
-                packageInfo.description = elements[6].trim();
-
-            registerPackageInfo(packageInfo, idToPackageInfoMap);
-        }
-    }
-
 }

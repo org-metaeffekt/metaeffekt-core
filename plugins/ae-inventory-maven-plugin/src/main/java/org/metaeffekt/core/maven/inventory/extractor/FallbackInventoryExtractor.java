@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;
@@ -35,12 +36,12 @@ public class FallbackInventoryExtractor extends AlpineInventoryExtractor {
     }
 
     @Override
-    public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
-        return super.extractInventory(analysisDir, inventoryId, excludePatterns, includeNotCoveredFiles);
+    public Inventory extractInventory(File baseDir, File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
+        return super.extractInventory(baseDir, analysisDir, inventoryId, excludePatterns, includeNotCoveredFiles);
     }
 
     @Override
-    public void extendInventory(File analysisDir, Inventory inventory) throws IOException {
+    public void extendInventory(File analysisDir, Inventory inventory, LinuxDistributionInfo linuxDistributionInfo) throws IOException {
         // ignore
     }
 
