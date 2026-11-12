@@ -22,6 +22,9 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.processor.tracker.ProcessTimeEntry;
+import org.metaeffekt.core.inventory.processor.tracker.ProcessType;
+import org.metaeffekt.core.inventory.processor.tracker.ProcessorTimeTracker;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 
@@ -46,6 +49,11 @@ public class AssessmentInventoryMergerTest {
             final VulnerabilityMetaData vmd = new VulnerabilityMetaData();
             inputInventory.getVulnerabilityMetaData().add(vmd);
             vmd.set(VulnerabilityMetaData.Attribute.NAME, "CVE-2018-1234");
+
+            final ProcessorTimeTracker tracker = ProcessorTimeTracker.fromInventory(inputInventory);
+            final ProcessTimeEntry adviseEntry = new ProcessTimeEntry(ProcessType.INVENTORY_ENRICHMENT, "advise", 1000L);
+            adviseEntry.addIndexTimestamp("nvd", 500L);
+            tracker.addTimestamp(adviseEntry);
         }
 
         {
@@ -60,6 +68,11 @@ public class AssessmentInventoryMergerTest {
             final VulnerabilityMetaData vmd = new VulnerabilityMetaData();
             inputInventory.getVulnerabilityMetaData().add(vmd);
             vmd.set(VulnerabilityMetaData.Attribute.NAME, "CVE-2020-4321");
+
+            final ProcessorTimeTracker tracker = ProcessorTimeTracker.fromInventory(inputInventory);
+            final ProcessTimeEntry adviseEntry = new ProcessTimeEntry(ProcessType.INVENTORY_ENRICHMENT, "advise", 2000L);
+            adviseEntry.addIndexTimestamp("nvd", 1500L);
+            tracker.addTimestamp(adviseEntry);
         }
 
         final Inventory merged = merger.mergeInventories();
@@ -69,6 +82,14 @@ public class AssessmentInventoryMergerTest {
         Assertions.assertThat(merged.getVulnerabilityMetaData("SOME_OTHER_ID-001")).hasSize(1);
         Assertions.assertThat(merged.getVulnerabilityMetaData("SOME_ID-001").iterator().next().get(VulnerabilityMetaData.Attribute.NAME)).isEqualTo("CVE-2018-1234");
         Assertions.assertThat(merged.getVulnerabilityMetaData("SOME_OTHER_ID-001").iterator().next().get(VulnerabilityMetaData.Attribute.NAME)).isEqualTo("CVE-2020-4321");
+
+        final ProcessorTimeTracker mergedTracker = ProcessorTimeTracker.fromInventory(merged);
+        final ProcessTimeEntry mergedAdvise = mergedTracker.getTimestamp(ProcessType.INVENTORY_ENRICHMENT, "advise");
+        Assertions.assertThat(mergedAdvise).isNotNull();
+        Assertions.assertThat(mergedAdvise.getTimestamp().getFirst()).isEqualTo(1000L);
+        Assertions.assertThat(mergedAdvise.getTimestamp().getLast()).isEqualTo(2000L);
+        Assertions.assertThat(mergedAdvise.getIndexTimestamps().get("nvd").getFirst()).isEqualTo(500L);
+        Assertions.assertThat(mergedAdvise.getIndexTimestamps().get("nvd").getLast()).isEqualTo(1500L);
     }
 
     @Test

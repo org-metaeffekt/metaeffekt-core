@@ -20,6 +20,9 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.tracker.ProcessTimeEntry;
+import org.metaeffekt.core.inventory.processor.tracker.ProcessType;
+import org.metaeffekt.core.inventory.processor.tracker.ProcessorTimeTracker;
 
 import java.io.File;
 import java.io.IOException;
@@ -112,6 +115,24 @@ public class InventoryMergeUtilsTest {
 
         Assertions.assertThat(target.getArtifacts()).extracting("id")
                 .containsOnlyOnceElementsOf(Arrays.asList("singleSourceArtifact", "singleTargetArtifact"));
+    }
+
+    @Test
+    public void processorTimeTrackersMergedIntoTarget() {
+        Inventory source1 = new Inventory();
+        ProcessorTimeTracker.fromInventory(source1).addTimestamp(new ProcessTimeEntry(ProcessType.SBOM_CREATION, 100L));
+
+        Inventory source2 = new Inventory();
+        ProcessorTimeTracker.fromInventory(source2).addTimestamp(new ProcessTimeEntry(ProcessType.SBOM_CREATION, 250L));
+
+        Inventory target = new Inventory();
+        new InventoryMergeUtils().mergeInventories(Arrays.asList(source1, source2), target);
+
+        ProcessorTimeTracker targetTracker = ProcessorTimeTracker.fromInventory(target);
+        ProcessTimeEntry sbomEntry = targetTracker.getTimestamp(ProcessType.SBOM_CREATION);
+        Assertions.assertThat(sbomEntry).isNotNull();
+        Assertions.assertThat(sbomEntry.getTimestamp().getFirst()).isEqualTo(100L);
+        Assertions.assertThat(sbomEntry.getTimestamp().getLast()).isEqualTo(250L);
     }
 
     private static Artifact buildArtifact(String id) {
