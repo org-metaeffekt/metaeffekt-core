@@ -16,7 +16,7 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import lombok.extern.slf4j.Slf4j;
-import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
 
@@ -42,33 +42,33 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     @Override
-    public void extendInventory(File analysisDir, Inventory inventory, LinuxDistributionInfo linuxDistributionInfo) throws IOException {
+    public void extendInventory(File analysisDir, Inventory inventory, LinuxDistributionUtil.LinuxDistro linuxDistro) throws IOException {
         // find packages from the provided inputs
-        final List<PackageInfo> packageReferences = scan(analysisDir, linuxDistributionInfo);
+        final List<PackageInfo> packageReferences = scan(analysisDir, linuxDistro);
 
         // process each
         packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, p));
     }
 
-    public List<PackageInfo> scan(File analysisDir, LinuxDistributionInfo linuxDistributionInfo) throws IOException {
+    public List<PackageInfo> scan(File analysisDir, LinuxDistributionUtil.LinuxDistro linuxDistro) throws IOException {
         final Map<String, PackageInfo> packageInfoMap = new HashMap<>();
 
         // generate (complementary) package list from scripts output
-        parseDebianPackageList(analysisDir, linuxDistributionInfo, packageInfoMap);
+        parseDebianPackageList(analysisDir, packageInfoMap);
 
         // generate package list from files in dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), linuxDistributionInfo, packageInfoMap, true);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), packageInfoMap, true);
 
         // generate package list from directories in dedicated licenses dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), linuxDistributionInfo, packageInfoMap, false);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), packageInfoMap, false);
 
         // parse / merge package metadata
-        parseDebianPackageFiles(analysisDir, linuxDistributionInfo, packageInfoMap);
+        parseDebianPackageFiles(analysisDir, linuxDistro, packageInfoMap);
 
         return new ArrayList<>(packageInfoMap.values());
     }
 
-    private void parseDebianPackageFiles(File analysisDir, LinuxDistributionInfo linuxDistributionInfo, Map<String, PackageInfo> idToPackageInfoMap) throws IOException {
+    private void parseDebianPackageFiles(File analysisDir, LinuxDistributionUtil.LinuxDistro linuxDistro, Map<String, PackageInfo> idToPackageInfoMap) throws IOException {
         final File packageMetaDir = new File(analysisDir, "package-meta");
         if (!packageMetaDir.exists()) return;
 
@@ -94,9 +94,12 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
             packageInfo.id = concludedName;
             packageInfo.name = parsedPackageName;
             packageInfo.version = parsedPackageVersion;
-            packageInfo.linuxDistributionInfo = linuxDistributionInfo;
+            packageInfo.componentSourceType = linuxDistro.info.getPackageTool();
 
             parseAttributes(packageInfo, fileContentLines);
+
+            // after parseAttributes, because architecture is derived there and used for building PURL
+            packageInfo.purl = buildPurl(packageInfo, linuxDistro);
 
             registerPackageInfo(packageInfo, idToPackageInfoMap);
         }
@@ -124,7 +127,7 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
 
     }
 
-    private static void parseDebianPackageList(File shareDir, LinuxDistributionInfo linuxDistributionInfo, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
+    private static void parseDebianPackageList(File shareDir, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
         File dpkgPackagesFile = new File(shareDir, "packages_dpkg.txt");
         String packageFile = FileUtils.readFileToString(dpkgPackagesFile, FileUtils.ENCODING_UTF_8);
         String[] lines = packageFile.split("\\n");
@@ -156,7 +159,6 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
                 packageInfo.name = name;
                 packageInfo.version = line.substring(elementIndex[1], Math.min(line.length(), elementIndex[2])).trim();
                 packageInfo.id = name + "-" + packageInfo.version;
-                packageInfo.linuxDistributionInfo = linuxDistributionInfo;
 
                 if (elementIndex.length == 3) {
                     packageInfo.arch = line.substring(elementIndex[2], elementIndex[3]).trim();
@@ -173,5 +175,4 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
             }
         }
     }
-
 }

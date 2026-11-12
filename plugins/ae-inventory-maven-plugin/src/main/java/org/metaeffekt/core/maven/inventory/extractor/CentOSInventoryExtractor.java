@@ -17,16 +17,14 @@ package org.metaeffekt.core.maven.inventory.extractor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
@@ -39,35 +37,35 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     @Override
-    public void extendInventory(File analysisDir, Inventory inventory, LinuxDistributionInfo linuxDistributionInfo) throws IOException {
+    public void extendInventory(File analysisDir, Inventory inventory, LinuxDistributionUtil.LinuxDistro linuxDistro) throws IOException {
         // find packages from the provided inputs
-        List<PackageInfo> packageReferences = scan(analysisDir, linuxDistributionInfo);
+        List<PackageInfo> packageReferences = scan(analysisDir, linuxDistro);
         packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, p));
     }
 
-    public List<PackageInfo> scan(File analysisDir, LinuxDistributionInfo linuxDistributionInfo) throws IOException {
+    public List<PackageInfo> scan(File analysisDir, LinuxDistributionUtil.LinuxDistro linuxDistro) throws IOException {
         Map<String, PackageInfo> idToPackageReferenceMap = new HashMap<>();
 
         // NOTE: primary content driver is the package list and package meta files
 
         // generate (complementary) package list from scripts output
-        parseRpmPackageList(analysisDir, linuxDistributionInfo, idToPackageReferenceMap);
+        parseRpmPackageList(analysisDir, idToPackageReferenceMap);
 
         // NOTE: secondary content are the content in the doc and license folders
 
         // generate package list from files in documentation dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), linuxDistributionInfo, idToPackageReferenceMap, true);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), idToPackageReferenceMap, true);
 
         // generate package list from directories in dedicated licenses dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), linuxDistributionInfo, idToPackageReferenceMap, false);
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), idToPackageReferenceMap, false);
 
         // add additional details from package metadata files
-        parseRpmPackageFiles(analysisDir, linuxDistributionInfo, idToPackageReferenceMap);
+        parseRpmPackageFiles(analysisDir, linuxDistro, idToPackageReferenceMap);
 
         return new ArrayList<>(idToPackageReferenceMap.values());
     }
 
-    public void parseRpmPackageList(File shareDir, LinuxDistributionInfo linuxDistributionInfo, Map<String, PackageInfo> idToPackageInfoMap) throws IOException {
+    private void parseRpmPackageList(File shareDir, Map<String, PackageInfo> idToPackageInfoMap) throws IOException {
         File rpmPackagesFile = new File(shareDir, FILE_PACKAGES_RPM_TXT);
         String packageFileContent = FileUtils.readFileToString(rpmPackagesFile, FileUtils.ENCODING_UTF_8);
         String[] lines = packageFileContent.split("\\n");
@@ -85,12 +83,10 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
                 packageInfo = new PackageInfo();
             }
 
-            packageInfo.version = version;
             packageInfo.id = name + "-" + version;
             packageInfo.component = name;
             packageInfo.name = name;
             packageInfo.version = version;
-            packageInfo.linuxDistributionInfo = linuxDistributionInfo;
             packageInfo.license = elements[3].trim();
             if (elements.length > 4)
                 packageInfo.url = elements[4].trim();
@@ -103,7 +99,7 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
         }
     }
 
-    private void parseRpmPackageFiles(File analysisDir, LinuxDistributionInfo linuxDistributionInfo, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
+    private void parseRpmPackageFiles(File analysisDir, LinuxDistributionUtil.LinuxDistro linuxDistro, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
         for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
             PackageInfo packageInfo = entry.getValue();
             String packageId = entry.getKey();
@@ -123,14 +119,37 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
                 packageInfo.summary = ParsingUtils.getValue(fileContentLines, "Summary     :");
                 packageInfo.description = ParsingUtils.getValue(fileContentLines, "Description :");
                 packageInfo.arch = ParsingUtils.getValue(fileContentLines, "Architecture:");
+                packageInfo.epoch = ParsingUtils.getValue(fileContentLines, "Epoch       :");
 
                 // include reading release and source rpm
                 packageInfo.release = ParsingUtils.getValue(fileContentLines, "Release     :");
                 packageInfo.sourcePackage = ParsingUtils.getValue(fileContentLines, "Source RPM  :");
-                packageInfo.linuxDistributionInfo = linuxDistributionInfo;
             } else {
                 log.info("File {} does not exist.", packageFile);
             }
+
+            packageInfo.status = "installed";
+            packageInfo.componentSourceType = linuxDistro.info.getPackageTool();
+            packageInfo.purl = buildPurl(packageInfo, linuxDistro);
         }
+    }
+
+    @Override
+    protected String buildPurl(PackageInfo packageInfo, LinuxDistributionUtil.LinuxDistro linuxDistro) {
+        final org.metaeffekt.core.util.purl.PackageInfo.PackageInfoBuilder builder = org.metaeffekt.core.util.purl.PackageInfo.of(linuxDistro.info.getPackageManager(), packageInfo.name)
+                .namespace(linuxDistro.info.getPurlNamespace())
+                .version(derivePurlVersion(packageInfo)).arch(packageInfo.arch)
+                .qualifier("epoch", packageInfo.epoch)
+                .qualifier("upstream", packageInfo.sourcePackage);
+
+        if (StringUtils.isNotBlank(linuxDistro.versionId)) {
+            builder.distro(linuxDistro.id + "-" + linuxDistro.versionId);
+        }
+
+        return PurlUtils.buildPurl(builder.build());
+    }
+
+    private String derivePurlVersion(PackageInfo packageInfo) {
+        return StringUtils.isNotBlank(packageInfo.release) ? packageInfo.version + "-" + packageInfo.release : packageInfo.version;
     }
 }

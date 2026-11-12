@@ -24,6 +24,7 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.PropertiesUtils;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,27 +48,25 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     public Inventory extractInventory(File baseDir, File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
         final String issue = extractIssue(analysisDir);
         final Properties osReleaseFileProperties = Objects.requireNonNull(readOSReleaseFile(analysisDir), "Missing os-release.txt file in dir: " + analysisDir);
-
-        final LinuxDistributionInfo linuxDistributionInfo = LinuxDistributionUtil.deriveLinuxDistro(osReleaseFileProperties);
+        final LinuxDistributionUtil.LinuxDistro linuxDistro = LinuxDistributionUtil.parseDistroByOsReleaseFile(osReleaseFileProperties);
 
         // use specific inventory implementation to extract inventory
         final Inventory inventory = new Inventory();
 
-        extendInventory(analysisDir, inventory, linuxDistributionInfo);
+        extendInventory(analysisDir, inventory, linuxDistro);
 
         if (includeNotCoveredFiles) {
             extendNotCoveredFiles(analysisDir, inventory, excludePatterns);
         }
 
         // FIXME: extend asset information
-        final LinuxDistributionUtil.LinuxDistro linuxDistro = LinuxDistributionUtil.parseDistroByOsReleaseFile(osReleaseFileProperties);
         final AssetMetaData assetMetaData = createAssetMetaData(baseDir, analysisDir, linuxDistro);
         final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
 
         inventory.getAssetMetaData().add(assetMetaData);
         for (final Artifact artifact : inventory.getArtifacts()) {
-            artifact.set(Constants.KEY_DISTRO_NAME, LinuxDistributionUtil.populateNameWithVersionCodename(osReleaseFileProperties));
-            artifact.set(Constants.KEY_DISTRO_VERSION, LinuxDistributionUtil.getVersionIdWithFallbacks(osReleaseFileProperties));
+            artifact.set(Constants.KEY_DISTRO_NAME, linuxDistro.name);
+            artifact.set(Constants.KEY_DISTRO_VERSION, linuxDistro.versionId);
             artifact.set(KEY_SOURCE_PROJECT, inventoryId);
 
             if (assetId != null && artifact.get(assetId) == null) {
@@ -89,7 +88,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         validateFileHasContent(new File(analysisDir, "uname.txt"));
     }
 
-    protected abstract void extendInventory(File analysisDir, Inventory inventory, LinuxDistributionInfo linuxDistributionInfo) throws IOException;
+    protected abstract void extendInventory(File analysisDir, Inventory inventory, LinuxDistributionUtil.LinuxDistro linuxDistro) throws IOException;
 
     /**
      * Anticipates a directory for each package in packageDir. The directory contains the
@@ -100,8 +99,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
      * @param idToPackageInfoMap The resulting {@link PackageInfo} instances are added to the map.
      * @param docDir             The documentation dir.
      */
-    protected static void packagesFromDocumentationDir(File analysisDir, File packageDir, LinuxDistributionInfo linuxDistributionInfo,
-                                                       Map<String, PackageInfo> idToPackageInfoMap, boolean docDir) {
+    protected static void packagesFromDocumentationDir(File analysisDir, File packageDir, Map<String, PackageInfo> idToPackageInfoMap, boolean docDir) {
         if (packageDir.exists()) {
             DirectoryScanner scanner = new DirectoryScanner();
             scanner.setBasedir(packageDir);
@@ -119,7 +117,6 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
                     packageInfo.id = path;
                     packageInfo.component = path;
                     packageInfo.status = "documented";
-                    packageInfo.linuxDistributionInfo = linuxDistributionInfo;
                 }
                 if (docDir) {
                     packageInfo.documentationDir = new File(packageDir, path).getAbsolutePath();
@@ -264,5 +261,14 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         assetMetaData.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativePathToDistroRoot);
 
         return assetMetaData;
+    }
+
+    protected String buildPurl(PackageInfo packageInfo, LinuxDistributionUtil.LinuxDistro linuxDistro) {
+        final LinuxDistributionInfo info = linuxDistro.info;
+        return PurlUtils.buildPurl(org.metaeffekt.core.util.purl.PackageInfo.of(info.getPackageManager(), packageInfo.name)
+                .namespace(info.getPurlNamespace())
+                .version(packageInfo.version)
+                .arch(packageInfo.arch)
+                .build());
     }
 }

@@ -103,6 +103,8 @@ public class LinuxDistributionUtil {
 
         public String vendor;
 
+        public LinuxDistributionInfo info;
+
         /**
          * The map enables to collect further details available for post-processing.
          */
@@ -277,19 +279,10 @@ public class LinuxDistributionUtil {
         linuxDistro.version = modulateValue(osReleaseFileProperties.getProperty("VERSION"), linuxDistro.version);
         linuxDistro.cpe = modulateValue(osReleaseFileProperties.getProperty("CPE_NAME"), linuxDistro.cpe);
         linuxDistro.url = modulateValue(osReleaseFileProperties.getProperty("HOME_URL"), linuxDistro.url);
+        linuxDistro.info = deriveLinuxDistroInfo(osReleaseFileProperties);
         specifyVendor(linuxDistro);
 
         return linuxDistro;
-    }
-
-    /**
-     * Derives the {@link LinuxDistributionInfo} corresponding to the ID field in the os-release.txt file.
-     *
-     * @param osReleaseFileProperties the osReleaseProperties from the os-release.txt file containing the ID
-     * @return the derived {@link LinuxDistributionInfo}
-     */
-    public static LinuxDistributionInfo deriveLinuxDistro(Properties osReleaseFileProperties) {
-        return LinuxDistributionInfo.fromId(osReleaseFileProperties.getProperty(KEY_DISTRO_ID)).orElse(null);
     }
 
     private static void specifyVendor(LinuxDistro linuxDistro) {
@@ -376,6 +369,8 @@ public class LinuxDistributionUtil {
             linuxDistro.cpe = modulateValue(osReleaseFileProperties.getProperty("CPE_NAME"), linuxDistro.cpe);
             linuxDistro.url = modulateValue(osReleaseFileProperties.getProperty("HOME_URL"), linuxDistro.url);
 
+            linuxDistro.info = deriveLinuxDistroInfo(osReleaseFileProperties);
+
             linuxDistro.filePropertiesMap.put(path, osReleaseFileProperties);
         }
     }
@@ -410,6 +405,16 @@ public class LinuxDistributionUtil {
         }
         log.debug("Cannot derive version codename from version keys [{}].", DISTRO_VERSION_KEYS);
         return null;
+    }
+
+    /**
+     * Derives the {@link LinuxDistributionInfo} corresponding to the ID field in the os-release.txt file.
+     *
+     * @param osReleaseFileProperties the osReleaseProperties from the os-release.txt file containing the ID
+     * @return the derived {@link LinuxDistributionInfo}
+     */
+    private static LinuxDistributionInfo deriveLinuxDistroInfo(Properties osReleaseFileProperties) {
+        return LinuxDistributionInfo.fromId(osReleaseFileProperties.getProperty(KEY_DISTRO_ID)).orElse(null);
     }
 
     private static String modulateValue(String name, String currentValue) {
