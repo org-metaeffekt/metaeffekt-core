@@ -42,6 +42,7 @@ import java.util.concurrent.BlockingQueue;
 
 @Slf4j
 public class RpmPackageContributor extends ComponentPatternContributor {
+    private static final String RPM_TYPE = "rpm";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("/packages");
         add("/rpmdb.sqlite");
@@ -150,7 +151,8 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     }
                     cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, packageInfo.getLicense());
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
-                    cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, LinuxDistributionInfo.RHEL.getPackageTool());
+                    cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, RPM_TYPE);
+                    cpd.set(Constants.KEY_RELEASE, packageInfo.getRelease());
                     cpd.set(Artifact.Attribute.PURL, buildPurl(packageInfo.getName(),
                             ((StringUtils.isNotBlank(packageInfo.getRelease())) ? packageInfo.getVersion() + "-" + packageInfo.getRelease() : packageInfo.getVersion()),
                             packageInfo.getArch(), packageInfo.getEpoch(),
@@ -158,8 +160,9 @@ public class RpmPackageContributor extends ComponentPatternContributor {
 
                     cpd.set(Constants.KEY_ARCHITECTURE, packageInfo.getArch());
                     cpd.set(Constants.KEY_URL, packageInfo.getUrl());
-                    cpd.set(Constants.KEY_DESCRIPTION, packageInfo.getSummary());
-                    cpd.set(Constants.KEY_GROUP_PACKAGE, packageInfo.getSourceRpm());
+                    cpd.set(Constants.KEY_SUMMARY, packageInfo.getSummary());
+                    cpd.set(Constants.KEY_DESCRIPTION, packageInfo.getDescription());
+                    cpd.set(Constants.KEY_SOURCE_PACKAGE, packageInfo.getSourceRpm());
                     cpd.set(Constants.KEY_STATUS_PACKAGE, "installed");
 
                     components.add(cpd);
@@ -210,7 +213,6 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                 .namespace(namespace).version(version).arch(arch)
                 .qualifier("epoch", Objects.toString(epoch, null))
                 .qualifier("upstream", upstream);
-        ;
 
         if (StringUtils.isNotBlank(distro.versionId)) {
             builder.distro(distro.id + "-" + distro.versionId);

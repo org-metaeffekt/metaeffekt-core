@@ -30,6 +30,7 @@ public class PackageInfo {
     private String vendor;
     private String modularityLabel;
     private String summary;
+    private String description;
     private String pgp;
     private String sigMD5;
     private DigestAlgorithm digestAlgorithm;
@@ -142,6 +143,14 @@ public class PackageInfo {
 
     public void setSummary(String summary) {
         this.summary = summary;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getPgp() {
