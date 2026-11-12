@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
 
@@ -35,18 +36,18 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     @Override
-    public void extendInventory(File analysisDir, Inventory inventory) throws IOException {
+    public void extendInventory(File analysisDir, Inventory inventory, LinuxDistributionUtil.LinuxDistro linuxDistro) throws IOException {
         // find packages from the provided inputs
-        List<PackageInfo> packageReferences = scan(analysisDir);
+        List<PackageInfo> packageReferences = scan(analysisDir, linuxDistro);
         packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, p));
     }
 
     @Override
-    protected String extractIssue(File analysisDir) throws IOException {
+    protected String extractIssue(File analysisDir) {
         return null;
     }
 
-    public List<PackageInfo> scan(File analysisDir) throws IOException {
+    public List<PackageInfo> scan(File analysisDir, LinuxDistributionUtil.LinuxDistro linuxDistro) throws IOException {
         Map<String, PackageInfo> idToPackageReferenceMap = new HashMap<>();
 
         // generate (complementary) package list from scripts output
@@ -58,12 +59,12 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
         // generate package list from directories in dedicated licenses dir
         packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), idToPackageReferenceMap, false);
 
-        parseArchPackages(analysisDir, idToPackageReferenceMap);
+        parseArchPackages(analysisDir, linuxDistro, idToPackageReferenceMap);
 
         return new ArrayList<>(idToPackageReferenceMap.values());
     }
 
-    private void parseArchPackages(File analysisDir, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
+    private void parseArchPackages(File analysisDir,LinuxDistributionUtil.LinuxDistro linuxDistro, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
         for (Map.Entry<String, PackageInfo> entry : idToPackageReferenceMap.entrySet()) {
             String name = entry.getKey();
             PackageInfo p = entry.getValue();
@@ -89,6 +90,8 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
                     }
                 }
             }
+            p.componentSourceType = linuxDistro.info.getPackageTool();
+            p.purl = buildPurl(p, linuxDistro);
         }
     }
 

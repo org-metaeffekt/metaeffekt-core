@@ -17,9 +17,13 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -159,6 +163,10 @@ public class HexComponentPatternContributor extends ComponentPatternContributor 
     }
 
     private String buildPurl(String packageName, String version) {
-        return String.format("pkg:hex/%s@%s", packageName, version);
+        if (StringUtils.isBlank(packageName)) {
+            return null;
+        }
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.HEX, packageName).version(version).build());
     }
 }

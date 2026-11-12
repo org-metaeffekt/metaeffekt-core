@@ -299,7 +299,7 @@ public class WebModuleComponentPatternContributorTest {
         Assertions.assertThat(unist3.get(Artifact.Attribute.VERSION)).isEqualTo("3.0.3");
         Assertions.assertThat(unist3.get(Artifact.Attribute.TYPE)).isEqualTo("web-module");
         Assertions.assertThat(unist3.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE)).isEqualTo("npm-module");
-        Assertions.assertThat(unist3.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/@types/unist@3.0.3");
+        Assertions.assertThat(unist3.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/%40types/unist@3.0.3");
         Assertions.assertThat(unist3.get(Artifact.Attribute.COMPONENT)).isEqualTo("@types/unist");
         Assertions.assertThat(unist3.get(Artifact.Attribute.PATH_IN_ASSET)).isEqualTo("dashboard/package.json[@types/unist@3.0.3]");
 
@@ -310,7 +310,7 @@ public class WebModuleComponentPatternContributorTest {
         Assertions.assertThat(unist2.get(Artifact.Attribute.TYPE)).isEqualTo("web-module");
         Assertions.assertThat(unist2.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE)).isEqualTo("npm-module");
         Assertions.assertThat(unist2.get(Artifact.Attribute.PATH_IN_ASSET)).isEqualTo("dashboard/package.json[@types/unist@2.0.11]");
-        Assertions.assertThat(unist2.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/@types/unist@2.0.11");
+        Assertions.assertThat(unist2.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/%40types/unist@2.0.11");
 
         // both are transitive via react-markdown as direct dependency
         Assertions.assertThat(unist2.get(rootAssetId)).isEqualTo("(r)");
@@ -527,7 +527,7 @@ public class WebModuleComponentPatternContributorTest {
         Assertions.assertThat(artifact001.get(Artifact.Attribute.TYPE)).isEqualTo("web-module");
         Assertions.assertThat(artifact001.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE)).isEqualTo("npm-module");
         Assertions.assertThat(artifact001.get(Artifact.Attribute.PATH_IN_ASSET)).isEqualTo("test/package.json[@cesium/engine@15.0.0]");
-        Assertions.assertThat(artifact001.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/@cesium/engine@15.0.0");
+        Assertions.assertThat(artifact001.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/%40cesium/engine@15.0.0");
         Assertions.assertThat(artifact001.get("AID-test-v4.4.0")).isEqualTo("r");
 
         final Artifact artifact002 = inventory.findArtifact("@babel/core-7.26.10");
@@ -537,7 +537,7 @@ public class WebModuleComponentPatternContributorTest {
         Assertions.assertThat(artifact002.get(Artifact.Attribute.TYPE)).isEqualTo("web-module");
         Assertions.assertThat(artifact002.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE)).isEqualTo("npm-module");
         Assertions.assertThat(artifact002.get(Artifact.Attribute.PATH_IN_ASSET)).isEqualTo("test/package.json[@babel/core@7.26.10]");
-        Assertions.assertThat(artifact002.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/@babel/core@7.26.10");
+        Assertions.assertThat(artifact002.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/%40babel/core@7.26.10");
         Assertions.assertThat(artifact002.get("AID-test-v4.4.0")).isEqualTo("d");
 
         assertThat(inventory.getArtifacts().size()).isEqualTo(1362);

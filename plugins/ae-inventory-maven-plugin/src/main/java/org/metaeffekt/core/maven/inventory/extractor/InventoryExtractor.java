@@ -45,6 +45,7 @@ public interface InventoryExtractor {
     /**
      * Extract an inventory from the information aggregated in analysisDir.
      *
+     * @param baseDir the baseDir.
      * @param analysisDir The analysisDir.
      * @param inventoryId The identifier or discriminator for the inventory.
      * @param excludePatterns List of exclude patterns (ant style).
@@ -52,6 +53,6 @@ public interface InventoryExtractor {
      * @return The extracted inventory.
      * @throws IOException May throw an {@link IOException}.
      */
-    Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException;
+    Inventory extractInventory(File baseDir, File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException;
 
 }

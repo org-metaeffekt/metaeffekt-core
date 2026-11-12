@@ -126,7 +126,7 @@ public class ContainerInventoryExtractionMojo extends AbstractApplianceInventory
         extractor.validate(analysisDir);
 
         // finally we run the extraction
-        return extractor.extractInventory(analysisDir, artifactInventoryId, fileExcludes == null ? Collections.emptyList() : fileExcludes, activateFileLevelProcessing);
+        return extractor.extractInventory(super.analysisDir, analysisDir, artifactInventoryId, fileExcludes == null ? Collections.emptyList() : fileExcludes, activateFileLevelProcessing);
     }
 
     private void filterInventory(Inventory inventory) {

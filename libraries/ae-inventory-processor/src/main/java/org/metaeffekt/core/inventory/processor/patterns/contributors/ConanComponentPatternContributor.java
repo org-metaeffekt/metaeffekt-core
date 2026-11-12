@@ -17,9 +17,13 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -143,15 +147,11 @@ public class ConanComponentPatternContributor extends ComponentPatternContributo
     }
 
     private String buildPurl(String name, String version, String namespace, String channel) {
-        StringBuilder purl = new StringBuilder("pkg:conan/");
-        if (namespace != null && !namespace.isEmpty()) {
-            purl.append(namespace).append("/");
+        if (StringUtils.isBlank(name)) {
+            return null;
         }
-        purl.append(name).append("@").append(version);
-        if (channel != null && !channel.isEmpty()) {
-            purl.append("?channel=").append(channel);
-        }
-        return purl.toString();
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.CONAN, name).namespace(namespace).version(version).qualifier("channel", channel).build());
     }
 }
 
