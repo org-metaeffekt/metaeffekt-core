@@ -110,8 +110,23 @@ public class DocumentDescriptor {
         Map<DocumentPartType, Set<String>> typeToInventoryContextIds = new HashMap<>();
 
         for (DocumentPart part : documentParts) {
+            part.validate();
 
             DocumentPartType type = part.getDocumentPartType();
+            if (type == DocumentPartType.CUSTOM_CONTENT) {
+                for (String filePath : part.getFiles()) {
+                    String resolvedPath = DocumentDescriptorReportGenerator.resolveAgainstBasePath(filePath, basePath);
+                    File resolvedFile = resolvedPath != null ? new File(resolvedPath) : null;
+                    if (resolvedFile == null || !resolvedFile.exists() || !resolvedFile.isFile()) {
+                        throw new IllegalStateException("Referenced custom content file does not exist: " + filePath);
+                    }
+                }
+            }
+
+            if (part.getInventoryContexts() == null) {
+                continue;
+            }
+
             Set<String> inventoryContextIds = part.getInventoryContexts().stream()
                     .map(InventoryContext::getIdentifier)
                     .collect(Collectors.toSet());

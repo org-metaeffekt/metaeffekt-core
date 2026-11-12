@@ -29,6 +29,7 @@ public enum DocumentPartType {
     EXPLOITABILITY_STATISTICS_REPORT,
     CONTEXT,
     PURPOSE,
-    NOTICE
+    NOTICE,
+    CUSTOM_CONTENT
 
 }
