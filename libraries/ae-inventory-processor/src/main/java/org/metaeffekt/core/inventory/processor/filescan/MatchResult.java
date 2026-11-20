@@ -89,7 +89,7 @@ public class MatchResult {
         derivedArtifact.set(Constants.KEY_SCOPE, componentPatternData.get(Constants.KEY_SCOPE));
         derivedArtifact.set(Constants.KEY_DISTRO_NAME, componentPatternData.get(Constants.KEY_DISTRO_NAME));
         derivedArtifact.set(Constants.KEY_DISTRO_VERSION, componentPatternData.get(Constants.KEY_DISTRO_VERSION));
-        derivedArtifact.set(Constants.KEY_ISSUE, componentPatternData.get(Constants.KEY_ISSUE));
+        derivedArtifact.set(Constants.KEY_DISTRO_ISSUE, componentPatternData.get(Constants.KEY_DISTRO_ISSUE));
         derivedArtifact.set(Constants.KEY_RELEASE, componentPatternData.get(Constants.KEY_RELEASE));
         derivedArtifact.set(Constants.KEY_ARCHITECTURE, componentPatternData.get(Constants.KEY_ARCHITECTURE));
         derivedArtifact.set(Artifact.Attribute.URL, componentPatternData.get(Constants.KEY_URL));
