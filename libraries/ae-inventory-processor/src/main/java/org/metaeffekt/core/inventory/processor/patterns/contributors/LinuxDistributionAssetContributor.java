@@ -76,7 +76,7 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
 
                 ComponentPatternData cpd = new ComponentPatternData();
 
-                cpd.set(KEY_ISSUE, linuxDistro.issue);
+                cpd.set(KEY_DISTRO_ISSUE, linuxDistro.issue);
                 cpd.set(COMPONENT_NAME, linuxDistro.name);
                 cpd.set(KEY_DISTRO_NAME, linuxDistro.name);
                 cpd.set(COMPONENT_VERSION, linuxDistro.versionId);

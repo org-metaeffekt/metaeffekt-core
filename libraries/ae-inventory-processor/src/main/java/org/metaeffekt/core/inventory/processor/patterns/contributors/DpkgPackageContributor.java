@@ -349,7 +349,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         componentPatternData.set(Constants.KEY_STATUS_PACKAGE, entry.status);
 
         if (distro != null) {
-            componentPatternData.set(Constants.KEY_ISSUE, distro.issue);
+            componentPatternData.set(Constants.KEY_DISTRO_ISSUE, distro.issue);
             componentPatternData.set(Constants.KEY_DISTRO_NAME, distro.name);
             componentPatternData.set(Constants.KEY_DISTRO_VERSION, distro.versionId);
         }

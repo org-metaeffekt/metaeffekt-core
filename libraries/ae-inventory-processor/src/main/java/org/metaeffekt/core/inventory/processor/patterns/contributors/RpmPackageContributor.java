@@ -145,7 +145,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar,**/node_modules/**/*");
 
                     if (distro != null) {
-                        cpd.set(Constants.KEY_ISSUE, distro.issue);
+                        cpd.set(Constants.KEY_DISTRO_ISSUE, distro.issue);
                         cpd.set(Constants.KEY_DISTRO_NAME, distro.name);
                         cpd.set(Constants.KEY_DISTRO_VERSION, distro.versionId);
                     }

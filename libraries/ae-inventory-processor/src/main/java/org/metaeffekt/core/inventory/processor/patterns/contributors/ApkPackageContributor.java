@@ -197,7 +197,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
         if (distro != null) {
-            cpd.set(Constants.KEY_ISSUE, distro.issue);
+            cpd.set(Constants.KEY_DISTRO_ISSUE, distro.issue);
             cpd.set(Constants.KEY_DISTRO_NAME, distro.name);
             cpd.set(Constants.KEY_DISTRO_VERSION, distro.versionId);
         }

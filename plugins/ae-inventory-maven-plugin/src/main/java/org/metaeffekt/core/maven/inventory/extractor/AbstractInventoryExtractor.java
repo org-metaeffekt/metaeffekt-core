@@ -46,7 +46,6 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
 
     @Override
     public Inventory extractInventory(File baseDir, File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
-        final String issue = extractIssue(analysisDir);
         final Properties osReleaseFileProperties = Objects.requireNonNull(readOSReleaseFile(analysisDir), "Missing os-release.txt file in dir: " + analysisDir);
         final LinuxDistributionUtil.LinuxDistro linuxDistro = LinuxDistributionUtil.parseDistroByOsReleaseFile(osReleaseFileProperties);
 
@@ -75,7 +74,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
 
             // TODO extract container id
             // artifact.set(KEY_ATTRIBUTE_CONTAINER, analysisDir.getName());
-            artifact.set(KEY_ISSUE, issue);
+            artifact.set(KEY_DISTRO_ISSUE, linuxDistro.issue);
         }
 
         return inventory;
@@ -253,7 +252,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         assetMetaData.set("Distro - Id", linuxDistro.id);
         assetMetaData.set("Distro - VersionId", linuxDistro.versionId);
         assetMetaData.set("Distro - CPE", linuxDistro.cpe);
-        assetMetaData.set("Distro - Issue", linuxDistro.issue);
+        assetMetaData.set(KEY_DISTRO_ISSUE, linuxDistro.issue);
         assetMetaData.set(KEY_DISTRO_NAME, linuxDistro.name);
         assetMetaData.set(KEY_DISTRO_VERSION, linuxDistro.version);
         assetMetaData.set("Distro - URL", linuxDistro.url);
