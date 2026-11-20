@@ -48,6 +48,19 @@ public class ProcessTimeEntry {
         this.timestamp = timestamp;
     }
 
+    public ProcessTimeEntry(ProcessTimeEntry other) {
+        this.processType = other.processType;
+        this.processName = other.processName;
+        this.timestamp = other.timestamp != null
+                ? new ProcessTimestamp(other.timestamp.getFirst(), other.timestamp.getLast())
+                : new ProcessTimestamp();
+        this.indexTimestamps = new HashMap<>();
+        if (other.indexTimestamps != null) {
+            other.indexTimestamps.forEach((k, v) ->
+                    this.indexTimestamps.put(k, new ProcessTimestamp(v.getFirst(), v.getLast())));
+        }
+    }
+
     public void addIndexTimestamp(String indexId, long lastChecked) {
         if (indexTimestamps.containsKey(indexId)) {
             indexTimestamps.get(indexId).addTimestamp(lastChecked);
