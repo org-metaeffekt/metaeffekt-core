@@ -60,16 +60,26 @@ public class DocumentPart {
      */
     private List<String> files;
 
+    /**
+     * Inline content map (with 'title' and 'body' keys) for CUSTOM_CONTENT parts.
+     */
+    private Map<String, String> content;
+
     public DocumentPart(String identifier, List<InventoryContext> inventoryContexts, DocumentPartType documentPartType, Map<String, String> params) {
-        this(identifier, inventoryContexts, documentPartType, params, null);
+        this(identifier, inventoryContexts, documentPartType, params, null, null);
     }
 
     public DocumentPart(String identifier, List<InventoryContext> inventoryContexts, DocumentPartType documentPartType, Map<String, String> params, List<String> files) {
+        this(identifier, inventoryContexts, documentPartType, params, files, null);
+    }
+
+    public DocumentPart(String identifier, List<InventoryContext> inventoryContexts, DocumentPartType documentPartType, Map<String, String> params, List<String> files, Map<String, String> content) {
         this.inventoryContexts = inventoryContexts;
         this.documentPartType = documentPartType;
         this.params = params;
         this.identifier = identifier;
         this.files = files;
+        this.content = content;
     }
 
     public void validate() {
@@ -88,12 +98,29 @@ public class DocumentPart {
         }
 
         if (documentPartType == DocumentPartType.CUSTOM_CONTENT) {
-            if (files == null || files.isEmpty()) {
-                throw new IllegalStateException("The part '" + identifier + "' of type '" + documentPartType + "' must specify at least one file in 'files'.");
+            boolean hasFiles = files != null && !files.isEmpty();
+            boolean hasContent = content != null && !content.isEmpty();
+            if (hasFiles && hasContent) {
+                throw new IllegalStateException("The part '" + identifier + "' of type '" + documentPartType + "' must specify either 'files' or 'content', not both.");
             }
-            for (String file : files) {
-                if (file == null || file.trim().isEmpty()) {
-                    throw new IllegalStateException("The part '" + identifier + "' of type '" + documentPartType + "' contains an empty file path.");
+            if (!hasFiles && !hasContent) {
+                throw new IllegalStateException("The part '" + identifier + "' of type '" + documentPartType + "' must specify either 'files' or 'content'.");
+            }
+            if (hasFiles) {
+                for (String file : files) {
+                    if (file == null || file.trim().isEmpty()) {
+                        throw new IllegalStateException("The part '" + identifier + "' of type '" + documentPartType + "' contains an empty file path.");
+                    }
+                }
+            }
+            if (hasContent) {
+                String title = content.get("title");
+                String body = content.get("body");
+                if (title == null || title.trim().isEmpty()) {
+                    throw new IllegalStateException("The part '" + identifier + "' of type '" + documentPartType + "' must specify a non-empty 'title' in 'content'.");
+                }
+                if (body == null || body.trim().isEmpty()) {
+                    throw new IllegalStateException("The part '" + identifier + "' of type '" + documentPartType + "' must specify a non-empty 'body' in 'content'.");
                 }
             }
         }

@@ -222,11 +222,13 @@ public class DocumentDescriptorReportGenerator {
                 if (!targetPartDir.exists() && !targetPartDir.mkdirs()) {
                     throw new IOException("Failed to create directory: " + targetPartDir.getAbsolutePath());
                 }
-                for (String filePath : documentPart.getFiles()) {
-                    String resolvedPath = resolveAgainstBasePath(filePath, documentDescriptor.getBasePath());
-                    File sourceFile = new File(resolvedPath);
-                    File targetFile = new File(targetPartDir, sourceFile.getName());
-                    FileUtils.copyFile(sourceFile, targetFile);
+                if (documentPart.getFiles() != null) {
+                    for (String filePath : documentPart.getFiles()) {
+                        String resolvedPath = resolveAgainstBasePath(filePath, documentDescriptor.getBasePath());
+                        File sourceFile = new File(resolvedPath);
+                        File targetFile = new File(targetPartDir, sourceFile.getName());
+                        FileUtils.copyFile(sourceFile, targetFile);
+                    }
                 }
             } else if (documentPart.getDocumentPartType() == DocumentPartType.CONTEXT) {
                 // For parts like CONTEXT that do not require an inventory

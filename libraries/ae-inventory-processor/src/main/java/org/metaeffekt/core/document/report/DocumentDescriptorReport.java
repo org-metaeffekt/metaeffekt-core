@@ -125,6 +125,11 @@ public class DocumentDescriptorReport {
                 writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_LICENSE_DOCUMENTATION_BOOKMAP);
             }
             if (documentPart.getDocumentPartType() == DocumentPartType.CUSTOM_CONTENT) {
+                if (documentPart.getContent() != null && !documentPart.getContent().isEmpty()) {
+                    String templateResourcePath = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "custom-content" + SEPARATOR_SLASH + "tpc_custom-content.dita.vt";
+                    File targetFile = new File(new File(new File(this.targetReportDir, "parts"), documentPart.getIdentifier()), "tpc_custom-content.dita");
+                    produceDita(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), templateResourcePath, targetFile);
+                }
                 writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_CUSTOM_CONTENT_BOOKMAP);
             }
         }
@@ -424,12 +429,16 @@ public class DocumentDescriptorReport {
         context.put("documentDescriptor", documentDescriptor);
         if (documentPart != null) {
             context.put("documentPart", documentPart);
-            if (documentPart.getFiles() != null) {
+            if (documentPart.getFiles() != null && !documentPart.getFiles().isEmpty()) {
                 List<String> customFiles = new ArrayList<>();
                 for (String filePath : documentPart.getFiles()) {
                     customFiles.add(new File(filePath).getName());
                 }
                 context.put("customFiles", customFiles);
+            } else if (documentPart.getContent() != null && !documentPart.getContent().isEmpty()) {
+                context.put("customFiles", Collections.singletonList("tpc_custom-content.dita"));
+                context.put("title", documentPart.getContent().get("title"));
+                context.put("body", documentPart.getContent().get("body"));
             }
         }
         context.put("documentDescriptorReportAdapters", adapters);

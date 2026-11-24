@@ -335,6 +335,54 @@ public class DocumentDescriptorReportGeneratorTest {
         assertThrows(IllegalStateException.class, () -> documentDescriptorReportGenerator.generate(documentDescriptor));
     }
 
+    @Test
+    public void testCustomContentInlineTemplates() throws IOException {
+        File targetReportDir = new File("target/test-document-descriptor-report-generator/custom-content-inline");
+
+        Map<String, String> inlineContent = new HashMap<>();
+        inlineContent.put("title", "Inline Custom Title");
+        inlineContent.put("body", "<p>Inline custom paragraph content.</p><section><title>Sub</title><p>Details</p></section>");
+
+        DocumentPart customInlinePart = new DocumentPart("custom-inline", null, DocumentPartType.CUSTOM_CONTENT, Collections.emptyMap(), null, inlineContent);
+        documentParts.add(customInlinePart);
+
+        documentDescriptor.setDocumentParts(documentParts);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
+        documentDescriptor.setDocumentType(DocumentType.ANNEX);
+
+        documentDescriptorReportGenerator.generate(documentDescriptor);
+
+        File generatedTopic = new File(targetReportDir, "parts/custom-inline/tpc_custom-content.dita");
+        assertTrue(generatedTopic.exists(), "Generated inline DITA topic should exist");
+        String topicContent = FileUtils.readFileToString(generatedTopic, StandardCharsets.UTF_8);
+        assertTrue(topicContent.contains("<title>Inline Custom Title</title>"));
+        assertTrue(topicContent.contains("<p>Inline custom paragraph content.</p><section><title>Sub</title><p>Details</p></section>"));
+
+        File partBookmap = new File(targetReportDir, "parts/custom-inline/map_custom-inline.ditamap");
+        assertTrue(partBookmap.exists(), "Part bookmap should exist");
+        String partBookmapContent = FileUtils.readFileToString(partBookmap, StandardCharsets.UTF_8);
+        assertTrue(partBookmapContent.contains("<chapter>"));
+        assertTrue(partBookmapContent.contains("<topicref href=\"tpc_custom-content.dita\" />"));
+    }
+
+    @Test
+    public void testCustomContentMutualExclusivityValidation() {
+        File targetReportDir = new File("target/test-document-descriptor-report-generator/custom-content-both");
+        List<String> files = Collections.singletonList("some/file.dita");
+        Map<String, String> inlineContent = new HashMap<>();
+        inlineContent.put("title", "Title");
+        inlineContent.put("body", "<p>Body</p>");
+
+        DocumentPart invalidPart = new DocumentPart("custom-both", null, DocumentPartType.CUSTOM_CONTENT, Collections.emptyMap(), files, inlineContent);
+        documentParts.add(invalidPart);
+
+        documentDescriptor.setDocumentParts(documentParts);
+        documentDescriptor.setTargetDocumentDir(targetReportDir);
+        documentDescriptor.setDocumentType(DocumentType.ANNEX);
+
+        assertThrows(IllegalStateException.class, () -> documentDescriptorReportGenerator.generate(documentDescriptor));
+    }
+
 
     public void cleanUpTargetTestDir() throws IOException {
         if (targetTestDir.exists()) {

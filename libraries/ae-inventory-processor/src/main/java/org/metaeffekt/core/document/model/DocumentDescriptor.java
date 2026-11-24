@@ -113,7 +113,7 @@ public class DocumentDescriptor {
             part.validate();
 
             DocumentPartType type = part.getDocumentPartType();
-            if (type == DocumentPartType.CUSTOM_CONTENT) {
+            if (type == DocumentPartType.CUSTOM_CONTENT && part.getFiles() != null) {
                 for (String filePath : part.getFiles()) {
                     String resolvedPath = DocumentDescriptorReportGenerator.resolveAgainstBasePath(filePath, basePath);
                     File resolvedFile = resolvedPath != null ? new File(resolvedPath) : null;
