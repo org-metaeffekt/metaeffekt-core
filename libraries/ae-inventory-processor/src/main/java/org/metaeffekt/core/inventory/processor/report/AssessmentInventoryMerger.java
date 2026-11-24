@@ -85,11 +85,8 @@ public class AssessmentInventoryMerger {
             final Inventory inputInventory = inputInventoryWithFile.getKey();
             final File inputInventoryFile = inputInventoryWithFile.getValue();
 
-            if (inputInventory.getAssetMetaData().size() != 1) {
-                throw new IllegalStateException("Inventory must contain exactly one asset meta data entry" + (inputInventoryFile != null ? " in file [" + inputInventoryFile.getAbsolutePath() + "]" : ""));
-            }
-
-            final AssetMetaData assetMetaData = inputInventory.getAssetMetaData().get(0);
+            final AssetMetaData assetMetaData = inputInventory.getPrimaryAsset(null)
+                    .orElseThrow(() -> new IllegalStateException("Inventory must contain exactly one asset, or exactly one asset marked as primary" + (inputInventoryFile != null ? " in file [" + inputInventoryFile.getAbsolutePath() + "]" : "")));
 
             // in this case the assessment context is the asset (assessment by asset case)
             final String assetName = assetMetaData.get(AssetMetaData.Attribute.NAME);
