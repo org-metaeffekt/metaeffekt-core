@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +77,32 @@ public class Cvss4P0Test {
         Assertions.assertEquals(5.1, cvss4P0.getBaseScore(), 0.01);
         Assertions.assertEquals(6.3, cvss4P0.getEnvironmentalScore(), 0.01);
         Assertions.assertEquals(1.2, cvss4P0.getThreatScore(), 0.01);
+    }
+
+    @Test
+    public void subsequentSystemBaseMetricsOnlyOfferSpecValuesTest() {
+        final String[] shortIdentifiers = Arrays.stream(Cvss4P0.SubsequentCia.values())
+                .map(Cvss4P0.SubsequentCia::getShortIdentifier)
+                .toArray(String[]::new);
+
+        Assertions.assertArrayEquals(new String[]{"X", "H", "L", "N"}, shortIdentifiers);
+    }
+
+    @Test
+    public void subsequentSystemBaseMetricsDoNotParseSafetyTest() {
+        final Cvss4P0 cvss4P0 = new Cvss4P0("CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:S/SI:S/SA:S");
+
+        Assertions.assertEquals(Cvss4P0.SubsequentCia.NONE, cvss4P0.getSubConfidentialityImpact());
+        Assertions.assertEquals(Cvss4P0.SubsequentCia.NONE, cvss4P0.getSubIntegrityImpact());
+        Assertions.assertEquals(Cvss4P0.SubsequentCia.NONE, cvss4P0.getSubAvailabilityImpact());
+    }
+
+    @Test
+    public void subsequentSystemModifiedMetricsParseSafetyTest() {
+        final Cvss4P0 cvss4P0 = new Cvss4P0("CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:H/SI:H/SA:H/MSI:S/MSA:S");
+
+        Assertions.assertEquals(Cvss4P0.ModifiedSubsequentIntegrityAvailability.SAFETY, cvss4P0.getModifiedSubIntegrityImpact());
+        Assertions.assertEquals(Cvss4P0.ModifiedSubsequentIntegrityAvailability.SAFETY, cvss4P0.getModifiedSubAvailabilityImpact());
     }
 
     @Test
