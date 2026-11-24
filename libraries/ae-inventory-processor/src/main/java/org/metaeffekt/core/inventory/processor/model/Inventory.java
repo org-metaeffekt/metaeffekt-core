@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
+import org.slf4j.event.Level;
 
 import java.io.File;
 import java.io.IOException;
@@ -2029,6 +2030,139 @@ public class Inventory implements Serializable {
             }
         }
         return false;
+    }
+
+    /**
+     * Uses the {@link #assetMetaData} list of the instance to locate the candidates for a representative asset to be used in processing in various places (e.g. in merging inventories, the dashboard or due review calculation).
+     * <p>
+     * Optionally accepts a {@code primaryAssetId} that overrides what assets are picked.
+     *
+     * <table>
+     * <caption>Mapping of how many assets the inventory contains, and whether a <code>primaryAssetId</code> was given.</caption>
+     * <thead>
+     * <tr><th>Assets</th><th>No Id given</th><th>Id given, found</th><th>Id given, not found</th></tr>
+     * </thead>
+     * <tbody>
+     * <tr><td><strong>0</strong></td><td>Empty</td><td>-</td><td>Empty</td></tr>
+     * <tr><td><strong>1</strong></td><td>That asset</td><td>That asset</td><td>Empty</td></tr>
+     * <tr><td><strong>&gt; 1</strong></td><td>Assets marked primary, otherwise all assets</td><td>The assets with that Id</td><td>Empty</td></tr>
+     * </tbody>
+     * </table>
+     *
+     * @param primaryAssetId the {@link AssetMetaData.Attribute#ASSET_ID} of the asset to select, or null or blank to select by the primary marker.
+     * @return the candidate assets, or empty if the inventory contains no assets, or the {@code primaryAssetId} was not found in the inventory.
+     */
+    private List<AssetMetaData> findPrimaryAssetCandidates(String primaryAssetId) {
+        final List<AssetMetaData> assets = this.assetMetaData.stream().filter(Objects::nonNull).toList();
+
+        if (StringUtils.isNotBlank(primaryAssetId)) {
+            return assets.stream()
+                    .filter(asset -> primaryAssetId.equals(asset.get(AssetMetaData.Attribute.ASSET_ID)))
+                    .toList();
+        }
+
+        final List<AssetMetaData> primaryAssets = assets.stream().filter(AssetMetaData::isPrimary).toList();
+
+        if (!primaryAssets.isEmpty()) {
+            return primaryAssets;
+        }
+
+        return assets;
+    }
+
+    /**
+     * Uses the {@link #assetMetaData} list of the instance to locate a representative asset to be used in processing in various places (e.g. in merging inventories).
+     * <p>
+     * Optionally accepts a {@code primaryAssetId} that overrides what asset is picked.
+     *
+     * <table>
+     * <caption>Mapping of how many assets the inventory contains, and whether a <code>primaryAssetId</code> was given.</caption>
+     * <thead>
+     * <tr><th>Assets</th><th>No Id given</th><th>Id given, found</th><th>Id given, not found</th></tr>
+     * </thead>
+     * <tbody>
+     * <tr><td><strong>0</strong></td><td>Empty</td><td>-</td><td>Logs warning and returns empty</td></tr>
+     * <tr><td><strong>1</strong></td><td>That asset</td><td>That asset</td><td>Logs warning and returns empty</td></tr>
+     * <tr><td><strong>&gt; 1</strong></td><td>The asset marked primary if unique, otherwise logs warning and returns empty</td><td>The asset with that Id if unique, otherwise logs warning and returns empty</td><td>Logs warning and returns empty</td></tr>
+     * </tbody>
+     * </table>
+     *
+     * @param primaryAssetId the {@link AssetMetaData.Attribute#ASSET_ID} of the asset to select, or null or blank to select by the primary marker.
+     * @return the selected asset, or empty if the inventory contains no assets, or the {@code primaryAssetId} was not found in the inventory, or no unique asset could be selected.
+     * @see #getFirstPrimaryAsset(String) getFirstPrimaryAsset for a more lenient version that returns the first asset for the {@code > 1} cases instead of returning empty.
+     */
+    public Optional<AssetMetaData> getPrimaryAsset(String primaryAssetId) {
+        return this.getPrimaryAsset(primaryAssetId, false);
+    }
+
+    /**
+     * Uses the {@link #assetMetaData} list of the instance to locate a representative asset to be used in processing in various places (e.g. in the dashboard or due review calculation).
+     * <p>
+     * Optionally accepts a {@code primaryAssetId} that overrides what asset is picked.
+     *
+     * <table>
+     * <caption>Mapping of how many assets the inventory contains, and whether a <code>primaryAssetId</code> was given.</caption>
+     * <thead>
+     * <tr><th>Assets</th><th>No Id given</th><th>Id given, found</th><th>Id given, not found</th></tr>
+     * </thead>
+     * <tbody>
+     * <tr><td><strong>0</strong></td><td>Empty</td><td>-</td><td>Logs warning and returns empty</td></tr>
+     * <tr><td><strong>1</strong></td><td>That asset</td><td>That asset</td><td>Logs warning and returns empty</td></tr>
+     * <tr><td><strong>&gt; 1</strong></td><td>First asset marked primary, otherwise first asset</td><td>The first asset with that Id</td><td>Logs warning and returns empty</td></tr>
+     * </tbody>
+     * </table>
+     *
+     * @param primaryAssetId the {@link AssetMetaData.Attribute#ASSET_ID} of the asset to select, or null or blank to select by the primary marker.
+     * @return the selected asset, or empty if the inventory contains no assets, or the {@code primaryAssetId} was not found in the inventory.
+     * @see #getPrimaryAsset(String) getPrimaryAsset for a more strict version that returns empty for the {@code > 1} cases instead of returning the first asset.
+     */
+    public Optional<AssetMetaData> getFirstPrimaryAsset(String primaryAssetId) {
+        return this.getPrimaryAsset(primaryAssetId, true);
+    }
+
+    private Optional<AssetMetaData> getPrimaryAsset(String primaryAssetId, boolean pickFirstWhenAmbiguous) {
+        final boolean idGiven = StringUtils.isNotBlank(primaryAssetId);
+        final List<AssetMetaData> primaryAssetCandidates = this.findPrimaryAssetCandidates(primaryAssetId);
+        final int candidateCount = primaryAssetCandidates.size();
+
+        if (candidateCount == 1) {
+            return Optional.of(primaryAssetCandidates.get(0));
+        }
+
+        // log empty / ambiguous cases warnings
+        if (candidateCount == 0) {
+            if (idGiven) {
+                if (this.assetMetaData.stream().noneMatch(Objects::nonNull)) {
+                    log.warn("Inventory contains no asset, yet primary asset id [{}] was configured.", primaryAssetId);
+                } else {
+                    log.warn("Primary asset id [{}] is unknown to the inventory. Available: {}", primaryAssetId, this.describeInventoryAssetsForPrimaryAsset());
+                }
+            }
+
+        } else { // candidateCount > 1
+            final Level level = pickFirstWhenAmbiguous ? Level.DEBUG : Level.WARN;
+            final String handlingLogString = pickFirstWhenAmbiguous
+                    ? "picking first asset [" + primaryAssetCandidates.get(0).get(AssetMetaData.Attribute.ASSET_ID) + "] from candidates"
+                    : "cannot select a unique asset";
+
+            if (idGiven) {
+                log.atLevel(level).log("Primary asset id [{}] matches multiple ({}) assets, likely a duplication of assets, {}.", primaryAssetId, candidateCount, handlingLogString);
+            } else if (primaryAssetCandidates.get(0).isPrimary()) {
+                log.atLevel(level).log("Inventory contains {} assets marked as primary, {}. Available: {}", candidateCount, handlingLogString, this.describeInventoryAssetsForPrimaryAsset());
+            } else {
+                log.atLevel(level).log("Inventory contains {} assets and none is marked as primary, {}. Available: {}", candidateCount, handlingLogString, this.describeInventoryAssetsForPrimaryAsset());
+            }
+
+            if (pickFirstWhenAmbiguous) {
+                return Optional.of(primaryAssetCandidates.get(0));
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private List<String> describeInventoryAssetsForPrimaryAsset() {
+        return this.assetMetaData.stream().filter(Objects::nonNull).map(asset -> asset.get(AssetMetaData.Attribute.ASSET_ID) + (asset.isPrimary() ? " (primary)" : "")).toList();
     }
 
     /**
