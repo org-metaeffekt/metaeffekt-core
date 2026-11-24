@@ -22,6 +22,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.metaeffekt.core.inventory.processor.patterns.contributors.util.bdb.RpmConstants.REGION_TAG_COUNT;
@@ -615,6 +616,13 @@ public class RPMDBUtils {
                         throw new IOException("invalid tag summary");
                     }
                     pkgInfo.setSummary(new String(ie.getData()).split("\0")[0]);
+                    break;
+
+                case RpmConstants.RPMTAG_DESCRIPTION:
+                    if (ie.getInfo().getType() != RpmConstants.RPM_I18NSTRING_TYPE && ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
+                        throw new IOException("invalid tag description");
+                    }
+                    pkgInfo.setDescription(new String(ie.getData(), StandardCharsets.UTF_8).split("\0")[0]);
                     break;
 
                 case RpmConstants.RPMTAG_INSTALLTIME:

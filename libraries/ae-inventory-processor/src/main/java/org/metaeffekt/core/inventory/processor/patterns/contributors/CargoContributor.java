@@ -24,6 +24,9 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.cargo.CargoLock;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.cargo.CargoMetadata;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -235,13 +238,16 @@ public class CargoContributor extends ComponentPatternContributor {
     }
 
     public static String buildPurl(String name, String version, String sha256Hash) {
-        if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(version)) {
-            if (StringUtils.isNotBlank(sha256Hash)) {
-                return String.format("pkg:cargo/%s/%s&checksum=sha256:%s", name, version, sha256Hash);
-            }
-            return String.format("pkg:cargo/%s/%s", name, version);
+        if (StringUtils.isBlank(name) || StringUtils.isBlank(version)) {
+            return null;
         }
-        return null;
+
+        final PackageInfo.PackageInfoBuilder builder = PackageInfo.of(PackageManager.CARGO, name).version(version);
+        if (StringUtils.isNotBlank(sha256Hash)) {
+            builder.qualifier("checksum", "sha256:" + sha256Hash);
+        }
+
+        return PurlUtils.buildPurl(builder.build());
     }
 
 }

@@ -43,6 +43,7 @@ public class RpmConstants {
     public static final int RPMTAG_RELEASE = 1002;
     public static final int RPMTAG_EPOCH = 1003;
     public static final int RPMTAG_SUMMARY = 1004;
+    public static final int RPMTAG_DESCRIPTION = 1005;
     public static final int RPMTAG_INSTALLTIME = 1008;
     public static final int RPMTAG_SIZE = 1009;
     public static final int RPMTAG_DISTRIBUTION = 1010;

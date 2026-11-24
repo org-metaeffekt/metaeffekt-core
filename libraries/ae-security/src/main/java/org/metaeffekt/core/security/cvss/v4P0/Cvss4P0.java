@@ -734,15 +734,8 @@ public final class Cvss4P0 extends CvssVector {
             severityDistances.put("AR", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AR"), maxVector.getAvailabilityRequirement()));
 
 
-            // Handling different conditions for MSI and MSA depending on if SAFETY is selected on their modified counterparts
-            final boolean isModifiedSubIntegrityImpactSafety = ModifiedSubsequentIntegrityAvailability.SAFETY == comparisonVector.getModifiedSubIntegrityImpact();
-            final boolean isModifiedSubAvailabilityImpactSafety = ModifiedSubsequentIntegrityAvailability.SAFETY == comparisonVector.getModifiedSubAvailabilityImpact();
-
-            final String subIntegrityImpactKey = isModifiedSubIntegrityImpactSafety ? "MSI" : "SI";
-            final String subAvailabilityImpactKey = isModifiedSubAvailabilityImpactSafety ? "MSA" : "SA";
-
-            severityDistances.put("SI", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, subIntegrityImpactKey), maxVector.getSubIntegrityImpact()));
-            severityDistances.put("SA", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, subAvailabilityImpactKey), maxVector.getSubAvailabilityImpact()));
+            severityDistances.put("SI", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "SI"), Cvss4P0MacroVector.getComparisonMetric(maxVector, "SI")));
+            severityDistances.put("SA", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "SA"), Cvss4P0MacroVector.getComparisonMetric(maxVector, "SA")));
 
 
             // check if any severity distance is negative
@@ -1378,12 +1371,6 @@ public final class Cvss4P0 extends CvssVector {
          * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4P0)</code> method, this value is required as marker.
          */
         NOT_DEFINED("NOT_DEFINED", "X"),
-        /**
-         * <b>SAFETY IS NOT A VALID VALUE OF SC, SI, SA!</b><br>
-         * This value is not defined in the standard, but still used in the calculations, so this value has to be
-         * present in the enum.
-         */
-        SAFETY("SAFETY", "S"),
         HIGH("HIGH", "H"),
         LOW("LOW", "L"),
         NONE("NONE", "N");
@@ -2288,7 +2275,7 @@ public final class Cvss4P0 extends CvssVector {
             setOf(ModifiedSubsequentConfidentiality.NEGLIGIBLE, ModifiedSubsequentIntegrityAvailability.NEGLIGIBLE, SubsequentCia.NONE),
             setOf(ModifiedSubsequentConfidentiality.LOW, ModifiedSubsequentIntegrityAvailability.LOW, SubsequentCia.LOW),
             setOf(ModifiedSubsequentConfidentiality.HIGH, ModifiedSubsequentIntegrityAvailability.HIGH, SubsequentCia.HIGH),
-            setOf(ModifiedSubsequentIntegrityAvailability.SAFETY, SubsequentCia.SAFETY),
+            setOf(ModifiedSubsequentIntegrityAvailability.SAFETY),
 
             // RequirementsCia
             Collections.singleton(RequirementsCia.LOW),

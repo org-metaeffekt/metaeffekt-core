@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -116,7 +117,7 @@ public class GoLangComponentPatternContributor extends ComponentPatternContribut
     }
 
     private String buildPurl(String moduleName, String version) {
-        return "pkg:golang/" + moduleName + "@" + version;
+        return PurlUtils.buildGolangPurl(moduleName, version);
     }
 }
 
