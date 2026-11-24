@@ -15,10 +15,14 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.purl.PackageInfo;
+import org.metaeffekt.core.util.purl.PackageManager;
+import org.metaeffekt.core.util.purl.PurlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,10 +137,11 @@ public class PythonEggComponentPatternContributor extends ComponentPatternContri
     }
 
     private String buildPurl(String name, String version) {
-        // first we have to handle that the name should not be case sensitive and underscore should be replaced by dash
-        // see: https://github.com/package-url/purl-spec/blob/master/PURL-TYPES.rst#pypi
-        name = name.toLowerCase(Locale.ENGLISH).replace("_", "-");
-        return "pkg:pypi/" + name + "@" + version;
+        if (StringUtils.isBlank(name)) {
+            return null;
+        }
+
+        return PurlUtils.buildPurl(PackageInfo.of(PackageManager.PYPI, name).version(version).build());
     }
 
 }

@@ -34,7 +34,13 @@ import java.util.stream.Stream;
 public class LinuxDistributionUtil {
 
     private static final Pattern CPE_PATTERN = Pattern.compile("cpe:/o:(.*?):.*?:(.*?):.*?$");
+
     private static final List<String> VERSION_ID_KEYS = List.of("DEBIAN_VERSION_FULL", "VERSION_ID");
+    private static final String KEY_DISTRO_NAME = "NAME";
+    private static final String KEY_DISTRO_ID = "ID";
+    private static final String KEY_DISTRO_VERSION_CODENAME = "VERSION_CODENAME";
+    private static final List<String> DISTRO_VERSION_KEYS = List.of("VERSION_ID", "VERSION");
+
 
     public static final String ISSUE = "issue";
     public static final String ISSUE_NET = "issue.net";
@@ -81,7 +87,8 @@ public class LinuxDistributionUtil {
 
     public static class LinuxDistro {
 
-        public String issue;
+        public String issue; // format: name (versionId)
+        public String name;
         public String version;
 
         public String id;
@@ -91,9 +98,12 @@ public class LinuxDistributionUtil {
 
         public String url;
 
+        // FIXME: No usage, consider removing
         public String release;
 
         public String vendor;
+
+        public LinuxDistributionInfo info;
 
         /**
          * The map enables to collect further details available for post-processing.
@@ -152,7 +162,6 @@ public class LinuxDistributionUtil {
     }
 
     public static LinuxDistro parseDistro(File distroBaseDir) {
-
         final File challengeBaseDir = new File(distroBaseDir, "etc");
         if (!challengeBaseDir.exists()) {
             log.warn("Received base directory for detecting linux distro does not have expected structure: " + distroBaseDir.getAbsolutePath());
@@ -195,6 +204,88 @@ public class LinuxDistributionUtil {
             }
         }
 
+        specifyVendor(linuxDistro);
+
+        if (linuxDistro.issue != null) {
+            return linuxDistro;
+        }
+
+        return null;
+    }
+
+    public static boolean applies(String pathInContext) {
+        pathInContext = "/" + pathInContext;
+        for (String contextPath : CONTEXT_PATHS) {
+            if (pathInContext.endsWith(contextPath)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String[] getContextPaths() {
+        return CONTEXT_PATHS;
+    }
+
+    public static String getVersionIdWithFallbacks(Properties osReleaseFileProperties) {
+        for (final String versionKey : VERSION_ID_KEYS) {
+            final String versionId = osReleaseFileProperties.getProperty(versionKey);
+            if (!StringUtils.isBlank(versionId)) {
+                return versionId;
+            }
+        }
+        log.debug("No version id found in any of the fallback keys: {}", VERSION_ID_KEYS);
+        return null;
+    }
+
+    /**
+     * Populates the issue by combining the distro name and version id from the distro from osReleaseFileProperties and
+     *
+     * @param osReleaseFileProperties the os release file properties
+     * @return the issue
+     */
+    public static String populateNameWithFullVersion(Properties osReleaseFileProperties) {
+        String name = osReleaseFileProperties.getProperty(KEY_DISTRO_NAME);
+        String versionId = getVersionIdWithFallbacks(osReleaseFileProperties);
+
+        return versionId != null ? name + " (" + versionId + ")" : name;
+    }
+
+    /**
+     * Populates the Distro Name with the version codename.
+     *
+     * @param osReleaseFileProperties the os release file properties
+     * @return the distro name with its version codename
+     */
+    public static String populateNameWithVersionCodename(Properties osReleaseFileProperties) {
+        String name = osReleaseFileProperties.getProperty(KEY_DISTRO_NAME);
+        String versionCodename = resolveCodename(osReleaseFileProperties);
+
+        return versionCodename != null ? name + " (" + versionCodename + ")" : name;
+    }
+
+    /**
+     * Creates a {@link LinuxDistro} object by parsing data from osReleaseFile (used for appliance extracted linux distros).
+     *
+     * @param osReleaseFileProperties the parsed os-release file containing the distro information
+     * @return the {@link LinuxDistro} object
+     */
+    public static LinuxDistro parseDistroByOsReleaseFile(Properties osReleaseFileProperties) {
+        final LinuxDistro linuxDistro = new LinuxDistro();
+        linuxDistro.id = modulateValue(osReleaseFileProperties.getProperty("ID"), linuxDistro.id);
+        linuxDistro.name = modulateValue(populateNameWithVersionCodename(osReleaseFileProperties), linuxDistro.name);
+        linuxDistro.issue = modulateValue(populateNameWithFullVersion(osReleaseFileProperties), linuxDistro.issue);
+        linuxDistro.versionId = modulateValue(getVersionIdWithFallbacks(osReleaseFileProperties), linuxDistro.versionId);
+        linuxDistro.version = modulateValue(osReleaseFileProperties.getProperty("VERSION"), linuxDistro.version);
+        linuxDistro.cpe = modulateValue(osReleaseFileProperties.getProperty("CPE_NAME"), linuxDistro.cpe);
+        linuxDistro.url = modulateValue(osReleaseFileProperties.getProperty("HOME_URL"), linuxDistro.url);
+        linuxDistro.info = deriveLinuxDistroInfo(osReleaseFileProperties);
+        specifyVendor(linuxDistro);
+
+        return linuxDistro;
+    }
+
+    private static void specifyVendor(LinuxDistro linuxDistro) {
         if (linuxDistro.id != null) {
             if ("rhel".equals(linuxDistro.id)) {
                 linuxDistro.vendor = "redhat";
@@ -202,12 +293,6 @@ public class LinuxDistributionUtil {
                 linuxDistro.vendor = linuxDistro.id;
             }
         }
-
-        if (linuxDistro.issue != null) {
-            return linuxDistro;
-        }
-
-        return null;
     }
 
     private static void parseDebianVersion(File distroBaseDir, LinuxDistro linuxDistro) {
@@ -261,20 +346,6 @@ public class LinuxDistributionUtil {
         }
     }
 
-    public static boolean applies(String pathInContext) {
-        pathInContext = "/" + pathInContext;
-        for (String contextPath : CONTEXT_PATHS) {
-            if (pathInContext.endsWith(contextPath)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static String[] getContextPaths() {
-        return CONTEXT_PATHS;
-    }
-
     private static void parseUsrBinOsRelease(File distroBaseDir, LinuxDistro linuxDistro) {
         parseOsRelease(distroBaseDir, linuxDistro, "usr/lib/" + OS_RELEASE);
     }
@@ -287,36 +358,63 @@ public class LinuxDistributionUtil {
         final File osReleaseFile = new File(distroBaseDir, path);
 
         if (osReleaseFile.exists()) {
-            final Properties properties = PropertiesUtils.loadPropertiesFile(osReleaseFile);
-            linuxDistro.issue = modulateValue(populateNameWithVersionCodename(properties), linuxDistro.issue);
-            linuxDistro.version = modulateValue(properties.getProperty("VERSION"), linuxDistro.version);
+            final Properties osReleaseFileProperties = PropertiesUtils.loadPropertiesFile(osReleaseFile);
+            linuxDistro.issue = modulateValue(populateNameWithFullVersion(osReleaseFileProperties), linuxDistro.issue);
+            linuxDistro.version = modulateValue(osReleaseFileProperties.getProperty("VERSION"), linuxDistro.version);
 
-            linuxDistro.id = modulateValue(properties.getProperty("ID"), linuxDistro.id);
-            linuxDistro.versionId = modulateValue(getVersionIdWithFallbacks(properties), linuxDistro.versionId);
+            linuxDistro.id = modulateValue(osReleaseFileProperties.getProperty("ID"), linuxDistro.id);
+            linuxDistro.name = modulateValue(populateNameWithVersionCodename(osReleaseFileProperties), linuxDistro.name);
+            linuxDistro.versionId = modulateValue(getVersionIdWithFallbacks(osReleaseFileProperties), linuxDistro.versionId);
 
-            linuxDistro.cpe = modulateValue(properties.getProperty("CPE_NAME"), linuxDistro.cpe);
-            linuxDistro.url = modulateValue(properties.getProperty("HOME_URL"), linuxDistro.url);
+            linuxDistro.cpe = modulateValue(osReleaseFileProperties.getProperty("CPE_NAME"), linuxDistro.cpe);
+            linuxDistro.url = modulateValue(osReleaseFileProperties.getProperty("HOME_URL"), linuxDistro.url);
 
-            linuxDistro.filePropertiesMap.put(path, properties);
+            linuxDistro.info = deriveLinuxDistroInfo(osReleaseFileProperties);
+
+            linuxDistro.filePropertiesMap.put(path, osReleaseFileProperties);
         }
     }
 
-    private static String populateNameWithVersionCodename(Properties properties) {
-        String name = properties.getProperty("NAME");
-        String versionCodename = properties.getProperty("VERSION_CODENAME");
+    private static String resolveCodename(Properties osReleaseProperties) {
+        String codename = osReleaseProperties.getProperty(KEY_DISTRO_VERSION_CODENAME);
 
-        return versionCodename != null ? name + " (" + versionCodename + ")" : name;
-    }
-
-    private static String getVersionIdWithFallbacks(Properties properties) {
-        for (final String versionKey : VERSION_ID_KEYS) {
-            final String versionId = properties.getProperty(versionKey);
-            if (!StringUtils.isBlank(versionId)) {
-                return versionId;
+        if (codename == null) {
+            final String distroId = osReleaseProperties.getProperty(KEY_DISTRO_ID);
+            if (distroId != null && distroId.equals("ubuntu")) {
+                codename = osReleaseProperties.getProperty("UBUNTU_CODENAME");
             }
         }
-        log.debug("No version id found in any of the fallback keys: {}", VERSION_ID_KEYS);
+
+        if (codename == null) {
+            codename = deriveCodenameFromVersion(osReleaseProperties);
+        }
+        return codename;
+    }
+
+    private static String deriveCodenameFromVersion(Properties osReleaseProperties) {
+        for (String versionKey : DISTRO_VERSION_KEYS) {
+            final String version = osReleaseProperties.getProperty(versionKey);
+            if (version != null && !version.isBlank()) {
+                final int open = version.indexOf('(');
+                final int close = version.indexOf(')', open + 1);
+                if (!(open >= 0 && close > open)) {
+                    continue;
+                }
+                return version.substring(open + 1, close).trim();
+            }
+        }
+        log.debug("Cannot derive version codename from version keys [{}].", DISTRO_VERSION_KEYS);
         return null;
+    }
+
+    /**
+     * Derives the {@link LinuxDistributionInfo} corresponding to the ID field in the os-release.txt file.
+     *
+     * @param osReleaseFileProperties the osReleaseProperties from the os-release.txt file containing the ID
+     * @return the derived {@link LinuxDistributionInfo}
+     */
+    private static LinuxDistributionInfo deriveLinuxDistroInfo(Properties osReleaseFileProperties) {
+        return LinuxDistributionInfo.fromId(osReleaseFileProperties.getProperty(KEY_DISTRO_ID)).orElse(null);
     }
 
     private static String modulateValue(String name, String currentValue) {

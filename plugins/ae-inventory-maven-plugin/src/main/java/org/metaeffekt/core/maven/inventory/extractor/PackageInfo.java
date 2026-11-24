@@ -23,7 +23,7 @@ import java.io.File;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
- * Simple container to aggregate information of an package.
+ * Simple container to aggregate information of a package.
  */
 class PackageInfo {
 
@@ -33,6 +33,7 @@ class PackageInfo {
     String version;
     String release;
     String arch;
+    String epoch;
     String summary;
     String description;
     String license;
@@ -41,6 +42,8 @@ class PackageInfo {
     String documentationDir;
     String licenseDir;
     String group;
+    String componentSourceType;
+    String purl;
 
     String status;
 
@@ -62,11 +65,11 @@ class PackageInfo {
         }
 
         artifact.setVersion(version);
+        artifact.setUrl(url);
 
         artifact.set(KEY_ARCHITECTURE, arch);
         artifact.set(KEY_SUMMARY, summary);
         artifact.set(KEY_DESCRIPTION, description);
-        artifact.setUrl(url);
         artifact.set(KEY_DERIVED_LICENSE_PACKAGE, license);
         artifact.set(KEY_DOCUMENTATION_PATH_PACKAGE, documentationDir);
         artifact.set(KEY_LICENSE_PATH_PACKAGE, licenseDir);
@@ -74,6 +77,8 @@ class PackageInfo {
         artifact.set(KEY_STATUS_PACKAGE, status);
         artifact.set(KEY_RELEASE, release);
         artifact.set(KEY_SOURCE_PACKAGE, sourcePackage);
+        artifact.set(KEY_COMPONENT_SOURCE_TYPE, componentSourceType);
+        artifact.set(KEY_PURL, purl);
         return artifact;
     }
 
