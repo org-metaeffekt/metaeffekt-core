@@ -19,6 +19,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -162,6 +163,56 @@ public class AssessmentInventoryMergerTest {
         Assertions.assertThat(merged.getVulnerabilityMetaData("DUPLICATE_ID-002")).hasSize(1);
         Assertions.assertThat(merged.getVulnerabilityMetaData("DUPLICATE_ID-001").iterator().next().get(VulnerabilityMetaData.Attribute.NAME)).isEqualTo("CVE-2018-1234");
         Assertions.assertThat(merged.getVulnerabilityMetaData("DUPLICATE_ID-002").iterator().next().get(VulnerabilityMetaData.Attribute.NAME)).isEqualTo("CVE-2020-4321");
+    }
+
+    @Test
+    public void mergeInventoryWithMultipleAssetsUsesPrimaryAssetTest() throws IOException {
+        final AssessmentInventoryMerger merger = new AssessmentInventoryMerger();
+
+        final Inventory inputInventory = new Inventory();
+        merger.addInputInventory(inputInventory);
+
+        final AssetMetaData otherAmd = new AssetMetaData();
+        inputInventory.getAssetMetaData().add(otherAmd);
+        otherAmd.set(AssetMetaData.Attribute.ASSET_ID, "other id");
+        otherAmd.set(AssetMetaData.Attribute.NAME, "other id");
+
+        final AssetMetaData primaryAmd = new AssetMetaData();
+        inputInventory.getAssetMetaData().add(primaryAmd);
+        primaryAmd.set(AssetMetaData.Attribute.ASSET_ID, "primary id");
+        primaryAmd.set(AssetMetaData.Attribute.NAME, "primary id");
+        primaryAmd.set(Constants.KEY_PRIMARY, Constants.MARKER_CROSS);
+
+        final VulnerabilityMetaData vmd = new VulnerabilityMetaData();
+        inputInventory.getVulnerabilityMetaData().add(vmd);
+        vmd.set(VulnerabilityMetaData.Attribute.NAME, "CVE-2018-1234");
+
+        final Inventory merged = merger.mergeInventories();
+
+        Assertions.assertThat(merged.getAssetMetaData()).containsExactly(primaryAmd);
+        Assertions.assertThat(primaryAmd.get(AssetMetaData.Attribute.ASSESSMENT)).isEqualTo("PRIMARY_ID-001");
+        Assertions.assertThat(merged.getVulnerabilityMetaData("PRIMARY_ID-001")).hasSize(1);
+        Assertions.assertThat(merged.getVulnerabilityMetaData("PRIMARY_ID-001").iterator().next().get(VulnerabilityMetaData.Attribute.NAME)).isEqualTo("CVE-2018-1234");
+    }
+
+    @Test
+    public void mergeInventoryWithMultiplePrimaryAssetsFailsTest() {
+        final AssessmentInventoryMerger merger = new AssessmentInventoryMerger();
+
+        final Inventory inputInventory = new Inventory();
+        merger.addInputInventory(inputInventory);
+
+        for (String assetId : new String[]{"first id", "second id"}) {
+            final AssetMetaData amd = new AssetMetaData();
+            inputInventory.getAssetMetaData().add(amd);
+            amd.set(AssetMetaData.Attribute.ASSET_ID, assetId);
+            amd.set(AssetMetaData.Attribute.NAME, assetId);
+            amd.set(Constants.KEY_PRIMARY, Constants.MARKER_CROSS);
+        }
+
+        Assertions.assertThatThrownBy(merger::mergeInventories)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("exactly one asset");
     }
 
     @Test
