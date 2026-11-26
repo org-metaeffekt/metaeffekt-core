@@ -16,6 +16,7 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -109,8 +110,7 @@ public class ContainerAssetInventoryProcessor extends BaseInventoryProcessor {
 
     private void attachIssueInformation(AssetMetaData assetMetaData) {
         try {
-            DebianInventoryExtractor extractor = new DebianInventoryExtractor();
-            final String issue = extractor.extractIssue(analysisDir);
+            final String issue = LinuxDistributionUtil.extractIssue(analysisDir);
             assetMetaData.set(KEY_ISSUE, issue);
 
         } catch (Exception e) {
