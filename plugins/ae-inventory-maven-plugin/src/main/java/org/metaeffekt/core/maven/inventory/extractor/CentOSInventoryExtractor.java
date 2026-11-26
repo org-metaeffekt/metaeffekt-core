@@ -17,6 +17,7 @@ package org.metaeffekt.core.maven.inventory.extractor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
@@ -129,15 +130,15 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
             }
 
             packageInfo.status = "installed";
-            packageInfo.componentSourceType = linuxDistro.info.getPackageTool();
-            packageInfo.purl = buildPurl(packageInfo, linuxDistro);
+            final LinuxDistributionInfo linuxDistroInfo = linuxDistro.info != null ? linuxDistro.info : LinuxDistributionInfo.CENTOS;
+            packageInfo.componentSourceType = linuxDistroInfo.getPackageTool();
+            packageInfo.purl = buildPurl(packageInfo, linuxDistro, linuxDistroInfo);
         }
     }
 
-    @Override
-    protected String buildPurl(PackageInfo packageInfo, LinuxDistributionUtil.LinuxDistro linuxDistro) {
-        final org.metaeffekt.core.util.purl.PackageInfo.PackageInfoBuilder builder = org.metaeffekt.core.util.purl.PackageInfo.of(linuxDistro.info.getPackageManager(), packageInfo.name)
-                .namespace(linuxDistro.info.getPurlNamespace())
+    protected String buildPurl(PackageInfo packageInfo, LinuxDistributionUtil.LinuxDistro linuxDistro, LinuxDistributionInfo linuxDistroInfo) {
+        final org.metaeffekt.core.util.purl.PackageInfo.PackageInfoBuilder builder = org.metaeffekt.core.util.purl.PackageInfo.of(linuxDistroInfo.getPackageManager(), packageInfo.name)
+                .namespace(linuxDistroInfo.getPurlNamespace())
                 .version(derivePurlVersion(packageInfo)).arch(packageInfo.arch)
                 .qualifier("epoch", packageInfo.epoch)
                 .qualifier("upstream", packageInfo.sourcePackage);

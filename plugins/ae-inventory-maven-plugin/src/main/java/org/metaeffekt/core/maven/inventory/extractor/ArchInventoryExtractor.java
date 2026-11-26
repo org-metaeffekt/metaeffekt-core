@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
@@ -40,11 +41,6 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
         // find packages from the provided inputs
         List<PackageInfo> packageReferences = scan(analysisDir, linuxDistro);
         packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, p));
-    }
-
-    @Override
-    protected String extractIssue(File analysisDir) {
-        return null;
     }
 
     public List<PackageInfo> scan(File analysisDir, LinuxDistributionUtil.LinuxDistro linuxDistro) throws IOException {
@@ -90,8 +86,9 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
                     }
                 }
             }
-            p.componentSourceType = linuxDistro.info.getPackageTool();
-            p.purl = buildPurl(p, linuxDistro);
+            final LinuxDistributionInfo linuxDistroInfo = linuxDistro.info != null ? linuxDistro.info : LinuxDistributionInfo.ARCH;
+            p.componentSourceType = linuxDistroInfo.getPackageTool();
+            p.purl = buildPurl(p, linuxDistroInfo);
         }
     }
 
