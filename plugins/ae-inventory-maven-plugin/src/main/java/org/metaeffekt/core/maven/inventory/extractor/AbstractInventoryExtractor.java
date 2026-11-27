@@ -23,7 +23,6 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
-import org.metaeffekt.core.util.PropertiesUtils;
 import org.metaeffekt.core.util.purl.PurlUtils;
 
 import java.io.File;
@@ -46,8 +45,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
 
     @Override
     public Inventory extractInventory(File baseDir, File analysisDir, String inventoryId, List<String> excludePatterns, boolean includeNotCoveredFiles) throws IOException {
-        final Properties osReleaseFileProperties = Objects.requireNonNull(readOSReleaseFile(analysisDir), "Missing os-release.txt file in dir: " + analysisDir);
-        final LinuxDistributionUtil.LinuxDistro linuxDistro = LinuxDistributionUtil.parseDistroByOsReleaseFile(osReleaseFileProperties);
+        final LinuxDistributionUtil.LinuxDistro linuxDistro = LinuxDistributionUtil.parseDistroByOsReleaseFile(analysisDir);
 
         // use specific inventory implementation to extract inventory
         final Inventory inventory = new Inventory();
@@ -133,30 +131,6 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         idToPackageInfoMap.put(packageInfo.name, packageInfo);
     }
 
-    protected String extractIssue(File analysisDir) throws IOException {
-        final File issueFile = new File(analysisDir, "issue.txt");
-        if (!issueFile.exists()) return null;
-
-        String issue = FileUtils.readFileToString(issueFile, "UTF-8");
-        issue = issue.replace("Welcome to ", "");
-        issue = issue.replace("Kernel \\r on an \\m (\\l)", "");
-        issue = issue.replace("\\S\nKernel \\r on an \\m", "");
-        issue = issue.replace(" \\n \\l", "");
-        issue = issue.replace(" - Kernel %r (%t).", "");
-        issue = issue.trim();
-
-        final File releaseFile = new File(analysisDir, "release.txt");
-
-        if (releaseFile.exists()) {
-            final String release = FileUtils.readFileToString(releaseFile, "UTF-8");
-            if (!issue.contains(release)) {
-                issue = issue + " (" + release.trim() + ")";
-            }
-        }
-
-        return issue.trim();
-    }
-
     protected void addOrMerge(File analysisDir, Inventory inventory, PackageInfo p) {
         Artifact derivedFromPackage = p.createArtifact(analysisDir);
         Artifact referenceArtifact = inventory.findArtifact(derivedFromPackage.getId());
@@ -211,34 +185,6 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         return false;
     }
 
-    private Properties readOSReleaseFile(File analysisDir) {
-        final File osReleaseFile = new File(analysisDir, "os-release.txt");
-        if (osReleaseFile.exists()) {
-            Properties properties = PropertiesUtils.loadPropertiesFile(osReleaseFile);
-            for (String key : properties.stringPropertyNames()) {
-                final String value = normalizePropertyValue(properties.getProperty(key));
-                if (value == null) {
-                    properties.remove(key);
-                } else {
-                    properties.setProperty(key, value);
-                }
-            }
-            return properties;
-        }
-        return null;
-    }
-
-    private static String normalizePropertyValue(String rawValue) {
-        if (rawValue == null) {
-            return null;
-        }
-        String v = rawValue.trim();
-        if (v.length() >= 2 && ((v.startsWith("\"") && v.endsWith("\"")) || (v.startsWith("'") && v.endsWith("'")))) {
-            v = v.substring(1, v.length() - 1);
-        }
-        return v.isEmpty() ? null : v;
-    }
-
     private AssetMetaData createAssetMetaData(File baseDir, File distroBaseDir, LinuxDistributionUtil.LinuxDistro linuxDistro) {
         final String relativePathToDistroRoot = FileUtils.asRelativePath(baseDir, distroBaseDir);
 
@@ -262,10 +208,9 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         return assetMetaData;
     }
 
-    protected String buildPurl(PackageInfo packageInfo, LinuxDistributionUtil.LinuxDistro linuxDistro) {
-        final LinuxDistributionInfo info = linuxDistro.info;
-        return PurlUtils.buildPurl(org.metaeffekt.core.util.purl.PackageInfo.of(info.getPackageManager(), packageInfo.name)
-                .namespace(info.getPurlNamespace())
+    protected String buildPurl(PackageInfo packageInfo, LinuxDistributionInfo linuxDistroInfo) {
+        return PurlUtils.buildPurl(org.metaeffekt.core.util.purl.PackageInfo.of(linuxDistroInfo.getPackageManager(), packageInfo.name)
+                .namespace(linuxDistroInfo.getPurlNamespace())
                 .version(packageInfo.version)
                 .arch(packageInfo.arch)
                 .build());

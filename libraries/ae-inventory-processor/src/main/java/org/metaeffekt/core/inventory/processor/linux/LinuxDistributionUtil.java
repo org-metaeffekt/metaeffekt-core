@@ -21,13 +21,14 @@ import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.PropertiesUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -52,6 +53,7 @@ public class LinuxDistributionUtil {
     public static final String SYSTEM_RELEASE = "system-release";
     public static final String FEDORA_RELEASE = "fedora-release";
     public static final String ALMALINUX_RELEASE = "almalinux-release";
+    public static final String ARCH_RELEASE = "arch-release";
     public static final String ALPINE_RELEASE = "alpine-release";
 
     public static final String PFSENSE_VERSION = "version";
@@ -87,8 +89,8 @@ public class LinuxDistributionUtil {
 
     public static class LinuxDistro {
 
-        public String issue; // format: name (versionId)
-        public String name;
+        public String issue; // name (versionId)
+        public String name; // name (versionCodename)
         public String version;
 
         public String id;
@@ -97,9 +99,6 @@ public class LinuxDistributionUtil {
         public String cpe;
 
         public String url;
-
-        // FIXME: No usage, consider removing
-        public String release;
 
         public String vendor;
 
@@ -172,15 +171,15 @@ public class LinuxDistributionUtil {
         // parsing is done incrementally (information is distributed and potentially not available everywhere)
         // later parsing steps can enhance / overwrite previous consolidating the information
 
-        parseDebianVersion(distroBaseDir, linuxDistro);
-        parseAlpineRelease(distroBaseDir, linuxDistro);
-        parseAlmaLinuxRelease(distroBaseDir, linuxDistro);
-        parsePfSenseVersion(distroBaseDir, linuxDistro);
+        parseDebianVersion(challengeBaseDir, linuxDistro);
+        parseAlpineRelease(challengeBaseDir, linuxDistro);
+        parseAlmaLinuxRelease(challengeBaseDir, linuxDistro);
+        parsePfSenseVersion(challengeBaseDir, linuxDistro);
 
         parseUsrBinOsRelease(distroBaseDir, linuxDistro);
         parseEtcOsRelease(distroBaseDir, linuxDistro);
 
-        parseSystemReleaseCpe(distroBaseDir, linuxDistro);
+        parseSystemReleaseCpe(challengeBaseDir, linuxDistro);
 
         // fallback option in case version id not available yet
         if (linuxDistro.version == null) {
@@ -196,7 +195,8 @@ public class LinuxDistributionUtil {
             }
         }
 
-        parseRedHatRelease(distroBaseDir, linuxDistro);
+        parseRedHatRelease(challengeBaseDir, linuxDistro);
+        parseArchRelease(challengeBaseDir, linuxDistro);
 
         if (linuxDistro.cpe != null) {
             if (linuxDistro.id == null) {
@@ -227,62 +227,80 @@ public class LinuxDistributionUtil {
         return CONTEXT_PATHS;
     }
 
-    public static String getVersionIdWithFallbacks(Properties osReleaseFileProperties) {
-        for (final String versionKey : VERSION_ID_KEYS) {
-            final String versionId = osReleaseFileProperties.getProperty(versionKey);
-            if (!StringUtils.isBlank(versionId)) {
-                return versionId;
-            }
-        }
-        log.debug("No version id found in any of the fallback keys: {}", VERSION_ID_KEYS);
-        return null;
-    }
-
-    /**
-     * Populates the issue by combining the distro name and version id from the distro from osReleaseFileProperties and
-     *
-     * @param osReleaseFileProperties the os release file properties
-     * @return the issue
-     */
-    public static String populateNameWithFullVersion(Properties osReleaseFileProperties) {
-        String name = osReleaseFileProperties.getProperty(KEY_DISTRO_NAME);
-        String versionId = getVersionIdWithFallbacks(osReleaseFileProperties);
-
-        return versionId != null ? name + " (" + versionId + ")" : name;
-    }
-
-    /**
-     * Populates the Distro Name with the version codename.
-     *
-     * @param osReleaseFileProperties the os release file properties
-     * @return the distro name with its version codename
-     */
-    public static String populateNameWithVersionCodename(Properties osReleaseFileProperties) {
-        String name = osReleaseFileProperties.getProperty(KEY_DISTRO_NAME);
-        String versionCodename = resolveCodename(osReleaseFileProperties);
-
-        return versionCodename != null ? name + " (" + versionCodename + ")" : name;
-    }
-
     /**
      * Creates a {@link LinuxDistro} object by parsing data from osReleaseFile (used for appliance extracted linux distros).
      *
-     * @param osReleaseFileProperties the parsed os-release file containing the distro information
+     * @param analysisDir analysis directory
      * @return the {@link LinuxDistro} object
      */
-    public static LinuxDistro parseDistroByOsReleaseFile(Properties osReleaseFileProperties) {
+    public static LinuxDistro parseDistroByOsReleaseFile(File analysisDir) throws IOException {
         final LinuxDistro linuxDistro = new LinuxDistro();
-        linuxDistro.id = modulateValue(osReleaseFileProperties.getProperty("ID"), linuxDistro.id);
-        linuxDistro.name = modulateValue(populateNameWithVersionCodename(osReleaseFileProperties), linuxDistro.name);
-        linuxDistro.issue = modulateValue(populateNameWithFullVersion(osReleaseFileProperties), linuxDistro.issue);
-        linuxDistro.versionId = modulateValue(getVersionIdWithFallbacks(osReleaseFileProperties), linuxDistro.versionId);
-        linuxDistro.version = modulateValue(osReleaseFileProperties.getProperty("VERSION"), linuxDistro.version);
-        linuxDistro.cpe = modulateValue(osReleaseFileProperties.getProperty("CPE_NAME"), linuxDistro.cpe);
-        linuxDistro.url = modulateValue(osReleaseFileProperties.getProperty("HOME_URL"), linuxDistro.url);
-        linuxDistro.info = deriveLinuxDistroInfo(osReleaseFileProperties);
-        specifyVendor(linuxDistro);
+        final Properties osReleaseFileProperties = readOSReleaseFile(analysisDir);
+
+        if (osReleaseFileProperties != null) {
+            linuxDistro.id = modulateValue(osReleaseFileProperties.getProperty("ID"), linuxDistro.id);
+            linuxDistro.name = modulateValue(populateNameWithVersionCodename(osReleaseFileProperties), linuxDistro.name);
+            linuxDistro.issue = modulateValue(populateNameWithFullVersion(osReleaseFileProperties), linuxDistro.issue);
+            linuxDistro.versionId = modulateValue(getVersionIdWithFallbacks(osReleaseFileProperties), linuxDistro.versionId);
+            linuxDistro.version = modulateValue(osReleaseFileProperties.getProperty("VERSION"), linuxDistro.version);
+            linuxDistro.cpe = modulateValue(osReleaseFileProperties.getProperty("CPE_NAME"), linuxDistro.cpe);
+            linuxDistro.url = modulateValue(osReleaseFileProperties.getProperty("HOME_URL"), linuxDistro.url);
+            linuxDistro.info = deriveLinuxDistroInfo(osReleaseFileProperties);
+            specifyVendor(linuxDistro);
+        } else {
+            linuxDistro.issue = extractIssue(analysisDir);
+
+            parseDebianVersion(analysisDir, linuxDistro);
+            parseAlpineRelease(analysisDir, linuxDistro);
+            parseAlmaLinuxRelease(analysisDir, linuxDistro);
+            parsePfSenseVersion(analysisDir, linuxDistro);
+
+            parseSystemReleaseCpe(analysisDir, linuxDistro);
+
+            parseRedHatRelease(analysisDir, linuxDistro);
+            parseArchRelease(analysisDir, linuxDistro);
+            parseLsbRelease(analysisDir, linuxDistro);
+
+            if (linuxDistro.info == null) {
+                // last fallback option to derive distro info
+                deriveLinuxDistributionInfoByIssue(analysisDir, linuxDistro);
+            }
+
+            if (linuxDistro.cpe != null) {
+                if (linuxDistro.id == null) {
+                    parseSystemReleaseCpe(linuxDistro);
+                }
+            }
+
+            specifyVendor(linuxDistro);
+
+        }
 
         return linuxDistro;
+    }
+
+    public static String extractIssue(File analysisDir) throws IOException {
+        final File issueFile = new File(analysisDir, "issue.txt");
+        if (!issueFile.exists()) return null;
+
+        String issue = FileUtils.readFileToString(issueFile, "UTF-8");
+        issue = issue.replace("Welcome to ", "");
+        issue = issue.replace("Kernel \\r on an \\m (\\l)", "");
+        issue = issue.replace("\\S\nKernel \\r on an \\m", "");
+        issue = issue.replace(" \\n \\l", "");
+        issue = issue.replace(" - Kernel %r (%t).", "");
+        issue = issue.trim();
+
+        final File releaseFile = new File(analysisDir, "release.txt");
+
+        if (releaseFile.exists()) {
+            final String release = FileUtils.readFileToString(releaseFile, "UTF-8");
+            if (!issue.contains(release)) {
+                issue = issue + " (" + release.trim() + ")";
+            }
+        }
+
+        return issue.trim();
     }
 
     private static void specifyVendor(LinuxDistro linuxDistro) {
@@ -295,41 +313,121 @@ public class LinuxDistributionUtil {
         }
     }
 
-    private static void parseDebianVersion(File distroBaseDir, LinuxDistro linuxDistro) {
-        File file = new File(distroBaseDir, "etc/" + DEBIAN_VERSION);
+    private static void parseDebianVersion(File challengeBaseDir, LinuxDistro linuxDistro) {
+        File file = new File(challengeBaseDir, DEBIAN_VERSION);
         if (!file.exists()) {
-            file = new File(distroBaseDir, "etc/" + DEBIAN_VERSION_DASH);
+            file = new File(challengeBaseDir, DEBIAN_VERSION_DASH);
         }
         parsePlainVersionFile(linuxDistro, file);
     }
 
-    private static void parseAlpineRelease(File distroBaseDir, LinuxDistro linuxDistro) {
-        parsePlainVersionFile(linuxDistro, new File(distroBaseDir, "etc/" + ALPINE_RELEASE));
+    private static void parseAlpineRelease(File challengeBaseDir, LinuxDistro linuxDistro) {
+        parsePlainVersionFile(linuxDistro, new File(challengeBaseDir, ALPINE_RELEASE));
     }
 
-    private static void parseAlmaLinuxRelease(File distroBaseDir, LinuxDistro linuxDistro) {
-        parsePlainVersionFile(linuxDistro, new File(distroBaseDir, "etc/" + ALMALINUX_RELEASE));
+    private static void parseAlmaLinuxRelease(File challengeBaseDir, LinuxDistro linuxDistro) {
+        parsePlainVersionFile(linuxDistro, new File(challengeBaseDir, ALMALINUX_RELEASE));
     }
 
-    private static void parsePfSenseVersion(File distroBaseDir, LinuxDistro linuxDistro) {
-        parsePlainVersionFile(linuxDistro, new File(distroBaseDir, "etc/" + PFSENSE_VERSION));
+    private static void parsePfSenseVersion(File challengeBaseDir, LinuxDistro linuxDistro) {
+        parsePlainVersionFile(linuxDistro, new File(challengeBaseDir, PFSENSE_VERSION));
     }
 
-    private static void parseRedHatRelease(File file, LinuxDistro linuxDistro) {
-        Pattern pattern = Pattern.compile("(.*?)\\srelease\\s(\\d\\.\\d+)");
-        try (Stream<String> lines = Files.lines(new File(file, "etc/" + REDHAT_RELEASE).toPath())) {
-            for (String line : lines.collect(Collectors.toList())) {
-                Matcher matcher = pattern.matcher(line);
+    private static void parseLsbRelease(File challengeBaseDir, LinuxDistro linuxDistro) {
+        final File lsbReleaseFile = new File(challengeBaseDir, LSB_RELEASE);
+        if (lsbReleaseFile.exists()) {
+            final Properties lsbReleaseFileProperties = PropertiesUtils.loadPropertiesFile(lsbReleaseFile);
+            final String distribId = lsbReleaseFileProperties.getProperty("DISTRIB_ID");
+            final String distribCodename = lsbReleaseFileProperties.getProperty("DISTRIB_CODENAME");
+            final String distribRelease = lsbReleaseFileProperties.getProperty("DISTRIB_RELEASE");
+            final String nameWithVersionCodename = !StringUtils.isBlank(distribId) && !StringUtils.isBlank(distribCodename) ? distribId + " (" + distribCodename + ")" :
+                    !StringUtils.isBlank(distribId) ? distribId : null;
+
+            linuxDistro.id = modulateValue(distribId, linuxDistro.id).toLowerCase();
+            linuxDistro.name = modulateValue(nameWithVersionCodename, linuxDistro.name);
+            linuxDistro.version = modulateValue(distribRelease, linuxDistro.version);
+            linuxDistro.versionId = modulateValue(distribRelease, linuxDistro.versionId);
+
+            if (linuxDistro.id.equals("ubuntu")) {
+                linuxDistro.info = LinuxDistributionInfo.UBUNTU;
+            }
+            if (linuxDistro.id.equals("debian")) {
+                linuxDistro.info = LinuxDistributionInfo.DEBIAN;
+            }
+        }
+    }
+
+    private static void deriveLinuxDistributionInfoByIssue(File analysisDir, LinuxDistro linuxDistro) throws IOException {
+        final File issueFile = new File(analysisDir, "issue.txt");
+        if (!issueFile.exists()) return;
+
+        for (String line : Files.readAllLines(issueFile.toPath(), StandardCharsets.UTF_8)) {
+            final String text = line.replaceAll("\\\\[a-zA-Z](\\{[^}]*\\})?", "").trim();
+            if (text.isEmpty()) continue;
+
+            if (text.matches("(?i).*ubuntu.*")) {
+                linuxDistro.info = LinuxDistributionInfo.UBUNTU;
+            } else if (text.matches("(?i).*debian.*")) {
+                linuxDistro.info = LinuxDistributionInfo.DEBIAN;
+            } else if (text.matches("(?i).*alpine.*")) {
+                linuxDistro.info = LinuxDistributionInfo.ALPINE;
+            } else if (text.matches("(?i).*red hat.*")) {
+                linuxDistro.info = LinuxDistributionInfo.RHEL;
+            } else if (text.matches("(?i).*fedora.*")) {
+                linuxDistro.info = LinuxDistributionInfo.FEDORA;
+            } else if (text.matches("(?i).*centos.*")) {
+                linuxDistro.info = LinuxDistributionInfo.CENTOS;
+            } else if (text.matches("(?i).*rocky.*")) {
+                linuxDistro.info = LinuxDistributionInfo.ROCKY;
+            } else if (text.matches("(?i).*alma.*")) {
+                linuxDistro.info = LinuxDistributionInfo.ALMA;
+            } else if (text.matches("(?i).*arch linux.*")) {
+                linuxDistro.info = LinuxDistributionInfo.ARCH;
+            }
+
+            if (linuxDistro.info != null) break;
+        }
+    }
+
+    private static void parseRedHatRelease(File challengeBaseDir, LinuxDistro linuxDistro) {
+        Pattern pattern = Pattern.compile("^(.+?)\\s+release\\s+(\\d+(?:\\.\\d+)*)");
+        try (Stream<String> lines = Files.lines(new File(challengeBaseDir, REDHAT_RELEASE).toPath())) {
+            for (String line : lines.toList()) {
+                final Matcher matcher = pattern.matcher(line);
                 if (matcher.find()) {
                     if (matcher.groupCount() >= 2) {
-                        if (linuxDistro.id == null) linuxDistro.id = matcher.group(1);
-                        if (linuxDistro.version == null) linuxDistro.version = matcher.group(2);
-                        if (linuxDistro.versionId == null) linuxDistro.versionId = matcher.group(2);
+                        final String name = matcher.group(1).toLowerCase(Locale.ROOT);
+                        final String version = matcher.group(2);
+
+                        if (name.contains("red hat")) {
+                            linuxDistro.info = LinuxDistributionInfo.RHEL;
+                        } else if (name.contains("fedora")) {
+                            linuxDistro.info = LinuxDistributionInfo.FEDORA;
+                        } else if (name.contains("centos")) {
+                            linuxDistro.info = LinuxDistributionInfo.CENTOS;
+                        } else if (name.contains("rocky")) {
+                            linuxDistro.info = LinuxDistributionInfo.ROCKY;
+                        } else if (name.contains("alma")) {
+                            linuxDistro.info = LinuxDistributionInfo.ALMA;
+                        }
+
+                        if (linuxDistro.id == null && linuxDistro.info != null) linuxDistro.id = linuxDistro.info.getDistroName();
+                        if (linuxDistro.version == null) linuxDistro.version = version;
+                        if (linuxDistro.versionId == null) linuxDistro.versionId = version;
                     }
                 }
             }
+            linuxDistro.info = LinuxDistributionInfo.RHEL;
         } catch (Exception e) {
-            log.debug("Cannot parse [{}].", file.getAbsolutePath());
+            log.debug("Cannot parse [{}].", challengeBaseDir.getAbsolutePath());
+        }
+    }
+
+    private static void parseArchRelease(File challengeBaseDir, LinuxDistro linuxDistro) {
+        final File archReleaseFile = new File(challengeBaseDir, ARCH_RELEASE);
+        if (archReleaseFile.exists()) {
+            // if this file exists, it is an Arch Linux distro
+            linuxDistro.info = LinuxDistributionInfo.ARCH;
         }
     }
 
@@ -375,6 +473,33 @@ public class LinuxDistributionUtil {
         }
     }
 
+    /**
+     * Populates the issue by combining the distro name and version id from the distro from osReleaseFileProperties and
+     *
+     * @param osReleaseFileProperties the os release file properties
+     * @return the issue
+     */
+    private static String populateNameWithFullVersion(Properties osReleaseFileProperties) {
+        String name = osReleaseFileProperties.getProperty(KEY_DISTRO_NAME);
+        String versionId = getVersionIdWithFallbacks(osReleaseFileProperties);
+
+        return versionId != null ? name + " (" + versionId + ")" : name;
+    }
+
+    /**
+     * Populates the Distro Name with the version codename.
+     *
+     * @param osReleaseFileProperties the os release file properties
+     * @return the distro name with its version codename
+     */
+    private static String populateNameWithVersionCodename(Properties osReleaseFileProperties) {
+        String name = osReleaseFileProperties.getProperty(KEY_DISTRO_NAME);
+        String versionCodename = resolveCodename(osReleaseFileProperties);
+
+        return versionCodename != null ? name + " (" + versionCodename + ")" : name;
+    }
+
+
     private static String resolveCodename(Properties osReleaseProperties) {
         String codename = osReleaseProperties.getProperty(KEY_DISTRO_VERSION_CODENAME);
 
@@ -389,6 +514,17 @@ public class LinuxDistributionUtil {
             codename = deriveCodenameFromVersion(osReleaseProperties);
         }
         return codename;
+    }
+
+    private static String getVersionIdWithFallbacks(Properties osReleaseFileProperties) {
+        for (final String versionKey : VERSION_ID_KEYS) {
+            final String versionId = osReleaseFileProperties.getProperty(versionKey);
+            if (!StringUtils.isBlank(versionId)) {
+                return versionId;
+            }
+        }
+        log.debug("No version id found in any of the fallback keys: {}", VERSION_ID_KEYS);
+        return null;
     }
 
     private static String deriveCodenameFromVersion(Properties osReleaseProperties) {
@@ -426,8 +562,8 @@ public class LinuxDistributionUtil {
         return currentValue;
     }
 
-    private static void parseSystemReleaseCpe(File distroBaseDir, LinuxDistro linuxDistro) {
-        final File file = new File(distroBaseDir, "etc/" + SYSTEM_RELEASE_CPE);
+    private static void parseSystemReleaseCpe(File challengeBaseDir, LinuxDistro linuxDistro) {
+        final File file = new File(challengeBaseDir, SYSTEM_RELEASE_CPE);
         linuxDistro.cpe = modulateValue(parsePlainFile(file), linuxDistro.cpe);
     }
 
@@ -452,6 +588,34 @@ public class LinuxDistributionUtil {
                 linuxDistro.id = modulateValue(matcher.group(1), linuxDistro.id);
             }
         }
+    }
+
+    private static Properties readOSReleaseFile(File analysisDir) {
+        final File osReleaseFile = new File(analysisDir, "os-release.txt");
+        if (osReleaseFile.exists()) {
+            Properties properties = PropertiesUtils.loadPropertiesFile(osReleaseFile);
+            for (String key : properties.stringPropertyNames()) {
+                final String value = normalizePropertyValue(properties.getProperty(key));
+                if (value == null) {
+                    properties.remove(key);
+                } else {
+                    properties.setProperty(key, value);
+                }
+            }
+            return properties;
+        }
+        return null;
+    }
+
+    private static String normalizePropertyValue(String rawValue) {
+        if (rawValue == null) {
+            return null;
+        }
+        String v = rawValue.trim();
+        if (v.length() >= 2 && ((v.startsWith("\"") && v.endsWith("\"")) || (v.startsWith("'") && v.endsWith("'")))) {
+            v = v.substring(1, v.length() - 1);
+        }
+        return v.isEmpty() ? null : v;
     }
 
 }

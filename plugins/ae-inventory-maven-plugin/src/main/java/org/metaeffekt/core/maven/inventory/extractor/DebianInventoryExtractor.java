@@ -16,6 +16,7 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionInfo;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
@@ -94,12 +95,15 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
             packageInfo.id = concludedName;
             packageInfo.name = parsedPackageName;
             packageInfo.version = parsedPackageVersion;
-            packageInfo.componentSourceType = linuxDistro.info.getPackageTool();
+
+            // in case linux distro cannot be parsed, we fall back to LinuxDistributionInfo.DEBIAN for minimal information
+            final LinuxDistributionInfo linuxDistroInfo = linuxDistro.info != null ? linuxDistro.info : LinuxDistributionInfo.DEBIAN;
+            packageInfo.componentSourceType = linuxDistroInfo.getPackageTool();
 
             parseAttributes(packageInfo, fileContentLines);
 
             // after parseAttributes, because architecture is derived there and used for building PURL
-            packageInfo.purl = buildPurl(packageInfo, linuxDistro);
+            packageInfo.purl = buildPurl(packageInfo, linuxDistroInfo);
 
             registerPackageInfo(packageInfo, idToPackageInfoMap);
         }
