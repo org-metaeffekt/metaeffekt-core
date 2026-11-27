@@ -130,6 +130,8 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
             }
 
             packageInfo.status = "installed";
+
+            // in case linux distro cannot be parsed, we fall back to LinuxDistributionInfo.CENTOS for minimal information
             final LinuxDistributionInfo linuxDistroInfo = linuxDistro.info != null ? linuxDistro.info : LinuxDistributionInfo.CENTOS;
             packageInfo.componentSourceType = linuxDistroInfo.getPackageTool();
             packageInfo.purl = buildPurl(packageInfo, linuxDistro, linuxDistroInfo);

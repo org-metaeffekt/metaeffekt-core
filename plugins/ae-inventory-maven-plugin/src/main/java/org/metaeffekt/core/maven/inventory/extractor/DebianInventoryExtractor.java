@@ -96,6 +96,7 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
             packageInfo.name = parsedPackageName;
             packageInfo.version = parsedPackageVersion;
 
+            // in case linux distro cannot be parsed, we fall back to LinuxDistributionInfo.DEBIAN for minimal information
             final LinuxDistributionInfo linuxDistroInfo = linuxDistro.info != null ? linuxDistro.info : LinuxDistributionInfo.DEBIAN;
             packageInfo.componentSourceType = linuxDistroInfo.getPackageTool();
 
