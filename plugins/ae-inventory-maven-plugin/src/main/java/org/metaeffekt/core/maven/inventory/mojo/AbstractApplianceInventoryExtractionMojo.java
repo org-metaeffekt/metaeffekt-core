@@ -43,18 +43,23 @@ public abstract class AbstractApplianceInventoryExtractionMojo extends AbstractI
     /**
      * Derives the specific analysis directory from unpacking the input archive file.
      *
-     * @param archiveFile the input archive file.
+     * @param inputArchiveFile the input archive file.
+     *
      * @return the analysis directory with the unpacked folders to analyze
+     *
      * @throws IOException            if no analysis directory was found
      * @throws MojoExecutionException if an error occurs during the execution of the mojo
      */
-    protected File deriveAnalysisFolder(File archiveFile, File analysisDir) throws IOException, MojoExecutionException {
-        if (!archiveFile.isFile()) {
-            throw new MojoExecutionException("Archive file is not a file: " + archiveFile + ".");
+    protected File deriveAnalysisFolder(File inputArchiveFile, File analysisDir) throws IOException, MojoExecutionException {
+        if (inputArchiveFile == null) {
+            throw new MojoExecutionException("Input archive file not provided. Specify inputArchiveFile property.");
+        }
+        if (!inputArchiveFile.isFile()) {
+            throw new MojoExecutionException("Input archive file is not a file: " + inputArchiveFile + ".");
         }
 
         // unpacking data into specified analysis output directory
-        ArchiveUtils.recursiveUnpack(archiveFile.getParentFile(), analysisDir, new ArrayList<>());
+        ArchiveUtils.recursiveUnpack(inputArchiveFile.getParentFile(), analysisDir, new ArrayList<>());
 
         // determine the analysis directory
         return findAnalysisDirectory(analysisDir);
