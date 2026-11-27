@@ -86,6 +86,8 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
                     }
                 }
             }
+
+            // in case linux distro cannot be parsed, we fall back to LinuxDistributionInfo.ARCH for minimal information
             final LinuxDistributionInfo linuxDistroInfo = linuxDistro.info != null ? linuxDistro.info : LinuxDistributionInfo.ARCH;
             p.componentSourceType = linuxDistroInfo.getPackageTool();
             p.purl = buildPurl(p, linuxDistroInfo);
