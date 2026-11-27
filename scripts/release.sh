@@ -14,7 +14,7 @@ if [ -z "$2" ]; then
 fi
 
 # update version; version_last points to latest patch or latest minor.patch release
-mvn pre-clean -Pupdate-versions,dev -Dae.core.version=$1 -N -Dae.core.version_last=0.157.2
+mvn pre-clean -Pupdate-versions,dev -Dae.core.version=$1 -N -Dae.core.version_last=0.160.0
 
 # commit version update (and other changes)
 git add . || true
