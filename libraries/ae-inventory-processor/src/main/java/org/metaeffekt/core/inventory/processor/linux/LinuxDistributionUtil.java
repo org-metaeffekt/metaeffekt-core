@@ -29,7 +29,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -263,6 +262,7 @@ public class LinuxDistributionUtil {
             parseLsbRelease(analysisDir, linuxDistro);
 
             if (linuxDistro.info == null) {
+                // last fallback option to derive distro info
                 deriveLinuxDistributionInfoByIssue(analysisDir, linuxDistro);
             }
 
@@ -390,15 +390,30 @@ public class LinuxDistributionUtil {
     }
 
     private static void parseRedHatRelease(File challengeBaseDir, LinuxDistro linuxDistro) {
-        Pattern pattern = Pattern.compile("(.*?)\\srelease\\s(\\d\\.\\d+)");
+        Pattern pattern = Pattern.compile("^(.+?)\\s+release\\s+(\\d+(?:\\.\\d+)*)");
         try (Stream<String> lines = Files.lines(new File(challengeBaseDir, REDHAT_RELEASE).toPath())) {
-            for (String line : lines.collect(Collectors.toList())) {
-                Matcher matcher = pattern.matcher(line);
+            for (String line : lines.toList()) {
+                final Matcher matcher = pattern.matcher(line);
                 if (matcher.find()) {
                     if (matcher.groupCount() >= 2) {
-                        if (linuxDistro.id == null) linuxDistro.id = matcher.group(1);
-                        if (linuxDistro.version == null) linuxDistro.version = matcher.group(2);
-                        if (linuxDistro.versionId == null) linuxDistro.versionId = matcher.group(2);
+                        final String name = matcher.group(1).toLowerCase(Locale.ROOT);
+                        final String version = matcher.group(2);
+
+                        if (name.contains("red hat")) {
+                            linuxDistro.info = LinuxDistributionInfo.RHEL;
+                        } else if (name.contains("fedora")) {
+                            linuxDistro.info = LinuxDistributionInfo.FEDORA;
+                        } else if (name.contains("centos")) {
+                            linuxDistro.info = LinuxDistributionInfo.CENTOS;
+                        } else if (name.contains("rocky")) {
+                            linuxDistro.info = LinuxDistributionInfo.ROCKY;
+                        } else if (name.contains("alma")) {
+                            linuxDistro.info = LinuxDistributionInfo.ALMA;
+                        }
+
+                        if (linuxDistro.id == null && linuxDistro.info != null) linuxDistro.id = linuxDistro.info.getDistroName();
+                        if (linuxDistro.version == null) linuxDistro.version = version;
+                        if (linuxDistro.versionId == null) linuxDistro.versionId = version;
                     }
                 }
             }
@@ -411,6 +426,7 @@ public class LinuxDistributionUtil {
     private static void parseArchRelease(File challengeBaseDir, LinuxDistro linuxDistro) {
         final File archReleaseFile = new File(challengeBaseDir, ARCH_RELEASE);
         if (archReleaseFile.exists()) {
+            // if this file exists, it is an Arch Linux distro
             linuxDistro.info = LinuxDistributionInfo.ARCH;
         }
     }
