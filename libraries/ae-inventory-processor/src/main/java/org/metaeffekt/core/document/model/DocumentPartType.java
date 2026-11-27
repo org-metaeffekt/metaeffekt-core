@@ -18,18 +18,43 @@ package org.metaeffekt.core.document.model;
 // FIXME-RTU: consider renaming this class and review types of parts, do the same with DocumentType
 public enum DocumentPartType {
 
+    // Software distribution annex part for license and license obligation documentation
     ANNEX,
+
+    // Initial license documentation part with focus on associated license reporting
     INITIAL_LICENSE_DOCUMENTATION,
+
+    // Software license documentation similar to ANNEX, but with an emphasis on licenses
     LICENSE_DOCUMENTATION,
+
+    // Lists vulnerabilities (overview and details)
     VULNERABILITY_REPORT,
+
+    // Lists exploitable vulnerabilities
     EXPLOITABILITY_REPORT,
+
+    // Provides a summary of the vulnerabilities; statistics
     VULNERABILITY_SUMMARY_PART,
+
+    // Provides a summary of the vulnerabilities; asset/vulnerability tables
     VULNERABILITY_SUMMARY_REPORT,
+
+    // Details vulnerability statistics
     VULNERABILITY_STATISTICS_REPORT,
+
+    // Details vulnerability exploitability statistics
     EXPLOITABILITY_STATISTICS_REPORT,
+
+    // Context part of a document
     CONTEXT,
+
+    // Purpose part of a document
     PURPOSE,
+
+    // Notice part of a document
     NOTICE,
+
+    // Fully custom content part
     CUSTOM_CONTENT
 
 }
