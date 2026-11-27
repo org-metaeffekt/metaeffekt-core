@@ -80,6 +80,7 @@ public class DocumentDescriptorReport {
     public static final String TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP = "vulnerability-statistics-bookmap";
     public static final String TEMPLATE_GROUP_EXPLOITABILITY_STATISTICS_REPORT_BOOKMAP = "exploitability-statistics-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP = "vulnerability-summary-bookmap";
+    public static final String TEMPLATE_GROUP_CUSTOM_CONTENT_BOOKMAP = "custom-content-bookmap";
 
     /**
      * Creates a report based on the given DocumentDescriptor. This method will generate a DITA BookMap and other reports
@@ -122,6 +123,14 @@ public class DocumentDescriptorReport {
             }
             if (documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION) {
                 writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_LICENSE_DOCUMENTATION_BOOKMAP);
+            }
+            if (documentPart.getDocumentPartType() == DocumentPartType.CUSTOM_CONTENT) {
+                if (documentPart.getContent() != null && !documentPart.getContent().isEmpty()) {
+                    String templateResourcePath = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "custom-content" + SEPARATOR_SLASH + "tpc_custom-content.dita.vt";
+                    File targetFile = new File(new File(new File(this.targetReportDir, "parts"), documentPart.getIdentifier()), "tpc_custom-content.dita");
+                    produceDita(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), templateResourcePath, targetFile);
+                }
+                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_CUSTOM_CONTENT_BOOKMAP);
             }
         }
     }
@@ -233,6 +242,9 @@ public class DocumentDescriptorReport {
     private Map<String, TreeSet<String>> createAssetNameToVersionMap(DocumentDescriptor documentDescriptor) {
         Map<String, TreeSet<String>> assetMap = new TreeMap<>();
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
+            if (documentPart.getInventoryContexts() == null) {
+                continue;
+            }
             for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
                 for (AssetMetaData assetMetaData : inventoryContext.getInventory().getAssetMetaData()) {
                     if (assetMetaData.isPrimary()) {
@@ -312,6 +324,9 @@ public class DocumentDescriptorReport {
                     break;
 
                 case PURPOSE:
+                    break;
+
+                case CUSTOM_CONTENT:
                     break;
 
                     default:
@@ -414,6 +429,17 @@ public class DocumentDescriptorReport {
         context.put("documentDescriptor", documentDescriptor);
         if (documentPart != null) {
             context.put("documentPart", documentPart);
+            if (documentPart.getFiles() != null && !documentPart.getFiles().isEmpty()) {
+                List<String> customFiles = new ArrayList<>();
+                for (String filePath : documentPart.getFiles()) {
+                    customFiles.add(new File(filePath).getName());
+                }
+                context.put("customFiles", customFiles);
+            } else if (documentPart.getContent() != null && !documentPart.getContent().isEmpty()) {
+                context.put("customFiles", Collections.singletonList("tpc_custom-content.dita"));
+                context.put("title", documentPart.getContent().get("title"));
+                context.put("body", documentPart.getContent().get("body"));
+            }
         }
         context.put("documentDescriptorReportAdapters", adapters);
 
